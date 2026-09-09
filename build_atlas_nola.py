@@ -8,10 +8,12 @@ data = B.read('data_atlas_nola.js')
 
 # ---- regionalization ----
 for a,b in [
- ('locator.x — Bay Area','locator.x — New Orleans'),
  ('Locator X dashboard · SF Bay Area','Locator X dashboard · New Orleans'),
- ('SF Bay Area','New Orleans'),
- ('San Francisco bay area','New Orleans'),
+ ('where most Bay Area buyers end up','where most buyers in this market end up'),
+ ('A walkable Bay Area, built from the catalog','A walkable New Orleans, built from the catalog'),
+ ('for every Bay Area ZIP and city','for every ZIP and city this edition covers'),
+ ('see where the Bay Area can cash-flow','see where this market can cash-flow'),
+ ('Live mapping for a Bay Area listings app','Live mapping for a New Orleans listings app'),
  ('Every one of the 128,319 sites','Every one of the 125,803 parcels'),
 ]: body=body.replace(a,b)
 body=body.replace('<title>','<title>')  # title lives in head

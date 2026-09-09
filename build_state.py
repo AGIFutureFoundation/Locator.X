@@ -37,13 +37,16 @@ import lxbuild as B
 
 # ---- the spec registry -----------------------------------------------------
 # body/app pairs are (find, replace); every 'find' must exist in the current
-# source or the dry run fails — unless listed in known_stale, which records
-# pairs transcribed from the original builders that already no-op against
-# today's shell (found by this dry run on 2026-09-09: the shell prose evolved
-# and several 'Bay Area' phrasings the atlas builders replace no longer occur,
-# so ~11 raw "Bay Area" strings currently flow into the NOLA edition — a
-# content fix tracked separately). known_stale keeps parity with the canonical
-# builders while still failing loudly on any NEW stale pair.
+# source or the dry run fails — unless listed in known_stale (empty today; it
+# existed to keep parity with stale pairs in the original builders, fixed
+# 2026-09-09). Regionalization decision of record for the NOLA edition: the
+# guide and hacks tabs are HIDDEN (hide_tabs), so their Bay-specific prose
+# (rent-control tables, the "Bay Area big four" inspection list, the 5,000-
+# record verification claim) is deliberately retained-but-hidden, not
+# reworded; the four visible "Bay Area" phrasings are replaced below — the
+# market-panel lines with region-neutral wording, because asserting a
+# specific ZIP footprint the data module may not carry would be a certainty
+# error in prose.
 SPECS = {
     'nola': dict(
         output='atlas_nola.html',
@@ -53,10 +56,14 @@ SPECS = {
         extra_modules=['sig2_nola.js'],
         hide_tabs=['guide', 'hacks'],
         body_pairs=[
-            ('locator.x — Bay Area', 'locator.x — New Orleans'),
             ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · New Orleans'),
-            ('SF Bay Area', 'New Orleans'),
-            ('San Francisco bay area', 'New Orleans'),
+            ('where most Bay Area buyers end up', 'where most buyers in this market end up'),
+            ('A walkable Bay Area, built from the catalog',
+             'A walkable New Orleans, built from the catalog'),
+            ('for every Bay Area ZIP and city', 'for every ZIP and city this edition covers'),
+            ('see where the Bay Area can cash-flow', 'see where this market can cash-flow'),
+            ('Live mapping for a Bay Area listings app',
+             'Live mapping for a New Orleans listings app'),
             ('Every one of the 128,319 sites', 'Every one of the 125,803 parcels'),
         ],
         app_pairs=[
@@ -64,7 +71,7 @@ SPECS = {
              '125,803 parcels across Orleans and Jefferson parishes'),
             ('extruding 128,319 sites', 'extruding 125,803 parcels'),
         ],
-        known_stale=['locator.x — Bay Area', 'SF Bay Area', 'San Francisco bay area'],
+        known_stale=[],
         standalone=True,
     ),
     'bay': dict(
@@ -75,18 +82,15 @@ SPECS = {
         extra_modules=['sig2_bay.js'],
         hide_tabs=['hacks'],
         body_pairs=[
-            ('locator.x — Bay Area', 'locator.x — Bay Atlas'),
             ('Locator X dashboard · SF Bay Area',
              'Locator X dashboard · Bay Area — full-market atlas'),
-            ('SF Bay Area', 'SF Bay Area (full-market atlas)'),
-            ('San Francisco bay area', 'bay area'),
             ('Every one of the 128,319 sites', 'Every one of the 161,000 records'),
         ],
         app_pairs=[
             ('128,319 real sites from county records', '161,000 records across four counties'),
             ('extruding 128,319 sites', 'extruding 161,000 records'),
         ],
-        known_stale=['locator.x — Bay Area', 'SF Bay Area', 'San Francisco bay area'],
+        known_stale=[],
         standalone=True,
     ),
     # Template for the next wave state. Copy, fill, dry-run. It deliberately

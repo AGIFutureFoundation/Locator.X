@@ -8,10 +8,7 @@ data = B.read('data_atlas_bay.js')
 
 # ---- regionalization ----
 for a,b in [
- ('locator.x — Bay Area','locator.x — Bay Atlas'),
  ('Locator X dashboard · SF Bay Area','Locator X dashboard · Bay Area — full-market atlas'),
- ('SF Bay Area','SF Bay Area (full-market atlas)'),
- ('San Francisco bay area','bay area'),
  ('Every one of the 128,319 sites','Every one of the 161,000 records'),
 ]: body=body.replace(a,b)
 body=body.replace('<title>','<title>')  # title lives in head
