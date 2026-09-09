@@ -9,7 +9,7 @@ rule — **measure before asserting** — so every milestone names the check tha
 ## Contents
 
 1. [Versioning scheme](#1-versioning-scheme)
-2. [Where we are — v0.9](#2-where-we-are--v09)
+2. [Where we are — v1.0](#2-where-we-are--v10)
 3. [v1.0 — Public release](#3-v10--public-release)
 4. [v1.1 — The state layer, wave one](#4-v11--the-state-layer-wave-one)
 5. [v1.2 — The resource graph](#5-v12--the-resource-graph)
@@ -100,10 +100,13 @@ Turn the resource directory from lists into a cross-referenced graph:
 
 **Proof:** the sweep script exits zero; each resource file carries its last-verified date.
 
-*Status:* sweep tooling **shipped** — `scripts/check_external_links.py` classifies every
-external URL in the repo's markdown (ok / auth-gated / broken) and
-`.github/workflows/link-rot.yml` runs it quarterly on GitHub runners, where egress is open.
-The lender-deal and program-administrator mappings remain.
+*Status:* **complete.** The sweep ships as `scripts/check_external_links.py` (classifies
+ok / auth-gated / broken) with `.github/workflows/link-rot.yml` running it quarterly on
+GitHub runners, where egress is open. The lender-deal mapping is the matching matrix in
+[`resources/lenders.md` §9](resources/lenders.md#9-the-matching-matrix); the
+program-administrator mapping is
+[`resources/state-administrators.md`](resources/state-administrators.md) (LIHTC
+allocator + SHPO + state credit per state, routing patterns for the rest).
 
 ## 6. v1.3 — Curriculum growth
 
