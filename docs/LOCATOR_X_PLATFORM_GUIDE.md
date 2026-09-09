@@ -1,5 +1,11 @@
 # Locator.X Investment Mapping Platform — Complete Guide
 
+> **Historical document.** This guide describes the earlier three-map dashboard
+> generation (master dashboard + three React market pages) and its illustrative
+> metrics. The current platform is the single-file edition family listed in
+> [`PUBLISH_MAP.md`](PUBLISH_MAP.md) and described in [`OVERVIEW.md`](OVERVIEW.md);
+> where this guide and those documents disagree, they win. Kept as lineage.
+
 **Status: ✅ PRODUCTION READY**
 
 Your fully integrated investment mapping platform combining national corridor data with Bay Area premium and New Orleans emerging markets is now complete.

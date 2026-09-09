@@ -7,6 +7,14 @@ such.
 
 ## [Unreleased]
 
+- **Instructor-notes authoring guide (v1.3 groundwork)** — `curriculum/INSTRUCTOR_NOTES.md`:
+  schema, validated anchor vocabulary, the supply workflow, and a Level-1 worksheet of
+  prompts. No drafted copy — the layer's founding rule is that notes ship empty until
+  the platform owner supplies real words.
+- **Deployment guide** — `docs/DEPLOYMENT.md`: what deploys, both routes with their
+  activation conditions, the Vercel token drop-in steps, and how full editions publish.
+- **Historical banners** — `EDITIONS_MANIFEST.md` and `LOCATOR_X_PLATFORM_GUIDE.md`
+  marked as corridor-era lineage; `PUBLISH_MAP.md` remains the authoritative edition map.
 - **`build_state.py` (v2.0 groundwork)** — the parameterised state/market edition
   builder: specs instead of copy-pasted builders, `--dry-run` verification of every
   regionalization pair against current source, the evidence ceiling as a `hide_tabs`
