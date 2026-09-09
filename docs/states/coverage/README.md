@@ -30,6 +30,7 @@ packed into a built edition and survived the fleet sweep.
 | Louisiana | Anchor market — `nola`, `atlas_nola`, `launi` editions ship from these feeds | [`louisiana.md`](louisiana.md) |
 | California | Anchor market — `bay-ledger`, `atlas_bay` editions ship from these feeds | [`california.md`](california.md) |
 | Florida | New wave state, chosen by data availability: the DOR statewide assessment rolls (NAL/SDF) are the best bulk entry point of any large state | [`florida.md`](florida.md) |
+| Nebraska *(wave two, opened early by Foundation direction)* | Omaha + wider Nebraska as asset-class expansion candidates — anchors named, probes defined | [`nebraska.md`](nebraska.md) |
 
 Corridor counties already pulled and documented outside the wave states (Wake NC,
 Tippecanoe IN, Utah UT, Mahoning OH, Bernalillo NM, Maricopa AZ, Onondaga NY, …) keep

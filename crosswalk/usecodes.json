@@ -1,0 +1,167 @@
+{
+  "about": "Locator.X asset-class crosswalk: per-jurisdiction use-code vocabularies mapped to the platform's screening classes. Every code entry carries the source it was verified against and the date; entries with verified=null are transcribed from a published manual but not yet measured against a live layer (the pull-recipe hard rule: never guess a use code). Counts are measured parcel counts from the documented pulls, not estimates.",
+  "classes": {
+    "lodging": "Hotels, motels, resorts, B&Bs — hospitality stock (curriculum A2: the five classes; shortest lease of all)",
+    "apartments_5plus": "Purpose-built rental apartments, 5+ units (garden/walk-up/elevator/high-rise)",
+    "small_multifamily_2_4": "2-4 unit residential — the agency-financeable small end",
+    "student_housing": "Purpose-identified student stock — the campus-ring lens (A7, launi edition)",
+    "mobile_home_park": "MHP communities",
+    "mixed_residential": "Store/office + apartment and residential conversions — conversion-engine candidates (A7)"
+  },
+  "jurisdictions": [
+    {
+      "id": "wake_nc",
+      "name": "Wake County, NC",
+      "field": "TYPE_USE_DECODE",
+      "source": "Wake Property/Parcels FeatureServer/0 groupBy, docs/PULL_RECIPE.md additions 2026-09-05",
+      "codes": [
+        {"code": "GRDN APT", "class": "apartments_5plus", "measured_count": 829, "verified": "2026-09-05"},
+        {"code": "ELEV APT", "class": "apartments_5plus", "measured_count": 281, "verified": "2026-09-05"},
+        {"code": "THSE APT", "class": "apartments_5plus", "measured_count": 70, "verified": "2026-09-05"},
+        {"code": "TWOFAM", "class": "small_multifamily_2_4", "measured_count": 2224, "verified": "2026-09-05"},
+        {"code": "THREEFAM", "class": "small_multifamily_2_4", "measured_count": 387, "verified": "2026-09-05"},
+        {"code": "FOURFAM", "class": "small_multifamily_2_4", "measured_count": 514, "verified": "2026-09-05"},
+        {"code": "MUTFAM", "class": "apartments_5plus", "measured_count": 33, "verified": "2026-09-05"},
+        {"code": "RES CONV", "class": "mixed_residential", "measured_count": 307, "verified": "2026-09-05"},
+        {"code": "STOR/APT", "class": "mixed_residential", "measured_count": 32, "verified": "2026-09-05"},
+        {"code": "OFC/APT", "class": "mixed_residential", "measured_count": 12, "verified": "2026-09-05"},
+        {"code": "ST/OFC/A", "class": "mixed_residential", "measured_count": 8, "verified": "2026-09-05"},
+        {"code": "H/M-LIMT", "class": "lodging", "measured_count": 111, "verified": "2026-09-05"},
+        {"code": "H/M-ES", "class": "lodging", "measured_count": 21, "verified": "2026-09-05"},
+        {"code": "H/M-FULL", "class": "lodging", "measured_count": 17, "verified": "2026-09-05"},
+        {"code": "H/M-HR", "class": "lodging", "measured_count": 9, "verified": "2026-09-05"},
+        {"code": "H/M-INDE", "class": "lodging", "measured_count": 6, "verified": "2026-09-05"}
+      ],
+      "caveats": [
+        "H/M-* suffixes are not documented anywhere public — treat the family as lodging and keep the raw string",
+        "TOTUNITS is a billing/appraisal unit count of ANY kind, not dwelling units — only a real unit count when ANDed with a residential decode",
+        "No bedroom or bathroom field; HEATEDAREA is the only floor area",
+        "Use the FeatureServer sibling — the MapServer returns NULL for every statistic"
+      ]
+    },
+    {
+      "id": "utah_co_ut",
+      "name": "Utah County, UT",
+      "field": "PROP_TYPE_DESCR",
+      "source": "Utah County parcel layer groupBy (37-value distribution), docs/PULL_RECIPE.md additions 2026-09-05",
+      "codes": [
+        {"code": "APARTMENTS", "class": "apartments_5plus", "measured_count": 718, "verified": "2026-09-05"},
+        {"code": "STUDENT HOUSING", "class": "student_housing", "measured_count": 114, "verified": "2026-09-05"},
+        {"code": "LODGING", "class": "lodging", "measured_count": 126, "verified": "2026-09-05"},
+        {"code": "MULTIPLE UNIT MIX", "class": "mixed_residential", "measured_count": 37, "verified": "2026-09-05"},
+        {"code": "MOBILE HOME PARK", "class": "mobile_home_park", "measured_count": 57, "verified": "2026-09-05"}
+      ],
+      "caveats": [
+        "TOTAL_UNIT_COUNT is trustworthy on APARTMENTS / STUDENT HOUSING / SUBSIDIZE HOUSING (max 478, median 12) — NOT on LODGING (not a room count) and NOT on CONDO rows (complex count repeated per unit)",
+        "YEARBLT_RES is populated on 2.5% of apartments — use YEAR_BUILT_1 (94%) for anything non-single-family",
+        "ASMT_YEAR is 2027 on nearly every row — the roll is the 2027 tax year"
+      ]
+    },
+    {
+      "id": "bernalillo_nm",
+      "name": "Bernalillo County, NM",
+      "field": "LUC_MSG",
+      "source": "assessormap.bernco.gov Assessor_Parcels_Public/MapServer/0 (152-value LUC_MSG, 100% populated), docs/PULL_RECIPE.md additions 2026-09-05",
+      "codes": [
+        {"code": "LOW RISE APARTMENTS O4U (TO 3 STY)", "class": "apartments_5plus", "measured_count": 1279, "verified": "2026-09-05"},
+        {"code": "HIGH RISE APARTMENTS O4U (OVER 3 STY)", "class": "apartments_5plus", "measured_count": 43, "verified": "2026-09-05"},
+        {"code": "MULTIFAMILY RES U4U", "class": "small_multifamily_2_4", "measured_count": 4211, "verified": "2026-09-05"},
+        {"code": "HOTEL/MOTEL LOW RISE", "class": "lodging", "measured_count": 115, "verified": "2026-09-05"},
+        {"code": "HOTEL/MOTEL HI RISE", "class": "lodging", "measured_count": 47, "verified": "2026-09-05"},
+        {"code": "MOBILE HOME PARK", "class": "mobile_home_park", "measured_count": 228, "verified": "2026-09-05"}
+      ],
+      "caveats": [
+        "O4U = over 4 units, U4U = under 4 units — the 5+ boundary is the county's own",
+        "No sale price and no sale date on any layer — New Mexico is non-disclosure; value evidence is assessment-only",
+        "Use the county's own ArcGIS server, not the state OSE layer (which has no usable use class in some counties, e.g. Sandoval)"
+      ]
+    },
+    {
+      "id": "ohio_dte",
+      "name": "Ohio (statewide DTE codes; verified on Franklin and Mahoning)",
+      "field": "CLASSCD / county land-use code",
+      "source": "Ohio Administrative Code Rule 5703-25-10 (https://codes.ohio.gov/ohio-administrative-code/rule-5703-25-10); county verification in docs/PULL_RECIPE.md additions 2026-09-04/05",
+      "codes": [
+        {"code": "401", "label": "Apartments 4-19 rental units", "class": "apartments_5plus", "verified": "2026-09-05"},
+        {"code": "402", "label": "Apartments 20-39 units", "class": "apartments_5plus", "verified": "2026-09-05"},
+        {"code": "403", "label": "Apartments 40+ units", "class": "apartments_5plus", "verified": "2026-09-05"},
+        {"code": "410", "label": "Motels and tourist cabins", "class": "lodging", "verified": "2026-09-05"},
+        {"code": "411", "label": "Hotels", "class": "lodging", "verified": "2026-09-05"},
+        {"code": "415", "label": "Trailer or mobile home park", "class": "mobile_home_park", "verified": "2026-09-05"},
+        {"code": "419", "label": "Other commercial housing", "class": "mixed_residential", "verified": "2026-09-05"}
+      ],
+      "caveats": [
+        "401 spans 4-19 units, so it straddles the 5+ boundary — an Ohio '5+ only' screen needs the unit count, not the code alone",
+        "Single-digit county variants (404-409, 413, 414, 417, ...) are NOT in the state rule — band by prefix only and label them not-use-verified",
+        "Franklin: 'CONDO 40+ RENTAL UNITS' rows are individually-owned condo units (58,563 rows, max $794,500) — exclude from complex screens deliberately",
+        "Franklin: BLDGAREA is the only floor-area field that works for apartments; there is NO year-built for an apartment parcel in the layer",
+        "Marion County IN uses the same numbering — the crosswalk row applies there with the same caveats"
+      ]
+    },
+    {
+      "id": "maricopa_az",
+      "name": "Maricopa County, AZ",
+      "field": "ADOR property class",
+      "source": "ADOR class manual, verified against the live layer, docs/PULL_RECIPE.md additions 2026-09-04",
+      "codes": [
+        {"code": "04-1", "label": "Hotels (4th digit 0=default, 1=2-4 stories, 2=5+ stories, 8)", "class": "lodging", "verified": "2026-09-04"},
+        {"code": "05-1", "label": "Motel", "class": "lodging", "verified": "2026-09-04"},
+        {"code": "05-2", "label": "Motel with restaurant", "class": "lodging", "verified": "2026-09-04"},
+        {"code": "05-3", "label": "Bed & breakfast", "class": "lodging", "verified": "2026-09-04"},
+        {"code": "06-x", "label": "Resorts", "class": "lodging", "measured_count": 503, "verified": "2026-09-04"}
+      ],
+      "caveats": [
+        "04-2 is NOT a separate hotel class — hotels are 04-1 only, with 4th-digit story variants; a '041x/042x' filter happens to work for the wrong reason",
+        "FCV_CUR is a string with embedded commas and leading spaces — keep the raw string and parse a numeric beside it (server-side CAST verified working)",
+        "LIVING_SPACE is 0% populated; CONST_YEAR is 100%"
+      ]
+    },
+    {
+      "id": "onondaga_ny",
+      "name": "Onondaga County, NY (NYS Tax Parcels)",
+      "field": "USED_AS_DESC",
+      "source": "NYS_Tax_Parcels_Public FeatureServer/1, docs/PULL_RECIPE.md additions 2026-09-04",
+      "codes": [
+        {"code": "Highrise apt", "class": "apartments_5plus", "verified": "2026-09-04"},
+        {"code": "Garden apt", "class": "apartments_5plus", "verified": "2026-09-04"},
+        {"code": "Walk-up apt", "class": "apartments_5plus", "verified": "2026-09-04"},
+        {"code": "Room/dorm", "class": "student_housing", "verified": "2026-09-04"}
+      ],
+      "caveats": [
+        "USED_AS_DESC is the best plain-English multifamily form descriptor in the catalogue — prefer it over the numeric class band",
+        "SQ_FT is LOT square footage; GFA is gross floor area (89% populated in the 4xx band)",
+        "PRINT_KEY is unique only within a municipality — key on (PRINT_KEY, CITYTOWN_NAME)"
+      ]
+    },
+    {
+      "id": "guilford_nc",
+      "name": "Guilford County, NC",
+      "field": "LAND_CLASS",
+      "source": "Guilford parcel layer, docs/PULL_RECIPE.md additions 2026-09-04",
+      "codes": [
+        {"code": "APART", "class": "apartments_5plus", "verified": "2026-09-04"}
+      ],
+      "caveats": [
+        "TOTAL_UNITS is a complex-level count repeated onto every row and absent on the largest apartments — rank on TOTAL_PROP_VALUE + ACREAGE, never TOTAL_UNITS",
+        "APT_SC_SQRFT is in the schema and 100% NULL — do not plan around it",
+        "PIN is not unique — the same PIN appears on separate lots in one subdivision"
+      ]
+    },
+    {
+      "id": "florida_dor",
+      "name": "Florida (statewide DOR NAL use codes)",
+      "field": "DOR_UC",
+      "source": "FL DOR NAL user guide code list — transcribed, NOT yet measured against a pulled roll (wave-one probe pending; see docs/states/coverage/florida.md)",
+      "codes": [
+        {"code": "003", "label": "Multifamily 10+ units", "class": "apartments_5plus", "verified": null},
+        {"code": "008", "label": "Multifamily fewer than 10 units", "class": "small_multifamily_2_4", "verified": null},
+        {"code": "039", "label": "Hotels, motels", "class": "lodging", "verified": null},
+        {"code": "028", "label": "Mobile home parks", "class": "mobile_home_park", "verified": null}
+      ],
+      "caveats": [
+        "UNVERIFIED against a live roll — the fl_nal_probe.py run must confirm the code dictionary before these rows are relied on (the pull-recipe hard rule)",
+        "008 spans 2-9 units, so it straddles the 5+ boundary both ways — Florida's 5+ screen needs NO_RES_UNTS, not the code alone"
+      ]
+    }
+  ]
+}
