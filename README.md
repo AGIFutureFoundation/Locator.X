@@ -16,12 +16,26 @@ not committed; see [`data/README.md`](data/README.md) for why and how to rebuild
 
 ```
 src/                 84 modules — the app, the Academy, the underwriting and evidence layers
-curriculum/          the curriculum as data, plus the validator that keeps it honest
+curriculum/          the curriculum as data, the validator that keeps it honest, and the
+                     course catalog separated by pillar (curriculum/courses/)
 build*.py            33 builders — data modules, then one per edition
 lxbuild.py           the shared build library (module registry, minify, pack)
 pages/               standalone companion pages (cohort review, learning environment, decks)
-docs/                platform notes, the publish map, data-pull recipes
+docs/                overview, roadmap, platform notes, publish map, pull recipes, the
+                     state-by-state process guides (docs/states/) and the cross-referenced
+                     resource directory (docs/resources/)
 ```
+
+## Documentation
+
+| Start here | |
+|---|---|
+| [`docs/OVERVIEW.md`](docs/OVERVIEW.md) | Multi-section orientation to the whole system |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Versioned roadmap, v0.9 → v2.0, with proofs per milestone |
+| [`CHANGELOG.md`](CHANGELOG.md) | Version history |
+| [`curriculum/courses/`](curriculum/courses/README.md) | The 50 courses, separated by pillar — tables, prerequisite flows, level detail |
+| [`docs/states/`](docs/states/README.md) | The Locator.X process, state by state — all 50 states + DC across six regional guides |
+| [`docs/resources/`](docs/resources/README.md) | Property data sources, the lender landscape, federal and state/county programs — cross-referenced |
 
 ## Requirements
 
