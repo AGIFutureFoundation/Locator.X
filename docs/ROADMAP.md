@@ -114,6 +114,11 @@ The catalog is complete at 50; growth means depth, not count inflation:
 
 - **Instructor notes** — the layer exists (`check 8` validates anchors) and deliberately
   renders nothing until notes are supplied. Fill the first tier: one note per Level-1 course.
+
+  *Status:* the paved road is built — [`curriculum/INSTRUCTOR_NOTES.md`](../curriculum/INSTRUCTOR_NOTES.md)
+  documents the schema, the validated anchor vocabulary, the supply workflow (including
+  the README expected-output update), and a ten-item Level-1 worksheet of prompts. The
+  words themselves are the platform owner's to write — the layer's founding rule.
 - **The 90-day path (F6)** upgraded with per-state checkpoints once wave-one states land —
   the written offer at day 90 looks different in a judicial-foreclosure lien state than in a
   nonjudicial deed state.

@@ -37,6 +37,7 @@ docs/                overview, roadmap, platform notes, publish map, pull recipe
 | [`docs/states/`](docs/states/README.md) | The Locator.X process, state by state — all 50 states + DC across six regional guides |
 | [`docs/resources/`](docs/resources/README.md) | Property data sources, the lender landscape, federal and state/county programs — cross-referenced |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | The doctrine as rules, the pre-PR checklist, contribution licensing |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | What deploys, over which routes, and what each needs |
 
 ## Requirements
 

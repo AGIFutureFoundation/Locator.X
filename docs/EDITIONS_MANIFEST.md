@@ -1,5 +1,12 @@
 # Corridor Data Editions Manifest
 
+> **Historical document.** This manifest records the earlier corridor-era editions,
+> which were React-based pages. The current platform is a different generation —
+> single self-contained HTML files built by `lxbuild.py` with no framework (see
+> [`OVERVIEW.md`](OVERVIEW.md) §4 and the README). The authoritative list of current
+> editions and their published URLs is [`PUBLISH_MAP.md`](PUBLISH_MAP.md); this file is
+> kept as lineage (see the changelog's "Corridor era" entry).
+
 ## 🎯 Interactive HTML Editions - Complete List
 
 All editions are production-ready React-based applications with responsive design, dark mode support, and embedded data.
