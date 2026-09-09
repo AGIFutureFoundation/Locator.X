@@ -7,12 +7,27 @@ such.
 
 ## [Unreleased]
 
+- v1.1 wave one begins: per-state record-coverage inventories
+  ([`docs/states/coverage/`](docs/states/coverage/README.md)) for Louisiana and California
+  (anchor markets, shipped-feed rows cited) and Florida (the new wave state, chosen for
+  the DOR statewide rolls), with the status vocabulary that keeps unfetched sources
+  honestly marked `named` or `no public record`.
+
+## 1.0.0 — 2026-09-09
+
+All five public-release gates closed (roadmap §3). The repository is release-ready;
+visibility is a Foundation switch.
+
 - **Licence chosen** — Apache-2.0 for code (`LICENSE`, `NOTICE`), CC BY 4.0 for written
   content (`LICENSE-docs`); README licence section rewritten for the split.
+- **Attribution review** — the Foundation confirmed the attribution and scope section as
+  written (2026-09-09).
+- **History audit** — every blob in `git` history checked; no data mirrors, no PII; only
+  `data/README.md` has ever been tracked under `data/`.
 - **CONTRIBUTING.md** — the doctrine as rules, the pre-PR checklist, contribution licensing.
 - **CI** — `.github/workflows/validate.yml` runs the eight-check curriculum gate, a
   generated-catalog drift check, and the internal link check (`scripts/check_links.py`) on
-  every push and PR.
+  every push and PR; first runs green.
 - Documentation layer: platform overview ([`docs/OVERVIEW.md`](docs/OVERVIEW.md)), versioned
   roadmap ([`docs/ROADMAP.md`](docs/ROADMAP.md)), this changelog.
 - Curriculum separated into per-pillar course catalogs
@@ -23,9 +38,6 @@ such.
 - Cross-referenced resource directory — property data sources, lender landscape, federal and
   state/county programs ([`docs/resources/`](docs/resources/README.md)).
 - Standalone learning-environment page restored to a valid self-contained document.
-
-Pending for v1.0 (see roadmap §3): LICENSE, CI for the validator, CONTRIBUTING, PII audit
-sign-off.
 
 ## 0.9.0 — 2026-09-09
 

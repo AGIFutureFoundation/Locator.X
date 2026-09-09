@@ -31,9 +31,15 @@ rule — **measure before asserting** — so every milestone names the check tha
   version; [`EDITIONS_MANIFEST.md`](EDITIONS_MANIFEST.md) records the per-edition lineage.
 - History lives in [`../CHANGELOG.md`](../CHANGELOG.md).
 
-## 2. Where we are — v0.9
+## 2. Where we are — v1.0
 
-Shipped and verified (fleet sweep of 2026-09-09):
+**All five v1.0 gates are closed** (§3): licence chosen (Apache-2.0 code / CC BY 4.0
+content), attribution signed off by the Foundation, git history audited clean of data
+blobs, CI running the validator + drift + link gates, CONTRIBUTING published. The
+repository is release-ready; flipping it public is a Foundation switch, not a code change.
+Current work is v1.1 wave one (§4).
+
+Shipped and verified at v0.9 (fleet sweep of 2026-09-09):
 
 - 84 source modules, 33 builders, one shared build library.
 - **Curriculum complete:** 50/50 items live, 19 tracks, 92 lessons; the eight-check validator
@@ -53,7 +59,7 @@ The smallest version that can be public without regret.
 | Item | Why it blocks release | Proof it shipped |
 |------|----------------------|------------------|
 | ✅ `LICENSE` file | README states all rights reserved until the Foundation chooses; a public repo without a licence invites accidental infringement in both directions | Shipped: Apache-2.0 for code (`LICENSE` + `NOTICE`), CC BY 4.0 for written content (`LICENSE-docs`); README licence section updated |
-| Attribution review | The no-affiliation notices must read exactly as intended before strangers quote them | Foundation sign-off recorded in the PR |
+| ✅ Attribution review | The no-affiliation notices must read exactly as intended before strangers quote them | Foundation confirmed the attribution and scope section as written, 2026-09-09 |
 | ✅ `data/` stays ignored — audited | Upstream feeds carry owner PII; git history cannot be cleaned later | Audited at licence time: history holds only the stub and the documented source drops, no data blobs; ignore rules in place |
 | ✅ CI: validator + link + catalog-sync checks on every push | The eight checks currently run locally; public contributions need the gate automated | `.github/workflows/validate.yml`: curriculum gate, generated-catalog drift check, internal link check |
 | ✅ CONTRIBUTING.md | Contributors need the doctrine (measure before asserting; unknown is an answer) stated as rules, not folklore | File exists; doctrine as rules, pre-PR checklist, contribution licensing |
@@ -73,6 +79,13 @@ by data availability.
 
 **Proof:** each wave state gets a "record coverage" table with a source and pull date for every
 row — no row without a source.
+
+*Status:* wave one **started** — [`states/coverage/`](states/coverage/README.md) holds the
+inventories for Louisiana and California (anchor markets; shipped-feed rows cite the
+editions and [`PULL_RECIPE.md`](PULL_RECIPE.md)) and Florida (the new wave state, chosen
+for the DOR statewide NAL/SDF rolls). Wave one completes when every `named` row has a
+recorded probe: advanced to `pulled`, or converted to `blocked`/`no public record` with
+the reason dated.
 
 ## 5. v1.2 — The resource graph
 

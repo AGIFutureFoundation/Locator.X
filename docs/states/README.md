@@ -155,6 +155,13 @@ Every state entry carries the same four sections — *Run the record here* (port
 | [Mountain West](mountain-west.md) | AZ, CO, ID, MT, NV, NM, UT, WY |
 | [Pacific](pacific.md) | AK, CA, HI, OR, WA |
 
+## Record-coverage inventories
+
+The deepening layer (roadmap v1.1): per-state tables of which gates the record actually
+answers, jurisdiction by jurisdiction, every row sourced and dated —
+[`coverage/`](coverage/README.md). Wave one: [Louisiana](coverage/louisiana.md),
+[California](coverage/california.md), [Florida](coverage/florida.md).
+
 Cross-references: the program taxonomy and how to search it —
 [`../resources/state-county-programs.md`](../resources/state-county-programs.md); lender
 matching — [`../resources/lenders.md`](../resources/lenders.md); national and county data
