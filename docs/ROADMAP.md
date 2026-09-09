@@ -130,6 +130,12 @@ screens" to "any wave state at national-baseline depth".
 
 - A state edition template builder (`build_state.py`) parameterised the way
   `build_atlas_*.py` already is.
+
+  *Status:* shipped as a spec-driven builder with `--dry-run` verification (every
+  regionalization pair checked against current source; a stale pair fails loudly). The
+  `nola`/`bay` specs are transcribed for parity; the originals remain canonical until a
+  fleet sweep verifies byte-parity. The dry run's first run found three stale pairs in
+  the original builders (tracked as a separate content-fix task).
 - The evidence ceiling honestly enforced per state — a state whose record cannot support the
   conversion engine ships without it, and the edition says so.
 - The fleet sweep extended to every state edition; the 19-track / 92-lesson assertion holds in

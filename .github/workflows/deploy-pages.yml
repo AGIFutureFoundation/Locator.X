@@ -1,0 +1,42 @@
+name: deploy pages
+
+# Deploys pages/ — the standalone companion pages, which need no build step and
+# no data — to GitHub Pages. The full editions (map + underwriting + packed
+# data) are build products and are NOT deployed here; see docs/PUBLISH_MAP.md.
+#
+# Note: a GitHub Pages site is publicly reachable even while the repository is
+# private. pages/ contains only content already published as artifacts
+# (docs/PUBLISH_MAP.md), so nothing new becomes public — but keep that property
+# in mind before adding files to pages/.
+
+on:
+  push:
+    branches: [main]
+    paths: ["pages/**", ".github/workflows/deploy-pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages
+      - id: deployment
+        uses: actions/deploy-pages@v4
