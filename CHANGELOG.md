@@ -7,6 +7,14 @@ such.
 
 ## [Unreleased]
 
+- **Link-rot sweep shipped (v1.2 tooling)** — `scripts/check_external_links.py`
+  classifies every external URL (ok / auth-gated / broken); a quarterly scheduled
+  workflow (`.github/workflows/link-rot.yml`) runs it where egress is open.
+- **Florida NAL ingest ready** — `scripts/fl_nal_probe.py` parses a downloaded DOR
+  NAL csv/zip with the PII strip on ingest (verified: no `OWN_*`/`FIDU_*` fields
+  survive), populated-rate report, raw use-code histogram, and the sale-qualification
+  picture. The download itself is `blocked` from the container (egress 403, dated in
+  the coverage inventory); the desktop browser-pane route completes it.
 - v1.1 wave one begins: per-state record-coverage inventories
   ([`docs/states/coverage/`](docs/states/coverage/README.md)) for Louisiana and California
   (anchor markets, shipped-feed rows cited) and Florida (the new wave state, chosen for
