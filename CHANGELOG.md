@@ -7,6 +7,15 @@ such.
 
 ## [Unreleased]
 
+- **Asset-class layer** — hotels / apartments 5+ / small multifamily / student housing /
+  MHP / mixed: `crosswalk/usecodes.json` (48 sourced-and-dated code mappings across 8
+  jurisdictions, gated by `crosswalk/validate_usecodes.py` in CI), `scripts/class_screen.py`
+  (sample floor of 5 before any median, unmatched codes surfaced, unverified vocabularies
+  warned), and `docs/asset-classes/README.md` — the measured region matrix and the
+  criteria a new region must meet.
+- **Nebraska opened (wave two, Foundation-directed)** — `docs/states/coverage/nebraska.md`:
+  Omaha, Sarpy, Lincoln and the smaller metros as expansion candidates with anchors named
+  and probes defined; nothing scored without data.
 - **Instructor-notes authoring guide (v1.3 groundwork)** — `curriculum/INSTRUCTOR_NOTES.md`:
   schema, validated anchor vocabulary, the supply workflow, and a Level-1 worksheet of
   prompts. No drafted copy — the layer's founding rule is that notes ship empty until

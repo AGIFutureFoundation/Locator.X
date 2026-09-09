@@ -38,6 +38,7 @@ docs/                overview, roadmap, platform notes, publish map, pull recipe
 | [`docs/resources/`](docs/resources/README.md) | Property data sources, the lender landscape, federal and state/county programs — cross-referenced |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | The doctrine as rules, the pre-PR checklist, contribution licensing |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | What deploys, over which routes, and what each needs |
+| [`docs/asset-classes/`](docs/asset-classes/README.md) | Hotels, apartments, 5+ multifamily — the sourced use-code crosswalk, the doctrine-enforcing class screen, and the measured region matrix |
 
 ## Requirements
 

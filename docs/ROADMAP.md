@@ -85,7 +85,10 @@ inventories for Louisiana and California (anchor markets; shipped-feed rows cite
 editions and [`PULL_RECIPE.md`](PULL_RECIPE.md)) and Florida (the new wave state, chosen
 for the DOR statewide NAL/SDF rolls). Wave one completes when every `named` row has a
 recorded probe: advanced to `pulled`, or converted to `blocked`/`no public record` with
-the reason dated.
+the reason dated. **Wave two opened early by Foundation direction (2026-09-09):**
+Nebraska — Omaha, Lincoln, Sarpy and the smaller metros as asset-class expansion
+candidates ([`states/coverage/nebraska.md`](states/coverage/nebraska.md)), feeding the
+[asset-class layer](asset-classes/README.md).
 
 ## 5. v1.2 — The resource graph
 

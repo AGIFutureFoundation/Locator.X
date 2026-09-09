@@ -21,3 +21,5 @@ jobs:
           git diff --exit-code -- curriculum/courses
       - name: Internal markdown links resolve
         run: python3 scripts/check_links.py
+      - name: Asset-class crosswalk gate
+        run: python3 crosswalk/validate_usecodes.py
