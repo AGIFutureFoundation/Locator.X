@@ -17,8 +17,9 @@ companions: [Capital & structure C1–C7](../../curriculum/courses/05-capital-st
 6. [Private, hard money and creative](#6-private-hard-money-and-creative)
 7. [Construction and development money](#7-construction-and-development-money)
 8. [Mission and program lenders](#8-mission-and-program-lenders)
-9. [How the state changes the terms](#9-how-the-state-changes-the-terms)
-10. [Finding actual lenders, any market](#10-finding-actual-lenders-any-market)
+9. [The matching matrix](#9-the-matching-matrix)
+10. [How the state changes the terms](#10-how-the-state-changes-the-terms)
+11. [Finding actual lenders, any market](#11-finding-actual-lenders-any-market)
 
 ---
 
@@ -137,7 +138,32 @@ The default CRE lender under ~$10M. Recourse is the norm; the relationship *is* 
 - **Land banks / municipal lending** — rehab loan pools, heritage/façade funds — the
   [county taxonomy](state-county-programs.md) covers finding them.
 
-## 9. How the state changes the terms
+## 9. The matching matrix
+
+The v1.2 mapping: deal shape → the lender types that actually underwrite it, with the
+typical constraint bands. **Bands are shapes, not quotes** — every cell moves with the
+cycle; the courses that teach each test are linked so the numbers are computed, not
+believed.
+
+| Deal shape | First calls | Typical DSCR floor | Typical LTV/LTC ceiling | Typical size band | The binding test to run first |
+|------------|-------------|--------------------|--------------------------|-------------------|-------------------------------|
+| 1–4 unit rental, stabilized | Conventional investor · DSCR lenders · local banks | 1.00–1.25× (DSCR loans) | 75–80% | <$1M–$2M | Rent evidence quality ([N3](../../curriculum/courses/03-the-numbers.md); asks are not leases) |
+| 1–4 unit, heavy rehab | Hard money (ARV-based) · 203(k) if owner-occupied | n/a (asset/ARV) | 65–75% of ARV | <$1M | Exit debt: who refinances you out ([C2](../../curriculum/courses/05-capital-structure.md)) |
+| 5+ multifamily, stabilized, $1–7.5M | Agency small-balance · community banks · credit unions | 1.20–1.25× | 75–80% | $1–7.5M | The lender's triangle — which constraint binds ([C3](../../curriculum/courses/05-capital-structure.md)) |
+| 5+ multifamily, stabilized, $7.5M+ | Agency DUS/Optigo · life cos (low leverage) · CMBS | 1.25× (agency); 1.20–1.35 cycle-dependent | 55–80% | $7.5M+ | Debt yield in a rising-rate tape ([C3](../../curriculum/courses/05-capital-structure.md)) |
+| Multifamily value-add / transitional | Debt funds (bridge) · banks with reserves · hard money | underwritten to *stabilized* 1.20–1.25× | 70–80% of **cost** | $2M+ | The refinancing cliff ([N7](../../curriculum/courses/03-the-numbers.md) — which input decides) |
+| Multifamily new construction | Bank construction · HUD 221(d)(4) · private construction | 1.15–1.25× on stabilized pro forma | 65–75% LTC (bank); higher on d(4) | $3M+ | Feasibility gate with kill criteria ([D4](../../curriculum/courses/06-development-delivery.md)) |
+| Affordable (LIHTC/HAP) | Agency affordable desks · HFA bond loans · CDFIs | 1.15–1.20× | to 90%+ with subordinate stack | varies | The credit calendar vs the construction clock ([state-administrators](state-administrators.md)) |
+| Owner-occupied commercial (51%+) | SBA 504 · SBA 7(a) · local banks | business cash flow, not property DSCR | ~90% combined (504) | <$15M | The business's debt service, not the building's ([F3](../../curriculum/courses/02-foundations.md)) |
+| Stabilized retail/office/industrial | Banks · life cos (quality) · CMBS ($2M+) | 1.25–1.40× | 60–75% | $1M+ | WALT vs loan term ([A6](../../curriculum/courses/04-the-asset.md)) |
+| Land / A&D | Local banks · private money · seller carry | n/a | 50% or less | small | Residual land value ([D4](../../curriculum/courses/06-development-delivery.md)); the scarcest money on this table |
+| Seller-financed anything | The seller ([C4](../../curriculum/courses/05-capital-structure.md)) | negotiable — that is the point | negotiable | any | The seller's actual need ([E5](../../curriculum/courses/01-emotional-equity.md) — negotiate the sequence) |
+
+Read a row left to right, then run §10's state adjustments below — a judicial-state
+bridge deal and a nonjudicial-state bridge deal are not the same product at the same
+price.
+
+## 10. How the state changes the terms
 
 The same lender prices the same building differently across a state line:
 
@@ -151,7 +177,7 @@ The same lender prices the same building differently across a state line:
 | Insurance-crisis coasts (LA, FL, CA wildfire) | Quoted-premium DSCR is the binding test — [the state entries say it](../states/south-central.md#louisiana) |
 | Property-tax reset rules (CA reset on sale vs OR never) | Underwritten tax line differs from the seller's — both directions |
 
-## 10. Finding actual lenders, any market
+## 11. Finding actual lenders, any market
 
 Patterns that outlive any directory:
 

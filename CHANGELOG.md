@@ -7,6 +7,13 @@ such.
 
 ## [Unreleased]
 
+- **v1.2 complete** — the lender↔deal matching matrix
+  ([`docs/resources/lenders.md` §9](docs/resources/lenders.md#9-the-matching-matrix)) and
+  the federal-program → state-administrator mapping
+  ([`docs/resources/state-administrators.md`](docs/resources/state-administrators.md)):
+  LIHTC allocator, SHPO and state-historic-credit status for all 50 states + DC, with
+  the allocator exceptions (CTCAC, DCA, EOHLC, HCR, DC DHCD) called out, plus routing
+  patterns for HOME/CDBG, PHAs, brownfields, C-PACE, USDA and weatherization.
 - **Link-rot sweep shipped (v1.2 tooling)** — `scripts/check_external_links.py`
   classifies every external URL (ok / auth-gated / broken); a quarterly scheduled
   workflow (`.github/workflows/link-rot.yml`) runs it where egress is open.

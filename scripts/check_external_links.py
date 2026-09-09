@@ -16,6 +16,10 @@ import urllib.request
 
 SKIP_DIRS = {".git", "node_modules", "__pycache__", "data", "raw", "geo", "pull"}
 URL = re.compile(r"https?://[^\s<>()\"'\]`]+")
+# The repo's own GitHub URLs: GitHub answers 404 (not 403) to anonymous requests while
+# the repo is private, so probing them reports rot that isn't. The internal link checker
+# covers self-references; the sweep skips them.
+SELF = re.compile(r"^https?://github\.com/agifuturefoundation/locator\.x(?:$|[/.])", re.I)
 TIMEOUT = 20
 UA = {"User-Agent": "Mozilla/5.0 (Locator.X link-rot sweep; +https://github.com/agifuturefoundation/locator.x)"}
 
@@ -32,6 +36,8 @@ def collect(root):
                 text = f.read()
             for m in URL.finditer(text):
                 url = m.group(0).rstrip(".,;:)]}`’”")
+                if SELF.match(url):
+                    continue
                 found.setdefault(url, set()).add(os.path.relpath(path, root))
     return found
 

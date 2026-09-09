@@ -37,7 +37,7 @@ Every state has some subset; the state entries flag standouts.
 
 - **Homebuyer finance** — HFA first mortgages, DPA seconds/grants, MCC certificates.
   *Every* state has this; the HFA's participating-lender list doubles as a local-lender
-  directory ([lenders §10](lenders.md#10-finding-actual-lenders-any-market)).
+  directory ([lenders §11](lenders.md#11-finding-actual-lenders-any-market)).
 - **State LIHTC / workforce credits** — ~30 states pair a state credit with the federal;
   Iowa's workforce credit, Missouri's match, Ohio/Arizona's new credits are typical
   shapes.
