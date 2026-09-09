@@ -1,0 +1,38 @@
+# ── Built editions ────────────────────────────────────────────────────────
+# Each edition is a single self-contained HTML file of 2–16 MB with the data
+# packed inside it. They are build products: run the builders to regenerate.
+bay-ledger.html
+uscorridor.html
+uswide.html
+usnew5.html
+nola.html
+atlas_nola.html
+atlas_bay.html
+below100.html
+income50.html
+launi.html
+match50.html
+sheltercove.html
+
+# ── Source data ───────────────────────────────────────────────────────────
+# ~4 GB of public-record pulls and packed data modules. Not redistributed
+# here: see data/README.md for where every field comes from and how to
+# rebuild it. Some upstream feeds carry owner PII that must be stripped on
+# ingest, which is another reason these do not belong in a public repo.
+*_pool*.json
+listings.json
+us_*.json
+data_*.js
+raw/
+geo/
+pull/
+panos/
+ipfs/
+deployment-task4/
+
+# ── Tooling ───────────────────────────────────────────────────────────────
+node_modules/
+__pycache__/
+*.pyc
+*.bak
+.DS_Store

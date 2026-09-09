@@ -1,0 +1,529 @@
+<title>Locator.X Investor Brief</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F2EFE9;
+  --paper-2:#E9E4DA;
+  --card:#FBF9F5;
+  --ink:#17140F;
+  --ink-2:#4A443A;
+  --ink-3:#7C7264;
+  --rule:#D5CDBE;
+  --rule-2:#C0B6A3;
+  --field:#2C6B4E;
+  --field-2:#4E8C6C;
+  --flag:#B9531F;
+  --seq-1:#DDE6DE; --seq-2:#B7CFC0; --seq-3:#8DB6A0; --seq-4:#639C81;
+  --seq-5:#3F8262; --seq-6:#2C6B4E; --seq-7:#1D4E38;
+  --gA:#2C6B4E; --gB:#639C81; --gC:#C99A4B; --gD:#B9531F;
+  --shadow:0 1px 2px rgba(23,20,15,.06), 0 8px 24px -12px rgba(23,20,15,.18);
+  --maxw:1180px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14120E;
+    --paper-2:#0E0C09;
+    --card:#1D1A15;
+    --ink:#F1ECE1;
+    --ink-2:#BDB4A4;
+    --ink-3:#8A8073;
+    --rule:#332E26;
+    --rule-2:#443D32;
+    --field:#5FA483;
+    --field-2:#7FBD9D;
+    --flag:#E0742F;
+    --seq-1:#22302A; --seq-2:#2C463A; --seq-3:#375C4A; --seq-4:#43735B;
+    --seq-5:#4F8B6C; --seq-6:#5FA483; --seq-7:#7FBD9D;
+    --gA:#5FA483; --gB:#43735B; --gC:#C99A4B; --gD:#E0742F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14120E; --paper-2:#0E0C09; --card:#1D1A15;
+  --ink:#F1ECE1; --ink-2:#BDB4A4; --ink-3:#8A8073;
+  --rule:#332E26; --rule-2:#443D32;
+  --field:#5FA483; --field-2:#7FBD9D; --flag:#E0742F;
+  --seq-1:#22302A; --seq-2:#2C463A; --seq-3:#375C4A; --seq-4:#43735B;
+  --seq-5:#4F8B6C; --seq-6:#5FA483; --seq-7:#7FBD9D;
+  --gA:#5FA483; --gB:#43735B; --gC:#C99A4B; --gD:#E0742F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;
+  font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.deck{scroll-snap-type:y proximity; height:100svh; overflow-y:auto; overflow-x:hidden}
+@media (prefers-reduced-motion:no-preference){ .deck{scroll-behavior:smooth} }
+
+.page{
+  scroll-snap-align:start;
+  min-height:100svh;
+  display:flex; flex-direction:column;
+  padding:clamp(28px,4vw,56px) clamp(20px,5vw,72px) clamp(24px,3vw,40px) clamp(52px,7vw,110px);
+  border-bottom:1px solid var(--rule);
+  position:relative;
+}
+.page:last-child{border-bottom:0}
+.page > .inner{width:100%; max-width:var(--maxw); margin:0 auto; display:flex; flex-direction:column; gap:clamp(20px,2.4vw,34px); flex:1; justify-content:center}
+
+/* ---- corner slate ---- */
+.slate{
+  display:flex; align-items:baseline; gap:14px;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-3);
+  padding-bottom:12px; border-bottom:1px solid var(--rule);
+}
+.slate .ord{color:var(--field); font-weight:600}
+.slate .spacer{flex:1}
+.slate .brand{color:var(--ink-3)}
+
+/* ---- type ---- */
+h1,h2,h3{margin:0; font-family:'Fraunces',Georgia,serif; font-weight:600; letter-spacing:-.015em; text-wrap:balance}
+h1{font-size:clamp(30px,4.4vw,58px); line-height:1.04; max-width:19ch}
+h2{font-size:clamp(26px,3.6vw,46px); line-height:1.06; max-width:22ch}
+h3{font-size:15px; font-weight:600; letter-spacing:0}
+.lede{font-size:clamp(15px,1.45vw,19px); color:var(--ink-2); max-width:56ch; line-height:1.5}
+p{margin:0 0 .85em}
+p:last-child{margin-bottom:0}
+.body{max-width:60ch; color:var(--ink-2)}
+.body strong{color:var(--ink); font-weight:600}
+.flag{color:var(--flag); font-weight:600}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums}
+.label{
+  font-family:'IBM Plex Mono',ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--ink-3); display:block; margin-bottom:10px;
+}
+.label::before{content:""; display:inline-block; width:14px; height:1px; background:var(--field); vertical-align:middle; margin-right:8px; transform:translateY(-1px)}
+
+/* ---- layout blocks ---- */
+.cols{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(24px,3.4vw,56px); align-items:start}
+.cols-3{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(14px,1.6vw,22px)}
+.stack{display:flex; flex-direction:column; gap:clamp(14px,1.8vw,24px)}
+@media (max-width:900px){ .cols{grid-template-columns:1fr} .cols-3{grid-template-columns:1fr} }
+
+.card{
+  background:var(--card); border:1px solid var(--rule); border-radius:10px;
+  padding:clamp(14px,1.5vw,20px); box-shadow:var(--shadow);
+}
+.card.plain{background:transparent; box-shadow:none; border-color:var(--rule)}
+
+/* ---- hero figure ---- */
+.hero-fig{display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap}
+.hero-num{
+  font-family:'Fraunces',Georgia,serif; font-weight:700;
+  font-size:clamp(46px,8.2vw,104px); line-height:.86; letter-spacing:-.03em;
+  color:var(--flag); font-variant-numeric:tabular-nums;
+}
+.hero-cap{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); max-width:20ch; line-height:1.6; padding-bottom:6px}
+
+/* ---- stat row ---- */
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:10px; overflow:hidden}
+@media (max-width:720px){ .stats{grid-template-columns:repeat(2,1fr)} }
+.stat{background:var(--card); padding:14px 16px}
+.stat .v{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; font-size:clamp(17px,2vw,24px); font-weight:600; color:var(--ink); letter-spacing:-.01em; display:block}
+.stat .k{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); margin-top:5px; display:block; line-height:1.5}
+
+/* ---- pipeline ---- */
+.pipe{display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:8px; overflow:hidden}
+@media (max-width:800px){ .pipe{grid-template-columns:repeat(2,1fr)} }
+.pipe .step{background:var(--card); padding:11px 12px}
+.pipe .n{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--field); font-weight:600; letter-spacing:.1em; display:block}
+.pipe .t{font-size:12.5px; font-weight:500; color:var(--ink); margin-top:4px; display:block; line-height:1.35}
+
+/* ---- weight chart ---- */
+.wchart{display:flex; flex-direction:column; gap:7px}
+.wrow{display:grid; grid-template-columns:15ch 1fr 3.2ch; align-items:center; gap:10px; font-size:12.5px}
+.wrow .nm{color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.wtrack{height:11px; background:var(--paper-2); border-radius:2px; overflow:hidden}
+.wbar{height:100%; border-radius:2px 3px 3px 2px}
+.wrow .wv{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; font-size:11.5px; color:var(--ink-3); text-align:right}
+@media (max-width:520px){ .wrow{grid-template-columns:11ch 1fr 3.2ch; font-size:11.5px} }
+
+/* ---- grade bands ---- */
+.bands{display:flex; gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:8px; overflow:hidden; margin-top:4px}
+.band{background:var(--card); padding:10px 11px; flex:1}
+.band .g{font-family:'Fraunces',Georgia,serif; font-size:19px; font-weight:700; line-height:1}
+.band .d{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.06em; color:var(--ink-3); margin-top:6px; display:block; line-height:1.45}
+.band.a .g{color:var(--gA)} .band.b .g{color:var(--gB)} .band.c .g{color:var(--gC)} .band.d .g{color:var(--gD)}
+
+/* ---- compare bars (evidence distribution) ---- */
+.cmp{display:flex; flex-direction:column; gap:11px}
+.cmp-row .cmp-hd{display:flex; justify-content:space-between; align-items:baseline; font-size:12px; margin-bottom:5px}
+.cmp-row .cmp-hd .place{color:var(--ink); font-weight:500}
+.cmp-row .cmp-hd .val{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; font-size:11.5px; color:var(--ink-3)}
+.cmp-bar{display:flex; height:14px; border-radius:3px; overflow:hidden; background:var(--paper-2); gap:2px}
+.cmp-seg{height:100%}
+
+/* ---- key/value list ---- */
+.kv{display:flex; flex-direction:column; gap:0}
+.kv .row{display:flex; justify-content:space-between; gap:14px; padding:8px 0; border-top:1px solid var(--rule); font-size:13px}
+.kv .row:first-child{border-top:0}
+.kv .k{color:var(--ink-2)}
+.kv .v{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; color:var(--ink); font-weight:500; white-space:nowrap}
+
+/* ---- registry table ---- */
+.tablewrap{overflow-x:auto; border:1px solid var(--rule); border-radius:10px; background:var(--card)}
+table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:520px}
+th{
+  font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:600; text-align:left; padding:10px 14px; border-bottom:1px solid var(--rule-2);
+}
+th.r,td.r{text-align:right}
+td{padding:8px 14px; border-top:1px solid var(--rule); color:var(--ink-2)}
+td.nm{color:var(--ink); font-weight:500}
+td.num{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; color:var(--ink)}
+tr.total td{border-top:1px solid var(--rule-2); font-weight:600; color:var(--ink); background:var(--paper-2)}
+.covbar{display:inline-block; width:44px; height:6px; border-radius:2px; background:var(--paper-2); overflow:hidden; vertical-align:middle; margin-right:7px}
+.covbar i{display:block; height:100%; background:var(--field); border-radius:2px}
+
+/* ---- tiers ---- */
+.tier{border-top:2px solid var(--field); padding-top:12px}
+.tier h3{margin-bottom:6px}
+.tier p{font-size:12.5px; color:var(--ink-2); margin:0}
+.tier .who{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--field); display:block; margin-bottom:7px}
+
+/* ---- ask list ---- */
+.ask{display:flex; flex-direction:column; gap:0}
+.ask .item{display:grid; grid-template-columns:2.4ch 1fr; gap:12px; padding:9px 0; border-top:1px solid var(--rule); font-size:13px; color:var(--ink-2)}
+.ask .item:first-child{border-top:0}
+.ask .item .i{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--field); font-weight:600; padding-top:2px}
+.ask .item b{color:var(--ink); font-weight:600}
+
+/* ---- footer ---- */
+.foot{
+  display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  padding-top:12px; margin-top:auto; border-top:1px solid var(--rule);
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3);
+}
+
+/* ---- side rail nav ---- */
+.rail{position:fixed; left:clamp(14px,2.2vw,34px); top:50%; transform:translateY(-50%); z-index:20; display:flex; flex-direction:column; gap:14px}
+.rail a{
+  display:flex; align-items:center; gap:9px; text-decoration:none;
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; color:var(--ink-3);
+}
+.rail .tick{width:18px; height:2px; background:var(--rule-2); border-radius:1px; transition:background .25s ease, width .25s ease}
+.rail a.on .tick{background:var(--flag); width:30px}
+.rail a.on{color:var(--ink)}
+.rail a:focus-visible{outline:2px solid var(--field); outline-offset:4px; border-radius:3px}
+@media (max-width:640px){ .rail{display:none} }
+@media (prefers-reduced-motion:reduce){ .rail .tick{transition:none} }
+</style>
+
+<nav class="rail" aria-label="Deck pages">
+  <a href="#p1" class="on" data-t="1"><span class="tick"></span>01</a>
+  <a href="#p2" data-t="2"><span class="tick"></span>02</a>
+  <a href="#p3" data-t="3"><span class="tick"></span>03</a>
+</nav>
+
+<main class="deck" id="deck">
+
+<!-- ========================= 01 ========================= -->
+<section class="page" id="p1">
+  <div class="inner">
+    <div class="slate">
+      <span class="ord">01 / 03</span>
+      <span>Thesis</span>
+      <span class="spacer"></span>
+      <span class="brand">Locator.X — AGI Future Foundation</span>
+    </div>
+
+    <div class="cols">
+      <div class="stack">
+        <h1>Every property score on the market is a guess wearing a number.</h1>
+        <div class="body">
+          <p>Scoring products publish a single confident figure — 82, 94, “A-grade” — computed across county records of wildly unequal quality. A parcel from a county that publishes a recorded use, a year built and a disclosed sale price gets a score that looks exactly like a parcel from a county that publishes a coordinate, an assessed value and nothing else.</p>
+          <p>Locator.X grades the paperwork before it scores the asset. Every property carries an evidence grade. Every screen carries the count of tests it <span class="flag">could not run</span>. Every forecast carries the band its own backtest measured. We ship <strong>~30 county and parish sources</strong> and we publish, source by source, exactly what each one refuses to tell us.</p>
+          <p>The product is not a better number. It is a number an institution can argue with — and that is the part nobody else is selling.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div>
+          <span class="label">Shipped, measured off disk</span>
+          <div class="hero-fig">
+            <span class="hero-num">1,536,424</span>
+            <span class="hero-cap">properties live across 12 packages</span>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="v">12</span><span class="k">Live editions</span></div>
+          <div class="stat"><span class="v">26</span><span class="k">Analyst tabs</span></div>
+          <div class="stat"><span class="v">15</span><span class="k">US growth corridors</span></div>
+          <div class="stat"><span class="v">118</span><span class="k">Campuses / 1.2M students</span></div>
+        </div>
+        <div class="card plain">
+          <span class="label">The wedge</span>
+          <div class="kv">
+            <div class="row"><span class="k">Evidence grade on every record</span><span class="v">A / B / C / D</span></div>
+            <div class="row"><span class="k">Screen statuses — the third is the point</span><span class="v">meets · fails · unknown</span></div>
+            <div class="row"><span class="k">Forecast band</span><span class="v">held-out backtest</span></div>
+            <div class="row"><span class="k">Sources researched and rejected, published</span><span class="v">11</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>Locator.X · powered by AGI Corp</span>
+      <span>Investor brief · September 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= 02 ========================= -->
+<section class="page" id="p2">
+  <div class="inner">
+    <div class="slate">
+      <span class="ord">02 / 03</span>
+      <span>Method &amp; defensibility</span>
+      <span class="spacer"></span>
+      <span class="brand">Locator.X</span>
+    </div>
+
+    <h2>The moat is the disclosure, not the algorithm.</h2>
+
+    <div>
+      <span class="label">The pipeline — every stage publishes its own limits</span>
+      <div class="pipe">
+        <div class="step"><span class="n">01</span><span class="t">Public record</span></div>
+        <div class="step"><span class="n">02</span><span class="t">Evidence grade</span></div>
+        <div class="step"><span class="n">03</span><span class="t">Locator X score</span></div>
+        <div class="step"><span class="n">04</span><span class="t">Underwriting sheet</span></div>
+        <div class="step"><span class="n">05</span><span class="t">Outlook &amp; break-even</span></div>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div class="stack">
+        <div class="card">
+          <span class="label">Evidence grading — seven tests on the paperwork</span>
+          <div class="wchart">
+            <div class="wrow"><span class="nm">Recorded use</span><span class="wtrack"><span class="wbar" style="width:100%;background:var(--seq-7)"></span></span><span class="wv">22</span></div>
+            <div class="wrow"><span class="nm">Published value</span><span class="wtrack"><span class="wbar" style="width:91%;background:var(--seq-6)"></span></span><span class="wv">20</span></div>
+            <div class="wrow"><span class="nm">Size / unit count</span><span class="wtrack"><span class="wbar" style="width:82%;background:var(--seq-5)"></span></span><span class="wv">18</span></div>
+            <div class="wrow"><span class="nm">Year built</span><span class="wtrack"><span class="wbar" style="width:59%;background:var(--seq-4)"></span></span><span class="wv">13</span></div>
+            <div class="wrow"><span class="nm">Recorded sale price</span><span class="wtrack"><span class="wbar" style="width:55%;background:var(--seq-3)"></span></span><span class="wv">12</span></div>
+            <div class="wrow"><span class="nm">Lot area</span><span class="wtrack"><span class="wbar" style="width:41%;background:var(--seq-2)"></span></span><span class="wv">9</span></div>
+            <div class="wrow"><span class="nm">Building detail</span><span class="wtrack"><span class="wbar" style="width:27%;background:var(--seq-1)"></span></span><span class="wv">6</span></div>
+          </div>
+          <div class="bands">
+            <div class="band a"><span class="g">A</span><span class="d">≥78<br>Underwritable from the record</span></div>
+            <div class="band b"><span class="g">B</span><span class="d">≥58<br>Most of the work is done</span></div>
+            <div class="band c"><span class="g">C</span><span class="d">≥36<br>Shortlist, not offer</span></div>
+            <div class="band d"><span class="g">D</span><span class="d">&lt;36<br>A location, little else</span></div>
+          </div>
+          <p class="body" style="font-size:12.5px;margin-top:12px">Two ceilings override the arithmetic. A record selected by <strong>zoning rather than use</strong> caps at 55 — a permission is not evidence a building stands there. A record the source leaves <strong>unclassified</strong> caps at 34. <em>A grade is a statement about the paperwork, never about the asset.</em></p>
+        </div>
+
+        <div class="card">
+          <span class="label">It discriminates — proof, not impression</span>
+          <div class="cmp">
+            <div class="cmp-row">
+              <div class="cmp-hd"><span class="place">Phoenix–Mesa–Chandler, AZ</span><span class="val">100% A/B</span></div>
+              <div class="cmp-bar"><span class="cmp-seg" style="flex:56;background:var(--gA)"></span><span class="cmp-seg" style="flex:44;background:var(--gB)"></span></div>
+            </div>
+            <div class="cmp-row">
+              <div class="cmp-hd"><span class="place">Savannah, GA (Chatham)</span><span class="val">0% A/B</span></div>
+              <div class="cmp-bar"><span class="cmp-seg" style="flex:100;background:var(--gC)"></span></div>
+            </div>
+          </div>
+          <p class="body" style="font-size:12.5px;margin-top:10px">Chatham publishes zoning and no use class at all, so the 55 ceiling caps every record at C. Not a bug — the intended behaviour and the correct verdict. Competing products would have scored those parcels anyway.</p>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <span class="label">The Investment Standard v1.0</span>
+          <div class="kv">
+            <div class="row"><span class="k">Testable requirements</span><span class="v">15</span></div>
+            <div class="row"><span class="k">Categories</span><span class="v">5</span></div>
+            <div class="row"><span class="k">Statuses</span><span class="v">meets / fails / unknown</span></div>
+            <div class="row"><span class="k">Mean testability by edition</span><span class="v">65–75%</span></div>
+          </div>
+          <p class="body" style="font-size:12.5px;margin-top:11px">A county that publishes no year built has not made a building old and has not made it new. Folding <span class="flag">unknown</span> into <em>fail</em> rejects properties for a gap in a county schema; folding it into <em>meets</em> is worse. Scores compute on what is known, and the count of unanswerable tests travels with every score.</p>
+        </div>
+
+        <div class="card">
+          <span class="label">Outlook — the most decision-useful figure we produce</span>
+          <div class="hero-fig" style="gap:14px">
+            <span class="hero-num" style="font-size:clamp(34px,4.6vw,58px)">+19.6%</span>
+            <span class="hero-cap">rent growth per year this deal requires to clear DSCR 1.20</span>
+          </div>
+          <div class="kv" style="margin-top:14px">
+            <div class="row"><span class="k">What the ZIP is actually doing</span><span class="v">+1.5% / yr</span></div>
+            <div class="row"><span class="k">Appreciation method</span><span class="v">fitted 12-mo OLS</span></div>
+            <div class="row"><span class="k">Multi-year rate cap</span><span class="v">±10% / yr</span></div>
+            <div class="row"><span class="k">Break-even solver</span><span class="v">bisection, DSCR = 1.2000</span></div>
+          </div>
+        </div>
+
+        <div class="card plain">
+          <span class="label">Culture — three model errors we found in our own work before ship</span>
+          <p class="body" style="font-size:12.5px">A backtest band oriented backwards. A <em>level</em> error compounded as a growth rate. An uncapped extrapolation that turned a real +25.8% thirteen-month print into 3.15× over five years. All three are written up in the platform docs, in public, with the arithmetic. <strong>Diligence buyers price that.</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>Evidence grading · Investment Standard · Outlook</span>
+      <span>02 / 03</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= 03 ========================= -->
+<section class="page" id="p3">
+  <div class="inner">
+    <div class="slate">
+      <span class="ord">03 / 03</span>
+      <span>Business &amp; the ask</span>
+      <span class="spacer"></span>
+      <span class="brand">Locator.X</span>
+    </div>
+
+    <h2>It grows by adding packages, not by growing one.</h2>
+
+    <div class="cols">
+      <div class="stack">
+        <div>
+          <span class="label">Unit economics of the product itself — measured, not estimated</span>
+          <div class="stats">
+            <div class="stat"><span class="v">2.61 MB</span><span class="k">Shell, identical every edition</span></div>
+            <div class="stat"><span class="v">16 MB</span><span class="k">Hard page ceiling</span></div>
+            <div class="stat"><span class="v">~39 B</span><span class="k">Compressed per record</span></div>
+            <div class="stat"><span class="v">~300K</span><span class="k">Properties per package</span></div>
+          </div>
+        </div>
+
+        <div>
+          <span class="label">The registry — every figure read off the built page</span>
+          <div class="tablewrap">
+            <table>
+              <thead>
+                <tr><th>Package</th><th class="r">Properties</th><th class="r">Size</th><th>Index coverage</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="nm">US growth corridors</td><td class="num r">302,612</td><td class="num r">13.7 MB</td><td><span class="covbar"><i style="width:51%"></i></span>51%</td></tr>
+                <tr><td class="nm">Conversion stock</td><td class="num r">288,949</td><td class="num r">10.9 MB</td><td><span class="covbar"><i style="width:87%"></i></span>87%</td></tr>
+                <tr><td class="nm">New corridors</td><td class="num r">169,949</td><td class="num r">9.1 MB</td><td><span class="covbar"><i style="width:87%"></i></span>87%</td></tr>
+                <tr><td class="nm">Bay Area atlas</td><td class="num r">161,000</td><td class="num r">7.2 MB</td><td><span class="covbar"><i style="width:100%"></i></span>100%</td></tr>
+                <tr><td class="nm">New Orleans atlas</td><td class="num r">125,803</td><td class="num r">5.3 MB</td><td><span class="covbar"><i style="width:100%"></i></span>100%</td></tr>
+                <tr><td class="nm">Louisiana university cities</td><td class="num r">120,000</td><td class="num r">6.7 MB</td><td><span class="covbar"><i style="width:100%"></i></span>100%</td></tr>
+                <tr><td>+ 6 further packages</td><td class="num r">368,111</td><td class="num r">—</td><td>Below market · NOLA · Bay ledger · Match 50 · Income 50 · Shelter Cove</td></tr>
+                <tr class="total"><td>12 packages live</td><td class="num r">1,536,424</td><td class="r">—</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="cols-3">
+          <div class="tier">
+            <span class="who">Tier 01</span>
+            <h3>Individual investor</h3>
+            <p>One package, one metro. Underwriting sheet, the Standard screen, Outlook, Tradecraft tracks 1–11.</p>
+          </div>
+          <div class="tier">
+            <span class="who">Tier 02</span>
+            <h3>Team &amp; brokerage</h3>
+            <p>Multiple packages side by side, dataset correlations, corridor field, full Academy for analyst onboarding.</p>
+          </div>
+          <div class="tier">
+            <span class="who">Tier 03</span>
+            <h3>Institutional</h3>
+            <p>All 12 packages, source-by-source provenance, raw coverage and testability figures for diligence at scale.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <span class="label">Second revenue surface — the Academy</span>
+          <div class="kv">
+            <div class="row"><span class="k">Tracks of original doctrine</span><span class="v">12</span></div>
+            <div class="row"><span class="k">Lessons, each with a scored drill</span><span class="v">40</span></div>
+            <div class="row"><span class="k">Graduate &amp; Professional track</span><span class="v">6 lessons</span></div>
+            <div class="row"><span class="k">Certificate</span><span class="v">self-issued</span></div>
+          </div>
+          <p class="body" style="font-size:12.5px;margin-top:11px">Stated plainly on the certificate itself: <strong>non-accredited</strong>, no institutional backing, a portfolio artifact rather than a credential. Every case study is sourced and marked <em>documented / reported / disputed</em>. No third-party course is reskinned or adapted.</p>
+        </div>
+
+        <div class="card">
+          <span class="label">What capital buys — the real backlog, already scoped</span>
+          <div class="ask">
+            <div class="item"><span class="i">01</span><span><b>Close the index-coverage gap.</b> The corridor package sits at 51%; 244 ZIPs and 79,641 records are already identified and waiting.</span></div>
+            <div class="item"><span class="i">02</span><span><b>Ship the frontier markets.</b> Four researched, documented and deliberately withheld on source quality. Each needs a pull and a schema.</span></div>
+            <div class="item"><span class="i">03</span><span><b>Build real tier enforcement.</b> Today’s tiers are positioning, not access control — no paywall or license gate exists yet.</span></div>
+            <div class="item"><span class="i">04</span><span><b>Licensing &amp; data compliance.</b> HUD USPS Vacancy DUA registration; Overpass ODbL legal read.</span></div>
+            <div class="item"><span class="i">05</span><span><b>Shared identity layer.</b> OAuth across Locator.X, Cognition.X and SmartCiti.X — one credential, three platforms.</span></div>
+          </div>
+        </div>
+
+        <div class="card plain" style="border-color:var(--flag)">
+          <span class="label" style="color:var(--flag)">The ask</span>
+          <p class="body" style="font-size:13.5px;color:var(--ink)"><strong>Raising <span class="flag">[ amount ]</span> to take Locator.X from 1.53M properties to national coverage</strong>, and to convert a shipped, verified analyst platform into a gated, licensable product across three tiers.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>AGI Future Foundation · Locator.X · powered by AGI Corp</span>
+      <span>x@agifuturefoundation.org</span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+  var deck = document.getElementById('deck');
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var links = Array.prototype.slice.call(document.querySelectorAll('.rail a'));
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) {
+          var i = pages.indexOf(e.target);
+          links.forEach(function(l, li){ l.classList.toggle('on', li === i); });
+        }
+      });
+    }, { root: deck, threshold: 0.55 });
+    pages.forEach(function(p){ io.observe(p); });
+  }
+
+  links.forEach(function(l){
+    l.addEventListener('click', function(ev){
+      ev.preventDefault();
+      var t = document.querySelector(l.getAttribute('href'));
+      if (t) t.scrollIntoView({ block:'start' });
+    });
+  });
+
+  function current(){
+    var top = deck.scrollTop, best = 0, bd = Infinity;
+    pages.forEach(function(p, i){
+      var d = Math.abs(p.offsetTop - top);
+      if (d < bd) { bd = d; best = i; }
+    });
+    return best;
+  }
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var i = current(), n = null;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') n = i + 1;
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   n = i - 1;
+    if (n === null) return;
+    if (n < 0 || n >= pages.length) return;
+    e.preventDefault();
+    pages[n].scrollIntoView({ block:'start' });
+  });
+})();
+</script>
