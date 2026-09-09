@@ -7,6 +7,12 @@ such.
 
 ## [Unreleased]
 
+- **Licence chosen** — Apache-2.0 for code (`LICENSE`, `NOTICE`), CC BY 4.0 for written
+  content (`LICENSE-docs`); README licence section rewritten for the split.
+- **CONTRIBUTING.md** — the doctrine as rules, the pre-PR checklist, contribution licensing.
+- **CI** — `.github/workflows/validate.yml` runs the eight-check curriculum gate, a
+  generated-catalog drift check, and the internal link check (`scripts/check_links.py`) on
+  every push and PR.
 - Documentation layer: platform overview ([`docs/OVERVIEW.md`](docs/OVERVIEW.md)), versioned
   roadmap ([`docs/ROADMAP.md`](docs/ROADMAP.md)), this changelog.
 - Curriculum separated into per-pillar course catalogs

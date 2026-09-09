@@ -36,6 +36,7 @@ docs/                overview, roadmap, platform notes, publish map, pull recipe
 | [`curriculum/courses/`](curriculum/courses/README.md) | The 50 courses, separated by pillar — tables, prerequisite flows, level detail |
 | [`docs/states/`](docs/states/README.md) | The Locator.X process, state by state — all 50 states + DC across six regional guides |
 | [`docs/resources/`](docs/resources/README.md) | Property data sources, the lender landscape, federal and state/county programs — cross-referenced |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | The doctrine as rules, the pre-PR checklist, contribution licensing |
 
 ## Requirements
 
@@ -172,5 +173,16 @@ and cost material is general education. Property data is public record; see
 
 ## Licence
 
-Not yet chosen — add a `LICENSE` file before making this repository public. Until then all rights
-are reserved by the AGI Future Foundation.
+Split by kind of work, the standard foundation pattern:
+
+- **Code** — the [Apache License 2.0](LICENSE): `src/`, `build*.py`, `lxbuild.py`, the
+  curriculum tooling (`curriculum/*.py`, `curriculum/extract_tracks.js`), and `scripts/`.
+  Permissive, with an explicit patent grant and the attribution mechanics of the
+  [`NOTICE`](NOTICE) file.
+- **Written content** — [Creative Commons Attribution 4.0](LICENSE-docs) (CC BY 4.0):
+  `docs/`, `curriculum/courses/`, the course text in the curriculum CSV, `data/README.md`,
+  and the prose of `pages/`. Reuse freely with attribution:
+  *"Locator.X, AGI Future Foundation, CC BY 4.0."*
+
+The `NOTICE` file carries the copyright line and the attribution and no-advice statements;
+they travel with any redistribution under Apache-2.0 §4(d).
