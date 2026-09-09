@@ -1,0 +1,496 @@
+<title>Locator.X Cohort Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F2EFE9; --paper-2:#E7E2D8; --card:#FBF9F5; --card-2:#F1EDE4;
+  --ink:#17140F; --ink-2:#4A443A; --ink-3:#7C7264;
+  --rule:#D5CDBE; --rule-2:#BFB4A1;
+  --field:#2C6B4E; --flag:#B9531F; --cool:#3E6291; --plum:#7A4E86;
+  --shadow:0 1px 2px rgba(23,20,15,.05), 0 10px 26px -16px rgba(23,20,15,.22);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#14120E; --paper-2:#0F0D0A; --card:#1D1A15; --card-2:#252119;
+  --ink:#F1ECE1; --ink-2:#BDB4A4; --ink-3:#8A8073;
+  --rule:#332E26; --rule-2:#453E33;
+  --field:#5FA483; --flag:#E0742F; --cool:#7CA2D4; --plum:#C79BD4;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 30px -18px rgba(0,0,0,.75);
+}}
+:root[data-theme="dark"]{
+  --paper:#14120E; --paper-2:#0F0D0A; --card:#1D1A15; --card-2:#252119;
+  --ink:#F1ECE1; --ink-2:#BDB4A4; --ink-3:#8A8073;
+  --rule:#332E26; --rule-2:#453E33;
+  --field:#5FA483; --flag:#E0742F; --cool:#7CA2D4; --plum:#C79BD4;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 30px -18px rgba(0,0,0,.75);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.6;
+  -webkit-font-smoothing:antialiased}
+.mono,.num{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(16px,3vw,30px)}
+.mh{border-bottom:1px solid var(--rule);background:var(--card);position:sticky;top:0;z-index:40}
+.mh-in{max-width:1080px;margin:0 auto;padding:10px clamp(16px,3vw,30px);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bd{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3)}
+.bd b{color:var(--ink);font-weight:600}
+.sp{flex:1}
+.hero{padding:clamp(26px,4vw,46px) 0 clamp(18px,2.5vw,28px);border-bottom:1px solid var(--rule)}
+.eyb{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--plum);margin:0 0 13px}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.02em;
+  font-size:clamp(30px,4.8vw,50px);line-height:1.04;margin:0 0 14px;text-wrap:balance;max-width:20ch}
+.lede{font-size:clamp(14.5px,1.5vw,17px);line-height:1.55;color:var(--ink-2);max-width:64ch;margin:0 0 6px;text-wrap:pretty}
+section{padding:clamp(24px,3.4vw,40px) 0;border-bottom:1px solid var(--rule)}
+section:last-of-type{border-bottom:0}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:clamp(20px,2.4vw,27px);margin:0 0 8px;letter-spacing:-.01em}
+.note{font-size:13.5px;color:var(--ink-2);max-width:74ch;margin:0 0 18px;line-height:1.6}
+.card{border:1px solid var(--rule);background:var(--card);border-radius:12px;padding:15px 17px;box-shadow:var(--shadow)}
+.card + .card{margin-top:10px}
+.lbl{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);display:block;margin:0 0 5px}
+input[type=text],textarea,select{width:100%;border:1px solid var(--rule-2);background:var(--paper);color:var(--ink);
+  border-radius:8px;padding:8px 11px;font:inherit;font-size:13.5px}
+textarea{min-height:70px;resize:vertical;line-height:1.55}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--field);outline-offset:1px}
+.btn{border:1px solid var(--rule-2);background:var(--card);color:var(--ink);border-radius:8px;
+  padding:8px 14px;font:inherit;font-size:13px;cursor:pointer}
+.btn:hover{background:var(--card-2)}
+.btn.primary{background:var(--field);border-color:var(--field);color:#fff;font-weight:600}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible{outline:2px solid var(--field);outline-offset:2px}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.07em;
+  padding:3px 8px;border-radius:11px;border:1px solid var(--rule-2);color:var(--ink-2);background:var(--card-2)}
+.badge.good{border-color:var(--field);color:var(--field)}
+.badge.warn{border-color:var(--flag);color:var(--flag)}
+.who{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.who span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;border:1px solid var(--rule);
+  background:var(--card-2);border-radius:14px;padding:4px 11px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--field);flex:0 0 7px}
+.thesis{border-left:3px solid var(--plum);padding-left:12px;font-size:14px;line-height:1.6;margin:0}
+.meta{font-size:11.5px;color:var(--ink-3);margin:7px 0 0}
+.resp{border-top:1px solid var(--rule);margin-top:11px;padding-top:11px}
+.resp p{margin:0 0 4px;font-size:13px;line-height:1.55}
+.q{font-size:12.5px;color:var(--ink-2);margin:0 0 4px}
+.empty{font-size:13px;color:var(--ink-3);line-height:1.6;margin:0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--rule)}
+th{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+td.r,th.r{text-align:right}
+.scroll{overflow-x:auto}
+.legal{font-size:11.5px;line-height:1.65;color:var(--ink-3);padding:20px 0 44px}
+.legal b{color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="mh"><div class="mh-in">
+  <span class="bd"><b>Locator.X</b> &nbsp;Cohort Review</span>
+  <span class="sp"></span>
+  <span id="connstate" class="badge">checking…</span>
+</div></div>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyb">Locator.X Platform &middot; Custom Training</p>
+    <h1>Someone else reads the sentence.</h1>
+    <p class="lede">The Academy can tell you that a figure in your thesis appears nowhere in the record, and that you
+    leaned on a gate the record could not answer. It cannot tell you whether the thesis is any good. That has always
+    needed a second person, and this is where they are.</p>
+    <p class="lede" style="margin-top:10px">Three things happen here that a single-player course cannot do: a deal
+    thesis gets read by someone who did not write it, the response follows the same decision-memo discipline the course
+    teaches rather than dissolving into encouragement, and individual records pool into the one figure a single browser
+    can never produce &mdash; which drills actually fail, across people.</p>
+  </header>
+
+  <section>
+    <h2>Who is here</h2>
+    <p class="note">Everyone who can open this page is a signed-in member of this organization &mdash; that part is
+    enforced, not asserted. <b>The name below is not.</b> This page cannot see who you are, so it asks, and anyone can
+    type anything. Treat a name here as a convention for reading a thread, never as an identity, and never as a
+    credential.</p>
+    <div class="card">
+      <label class="lbl" for="me">Your name, for this cohort</label>
+      <div class="row">
+        <input type="text" id="me" placeholder="How you want to appear in a thread" style="flex:1;min-width:220px">
+        <button class="btn" id="savename">Use this name</button>
+      </div>
+      <div class="who" id="who"><span class="empty" style="border:0;background:none;padding:0">Nobody else is on this page right now.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Theses under review</h2>
+    <p class="note">Post the sentence you would defend to a partner, with what the Academy already found in it. The
+    two counts are not a score &mdash; they are the two things a machine can check, so that the people reading can
+    spend their attention on the part it cannot.</p>
+
+    <div class="card">
+      <div class="grid2">
+        <div><label class="lbl" for="parcel">The parcel</label>
+          <input type="text" id="parcel" placeholder="Address, or the way your cohort refers to it"></div>
+        <div><label class="lbl" for="market">Market</label>
+          <input type="text" id="market" placeholder="City or parish"></div>
+      </div>
+      <div style="margin-top:10px"><label class="lbl" for="sentence">The one sentence you would defend</label>
+        <textarea id="sentence" placeholder="What you believe that the seller does not — or what you can do that the last owner could not."></textarea></div>
+      <div class="grid2" style="margin-top:10px">
+        <div><label class="lbl" for="strays">Figures the record did not contain</label>
+          <input type="text" id="strays" inputmode="numeric" placeholder="0"></div>
+        <div><label class="lbl" for="grounds">Gates it leans on that returned unknown</label>
+          <input type="text" id="grounds" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="posth">Post it for review</button>
+        <span id="posthmsg" style="font-size:12.5px;color:var(--ink-3)"></span>
+      </div>
+    </div>
+
+    <div id="theses" style="margin-top:14px"></div>
+  </section>
+
+  <section>
+    <h2>The pooled record</h2>
+    <p class="note">Each edition of Locator.X keeps your progress in your own browser and says plainly that it cannot
+    tell you anything about anyone else &mdash; there is no cross-viewer store in a file that runs with the network
+    off. This is that store. Paste the JSON your copy exports and it joins the pool. The floor travels with it: a rate
+    is printed only where enough answers back it, and the count of records is stated before anything derived from them.</p>
+    <div class="card">
+      <label class="lbl" for="rec">Paste a record export (JSON)</label>
+      <textarea id="rec" placeholder='{"schema":"locator.x/record/1", …}'></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="addrec">Add to the pool</button>
+        <span id="recmsg" style="font-size:12.5px;color:var(--ink-3)"></span>
+      </div>
+    </div>
+    <div id="pool" style="margin-top:14px"></div>
+  </section>
+
+  <p class="legal"><b>Original Locator.X material.</b> Names entered on this page are self-declared and unverified;
+  nothing here is a credential, an accreditation, or a licence, and completing anything on this page confers none.
+  Everything posted here is visible to everyone who can open this page &mdash; there is no private area on it, so do
+  not post anything you would not show the whole cohort. Content posted by other people is their own; it is not
+  reviewed, endorsed or verified by this platform. Nothing here is legal, tax, securities or investment advice.
+  <span id="storenote"></span></p>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $ = function(s){ return document.querySelector(s); };
+var esc = function(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+
+var db = null, room = null, myName = '';
+var theses = [], responses = {}, records = [];
+
+/* The response structure IS the curriculum: a reader does not say "nice" —
+   they answer the questions the decision memo asks of any thesis. */
+var PROMPTS = [
+  {k:'false', q:'What would make this false? Name the one thing.'},
+  {k:'check', q:'Which claim could you check without asking them what they meant?'},
+  {k:'ask',   q:'What would you need to see before you would put your name beside it?'}
+];
+
+function localName(){
+  try{ return localStorage.getItem('lxcohort.name') || ''; }catch(e){ return ''; }
+}
+function setLocalName(v){ try{ localStorage.setItem('lxcohort.name', v); }catch(e){} }
+
+function fmtWhen(ms){
+  if(!ms) return '';
+  var d = new Date(ms), now = Date.now(), diff = (now-ms)/1000;
+  if(diff < 90) return 'just now';
+  if(diff < 3600) return Math.round(diff/60) + ' min ago';
+  if(diff < 86400) return Math.round(diff/3600) + ' h ago';
+  return d.toISOString().slice(0,10);
+}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+/* ---------- theses ---------- */
+/* Another viewer's post arrives as a snapshot and re-renders this whole list.
+   If someone is mid-response when that lands, their typing is gone — the same
+   defect the level gates had, except here a stranger triggers it. Capture the
+   open panels and typed text first, restore after. */
+function captureDrafts(){
+  var d = {open:{}, text:{}};
+  Array.prototype.forEach.call(document.querySelectorAll('#theses details'), function(el, i){
+    var t = el.closest('.card'); var btn = t && t.querySelector('[data-send]');
+    if(btn && el.open) d.open[btn.dataset.send] = true;
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#theses [data-r]'), function(el){
+    if(el.value) d.text[el.dataset.r + '|' + el.dataset.k] = el.value;
+  });
+  return d;
+}
+function restoreDrafts(d){
+  Object.keys(d.text).forEach(function(k){
+    var p = k.split('|');
+    var el = document.querySelector('#theses [data-r="' + p[0] + '"][data-k="' + p[1] + '"]');
+    if(el) el.value = d.text[k];
+  });
+  Object.keys(d.open).forEach(function(tid){
+    var btn = document.querySelector('#theses [data-send="' + tid + '"]');
+    var det = btn && btn.closest('details');
+    if(det) det.open = true;
+  });
+}
+
+function renderTheses(){
+  var host = $('#theses');
+  var drafts = captureDrafts();
+  if(!theses.length){
+    host.innerHTML = '<div class="card"><p class="empty">No thesis has been posted yet. The first one is the hardest '
+      + 'and the most useful &mdash; everything after it has an example to answer.</p></div>';
+    return;
+  }
+  var sorted = theses.slice().sort(function(a,b){ return (b.at||0) - (a.at||0); });
+  host.innerHTML = sorted.map(function(t){
+    var rs = responses[t.id] || [];
+    return '<div class="card">'
+      + '<div class="row" style="justify-content:space-between;align-items:baseline">'
+      +   '<b style="font-size:14px">' + esc(t.parcel || 'An unnamed parcel') + '</b>'
+      +   '<span class="badge">' + esc(t.market || '—') + '</span>'
+      + '</div>'
+      + '<p class="thesis" style="margin-top:10px">' + esc(t.sentence) + '</p>'
+      + '<p class="meta">'
+      +   '<span class="badge ' + (t.strays? 'warn':'good') + '">' + (t.strays||0) + ' figure'
+      +   ((t.strays||0)===1?'':'s') + ' not in the record</span> '
+      +   '<span class="badge ' + (t.grounds? 'warn':'good') + '">' + (t.grounds||0) + ' unanswerable gate'
+      +   ((t.grounds||0)===1?'':'s') + ' leaned on</span> &nbsp; '
+      +   esc(t.by || 'unnamed') + ' &middot; ' + fmtWhen(t.at)
+      + '</p>'
+      + '<div class="resp">'
+      +   (rs.length
+          ? rs.map(function(r){
+              return '<div style="margin-bottom:10px">'
+                + PROMPTS.map(function(p){
+                    return r[p.k] ? '<p class="q">' + esc(p.q) + '</p><p>' + esc(r[p.k]) + '</p>' : '';
+                  }).join('')
+                + '<p class="meta">' + esc(r.by || 'unnamed') + ' &middot; ' + fmtWhen(r.at) + '</p></div>';
+            }).join('')
+          : '<p class="empty" style="margin-bottom:10px">No one has read this yet.</p>')
+      +   '<details><summary style="cursor:pointer;font-size:12.5px;color:var(--ink-2)">Respond to this</summary>'
+      +     '<div style="margin-top:9px">'
+      +     PROMPTS.map(function(p){
+            return '<label class="lbl" style="margin-top:8px">' + esc(p.q) + '</label>'
+                 + '<textarea data-r="' + esc(t.id) + '" data-k="' + p.k + '" style="min-height:52px"></textarea>';
+          }).join('')
+      +     '<div class="row" style="margin-top:9px"><button class="btn primary" data-send="' + esc(t.id) + '">Send response</button>'
+      +     '<span class="meta" style="margin:0">Visible to everyone who can open this page.</span></div>'
+      +     '</div></details>'
+      + '</div></div>';
+  }).join('');
+  restoreDrafts(drafts);
+}
+
+/* ---------- the pool ---------- */
+var FLOOR = 5;
+function poolAgg(){
+  var byTrack = {}, n = records.length, answered = 0, correct = 0, cert = 0, gatesTaken = 0;
+  records.forEach(function(r){
+    var c = r.coverage || {};
+    answered += c.answered || 0; correct += c.correct || 0;
+    cert += r.certaintyErrors || 0; gatesTaken += c.levelsTaken || 0;
+    (r.tracks||[]).forEach(function(t){
+      var b = byTrack[t.id] = byTrack[t.id] || {id:t.id, name:t.name||'', answered:0, correct:0, total:t.total||0};
+      b.answered += t.answered || 0; b.correct += t.correct || 0;
+      if(t.total) b.total = t.total;
+      if(t.name && !b.name) b.name = t.name;
+    });
+  });
+  return {n:n, answered:answered, correct:correct, cert:cert, gatesTaken:gatesTaken,
+          tracks:Object.keys(byTrack).map(function(k){ return byTrack[k]; })};
+}
+
+function renderPool(){
+  var host = $('#pool'), a = poolAgg();
+  if(!a.n){
+    host.innerHTML = '<div class="card"><p class="empty">The pool is empty. One record answers nothing that the '
+      + 'in-app page does not already tell that person &mdash; the value starts at about five, and the page will keep '
+      + 'saying so until there are enough.</p></div>';
+    return;
+  }
+  var hardest = a.tracks.filter(function(t){ return t.answered >= FLOOR; })
+    .map(function(t){ return {t:t, pct: Math.round(t.correct/t.answered*100)}; })
+    .sort(function(x,y){ return x.pct - y.pct; });
+
+  host.innerHTML = '<div class="card">'
+    + '<div class="row" style="gap:14px;margin-bottom:10px">'
+    +   '<span class="badge good">n = ' + a.n + ' record' + (a.n===1?'':'s') + '</span>'
+    +   '<span class="badge">' + a.answered + ' answers pooled</span>'
+    +   '<span class="badge">' + a.cert + ' certainty error' + (a.cert===1?'':'s') + ' across ' + a.gatesTaken + ' gate attempt' + (a.gatesTaken===1?'':'s') + '</span>'
+    + '</div>'
+    + (a.n < 3
+        ? '<p class="empty" style="margin-bottom:10px"><b>Below the count where a pooled figure means anything.</b> '
+          + 'With ' + a.n + ' record' + (a.n===1?'':'s') + ' this is still one or two people, and the table below is '
+          + 'their record rather than the course\'s. It is shown because hiding it would be its own kind of dishonesty '
+          + '&mdash; but do not act on it yet.</p>'
+        : '')
+    + (hardest.length
+        ? '<p style="font-size:13px;margin:0 0 9px"><b>Where the course is hardest</b>, across everyone who has '
+          + 'contributed &mdash; the figure a single browser cannot produce. Only tracks with at least ' + FLOOR
+          + ' pooled answers appear.</p>'
+          + '<div class="scroll"><table><thead><tr><th>Track</th><th class="r">Answers</th><th class="r">Correct</th><th class="r">Rate</th></tr></thead><tbody>'
+          + hardest.map(function(x){
+              return '<tr><td>' + esc(x.t.name || x.t.id) + '</td><td class="r num">' + x.t.answered
+                   + '</td><td class="r num">' + x.t.correct + '</td><td class="r num">' + x.pct + '%</td></tr>';
+            }).join('')
+          + '</tbody></table></div>'
+        : '<p class="empty">No track has reached ' + FLOOR + ' pooled answers, so no rate is printed. '
+          + 'The floor is the same one the in-app record uses, for the same reason: under five answers a single miss '
+          + 'moves the figure twenty points.</p>')
+    + '<p class="meta" style="margin-top:11px">Records are pasted by hand, so this pool is whoever chose to contribute '
+    + '&mdash; not a sample of the cohort, and certainly not of anyone else. That is a real limit on every number above.</p>'
+    + '</div>';
+}
+
+/* ---------- wiring ---------- */
+function setConn(text, cls){
+  var el = $('#connstate'); el.textContent = text; el.className = 'badge' + (cls? ' ' + cls : '');
+}
+
+function renderPeers(peers){
+  var host = $('#who');
+  var others = (peers||[]).filter(function(p){ return p && p.state && p.state.name; });
+  if(!others.length){
+    host.innerHTML = '<span class="empty" style="border:0;background:none;padding:0">Nobody else is on this page right now.</span>';
+    return;
+  }
+  host.innerHTML = others.map(function(p){
+    return '<span><i class="dot"></i>' + esc(p.state.name) + (p.isSelf? ' (you)' : '') + '</span>';
+  }).join('');
+}
+
+async function boot(){
+  myName = localName();
+  if(myName) $('#me').value = myName;
+
+  var haveDb = false;
+  try{ db = await window.claude.use('db'); }catch(e){ db = null; }
+  if(db){
+    haveDb = true;
+    setConn('shared with your cohort', 'good');
+    $('#storenote').textContent = 'Posts and pooled records are stored with this page and are visible to every '
+      + 'signed-in member of this organization who can open it.';
+    try{
+      db.collection('theses').onSnapshot(function(snap){
+        theses = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data); });
+        renderTheses();
+      }, function(){ /* keep whatever is rendered */ });
+      db.collection('responses').onSnapshot(function(snap){
+        responses = {};
+        snap.docs.forEach(function(d){
+          var r = Object.assign({id:d.id}, d.data);
+          (responses[r.thesis] = responses[r.thesis] || []).push(r);
+        });
+        Object.keys(responses).forEach(function(k){
+          responses[k].sort(function(a,b){ return (a.at||0)-(b.at||0); });
+        });
+        renderTheses();
+      }, function(){});
+      db.collection('records').onSnapshot(function(snap){
+        records = snap.docs.map(function(d){ return d.data; });
+        renderPool();
+      }, function(){});
+    }catch(e){ /* rendered empty states stand */ }
+  } else {
+    setConn('not shared — this view only', 'warn');
+    $('#storenote').textContent = 'The shared store is not available in this view, so nothing you enter here is '
+      + 'saved or seen by anyone else.';
+  }
+  renderTheses(); renderPool();
+
+  try{ room = await window.claude.use('room'); }catch(e){ room = null; }
+  if(room){
+    try{
+      room.onPeers(renderPeers);
+      if(myName) room.presence({name:myName});
+    }catch(e){}
+  }
+
+  $('#savename').addEventListener('click', function(){
+    myName = ($('#me').value || '').trim().slice(0, 40);
+    setLocalName(myName);
+    if(room){ try{ room.presence({name:myName}); }catch(e){} }
+    $('#savename').textContent = myName ? 'Name set' : 'Use this name';
+    setTimeout(function(){ $('#savename').textContent = 'Use this name'; }, 1800);
+  });
+
+  $('#posth').addEventListener('click', async function(){
+    var sentence = ($('#sentence').value||'').trim();
+    if(!sentence){ $('#posthmsg').textContent = 'Write the sentence first.'; return; }
+    if(!db){ $('#posthmsg').textContent = 'No shared store in this view — nothing would be saved.'; return; }
+    var doc = {parcel:($('#parcel').value||'').trim().slice(0,120),
+               market:($('#market').value||'').trim().slice(0,60),
+               sentence:sentence.slice(0, 1200),
+               strays:Math.max(0, parseInt($('#strays').value,10) || 0),
+               grounds:Math.max(0, parseInt($('#grounds').value,10) || 0),
+               by:myName || 'unnamed', at:Date.now()};
+    $('#posth').disabled = true; $('#posthmsg').textContent = 'Posting…';
+    try{
+      await db.doc('theses/' + uid()).set(doc);
+      $('#sentence').value = ''; $('#strays').value = ''; $('#grounds').value = '';
+      $('#posthmsg').textContent = 'Posted. It is visible to the whole cohort.';
+    }catch(e){
+      $('#posthmsg').textContent = (e && e.code === 'invalid_argument')
+        ? 'This view is not allowed to post here.' : 'Could not post — try again.';
+    }
+    $('#posth').disabled = false;
+  });
+
+  document.addEventListener('click', async function(ev){
+    var b = ev.target.closest && ev.target.closest('[data-send]');
+    if(!b) return;
+    var tid = b.dataset.send;
+    var doc = {thesis:tid, by:myName || 'unnamed', at:Date.now()};
+    var any = false;
+    PROMPTS.forEach(function(p){
+      var el = document.querySelector('[data-r="' + tid + '"][data-k="' + p.k + '"]');
+      var v = el ? (el.value||'').trim() : '';
+      if(v){ doc[p.k] = v.slice(0, 800); any = true; }
+    });
+    if(!any) return;
+    if(!db) return;
+    b.disabled = true;
+    try{
+      await db.doc('responses/' + uid()).set(doc);
+      PROMPTS.forEach(function(p){
+        var el = document.querySelector('[data-r="' + tid + '"][data-k="' + p.k + '"]');
+        if(el) el.value = '';
+      });
+    }catch(e){}
+    b.disabled = false;
+  });
+
+  $('#addrec').addEventListener('click', async function(){
+    var raw = ($('#rec').value||'').trim();
+    if(!raw){ $('#recmsg').textContent = 'Paste the JSON your copy exported.'; return; }
+    var parsed;
+    try{ parsed = JSON.parse(raw); }catch(e){ $('#recmsg').textContent = 'That is not valid JSON.'; return; }
+    if(!parsed || parsed.schema !== 'locator.x/record/1'){
+      $('#recmsg').textContent = 'That JSON is not a Locator.X record export.'; return;
+    }
+    if(!db){ $('#recmsg').textContent = 'No shared store in this view — nothing would be pooled.'; return; }
+    var doc = {schema:parsed.schema, coverage:parsed.coverage||{}, floor:parsed.floor,
+               certaintyErrors:parsed.certaintyErrors||0,
+               tracks:(parsed.tracks||[]).map(function(t){
+                 return {id:t.id, name:t.name, total:t.total, answered:t.answered, correct:t.correct}; }),
+               by:myName || 'unnamed', at:Date.now()};
+    $('#addrec').disabled = true; $('#recmsg').textContent = 'Adding…';
+    try{
+      await db.doc('records/' + uid()).set(doc);
+      $('#rec').value = ''; $('#recmsg').textContent = 'Added to the pool.';
+    }catch(e){ $('#recmsg').textContent = 'Could not add it — try again.'; }
+    $('#addrec').disabled = false;
+  });
+}
+
+function noRuntime(){
+  setConn('not shared — this view only', 'warn');
+  $('#storenote').textContent = 'The shared store is not available in this view, so nothing entered here is saved '
+    + 'or seen by anyone else.';
+}
+renderTheses(); renderPool();
+if(window.claude && window.claude.use){ boot(); } else { noRuntime(); }
+})();
+</script>

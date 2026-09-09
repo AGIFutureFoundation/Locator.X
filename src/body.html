@@ -1,0 +1,667 @@
+<div id="coverpage" role="dialog" aria-modal="true" aria-label="Locator.X title page">
+  <div class="coverbg"></div>
+  <div class="covercard">
+    <svg class="covermark" viewBox="0 0 120 120" aria-hidden="true">
+      <defs><linearGradient id="lxgmark" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#37B871"/><stop offset="1" stop-color="#1E6B3E"/>
+      </linearGradient></defs>
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#lxgmark)" opacity=".14"/>
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="none" stroke="url(#lxgmark)" stroke-width="2.5"/>
+      <g stroke="url(#lxgmark)" stroke-width="13" stroke-linecap="round">
+        <path d="M32 32 L88 88"/><path d="M88 32 L32 88"/>
+      </g>
+      <circle cx="60" cy="60" r="8" fill="var(--bg)"/>
+      <circle cx="60" cy="60" r="4.5" fill="url(#lxgmark)"/>
+    </svg>
+    <div class="coverbrand">Locator<span class="x">.X</span></div>
+    <div class="coversub">(powered by AGI Corp)</div>
+    <p class="covertag">Predictive real estate intelligence built from public county records — every price sourced, every forecast backtested, nothing invented.</p>
+    <div class="coverstat" id="coverstat"></div>
+    <button class="coverenter" id="coverenter" type="button">Enter Locator.X →</button>
+    <div class="coverskip">Press Enter, or click anywhere, to continue</div>
+  </div>
+</div>
+<div id="app">
+<header>
+  <button class="navtoggle" id="navtoggle" aria-label="Sections and views" aria-expanded="false"><span></span><span></span><span></span></button><div class="brand"><span class="name">Locator<span class="x">.X</span></span><span class="sub">powered by AGI Corp</span></div>
+  <div class="spacer"></div>
+  <div class="stat" id="hstat"></div>
+  <button class="iconbtn" id="themebtn" title="Toggle theme">Theme</button>
+</header>
+  <div class="groupbar" role="tablist" aria-label="Sections">
+    <button data-gsel="start" aria-selected="true">Start</button>
+    <button data-gsel="find">Find</button>
+    <button data-gsel="analyse">Analyse</button>
+    <button data-gsel="market">Markets</button>
+    <button data-gsel="property">Property</button>
+    <button data-gsel="learn">Learn</button>
+    <button data-gsel="system">System</button>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button role="tab" data-view="home" data-group="start" aria-selected="true">Home</button>
+    <button role="tab" data-view="dash" data-group="find">Dashboard</button>
+    <button role="tab" data-view="mapview" data-group="find">Map</button>
+    <button role="tab" data-view="deals" data-group="find">Deals</button>
+    <button role="tab" data-view="below" data-group="find">Below market</button>
+    <button role="tab" data-view="market" data-group="find">Market</button>
+    <button role="tab" data-view="scout" data-group="find">Scout</button>
+    <button role="tab" data-view="uw" data-group="analyse">Underwrite</button>
+    <button role="tab" data-view="comps" data-group="analyse">Comps</button>
+    <button role="tab" data-view="evidence" data-group="analyse">Evidence</button>
+    <button role="tab" data-view="standard" data-group="analyse">Standard</button>
+    <button role="tab" data-view="patterns" data-group="analyse">Patterns</button>
+    <button role="tab" data-view="predict" data-group="analyse">Predictions</button>
+    <button role="tab" data-view="corridors" data-group="market">Growth corridors</button>
+    <button role="tab" data-view="corridorfield" data-group="market">Corridor field</button>
+    <button role="tab" data-view="network" data-group="market">Relational map</button>
+    <button role="tab" data-view="reo" data-group="market">Bank-owned</button>
+    <button role="tab" data-view="research" data-group="market">Research</button>
+    <button role="tab" data-view="packages" data-group="market">Packages</button>
+    <button role="tab" data-view="recon" data-group="property">3D &amp; records</button>
+    <button role="tab" data-view="twin" data-group="property">Twin</button>
+    <button role="tab" data-view="hacks" data-group="property">House hacks</button>
+    <button role="tab" data-view="program" data-group="property">Program</button>
+    <button role="tab" data-view="academy" data-group="learn">Academy</button>
+    <button role="tab" data-view="guide" data-group="learn">Investor guide</button>
+    <button role="tab" data-view="compliance" data-group="system">Governance</button>
+    <button role="tab" data-view="sources" data-group="system">Data sources</button>
+    <button role="tab" data-view="data" data-group="system">Your data</button>
+    <button role="tab" data-view="platforms" data-group="system">Mapping review</button>
+  </nav>
+<main>
+
+<!-- ================= MAP ================= -->
+<section id="mapview" class="view">
+  <aside id="rail">
+    <div class="filters">
+      <div class="row"><input type="text" id="q" placeholder="Search address, neighborhood, ZIP, city…" aria-label="Search"></div>
+      <div class="row"><label for="fcounty">Area</label><select id="fcounty"><option value="">All counties</option></select><select id="fcity"><option value="">All cities</option></select></div>
+      <div class="row"><label for="fkind">Type</label><select id="fkind"><option value="">All types</option><option value="sfr">Single-family</option><option value="multi">2–4 units</option><option value="condo">Condo / townhouse</option><option value="apt">5+ units</option></select><select id="fsrc"><option value="">All sources</option><option value="pub">Public record</option><option value="imp">Imported</option></select></div>
+      <div class="row"><label for="fmin">Price</label><input type="number" id="fmin" placeholder="Min" step="50000"><input type="number" id="fmax" placeholder="Max" step="50000"></div>
+      <div class="chips" id="chips">
+        <button class="chip" data-f="cf" aria-pressed="false">Cash-flow positive</button>
+        <button class="chip" data-f="one" aria-pressed="false">Passes 1% rule</button>
+        <button class="chip" data-f="star" aria-pressed="false">★ Saved</button>
+        <button class="chip" data-f="tour" aria-pressed="false">Has 360° tour</button>
+      </div>
+    </div>
+    <div class="listhead"><span id="count"></span><span>Sort <select id="sort"><option value="cap">Cap rate</option><option value="cf">Cash flow</option><option value="price">Price ↑</option><option value="priced">Price ↓</option><option value="ppsf">$/sq ft</option><option value="date">Sale date</option></select></span></div>
+    <div id="list" role="list"></div>
+  </aside>
+  <div id="mapwrap">
+    <div id="map"></div>
+    <button class="maptoggle" id="maptoggle" aria-expanded="false" aria-controls="maptools">&#9776; Layers</button>
+    <div class="maptools" id="maptools">
+      <select id="layer" aria-label="Map layer"><option value="none">No overlay</option><option value="zhvi">Home value by ZIP (ZHVI)</option><option value="zori">Typical rent by ZIP (ZORI)</option><option value="yield">Gross yield by ZIP</option><option value="yoy">1-yr value change by ZIP</option><option value="fcast">Forecast: next 12 months</option></select>
+      <button class="btn" id="collbtn" aria-pressed="true" title="Toggle college markers">🎓 Colleges</button> <select id="lens" aria-label="Lens" title="How to color and size every property"><option value="fit">Lens: Goal fit (red/yellow/green · size = fit)</option><option value="cat">Lens: Locator X category</option><option value="cf">Lens: Cash flow</option><option value="conv">Lens: Conversion class (size = units)</option><option value="estate">Lens: Estate-pipeline signal</option><option value="dis">Lens: PREDICTIVE — live distress records</option><option value="fcast">Lens: PREDICTIVE — 12-mo forecast</option><option value="bmkt">Lens: Below market (index)</option></select> <span id="towerctl" style="display:inline-flex;gap:6px"></span> <span id="towerlegend"></span> <span id="ptowerctl" style="display:inline-flex;gap:6px"></span> <span id="sectorctl" style="display:inline-flex;gap:6px"></span> <span id="ptowerlegend" style="display:block;margin-top:5px"></span><span id="seclegend" style="display:block;margin-top:4px"></span>
+      <span id="lenslegend" class="legend2" style="display:inline-flex;gap:10px;align-items:center"><span><i style="background:#1F8A4C"></i>best match</span><span><i style="background:#D96F0E"></i>close</span><span><i style="background:#C42B55"></i>weak</span><span style="color:var(--muted)">size = fit</span></span>
+      <select id="basemap" aria-label="Basemap"><option value="vector">Built-in vector map (offline)</option><option value="esri-satellite">Satellite — Esri World Imagery (free)</option><option value="mapbox-streets">Mapbox Streets (needs token)</option><option value="mapbox-satellite">Mapbox Satellite (needs token)</option><option value="osm">OpenStreetMap raster</option></select>
+      <button id="fitbtn">Fit to results</button>
+    </div>
+    <div class="notice" id="mapnotice"></div>
+    <div class="legend" id="legend"></div>
+    <div class="attrib" id="attrib">Basemap: Natural Earth · US Census TIGER · Zillow neighborhood boundaries · Market data © Zillow Research · Records: SF Assessor, Alameda County Assessor</div>
+    <div id="drawer" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ================= DASHBOARD ================= -->
+<section id="home" class="view active"><div class="page"><div class="inner wide">
+  <div id="homeroot"></div>
+</div></div></section>
+<section id="dash" class="view"><div class="page"><div class="inner wide">
+  <div class="dashhead">
+    <div><p class="eyebrow">Locator X dashboard · SF Bay Area</p><h1>Which of these properties would pay you?</h1><p class="lede">Every property on the map scored against the Locator X doctrine — cash flow before capital gains, assets that pay you, good debt, value you can add. Scores are an evidence-weighted ensemble of ten modalities — cash flow leads, then cap rate, debt coverage, yield, value-add, momentum, risk, the Scout forecast, price-basis quality and market depth — each weighted by how much real data backs it for that record, with a 15% floor so no modality ever goes dark. Change the assumptions on the right and every score, chart and recommendation recomputes.</p></div>
+    <div class="quick" id="quick"></div>
+  </div>
+  <div id="vbroot"></div>
+  <div id="motionroot"></div>
+  <div class="cards" id="dtiles"></div>
+  <h2 class="h2">Best investments on the market, by principle</h2>
+  <div class="boards" id="boards"></div>
+  <div id="focus"></div>
+  <h2 class="h2">The picture</h2>
+  <div class="grid2">
+    <div class="chart tall"><div class="eyebrow">Locator X matrix</div><h3>Cash flow today vs. market direction</h3><p class="chartnote">Locator X buys in the right half. The top-right is where cash flow and appreciation agree; the bottom-left is where most Bay Area buyers end up. Hover a point; click to open it.</p><div id="c_matrix"></div></div>
+    <div class="chart tall"><div class="eyebrow">Down payment needed to break even</div><h3>What it takes to make each property an asset</h3><p class="chartnote">The down payment at which rent covers the mortgage. Anything past 50% is a cash purchase in disguise — the market is telling you the price is too high for the rent.</p><div id="c_breakeven"></div></div>
+    <div class="chart"><div class="eyebrow">Gross yield by community</div><h3>Where rent is strongest relative to price</h3><div id="c_yield"></div></div>
+    <div class="chart"><div class="eyebrow">Score distribution</div><h3>How the 100 score</h3><div id="c_hist"></div></div>
+  </div>
+  <h2 class="h2">The picture in motion</h2>
+  <div class="grid2">
+    <div class="chart tall"><div class="eyebrow">Motion chart · in the style of Hans Rosling's Gapminder</div><h3>Every ZIP's journey — yield vs. growth, month by month</h3><p class="chartnote">Each bubble is a ZIP moving through the last year of data: right means rent is strong against price, up means values are climbing. Watch which communities migrate toward the top-right — that is where cash flow and appreciation agree. Hover to trace a ZIP's trail; click to open its market page.</p><div id="c_motion"></div><div id="c_motion_ctrl"></div></div>
+    <div class="chart tall"><div class="eyebrow">3D Voronoi bubble fabric</div><h3>The market as territory — who owns each patch of the map</h3><p class="chartnote">The catalog carved into live Voronoi territories around each ZIP's center of gravity. Pick the criterion — cash flow, score, yield or growth over time, or the Scout 12-month forecast — and scrub or play the slider to watch the fabric shift month by month. The 3D sphere grows with inventory and wears the dominant category's color. Click a territory and the property grid below filters to that ZIP, sorted by the criterion you chose: the charts are the sorting controls.</p><div id="c_voronoi"></div></div>
+  </div>
+  <h2 class="h2">Every property, scored</h2>
+  <div class="toolbar"><div class="chips" id="dcat"></div><span style="flex:1"></span><select id="dsortsel"><option value="score">Sort by score</option><option value="cf">Cash flow</option><option value="cap">Cap rate</option><option value="price">Price</option><option value="yoy">Market direction</option><option value="bmkt">Below-market index</option></select></div>
+  <div class="pgrid" id="pgrid"></div>
+  <h2 class="h2">The principles, taught by the data</h2>
+  <div class="lessons" id="lessons"></div>
+  <p class="disclaimer">Scores and recommendations are a teaching model built on public records and Zillow indexes, not an appraisal, a rent survey or advice. Verify every number before you make an offer.</p>
+</div></div></section>
+
+<!-- ================= RESEARCH ================= -->
+<section id="research" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Research toolbox</p>
+  <h1>Instant research on any property</h1>
+  <p class="lede">Pick a property from the map, or type an address or paste a listing. Seven agents then work the file — market, cash flow, comps, regulation and risk, value-add, exit, and a Claude deep-dive when this page can reach it — and compile a report you can copy or save to your deals.</p>
+  <div class="rsearch">
+    <input type="text" id="rq" placeholder="Search an address, neighborhood, ZIP or city — or type a new address like 1500 Grand Ave, Oakland, CA 94610" autocomplete="off">
+    <div class="rresults" id="rresults"></div>
+  </div>
+  <div class="grid2 rgrid">
+    <div>
+      <div class="tile" id="subject"><p class="eyebrow">Subject</p><p style="color:var(--muted);margin:6px 0 0">No property selected. Search above, click a property on the map, or paste a listing on the right.</p></div>
+      <div class="agents" id="agents"></div>
+    </div>
+    <div>
+      <div class="tile"><p class="eyebrow" style="margin:0 0 6px">New subject from a listing</p>
+        <textarea class="big" id="rpaste" style="min-height:96px" placeholder="Paste listing text (the Zillow/Redfin page text, an MLS sheet, an email) or a JSON object — the extractor pulls out address, price, beds, baths, area, lot, year, units."></textarea>
+        <div class="toolbar" style="margin:8px 0 0"><button class="btn" id="rextract">Extract fields</button><button class="btn" id="rai" class="hidden">Extract with Claude</button><span id="rextnote" style="font-size:12px;color:var(--muted)"></span></div>
+        <div class="subjform" id="subjform">
+          <label>Address<input id="s_addr" placeholder="123 Main St"></label><label>City<input id="s_city" placeholder="Oakland"></label><label>ZIP<input id="s_zip" placeholder="94610"></label>
+          <label>Price $<input id="s_price" type="number" placeholder="1200000"></label><label>Rent $/mo (optional)<input id="s_rent" type="number"></label><label>Units<input id="s_units" type="number" placeholder="1"></label>
+          <label>Beds<input id="s_beds" type="number"></label><label>Baths<input id="s_baths" type="number" step="0.5"></label><label>Living sf<input id="s_sqft" type="number"></label>
+          <label>Lot sf<input id="s_lot" type="number"></label><label>Year built<input id="s_year" type="number"></label><label>Type<select id="s_kind"><option>Single-family</option><option>Condominium</option><option>2 units</option><option>3 units</option><option>4 units</option><option>5+ units</option><option>Townhouse</option></select></label>
+        </div>
+        <div class="toolbar" style="margin:8px 0 0"><button class="btn primary" id="rmake">Create subject &amp; research</button></div>
+      </div>
+      <div class="tile" style="margin-top:12px"><p class="eyebrow" style="margin:0 0 6px">Instant lookups</p><p style="font-size:12px;color:var(--muted);margin:0 0 8px">Open the public sources for the current subject in a new tab. These are the same records the agents would pull if this page could browse.</p><div class="links" id="rlinks"></div></div>
+    </div>
+  </div>
+  <div id="report"></div>
+</div></div></section>
+
+<!-- ================= SCOUT & FORECAST ================= -->
+<section id="scout" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Scout &amp; forecast · the always-on desk</p>
+  <h1>Agents that watch the market so the pipeline never sleeps</h1>
+  <p class="lede">Three agents run this tab. The <b>Forecast agent</b> fits a model to every ZIP's 25-month value and rent history and projects the next twelve, flagging the properties whose category is about to change. The <b>Scout agent</b> polls your listing feeds on an hourly clock, diffs every result against known inventory, scores what's new or changed, and matches it to your buy box. The <b>Review agent</b> turns each pass into a digest: best fits per category, price cuts, and the movers worth underwriting today.</p>
+  <div class="cards" id="sctiles"></div>
+  <h2 class="h2">Recommended now — best fit for each category</h2>
+  <p style="font-size:13px;color:var(--ink2);max-width:80ch;margin:-4px 0 10px">Filtered through your buy box (edit it on the Underwrite tab). <b>Now</b> ranks on today's numbers; <b>12-month model</b> re-ranks on forecast rent and value paths — the ones to option before the category flips.</p>
+  <div class="recotabs" id="scmode"><button aria-selected="true" data-m="now">Now</button><button aria-selected="false" data-m="pred">12-month model</button></div>
+  <div class="boards" id="screco"></div>
+  <h2 class="h2">Market pulse — the live overview</h2>
+  <div id="ragroot" data-panel data-panel-title="Research retrieval & signal library"></div>
+  <div id="scpulse" data-panel data-panel-title="Market pulse — county cards & movers"></div>
+  <h2 class="h2">Cross-signals — the forces outside the rent roll</h2>
+  <div id="sigroot"></div>
+  <h2 class="h2">Campus demand &mdash; where student housing actually pencils</h2>
+  <p style="font-size:13px;color:var(--ink2);max-width:82ch;margin:-4px 0 10px">Every campus row carries a published headcount, the term that figure refers to, and the source it came from &mdash; institution, system office, Louisiana Board of Regents fact book, or IPEDS. Distance bands are walk (&le;1.6&nbsp;km), bike or shuttle (&le;4.8&nbsp;km) and commuter (&le;16&nbsp;km); community colleges are discounted because they draw commuters, not renters. Proximity is a demand hypothesis to test against documented rent, never a rent premium you can assume &mdash; and nothing here tells you whether leasing by the bed is permitted at a given address.</p>
+  <div id="campusroot" data-panel data-panel-title="Campus demand &amp; student-housing candidates"></div>
+  <h2 class="h2">Announced corporate projects — the capital that moves a submarket</h2>
+  <p style="font-size:13px;color:var(--ink2);max-width:82ch;margin:-4px 0 10px">Verified public announcements only: company, site, capital and jobs as reported, with the source link on every row. Each tracked property carries a <b>proximity score</b> from the nearest announced project — a 12&nbsp;km exponential decay out to 40&nbsp;km, weighted by announced capital and headcount. Announcements are intentions, not construction; treat the score as a demand hypothesis to test, never as a forecast.</p>
+  <div id="corproot" data-panel data-panel-title="Announced corporate projects"></div>
+  <h2 class="h2">Predictive dashboards</h2>
+  <div class="grid2">
+    <div class="chart tall"><div class="eyebrow">Forecast fan</div><h3 id="scfantitle">ZIP forecast</h3><p class="chartnote">History (solid) and the model's 12-month path with an 80% band. Type a ZIP or click a row in the table below.</p><div class="toolbar" style="margin:0 0 6px"><input type="text" id="sczip" placeholder="ZIP e.g. 94601" style="width:130px"><span id="scfit" style="font-size:11px;color:var(--muted)"></span></div><div id="scfan"></div></div>
+    <div class="chart tall"><div class="eyebrow">Category flips</div><h3>Properties the model expects to change category</h3><p class="chartnote">Rent and value follow their ZIP's fitted paths; assumptions stay yours. A liability that turns asset inside a year is the cheapest option in the market.</p><div id="scflips"></div></div>
+  </div>
+  <div class="tablewrap" style="margin:14px 0"><table class="grid" id="scziptable"><thead></thead><tbody></tbody></table></div>
+  <h2 class="h2">Scout agent — hourly searches for new listings and changes</h2>
+  <div class="grid2 rgrid">
+    <div class="tile">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><p class="eyebrow" style="margin:0">Feed sources</p><label style="font-size:12px;color:var(--ink2)"><input type="checkbox" id="scen"> hourly scanning <b id="scnext" class="num" style="color:var(--muted)"></b></label></div>
+      <div id="scsources" style="margin:10px 0"></div>
+      <p class="eyebrow" style="margin:10px 0 4px">What the Scout hunts for</p>
+      <div class="chips" id="scwant" style="margin:0 0 4px"></div>
+      <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px">A class filter narrows what the buy box is applied to &mdash; it never loosens the numbers. The clock runs whichever tab you are on, and takes a pass as soon as the app opens if the last one is over an hour old.</p>
+      <div class="subjform" style="grid-template-columns:1fr">
+        <label>Feed URL (GET — a RapidAPI Zillow search, a RESO query, any JSON/CSV endpoint)<input id="sc_url" placeholder="https://zillow-com1.p.rapidapi.com/propertyExtendedSearch?location=Oakland%2C%20CA&status_type=ForSale"></label>
+        <label>Headers (JSON, stays in this browser)<input id="sc_hdr" placeholder='{"X-RapidAPI-Key":"…"}'></label>
+        <label>Name<input id="sc_name" placeholder="Oakland for-sale"></label>
+      </div>
+      <div class="toolbar" style="margin-top:8px"><button class="btn" id="scadd">Add source</button><button class="btn primary" id="scnow">Scan now</button><label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="scauto"> auto-underwrite new matches</label></div>
+      <p style="font-size:11.5px;color:var(--muted);margin:10px 0 0" id="scnote">Scans run wherever this page can reach the network — the downloaded file or your own hosting. Inside claude.ai the page is sandboxed from outside servers, so use <b>Scan pasted data</b> below, or let the standalone copy do the polling. Public-record sources (assessor rolls) update on daily/weekly cycles; live listing feeds are what make the hourly clock worth running.</p>
+      <textarea class="big" id="scpaste" style="min-height:70px;margin-top:10px" placeholder="Paste a feed response here to scan it manually (same diff, scoring and matching)."></textarea>
+      <div class="toolbar" style="margin-top:6px"><button class="btn" id="scpastego">Scan pasted data</button></div>
+    </div>
+    <div class="tile"><p class="eyebrow" style="margin:0 0 8px">Review agent — change log &amp; digest</p><div id="scdigest"></div><div id="sclog"></div></div>
+  </div>
+</div></div></section>
+
+<!-- ================= ACADEMY ================= -->
+<section id="academy" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">locator.x Academy · agent training</p>
+  <h1 id="acadtitle">Not a better lecture. A different unit of learning.</h1>
+  <p class="lede">New-agent training rebuilt on the Gamification 2.0 flipped model: you acquire with an agentic tutor in two-to-seven-minute missions run against the <span class="num" id="acadN"></span> real properties in this app, you apply with your mentor in the field, and progress is verified competency — never seat time. Curriculum themes drawn from the published course catalog of Curtis Oakes (17 years a Coldwell Banker broker associate in San Francisco; Trump University audio courses, 2006; <i>Guaranteed Success for Real Estate Investors</i>, 2008), written originally for locator.x and built on the same cash-flow-first doctrine as the rest of this app. Independent work — not affiliated with or endorsed by Mr. Oakes, the Oakes Group, or Coldwell Banker.</p>
+  <div class="dayloop" id="dayloop"></div>
+  <div id="acadroles"></div>
+  <div id="acadmain"></div>
+  <h2 class="h2">Reading room — the themes, written for the field</h2>
+  <div id="acadlib" class="lessons"></div>
+  <h2 class="h2">The five pillars, as implemented here</h2>
+  <div id="acadpillars" class="cards"></div>
+  <div class="two" style="margin-top:18px">
+    <div class="tile"><p class="eyebrow" style="margin:0 0 8px">Reflect — tonight's log (Zimmerman SRL)</p><div id="srl"></div></div>
+    <div class="tile"><p class="eyebrow" style="margin:0 0 8px">Mentor dashboard — the wisdom layer</p><div id="mentor"></div></div>
+  </div>
+  <h2 class="h2">Trade School — deep tracks for the whole trade</h2>
+  <p class="lede" style="margin-top:0">Beyond the agent crews: six career tracks — licensed agent to broker, investor, financing &amp; lending, property management, valuation, and development — each with original lessons, drills run against the live catalog, a Socratic tutor that never reveals answers, and a sealed credential when every module is verified.</p>
+  <div id="tsroot" data-panel data-panel-title="Trade school"></div>
+  <h2 class="h2">Credential wall</h2>
+  <div id="acadcreds"></div>
+  <p class="disclaimer">Missions teach analysis on public-record data and general California practice; they are training, not legal advice, and completing them confers no license. Real-estate licensure in California runs through the DRE (135 hours of approved coursework and the state exam); fair-housing and agency duties are law, not curriculum. Credentials issued here are machine-readable JSON in an Open Badges 3.0 / W3C Verifiable Credential shape, signed with a content hash — verifiable, portable, and honest about being issued by this app.</p>
+
+  <h2 class="h2">Start here if you already have a site</h2>
+  <p style="font-size:13px;color:var(--ink2);max-width:86ch;margin:-4px 0 10px">The library below is ordered for someone
+  starting out &mdash; how a building pays, then the numbers, then the asset, and development late. If you already control
+  a parcel, or are chasing one, that order costs you nine tracks before you reach the one you came for. This route reorders
+  the same lessons by the six development gates, from the cheapest and most reversible step to the most irreversible, and
+  puts a thing to do on a real parcel at every one. Nothing is removed from the library; this is a door, not a smaller house.</p>
+  <div id="routeroot"></div>
+
+  <h2 class="h2">Tradecraft &mdash; the whole library</h2>
+  <p style="font-size:13px;color:var(--ink2);max-width:86ch;margin:-4px 0 10px">Nineteen tracks in five layers. <b>The trade</b> &mdash; how a building pays, capital structure, construction and what it really costs, zoning and what it really permits, operating a rent roll, reading the numbers, holding and exit, diligence, leverage, and where the money is going. <b>The record</b> &mdash; case studies from published filings, court opinions and reporting, every claim marked documented, reported or disputed. <b>The theory and the mind</b> &mdash; a graduate register covering the mathematics, urban economics, capital markets, land-use law and climate research beneath the practice, and the decision biases that misprice real estate specifically. <b>The applied courses</b> &mdash; six arcs on investment and development, delivering the project, evidence and honest visualization, emotional equity and relationships, the development lab that carries one parcel through all six gates, and an orientation track on the wider industry, each lesson naming the earlier lessons it stands on and ending on something this app actually computes. <b>The foundation</b> &mdash; emotional equity is drawn as the slab under the rest, because it is not a subject you finish. Locator.X doctrine throughout &mdash; cash flow before capital gains, an asset is a thing that pays you, the value you can add is the only edge you control, and whatever could not be checked travels with the answer.</p>
+  <div id="tcroot"></div>
+  <div id="gradcert" style="margin-top:14px"></div>
+
+  <h2 class="h2">Level gates &mdash; graded on a real parcel</h2>
+  <p style="font-size:13px;color:var(--ink2);max-width:86ch;margin:-4px 0 10px">The four curriculum levels are written as capabilities, not as course counts, so they are tested that way. Pick a real property from this edition, commit to a verdict on each LOCATOR gate <b>before</b> seeing what the platform computes, then read where you and the screen disagreed and why. The headline is not the score &mdash; it is how often you returned a verdict on a gate the record cannot answer.</p>
+  <div id="gateroot"></div>
+
+  <h2 class="h2">Instructor note queue</h2>
+  <p style="font-size:13px;color:var(--ink2);max-width:86ch;margin:-4px 0 10px">The courses carry a byline, and a
+  byline with no voice behind it is the weakest form of a claim. This is the mechanism for that voice &mdash; and,
+  more usefully, the queue that tells it where to speak. It reads what you have actually recorded here: gates where
+  you and the screen disagreed, certainty errors, a level-four sentence carrying unsourced figures or resting on
+  ground the record could not answer, route stages marked reached without reading, drills missed. Nothing on this
+  page is written in the instructor&rsquo;s voice; notes appear only where real copy has been supplied.</p>
+  <div id="notesroot"></div>
+
+  <h2 class="h2">Your record</h2>
+  <p style="font-size:13px;color:var(--ink2);max-width:86ch;margin:-4px 0 10px">What this course can actually measure
+  about how you are doing &mdash; and, at least as usefully, what it cannot. Everything here comes from this browser
+  alone, so it is one learner and never a distribution: coverage is stated before any figure derived from it, no
+  accuracy rate is printed below a stated sample floor, and the limits of the recording are listed rather than hidden
+  behind a completion count. A course that teaches &ldquo;whatever could not be checked travels with the answer&rdquo;
+  should be the last product to publish a confident chart over four data points.</p>
+  <div id="telroot"></div>
+</div></div></section>
+
+<!-- ================= HOUSE HACKS ================= -->
+<section id="hacks" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">House-hack finder · every 2–4 unit in the public record</p>
+  <h1>Live in one unit. Let the others pay the mortgage.</h1>
+  <p class="lede">The classic first move from earner to owner: buy a small multi-unit with an owner-occupied loan, live in one unit, and let the tenants carry most of the payment. This finder holds <span id="hhtotal" class="num"></span> two-to-four-unit buildings and homes with a legal second unit that sold 2022–2024 in San Francisco and Alameda County — every one priced at what the buyer actually paid, screened with FHA 3.5%-down math at today's rates.</p>
+  <div class="cards" id="hhtiles"></div>
+  <div class="toolbar">
+    <select id="hh_city"><option value="">All cities</option></select>
+    <select id="hh_units"><option value="">2–4 units + SFR w/ 2nd unit</option><option value="2">2 units</option><option value="3">3 units</option><option value="4">4 units</option></select>
+    <label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="hh_fha" checked> FHA-eligible only (under the loan limit)</label>
+    <label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="hh_ss"> passes FHA self-sufficiency (3–4 units)</label>
+    <label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="hh_sus"> include below-market transfers</label>
+    <label class="field" style="flex-direction:row;align-items:center;gap:6px;font-size:12px;color:var(--muted)">Max cash to close $<input type="number" id="hh_cash" style="width:110px" step="10000" placeholder="any"></label>
+    <span style="flex:1"></span><span id="hhcount" style="font-size:12px;color:var(--muted);font-family:var(--mono)"></span>
+  </div>
+  <div class="chart"><div class="eyebrow">Live for less</div><h3>Monthly cost to live there vs. what renting in that ZIP costs</h3><p class="chartnote">Each line is one building: the dot on the left scale is your net monthly cost as the owner-occupant (FHA 3.5% down, other units rented with 5% vacancy, upkeep included); the hollow dot is the ZIP's typical rent. When the filled dot sits left of the hollow one, the tenants are paying you to own it.</p><div id="hhchart"></div></div>
+  <h2 class="h2">Best house hacks by community</h2>
+  <div class="boards" id="hhboards"></div>
+  <h2 class="h2">The list</h2>
+  <div class="tablewrap"><table class="grid" id="hhtable"><thead></thead><tbody></tbody></table></div>
+  <p class="src">FHA owner-occupied loan limits used (2025, high-cost counties): 1 unit $1,209,750 · 2 units $1,548,975 · 3 units $1,872,225 · 4 units $2,326,875. FHA requires you to occupy a unit for one year; 3–4 unit purchases must pass the self-sufficiency test (75% of gross rent ≥ full payment). Rents are ZIP-level index estimates — verify with real comps. Buildings with tenants in place come with their leases and, in SF, Oakland and Berkeley, with rent control; underwrite the rents that exist, not the ones you want.</p>
+</div></div></section>
+
+<!-- ================= UNDERWRITE ================= -->
+<section id="uw" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Underwriting desk</p>
+  <h1>From buy box to offer, automatically</h1>
+  <p class="lede">Set the criteria once — the same scoring the dashboard uses — and the desk screens every property on the map, computes the price at which each one meets your target, and walks the survivors through a full underwriting sheet: rehab, four financing structures, sensitivity, and draft offer terms.</p>
+  <div class="uwtop">
+    <div class="tile bb" data-panel data-panel-title="Buy box — your criteria"><div class="bbhead"><p class="eyebrow">Buy box — your criteria</p><button class="btn" id="bbreset">Reset</button></div><div class="bbgrid" id="bbgrid"></div>
+      <div class="bbrow"><span class="eyebrow" style="letter-spacing:.05em">Categories</span><div class="chips" id="bbcats"></div></div>
+      <div class="bbrow"><span class="eyebrow" style="letter-spacing:.05em">Target for the offer solver</span><div class="chips" id="bbtarget"></div></div>
+      <div id="costlibwrap"></div>
+    </div>
+    <div class="tile"><p class="eyebrow">Pipeline</p><div id="funnel"></div><button class="btn primary" id="autouw" style="width:100%;margin-top:10px">Auto-underwrite all matches</button><div id="autoprog" style="font-size:12px;color:var(--muted);margin-top:6px"></div></div>
+  </div>
+  <div id="wlroot"></div>
+  <div id="uwsheet" data-panel data-panel-title="Underwriting sheet"></div>
+  <h2 class="h2" style="display:flex;align-items:baseline;gap:10px">Matches <span id="uwcount" style="font-size:13px;color:var(--muted);font-family:var(--mono)"></span></h2>
+  <div id="uwviz"></div>
+  <div class="chart" id="gapchartwrap"><div class="eyebrow">Offer gap</div><h3>What you should pay vs. what they paid</h3><p class="chartnote">The solver's maximum price for each match (at your target) against its recorded price. Green bars extend right of zero: the deal works at or above the recorded price. Orange bars point left: your number is below it — that gap is your negotiation.</p><div id="gapchart"></div></div>
+  <div class="tablewrap"><table class="grid" id="uwtable"><thead></thead><tbody></tbody></table></div>
+<div id="convroot" data-panel data-panel-title="Conversion lab"></div>
+</div></div></section>
+
+<!-- ================= DEALS ================= -->
+<section id="twin" class="view"><div class="page"><div class="inner wide">
+  <div class="eyebrow">Locator X · digital twin</div>
+  <h1 style="margin:2px 0 4px">A walkable Bay Area, built from the catalog</h1>
+  <p style="color:var(--muted);max-width:74ch;margin:0 0 14px">Every one of the 128,319 sites in the catalog stands here as a 3D building. Blend the sector fabrics, walk the block in first person, click a building to step inside its catalog page, and export the whole world as a geo-anchored bridge file for AR/VR engines.</p>
+  <div id="twinbody"></div>
+</div></div></section>
+<section id="deals" class="view"><div class="page"><div class="inner">
+  <h1>Deal board</h1>
+  <p class="lede">Every property on the map, scored with the same assumptions you set in the drawer. Click a column to sort, a row to open it on the map. Numbers use post-sale county assessed value as the price — under Proposition 13 that is what the buyer paid.</p>
+  <div class="cards" id="dealtiles"></div>
+  <div class="toolbar"><input type="text" id="dq" placeholder="Filter…"><select id="dsrc"><option value="">All</option><option value="pub">Public record</option><option value="imp">Imported</option><option value="star">★ Saved</option></select><span class="spacer" style="flex:1"></span><button class="btn" id="csvbtn">Copy as CSV</button><button class="btn" id="dlbtn">Download CSV</button></div>
+  <div class="tablewrap"><table class="grid" id="dealtable"><thead></thead><tbody></tbody></table></div>
+</div></div></section>
+
+<!-- ================= MARKET ================= -->
+<section id="market" class="view"><div class="page"><div class="inner">
+  <h1>Market by ZIP and city</h1>
+  <p class="lede">Zillow Home Value Index (typical home, middle tier, smoothed and seasonally adjusted) and Zillow Observed Rent Index for every Bay Area ZIP and city in Zillow Research's public files, latest month <span id="mkmonth" class="num"></span>. Gross yield is annual ZORI divided by ZHVI — the single fastest way to see where the Bay Area can cash-flow.</p>
+  <div class="two">
+    <div class="chart"><div class="eyebrow">Home value trend</div><h3 id="ct1" style="margin:2px 0 6px;font-size:15px"></h3><svg id="chart1"></svg><div class="tip"></div></div>
+    <div class="chart"><div class="eyebrow">Rent trend</div><h3 id="ct2" style="margin:2px 0 6px;font-size:15px"></h3><svg id="chart2"></svg><div class="tip"></div></div>
+  </div>
+  <div class="toolbar"><select id="mklevel"><option value="zip">ZIP codes</option><option value="city">Cities</option></select><input type="text" id="mq" placeholder="Filter by ZIP, city or county…"><label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="mkrent" checked> only rows with rent data</label></div>
+  <div class="tablewrap"><table class="grid" id="mktable"><thead></thead><tbody></tbody></table></div>
+  <p class="src">Source: Zillow Research public CSVs (ZHVI: Zip/City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month; ZORI: Zip/City_zori_uc_sfrcondomfr_sm_month), pulled 2026-09-01. Zillow requires attribution for public use of these data. Rent is an all-homes index and is not a rent estimate for any specific property.</p>
+</div></div></section>
+
+<!-- ================= DATA ================= -->
+<section id="data" class="view"><div class="page"><div class="inner">
+  <h1>Bring your own listings</h1>
+  <p class="lede">The map ships with 100 public-record properties. Drop in your own — an MLS export, a Zillow API response, a spreadsheet — and they join the same map, filters and deal math. Anything you import stays in this browser only.</p>
+  <div class="two">
+    <div>
+      <div class="drop" id="drop">Drop a <b>.json</b>, <b>.csv</b> or <b>.geojson</b> file here, or <label style="color:var(--accent-ink);cursor:pointer;text-decoration:underline">choose a file<input type="file" id="file" accept=".json,.csv,.geojson,.txt" class="hidden"></label></div>
+      <p class="eyebrow" style="margin:14px 0 6px">Or paste</p>
+      <textarea class="big" id="paste" placeholder='Paste JSON or CSV here — e.g. {"results":[{"property":{...}}]} from a Zillow API wrapper, {"value":[...]} from a RESO Web API, a GeoJSON FeatureCollection, or CSV with an address/price header row.'></textarea>
+      <div class="toolbar" style="margin-top:8px"><button class="btn primary" id="importbtn">Import</button><button class="btn" id="samplebtn">Load a sample</button><button class="btn" id="clearimp">Remove imported</button><span id="impcount" style="font-size:12px;color:var(--muted)"></span></div>
+      <div class="log" id="implog">Waiting for data.</div>
+      <p class="eyebrow" style="margin:18px 0 6px">Live feed (works in the downloaded file)</p>
+      <div class="tile">
+        <div class="field"><span>Endpoint URL (GET)</span><input type="text" id="apiurl" placeholder="https://zillow-com1.p.rapidapi.com/propertyExtendedSearch?location=Oakland%2C%20CA&status_type=ForSale"></div>
+        <div class="field" style="margin-top:6px"><span>Headers (JSON) — keys stay in this browser</span><input type="text" id="apihdr" placeholder='{"X-RapidAPI-Key":"…","X-RapidAPI-Host":"zillow-com1.p.rapidapi.com"}'></div>
+        <div class="toolbar" style="margin:8px 0 0"><button class="btn" id="apibtn">Fetch and import</button><label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="apiauto"> refresh every 10 min</label></div>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Pages hosted on claude.ai cannot reach outside servers, so this button works when you open the downloaded HTML file or host it yourself. Responses are parsed with the same adapters as pasted data.</p>
+      </div>
+    </div>
+    <div>
+      <p class="eyebrow" style="margin:0 0 8px">Formats recognized</p>
+      <div class="schema">
+        <div class="tile"><h4>Zillow property JSON</h4><p>RapidAPI Zillow wrappers, Zillow Bridge public-records shape: <code>results[].property</code>, <code>props[]</code>, or a bare array. Reads <code>zpid, address{streetAddress,city,zipcode}, latitude, longitude, price, zestimate, rentZestimate, bedrooms, bathrooms, livingAreaValue, lotAreaValue, homeType, homeStatus, dateSold, hdpUrl, compsCarouselPropertyPhotos</code>.</p></div>
+        <div class="tile"><h4>Zillow market page JSON</h4><p><code>data.marketPage</code> with <code>medianRentPriceOverTime</code>, <code>rentHistogram</code>, <code>nearbyAreaTrends</code>. Becomes a rent-market panel and overrides the rent assumption for listings in that city.</p></div>
+        <div class="tile"><h4>RESO Web API (MLS)</h4><p>OData <code>value[]</code> rows: <code>ListPrice, UnparsedAddress, City, PostalCode, Latitude, Longitude, BedroomsTotal, BathroomsTotalInteger, LivingArea, LotSizeSquareFeet, YearBuilt, PropertyType, PropertySubType, StandardStatus, ListingKey, VirtualTourURLUnbranded, Media[]</code>.</p></div>
+        <div class="tile"><h4>CSV / spreadsheet</h4><p>Header row with any of <code>address, city, zip, lat, lng/lon, price, beds, baths, sqft, lot, year, units, rent, tour, url, photo</code> (case-insensitive; common synonyms accepted). Rows without coordinates land at their ZIP centroid and are flagged.</p></div>
+        <div class="tile"><h4>GeoJSON</h4><p>Point features; properties mapped like CSV columns. Polygons are ignored.</p></div>
+        <div class="tile"><h4>Tours</h4><p>A <code>tour</code> / <code>VirtualTourURLUnbranded</code> field opens in the tour window. Give a comma-separated list of 2:1 equirectangular image URLs to use the built-in 360° viewer; other URLs (Matterport, Zillow 3D Home, CloudPano) open in a frame.</p></div>
+      </div>
+      <div id="rentmarket" style="margin-top:14px"></div>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- ================= GUIDE ================= -->
+<section id="guide" class="view"><div class="page"><div class="guide">
+  <p class="eyebrow">The Locator X Investor Guide · AGI Corp · AGI Future Foundation</p>
+  <h1>The Locator X Investor Guide</h1>
+  <p class="lede">Locator X is built on one conviction, verified here against 5,000 real Bay Area records: <b>a property is an investment only if it pays you.</b> This guide is the operating manual for that conviction — the doctrine, the method, the numbers, the laws, and the ninety-day plan — with every claim wired to the live data in the tabs above.</p>
+  <div class="toc" id="toc"></div>
+
+  <h2 id="g1">1. The Locator X doctrine</h2>
+  <p>Every property in this app is judged by one test before any other: after real expenses and the mortgage, does money flow toward the owner or away? An <b>asset</b> puts money in your pocket every month. A <b>liability</b> takes it out, however handsome the address. Appreciation is real in the Bay Area — but Locator X treats it as the reward for owning a survivable building, never as the reason to buy a bleeding one.</p>
+  <p>That is why the map pins are colored by cash flow, why the dashboard's first tile counts assets, and why the score's heaviest weight is the asset test. The doctrine is not pessimism; it is sequencing. Cash flow first, appreciation second, story last.</p>
+  <div class="live" id="live1"></div>
+
+  <h2 id="g2">2. The Method — five verbs, five tabs</h2>
+  <p>Locator X turns the doctrine into a repeatable pipeline. Each verb is a tab; run them in order and a raw market becomes a ranked set of decisions.</p>
+  <table><thead><tr><th>Verb</th><th>Where</th><th>What happens</th></tr></thead><tbody>
+  <tr><td><b>Score</b></td><td>Dashboard</td><td>Every record gets a 0–100 Locator X score across seven weighted factors — cash flow, cap rate, debt coverage, yield, value-add, market direction, regulatory risk — and lands in one of five categories, from cash-flow asset to liability.</td></tr>
+  <tr><td><b>Screen</b></td><td>Underwrite · buy box</td><td>Your written criteria filter the universe; the auto-screener computes each match's maximum defensible price against your target and shows the gap to what was actually paid.</td></tr>
+  <tr><td><b>Underwrite</b></td><td>Underwrite · sheet</td><td>The full workup: rehab scope, four financing structures, sensitivity, break-even occupancy, five-year IRR, draft offer terms. The number you offer is an output, never an input.</td></tr>
+  <tr><td><b>Develop</b></td><td>Underwrite · development</td><td>The conversion engine asks what the building could become — ADU, added unit, SB 9, condo bypass — prices each play from the cost library, and folds applied plays into a stabilized pro forma.</td></tr>
+  <tr><td><b>Verify</b></td><td>Research · Academy</td><td>Seven research agents compile the file; the Academy drills the skills until they survive a novel-property transfer check. Verified competency, then verified deals.</td></tr>
+  </tbody></table>
+  <p>One insight governs the journey: employees and the self-employed trade time for money; investors own systems that produce it. A salary is not the obstacle — it is the borrowing power that funds the first building. The Method is how a W-2 earner crosses to the asset column without gambling the crossing.</p>
+
+  <h2 id="g3">3. The Bay Area problem — and the six honest answers</h2>
+  <p>The Bay Area's prices outran its rents decades ago. The 1% rule is a museum piece here; most ZIPs gross 3–6% before a single expense. Pretending otherwise is how buyers end up calling negative cash flow "forced savings." Locator X answers the problem instead of denying it.</p>
+  <div class="live" id="live3"></div>
+  <h3>The six plays that actually reach positive territory here</h3>
+  <table><thead><tr><th>Play</th><th>Why it works</th><th>Watch out</th></tr></thead><tbody>
+  <tr><td><b>2–4 unit buildings</b></td><td>Residential financing on commercial-like income; yields run a point or two above single-family next door. The House hacks tab holds all 3,024 of them.</td><td>Rent control in SF, Oakland and Berkeley on older stock; underwrite the rents that exist.</td></tr>
+  <tr><td><b>House hacking</b></td><td>Live in one unit at 3.5% down while tenants carry most of the note — housing cost near zero is cash flow wearing a disguise.</td><td>One year of real occupancy; the 3–4 unit self-sufficiency test at today's rates is brutal and the finder says so.</td></tr>
+  <tr><td><b>ADUs and added units</b></td><td>State law made the approvals ministerial; the development engine prices the unit that isn't there yet, and new ADUs sit outside local rent control.</td><td>Construction cost drift — keep the cost library synced to real bids.</td></tr>
+  <tr><td><b>Value-add on tired stock</b></td><td>Pre-war buildings with below-market rents reprice on turnover and renovation; the spread between in-place and ZIP rent is the raw material.</td><td>Lawful paths only: turnover and regulated buyouts, never pressure.</td></tr>
+  <tr><td><b>Drive until it pencils</b></td><td>The Market tab's yield map shows outer ZIPs running 1.5–2 points hotter than the core.</td><td>Thinner tenant pools and slower appreciation history — score them, don't romance them.</td></tr>
+  <tr><td><b>Seller financing</b></td><td>Long-held owners with tiny Prop 13 bases can carry paper; a 4.5% note flips many negative deals positive, and spreads the seller's gain.</td><td>Due-on-sale clauses; documentation by an attorney, always.</td></tr>
+  </tbody></table>
+
+  <h2 id="g4">4. Read the numbers like a lender</h2>
+  <p>Five figures decide every deal in this app. The drawer computes them live; the Academy drills them until you can do it on a napkin at an open house.</p>
+  <table><thead><tr><th>Metric</th><th>Formula</th><th>What it answers</th></tr></thead><tbody>
+  <tr><td><b>NOI</b></td><td>Rent − vacancy − operating costs</td><td>What the building earns before any loan exists.</td></tr>
+  <tr><td><b>Cap rate</b></td><td>NOI ÷ price</td><td>The building's own return, loan-blind — compare buildings with it.</td></tr>
+  <tr><td><b>Cash flow</b></td><td>NOI − debt service</td><td>The asset test. Positive or it is not an asset.</td></tr>
+  <tr><td><b>Cash-on-cash</b></td><td>Annual cash flow ÷ cash in</td><td>What your actual dollars earn.</td></tr>
+  <tr><td><b>DSCR</b></td><td>NOI ÷ annual debt service</td><td>The lender's first question. 1.20+ is financeable; under 1.0 you feed the building.</td></tr>
+  </tbody></table>
+  <div class="live" id="live4"></div>
+  <p>Rents in Locator X default to the ZIP's rent-to-value ratio applied to the price — deliberately conservative. Before an offer, replace the estimate with three comps from a property manager; the sheet has a field waiting for them.</p>
+
+  <h2 id="g5">5. Leverage — other people's money, sized to survive</h2>
+  <p>Debt is the multiplier that makes a thin Bay Area yield interesting or fatal. Locator X models four structures on every sheet, because the same building can be all four deals:</p>
+  <table><thead><tr><th>Structure</th><th>Terms modeled</th><th>Best for</th></tr></thead><tbody>
+  <tr><td>FHA owner-occupied, 2–4 units</td><td>3.5% down, MIP 0.55%/yr, self-sufficiency test on 3–4 units</td><td>The first building — house hacking</td></tr>
+  <tr><td>Conventional investor</td><td>25% down at the market rate</td><td>Clean rentals with real coverage</td></tr>
+  <tr><td>DSCR loan</td><td>25% down, rate ~0.85 above, qualifies on the property</td><td>Self-employed and scaling buyers</td></tr>
+  <tr><td>Seller carry</td><td>15% down at a negotiated 4.5%</td><td>Long-held sellers with Prop 13 bases and patience</td></tr>
+  </tbody></table>
+  <p>The Locator X rule for every structure: the rent pays the loan with room to spare, at today's rate <i>plus one</i>. If it only works at yesterday's rate, it doesn't work.</p>
+
+  <h2 id="g6">6. The silent partner — California's tax architecture</h2>
+  <p><b>Proposition 13</b> freezes your assessed value at the purchase price and caps its growth at 2% a year — your tax stands still while rents move. It is also why every price in this app is trustworthy: a post-sale assessed value IS the price the buyer paid. <b>Depreciation</b> shelters cash flow on paper; the assessor's land/improvement split in every drawer is your starting allocation. A <b>1031 exchange</b> rolls a Bay Area gain into the next building tax-deferred — the velocity-of-money move with the tax code's blessing. And <b>rent regulation</b> behaves like a tax: SF (pre-June-1979 multi-unit), Oakland (pre-1983), Berkeley (pre-1980) and the statewide AB 1482 cap all print on the research report before you offer.</p>
+
+  <h2 id="g7">7. Sourcing — the deals that never hit a portal</h2>
+  <p>The same public records that power this map reveal the sellers who haven't decided yet. Long holds with 1980s tax bases. Mailing addresses that left the state decades ago. The ⚠ below-market transfers — partial-interest and family transfers that mark quiet ownership changes, priced by the comps agent at what they'd really trade for. Odd transfers plus a prepared, respectful letter is how off-market inventory is built; the Research tab's instant lookups open the recorder trail behind any parcel in two clicks. Ethics first, always: serve the person, then the spread.</p>
+
+  <h2 id="g8">8. The bench — six people before one offer</h2>
+  <p>An investor-friendly agent who owns units. A broker fluent in FHA multi-unit and DSCR paper. A property manager whose rent comps you get before you buy. An attorney who knows the local rent ordinance. A CPA who has actually filed a cost segregation. A contractor who has permitted an ADU in your target city. Pay them well, and ask each the same question: <i>what would you not buy?</i></p>
+
+  <h2 id="g9">9. The ninety-day runway</h2>
+  <p><b>Days 1–30 — calibrate.</b> Pick two ZIPs from the Market tab with yields above the Bay median. Set your buy box on the Underwrite tab. Run the Academy's Deal Analyst chair until the transfer check clears — the numbers should live in your head before they live in an offer. Get pre-approved for both an owner-occupied and an investor loan.</p>
+  <p><b>Days 31–60 — build flow.</b> Auto-screen your matches weekly. Get manager rent comps for every survivor. Letter the long-hold owners in your two ZIPs. Tour everything that passes the buy box; underwrite everything you tour, in the sheet, same day.</p>
+  <p><b>Days 61–90 — close or walk clean.</b> Inspect for the Bay Area big four: foundation, soft-story, knob-and-tube, sewer lateral. Confirm the rent regime and the real leases. Offer the solver's number with 3% earnest money and short honest contingencies. If the DSCR at closing dips under 1.0 with verified rents — walk. The pipeline exists so that no single deal is ever the only deal.</p>
+
+  <h2 id="g10">10. The Locator X glossary</h2>
+  <table><tbody>
+  <tr><td><b>Locator X score</b></td><td>The 0–100 rating across seven weighted factors; the dashboard's spine.</td></tr>
+  <tr><td><b>Buy box</b></td><td>Your written criteria — score, cap, DSCR, price, units, categories — that the screener enforces without mercy or mood.</td></tr>
+  <tr><td><b>Max offer</b></td><td>The solver's largest price at which a property still meets your target. The gap to the recorded price is your negotiation.</td></tr>
+  <tr><td><b>Asset test</b></td><td>Positive cash flow after real expenses and the mortgage. The doctrine, in one line.</td></tr>
+  <tr><td><b>ADU / JADU / SB 9</b></td><td>California's ministerial paths to units that don't exist yet; the development engine's raw material.</td></tr>
+  <tr><td><b>⚠ transfer flag</b></td><td>A recorded price far below market — a family or partial-interest transfer: not a comp, but a signal of motivated ownership.</td></tr>
+  <tr><td><b>DSCR / NOI / GRM</b></td><td>Coverage, operating income, and price-to-rent — the lender's vocabulary, drilled in the Academy.</td></tr>
+  <tr><td><b>Transfer check</b></td><td>The Academy's no-hint verification on a novel property; competency, machine-sealed.</td></tr>
+  </tbody></table>
+  <p class="disclaimer">The Locator X Investor Guide (AGI Corp · AGI Future Foundation) is educational. Nothing in it is legal, tax, lending or investment advice — loan programs, tax rules and rent ordinances change, and every figure should be verified with licensed professionals before acting. Property data: county assessor records; market indexes © Zillow Research, used with attribution.</p>
+</div></div></section>
+
+<!-- ================= PLATFORMS ================= -->
+<!-- ================= BELOW MARKET ================= -->
+<section id="below" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Below-market hunt · live 3D assessment</p>
+  <h1>What is trading under the market — and what closes the gap</h1>
+  <p class="lede">Multifamily, apartment buildings, hotels and single residences with room to upgrade, ranked by how far under the market the public record actually supports — with the evidence for each one shown separately, because a Prop 13 assessed basis and a recorded sale under comps are not the same claim.</p>
+  <div id="bmroot"></div>
+</div></div></section>
+
+<!-- ================= PROGRAM ================= -->
+<!-- ================= GROWTH CORRIDORS ================= -->
+<section id="corridors" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">US growth corridors &middot; where the next demand is being announced</p>
+  <h1>Five metros where the jobs are arriving faster than the housing</h1>
+  <p class="lede">Outside this app&rsquo;s current footprint, a small number of US metros have very large announced industrial projects &mdash; semiconductor fabs, EV and battery plants, hyperscale data centres &mdash; that imply real demand for rental housing. This tab ranks five of them on one ratio: <b>announced direct jobs against housing units actually permitted in the last twelve months</b>. Both halves are published figures and both carry their source.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:-4px 0 6px"><b>An announced job is not a filled job.</b> Intel&rsquo;s Ohio fabs have slipped at least five years; Micron&rsquo;s first Clay fab is a 2030 story. Announcements get downsized, delayed and cancelled, and every row here says where it stands. A permit is not a delivered unit either, and household formation per job is not one. Use the ratio to rank these five against each other on the same basis &mdash; never as a count of households.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:0 0 12px">Capital and jobs are deliberately never combined into a single score. A data centre and an assembly plant with the same price tag employ wildly different numbers of people, which is exactly what the capital-per-job chart is there to show you.</p>
+  <div id="corridorroot"></div>
+</div></div></section>
+
+<!-- ================= CORRIDOR FIELD ================= -->
+<section id="corridorfield" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">The corridor field &middot; every growth area on two measures at once</p>
+  <h1>Where the jobs are announced, and where you could actually buy</h1>
+  <p class="lede">One bubble per metro, positioned on any two of nine corridor measures, sized by how much stock this catalogue holds there, and subdivided inside by what that stock actually is &mdash; a recorded multifamily use, some other recorded use, a zoning permission, or a parcel whose source publishes no use class at all. The disagreements are the point: a corridor can rank first on announced jobs per housing unit permitted and last on anything you could underwrite.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:-4px 0 12px">A metro missing one of the two measures is drawn as a small dashed ring rather than placed at zero, because a series a government does not publish and a value of zero are different facts. Every measure is computed from figures already carried on the corridor record with their own source and as-of date, or counted from the records in this edition. Nothing is modelled.</p>
+  <div id="cfroot"></div>
+</div></div></section>
+
+<!-- ================= GOVERNANCE / COMPLIANCE ================= -->
+<section id="compliance" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Governance, security and compliance &middot; written for the reviewer who signs off</p>
+  <h1>What this tool is, what it holds, and what it will not claim</h1>
+  <p class="lede">This page exists so an organisation can evaluate the tool rather than take its word for anything. Every claim below is either verifiable from the running page or stated as a limitation. Where the honest answer is &ldquo;partial&rdquo; or &ldquo;not assessed&rdquo;, it says so &mdash; a compliance page that claims conformance it has not tested is worse than no page at all, because it moves risk from visible to hidden.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:-4px 0 12px">Two sections are here specifically because they invite challenge: <b>Fair housing</b> names a scoring weight an organisation should decide on deliberately, and <b>Accessibility</b> states plainly that no formal Section 508 or WCAG audit has been performed and lists the known gaps.</p>
+  <div id="compliroot"></div>
+</div></div></section>
+
+<!-- ================= PREDICTIONS ================= -->
+<section id="predict" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Predictions &middot; every forecast carries the error it earned in backtest</p>
+  <h1>What the record says is about to happen &mdash; and how often that has been wrong</h1>
+  <p class="lede">A forecast without a measured error is a guess in a suit. Every projection on this page is produced the same way: the last six months are held out, a model is fitted on the twelve before them, and the model is scored against the months it never saw. The band you see is that <b>measured</b> backtest error, not an assumed normal distribution around a trend line. Where the backtest was poor, the page says so and widens the band rather than hiding it.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:-4px 0 12px">This engine forecasts <b>geographies</b> &mdash; ZIPs, sectors, corridors &mdash; and refuses to forecast an individual parcel. A single property has no time series; what it has is an index applied to it. Anything claiming to predict one house&rsquo;s price to the dollar is projecting the neighbourhood and putting a street address on the answer.</p>
+  <div id="predroot"></div>
+</div></div></section>
+
+<!-- ================= DATA SOURCES ================= -->
+<section id="sources" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Data sources &middot; what joins to a parcel, and what was tested and thrown away</p>
+  <h1>Fifteen public sources, each one tested with a real request</h1>
+  <p class="lede">Every source below was called live against a real coordinate or a real county before it was written down here: the endpoint, the join key, the refresh cadence, the licence, and the reason it earns a place in a predictive model. Nothing is listed because it sounded useful.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:-4px 0 12px">The second table is the half of a data audit that usually goes unwritten. Eleven sources were tested and <b>rejected</b>, and the reason for each is recorded so that the next person does not spend a day rediscovering it &mdash; the sea-level-rise layer that returns a hit at every level being the instructive one.</p>
+  <div id="srcroot"></div>
+</div></div></section>
+
+<!-- ================= STANDARD ================= -->
+<section id="standard" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">The investment standard &middot; written down so it can be argued with</p>
+  <h1>What this platform means by a good investment</h1>
+  <p class="lede">Every screen here has implied a definition without stating one. This is the definition: a named list of requirements in five categories, each a function of the published record, each returning a status you can check. Every property in the app is tested against all of them, and the result appears on the property itself.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:86ch;margin:-4px 0 12px">A requirement can come back <b>meets</b>, <b>fails</b>, or <b>not published</b> &mdash; and the third is the one that matters. A county that publishes no year built has not made a building old, and it has not made it new. Folding that into &ldquo;fails&rdquo; rejects properties for a gap in a county schema; folding it into &ldquo;meets&rdquo; is worse. Here it stays visible, and the count of unanswerable requirements travels with every score.</p>
+  <div id="stdroot"></div>
+</div></div></section>
+
+<!-- ================= PACKAGES ================= -->
+<section id="packages" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Packages &middot; how this platform grows</p>
+  <h1>Twelve pages, one application, a hard ceiling of 16 MB</h1>
+  <p class="lede">A published page cannot exceed 16 MB. The application itself &mdash; map, underwriting engine, forecast field, pattern miner, standard &mdash; costs about 2.6 MB of that and is identical in every edition, which leaves roughly 12.4 MB for parcels: around 300,000 properties. So this platform does not grow by making one page bigger. It grows by adding packages, each complete, each under the ceiling, each knowing about the others.</p>
+  <div id="pkgroot"></div>
+  <h2 class="h2" style="margin-top:18px">Who each package is for</h2>
+  <div id="tiersroot"></div>
+</div></div></section>
+
+<!-- ================= RELATIONAL MAP ================= -->
+<section id="network" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">The relational map &middot; laid out by connection, not by geography</p>
+  <h1>What is joined to what</h1>
+  <p class="lede">Every other view in this app places data on a map or on two chosen axes. This one places it by relationship: a force-directed graph in which a node&rsquo;s position means nothing at all and only its edges carry information. It answers a question the map cannot &mdash; which housing stock each announced project actually reaches, and which markets are held together by a single employer or a single campus.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:88ch;margin:-4px 0 12px">Cancelled projects are drawn crossed out with dashed edges. That is the point of putting them here: the ZIPs still joined to them are ZIPs that were reached by capital which has since been withdrawn, and one picture shows that faster than any table.</p>
+  <div id="netroot"></div>
+</div></div></section>
+
+<!-- ================= BANK-OWNED ================= -->
+<section id="reo" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Bank-owned and government resale &middot; and what is not obtainable</p>
+  <h1>Completed foreclosures that are now for sale</h1>
+  <p class="lede">HUD publishes every FHA single-family home it has taken back after an insured mortgage foreclosed and is now offering for sale &mdash; 5,513 of them nationally, with coordinates, carrying no borrower or occupant data of any kind. That is a real bank-owned resale feed from the entity that owns the homes, and it is on this page.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:88ch;margin:-4px 0 12px">What is <b>not</b> on this page is pre-foreclosure &mdash; Notice of Default, Lis Pendens, Trustee&rsquo;s Sale. That was researched rather than assumed, and it does not exist as free open data. The page says so in the same size as everything else, because the alternative is a tab that looks complete and is not.</p>
+  <div id="reoroot"></div>
+</div></div></section>
+
+<!-- ================= COMPS ================= -->
+<section id="comps" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Comparable sales desk &middot; recorded transactions only</p>
+  <h1>What somebody actually paid</h1>
+  <p class="lede">An underwriting platform lives or dies on comparables, so this desk is strict about what one is. A comparable here is a <b>recorded sale with a date</b> &mdash; never an assessor value dressed up as a price, never a sale whose year is unknown, never a parcel in another metro. That strictness costs coverage, and the cost is the point: it is what separates a price from an opinion.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:-4px 0 12px">This tab also does something no single record can: it divides <b>what buyers paid</b> by <b>what the assessor published</b>, county by county, and shows you which rolls are behind the market. Two public records, cross-referenced, answering a question neither one answers alone.</p>
+  <div id="compsroot"></div>
+</div></div></section>
+
+<!-- ================= EVIDENCE ================= -->
+<section id="evidence" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Evidence grade &middot; what the public record can and cannot tell you</p>
+  <h1>A row on a map is not evidence</h1>
+  <p class="lede">This catalogue pulls from about thirty county sources of wildly unequal quality. One publishes a recorded use, a plain-English zoning string, bedrooms and a real disclosure-state sale price. Another publishes a value and a coordinate and nothing else &mdash; no use, no year, no unit count, no sale. Both arrive as a row on the same map. This tab grades every record on <b>what its source actually publishes</b>, so the difference stops being invisible.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:-4px 0 12px"><b>A grade is a statement about the paperwork, never about the asset.</b> A grade A record can be a terrible buy and a grade D record can be an excellent one you simply cannot verify yet. What the grade tells you is how much of your diligence the county has already done, and therefore where your own time has to go.</p>
+  <div id="evidroot"></div>
+</div></div></section>
+
+<!-- ================= RECON / 3D ================= -->
+<section id="recon" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Reconstruction, record locker &amp; 3D</p>
+  <h1>What the record supports &mdash; and what it does not</h1>
+  <p class="lede">Every property in this edition carries a set of published attributes and a set of silences. This tab separates them: each field is labelled <b>recorded</b> (the jurisdiction publishes it), <b>derived</b> (computed from recorded values) or <b>schematic</b> (a regional convention used only to draw a picture). From that, Locator.X builds a massing model &mdash; footprint, floors, roof form, facade &mdash; and renders it in 3D on its own and in the context of everything tracked on the block.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:82ch;margin:-4px 0 6px"><b>These renders are not photographs and not surveys.</b> Colour, material, window rhythm and roof pitch are chosen by rule from region, vintage and use class. A 1920 New Orleans double is drawn as a 1920 New Orleans double because the roll says it is one, not because anyone looked at it. Never show one of these images to a lender, seller or partner as a picture of the building.</p>
+  <p style="font-size:13px;color:var(--ink2);max-width:82ch;margin:0 0 12px">The <b>Record Locker</b> underneath does the looking for you. It assembles, per jurisdiction, the assessor record, the deed index, the permit and code file, the flood panel, the street-level panorama and aerial series going back decades &mdash; marked <b>direct</b> where the link lands on this address and <b>search</b> where the portal cannot be addressed from a URL. Locator.X opens those doors and never walks through them: nothing here scrapes a portal, and several of these systems state plainly that automated access is abuse. Whatever you find, save into the knowledgebase; it travels as JSON with the deal file.</p>
+  <div id="reconroot"></div>
+</div></div></section>
+
+<!-- ================= PATTERNS ================= -->
+<section id="patterns" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Pattern mining &amp; predictive automations</p>
+  <h1>What the winners have in common — measured, not asserted</h1>
+  <p class="lede">This tab mines every tracked property for the attribute combinations that actually associate with an outcome you care about. Pick an outcome, and the engine computes the base rate across the whole set, then the <b>lift</b> of each attribute and of the strongest attribute pairs — the ratio between the hit rate inside a slice and the hit rate everywhere. Slices below the support floor are discarded rather than reported, because a 100% hit rate on four properties is noise. Turn any pattern into a saved automation and it flags matching inventory on every future pass.</p>
+  <p style="font-size:12.5px;color:var(--muted);max-width:82ch;margin:-6px 0 14px">Read these as associations in the data on hand, not causes. Outcomes built on estimated rent or estimated value inherit that estimate's error, and the label on each row says which. Nothing here is a recommendation to buy.</p>
+  <div id="patroot"></div>
+</div></div></section>
+
+<section id="program" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">AGI Corp — AGI Future Foundation</p>
+  <h1>The Locator.X program</h1>
+  <p class="lede">Tier ratings that gate the tools, a royalty-based path for partners who deploy Locator.X under their own mark, and the investor overview for seeding the expansion of the AGI Future Foundation family of companies.</p>
+  <div id="progroot" data-panel data-panel-title="Program — tiers, royalties, investors"></div>
+</div></div></section>
+
+<section id="platforms" class="view"><div class="page"><div class="inner" style="max-width:960px">
+  <p class="eyebrow">Technology review · September 2026</p>
+  <h1>Live mapping for a Bay Area listings app</h1>
+  <p class="lede">What Mapbox and its competitors cost and allow, how Zillow, Redfin and Realtor.com actually draw their maps, which interior-tour options survive the Matterport–Zillow split, and where public property data for the nine counties really lives. Recommendation at the end; this app is built to it.</p>
+
+  <h2 style="font-family:var(--display);font-size:22px;margin:26px 0 8px">Map engines</h2>
+  <div class="tablewrap"><table class="grid" style="min-width:900px"><thead><tr><th>Platform</th><th>Pricing (web)</th><th>3D / imagery</th><th>Terms that bite</th><th>Real-estate users</th></tr></thead><tbody>
+  <tr><td><b>Mapbox GL JS v3</b><br><span style="color:var(--muted)">v3.29, Aug 2026 · proprietary</span></td><td>50,000 map loads/mo free; then $5 → $2.50 per 1k with volume. A load = one <code>Map</code> init per 12 h; panning is free. Geocoding 100k/mo free (temporary), $5/1k permanent.</td><td>Standard style: extruded buildings, terrain, 3D landmarks in 370 cities, day/night lighting. No street-level imagery.</td><td>Temporary geocodes cannot be stored; geocoding only alongside a Mapbox map; tile caching limits in Product Terms.</td><td>Zillow, Rocket Homes, HomeLight, Houston Assoc. of Realtors (moved from Google, 2024)</td></tr>
+  <tr><td><b>MapLibre GL JS</b><br><span style="color:var(--muted)">v6.6, BSD-3 · v5 UMD used here</span></td><td>Free engine. Tiles from MapTiler (5k sessions free, Flex $30), Stadia (200k credits free, non-commercial), OpenFreeMap (free, no key, no SLA) or self-hosted PMTiles (~$11/mo on Cloudflare for 1 TB egress).</td><td>Fill-extrusion buildings from OpenMapTiles, terrain, globe. No landmarks or imagery.</td><td>Provider terms only. Inline GeoJSON sources need no network — the mode this page runs in.</td><td>Widely used behind white-label brokerage sites</td></tr>
+  <tr><td><b>Google Maps Platform</b><br><span style="color:var(--muted)">post-March 2025 pricing</span></td><td>10k Dynamic Map loads/mo free, then $7/1k; Street View $14/1k; 3D Maps (Immersive) $7/1k; Photorealistic 3D Tiles $6/1k root requests. Subscriptions from $100/mo.</td><td>Best in class: Street View, Aerial View video, photoreal 3D Maps (GA Oct 2025) in 2,500 cities.</td><td>§3.2.3(e): no Google content "with or near a non-Google map" — Street View cannot sit beside a Mapbox map. 30-day cache on geocodes.</td><td>Redfin (Maps JS, Places, Directions); Realtor.com "FlyAround" on 3D Maps + Street View</td></tr>
+  <tr><td><b>Esri ArcGIS Maps SDK</b><br><span style="color:var(--muted)">5.1, June 2026</span></td><td>2M basemap tiles/mo free then $0.15/1k, or 1,000 sessions free then $4/1k; geocodes 20k free; GeoEnrichment $1 per 1k attributes.</td><td>SceneView with 3D Tiles and integrated mesh; no street-level.</td><td>Living Atlas parcel layer (Regrid) needs ArcGIS Online subscription for attributes.</td><td>County GIS portals (Alameda, Contra Costa, San Mateo all publish parcels on ArcGIS)</td></tr>
+  <tr><td><b>Apple MapKit JS</b></td><td>250,000 map views/day and 25,000 service calls/day with a $99/yr developer membership.</td><td>Look Around (street-level) added to MapKit JS at WWDC25.</td><td>Apple developer agreement; no third-party imagery reuse.</td><td>Few listing portals; strong for iOS-first products</td></tr>
+  <tr><td><b>HERE</b></td><td>30k transactions/mo free; tiles ≈ $0.50/1k, geocoding ≈ $0.88–1.00/1k (third-party trackers; official page is app-rendered).</td><td>Vector and satellite tiles; no street-level.</td><td>Standard SaaS terms.</td><td>Logistics more than listings</td></tr>
+  <tr><td><b>CesiumJS + Google 3D Tiles</b></td><td>Engine Apache-2.0. Cesium ion Community free (non-commercial), Commercial $149/mo; Google 3D Tiles quota 1k–10k root requests/mo by plan.</td><td>Full photoreal city 3D, fly-throughs.</td><td>Google's terms flow through: no caching, attribution, no deriving models.</td><td>Development and land-planning firms</td></tr>
+  </tbody></table></div>
+
+  <h2 style="font-family:var(--display);font-size:22px;margin:26px 0 8px">Interior tours</h2>
+  <div class="tablewrap"><table class="grid" style="min-width:820px"><thead><tr><th>Option</th><th>Cost</th><th>Integration</th><th>Notes</th></tr></thead><tbody>
+  <tr><td><b>Matterport</b></td><td>Free (1 space) to $689/mo; developer tools need an annual license ($50–$1,500 by plan).</td><td>Embed iframe or <code>@matterport/sdk</code> 1.6 with domain-allowlisted keys.</td><td>CoStar bought Matterport (2025). Zillow removed all Matterport tours in Oct 2025 after CoStar's terms barred competing platforms — assume tours can vanish from third-party sites.</td></tr>
+  <tr><td><b>Zillow 3D Home</b></td><td>Free, no hosting fees.</td><td>Share links and embed codes from the 3D Home dashboard; no public API.</td><td>Captured on iPhone or Ricoh/Insta360; syndicates to Zillow, Trulia, Redfin, HotPads.</td></tr>
+  <tr><td><b>CloudPano</b></td><td>$27–33/mo.</td><td>Embed; white-label; Street View publish add-on.</td><td>Good for agents self-shooting 360° photos.</td></tr>
+  <tr><td><b>Photo Sphere Viewer / Pannellum</b></td><td>Free, MIT.</td><td>JS libraries; virtual-tour plugin with room-to-room links.</td><td>Own your tours: any 2:1 equirectangular photo, hosted anywhere.</td></tr>
+  <tr><td><b>Built-in WebGL viewer (this app)</b></td><td>Free.</td><td>~120 lines of WebGL; images embedded or by URL.</td><td>No dependency, works offline, drag / scroll / touch; used for the 360° rooms on every listing.</td></tr>
+  </tbody></table></div>
+
+  <h2 style="font-family:var(--display);font-size:22px;margin:26px 0 8px">Property data for the nine counties</h2>
+  <div class="tablewrap"><table class="grid" style="min-width:820px"><thead><tr><th>Source</th><th>What you get</th><th>Access</th><th>License</th></tr></thead><tbody>
+  <tr><td><b>SF Assessor secured roll</b> (DataSF <code>wv5m-vpq2</code>)</td><td>Every parcel, FY2007–FY2025: beds, baths, rooms, area, lot, year built, zoning, sale date, assessed land/improvement, neighborhood, point geometry.</td><td>Socrata SODA API, no key for light use.</td><td>PDDL (public domain). Used for the 60 SF properties here.</td></tr>
+  <tr><td><b>Alameda County parcels</b></td><td>APN, situs and mailing address, land/improvement/net value, homeowner exemption, use code, latest document date, geometry.</td><td>ArcGIS FeatureServer, 2,000 rows per query, no key.</td><td>County open data. Used for the 40 East Bay properties.</td></tr>
+  <tr><td><b>Contra Costa, San Mateo, Santa Clara parcels</b></td><td>Boundaries and APN; Contra Costa adds assessment fields in a 42 MB download; Santa Clara publishes no values.</td><td>ArcGIS services / shapefile downloads.</td><td>County terms. Good candidates for the next 100 properties.</td></tr>
+  <tr><td><b>Zillow Research</b></td><td>ZHVI, ZORI, forecasts, inventory by ZIP, city, neighborhood, metro. Monthly.</td><td>CSV files, no API, no key.</td><td>Free for public use with attribution. Powers the Market tab.</td></tr>
+  <tr><td><b>Redfin Data Center</b></td><td>Median sale price, days on market, price drops, inventory by ZIP/neighborhood, weekly.</td><td>Gzipped TSV on S3.</td><td>Redfin Terms of Use; attribution.</td></tr>
+  <tr><td><b>Active listings</b> — RESO Web API via an MLS (BAREIS, MLSListings, bridgeMLS through Zillow Bridge)</td><td>Live for-sale inventory, photos, tour links.</td><td>MLS participant or IDX/VOW agreement; Bridge charges nothing, MLS fees apply.</td><td>MLS rules: display, refresh and attribution requirements. The <b>Your data</b> tab accepts the RESO shape directly.</td></tr>
+  <tr><td><b>RentCast / ATTOM</b></td><td>Nationwide records, listings, rent and value estimates.</td><td>REST APIs; RentCast from $0 (50 calls) to $449/mo; ATTOM quote-based.</td><td>Commercial terms, no attribution (RentCast).</td></tr>
+  <tr><td><b>RapidAPI "Zillow" wrappers</b></td><td>Scraped Zillow property and market-page JSON — the shape your sample responses use.</td><td>Key per wrapper; 30–100 free calls/mo.</td><td>Violate Zillow's terms; uptime varies. Fine for prototyping, not for a product.</td></tr>
+  </tbody></table></div>
+
+  <div class="rec"><b>Recommendation for this product.</b> Build on <b>MapLibre GL</b> and keep the map engine free; put money into data instead. Ship two basemap modes: the embedded vector map (this page, works offline and inside any host) and a live tile source — Mapbox Streets if you want 3D buildings and the best cartography (50k loads free covers a launch), or OpenFreeMap/self-hosted PMTiles for zero marginal cost. Stay off Google unless you need Street View, because its terms forbid mixing it with any other map. For interiors, own the assets: 360° photos in a WebGL viewer, with Matterport and Zillow 3D Home links as optional embeds you do not depend on. For listings, sign an IDX/RESO agreement with the local MLS; use RentCast for rent estimates; keep the county assessor rolls as the backbone because they are free, public-domain and, thanks to Prop 13, tell you exactly what every buyer paid.</div>
+
+  <p class="src">Sources: mapbox.com/pricing; docs.mapbox.com/mapbox-gl-js/guides/pricing; mapbox.com/industries/real-estate; maplibre.org/news; maptiler.com/cloud/pricing; stadiamaps.com/pricing; openfreemap.org; docs.protomaps.com/deploy/cost; developers.google.com/maps/billing-and-pricing/pricing and /march-2025; cloud.google.com/maps-platform/terms (§3.2.3); mapsplatform.google.com blog on 3D Maps GA and Realtor.com FlyAround; services.google.com Redfin case study; location.arcgis.com/pricing; developer.apple.com/maps/web; cesium.com/platform/cesium-ion/pricing; support.matterport.com price list; housingwire.com and therealdeal.com on Zillow removing Matterport tours (Oct 2025); zillow.com/3d-home/faq; help.cloudpano.com pricing; data.sfgov.org/api/views/wv5m-vpq2; services5.arcgis.com Alameda Parcels FeatureServer; gis.cccounty.us/Downloads/Assessor; smcgov.org/tsd/gis-data-download; data.sccgov.org Parcels; zillow.com/research/data; redfin.com/news/data-center; rentcast.io/api; bridgeinteractive.com developers; zillowgroup.com/developers/terms. Pricing checked 2026-09-01 and will drift.</p>
+</div></div></section>
+
+</main>
+</div>
+
+<!-- tour overlay -->
+<div id="tour" role="dialog" aria-label="360° tour">
+  <canvas id="tourcv"></canvas>
+  <iframe id="tourframe" class="hidden" style="flex:1;border:0;background:#111" title="Virtual tour"></iframe>
+  <div class="tourbar"><h2 id="tourtitle"></h2><button class="close" id="tourclose">Close ✕</button></div>
+  <div class="tournote" id="tournote"></div>
+  <div class="tourhint">Drag to look around · scroll to zoom · <kbd>←</kbd> <kbd>→</kbd> change room · <kbd>Esc</kbd> closes</div>
+  <div class="rooms" id="rooms"></div>
+</div>
+<div class="toast" id="toast"></div>
