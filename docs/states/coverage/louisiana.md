@@ -38,8 +38,14 @@ income evidence and permits. That is a `no public record` row, not a to-do.
 
 | Gate | Question | Source of record | Status |
 |------|----------|------------------|--------|
-| L/A | Parcels, values | Jefferson Parish Assessor / GIS | named — portal identified; probe pull is the next wave-one action |
+| L/A | Parcels, values | Jefferson Parish Assessor / GIS | **blocked** (geoportal.jeffparish.net: container egress CONNECT refused, probed 2026-09-09; route is the desktop browser pane per [`PULL_RECIPE.md`](../../PULL_RECIPE.md)) |
 | All | Lafayette, St. Tammany, Caddo (campus ring for `launi`) | Parish assessors (actDataScout pattern covers several) | named |
+
+*Egress note (2026-09-09):* data.nola.gov, ebrgis.opendata.arcgis.com, services.arcgis.com,
+geoportal.jeffparish.net, latax.state.la.us and qpublic.schneidercorp.com were all probed
+from the container and refused at CONNECT — the whole class of GIS/open-data hosts is
+policy-blocked, not individual sites. Wave-one pulls for these rows go through the desktop
+browser-pane route.
 
 ## Statewide layers
 

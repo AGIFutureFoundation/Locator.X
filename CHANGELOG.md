@@ -7,6 +7,18 @@ such.
 
 ## [Unreleased]
 
+- **`build_state.py` (v2.0 groundwork)** — the parameterised state/market edition
+  builder: specs instead of copy-pasted builders, `--dry-run` verification of every
+  regionalization pair against current source, the evidence ceiling as a `hide_tabs`
+  parameter, and a Florida template that refuses to build until filled in. Its first
+  dry run surfaced three stale pairs in the original atlas builders (content fix
+  tracked separately; parity preserved via `known_stale`).
+- **Companion pages deployed** — `pages/index.html` landing page and
+  `.github/workflows/deploy-pages.yml` publish `pages/` to GitHub Pages on every
+  change; the full editions remain build products per the publish map.
+- **Wave-one probes dated** — Louisiana GIS/open-data hosts (NOLA, EBR, Jefferson,
+  Tax Commission, qPublic) probed from the container 2026-09-09: the whole host class
+  is egress-blocked; rows updated to `blocked` with the desktop route named.
 - **v1.2 complete** — the lender↔deal matching matrix
   ([`docs/resources/lenders.md` §9](docs/resources/lenders.md#9-the-matching-matrix)) and
   the federal-program → state-administrator mapping
