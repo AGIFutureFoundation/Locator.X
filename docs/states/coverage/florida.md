@@ -14,7 +14,7 @@ tax line, is the survival number on the coasts. Both are graded as first-class r
 
 | Gate | Question | Source of record | Status |
 |------|----------|------------------|--------|
-| L/A | Every parcel's use code, assessed and just value, sale history | **FL DOR NAL roll** (Name–Address–Legal, annual, all 67 counties, documented layout) | named — the single highest-value probe in wave one |
+| L/A | Every parcel's use code, assessed and just value, sale history | **FL DOR NAL roll** (Name–Address–Legal, annual, all 67 counties, documented layout) | **blocked** (container egress CONNECT 403 to floridarevenue.com and the DOR FTP host, probed 2026-09-09; route is the desktop browser pane per [`PULL_RECIPE.md`](../../PULL_RECIPE.md)). Ingest side is ready: [`scripts/fl_nal_probe.py`](../../../scripts/fl_nal_probe.py) parses a downloaded NAL csv/zip with the PII strip, populated-rate report, use-code histogram and sale-qualification picture — one command once the file lands |
 | O | Owner of record statewide | NAL roll owner fields | named — PII-stripping rule applies on ingest, same as Louisiana |
 | O (outlook) | Recorded sales with prices | NAL SDF (Sales Data File) — Florida is a **disclosure state**; doc stamps imply consideration | named — would give the Comps desk a large state where it *can* function, the deliberate contrast to Orleans/EBR |
 | L | Statewide parcel geometry | FGDL / DOR statewide parcel GIS | named |

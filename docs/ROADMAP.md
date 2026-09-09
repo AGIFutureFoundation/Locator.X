@@ -100,6 +100,11 @@ Turn the resource directory from lists into a cross-referenced graph:
 
 **Proof:** the sweep script exits zero; each resource file carries its last-verified date.
 
+*Status:* sweep tooling **shipped** — `scripts/check_external_links.py` classifies every
+external URL in the repo's markdown (ok / auth-gated / broken) and
+`.github/workflows/link-rot.yml` runs it quarterly on GitHub runners, where egress is open.
+The lender-deal and program-administrator mappings remain.
+
 ## 6. v1.3 — Curriculum growth
 
 The catalog is complete at 50; growth means depth, not count inflation:

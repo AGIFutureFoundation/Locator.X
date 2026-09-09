@@ -1,0 +1,23 @@
+name: link-rot sweep
+
+# The quarterly external-link sweep promised in docs/ROADMAP.md §5 (v1.2).
+# Runs where egress is open (GitHub runners), unlike the development container.
+# A failure means a genuinely broken link (404/410/5xx/timeout) — fix or remove
+# it and update the touched file's last-reviewed date. auth-gated results
+# (401/403/999) are reported but do not fail the sweep.
+
+on:
+  schedule:
+    - cron: "0 8 1 */3 *"   # 08:00 UTC on the 1st, every third month
+  workflow_dispatch:
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Probe every external URL in markdown
+        run: python3 scripts/check_external_links.py
