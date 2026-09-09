@@ -1,0 +1,25 @@
+Locator.X
+Copyright 2026 AGI Future Foundation
+
+This product includes software developed by the AGI Future Foundation
+(https://agifuturefoundation.org).
+
+Licensing is split by kind of work (see the README's Licence section):
+
+  - Source code (src/, build*.py, lxbuild.py, curriculum/*.py,
+    curriculum/extract_tracks.js, scripts/) is licensed under the
+    Apache License, Version 2.0 — see the LICENSE file.
+
+  - Written content (docs/, curriculum/courses/, curriculum CSV course
+    text, data/README.md, and the prose of pages/) is licensed under the
+    Creative Commons Attribution 4.0 International licence — see the
+    LICENSE-docs file. Attribute as: "Locator.X, AGI Future Foundation,
+    CC BY 4.0".
+
+Course material is original to Locator.X. No university, business school,
+publisher or course provider has reviewed, endorsed or is affiliated with
+this material. Curriculum themes credited to Curtis Oakes's published
+catalogue carry a no-affiliation notice in the app; company and brand
+names are the trademarks of their respective owners.
+
+Nothing in this repository is legal, tax, securities or investment advice.

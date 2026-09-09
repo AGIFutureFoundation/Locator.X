@@ -52,11 +52,11 @@ The smallest version that can be public without regret.
 
 | Item | Why it blocks release | Proof it shipped |
 |------|----------------------|------------------|
-| `LICENSE` file | README states all rights reserved until the Foundation chooses; a public repo without a licence invites accidental infringement in both directions | File exists; README licence section updated |
+| ✅ `LICENSE` file | README states all rights reserved until the Foundation chooses; a public repo without a licence invites accidental infringement in both directions | Shipped: Apache-2.0 for code (`LICENSE` + `NOTICE`), CC BY 4.0 for written content (`LICENSE-docs`); README licence section updated |
 | Attribution review | The no-affiliation notices must read exactly as intended before strangers quote them | Foundation sign-off recorded in the PR |
-| `data/` stays ignored — audited | Upstream feeds carry owner PII; git history cannot be cleaned later | `git log --all` shows no data blobs; ignore rules tested |
-| CI: validator + track extraction on every push | The eight checks currently run locally; public contributions need the gate automated | Green check required on the default branch |
-| CONTRIBUTING.md | Contributors need the doctrine (measure before asserting; unknown is an answer) stated as rules, not folklore | File exists, linked from README |
+| ✅ `data/` stays ignored — audited | Upstream feeds carry owner PII; git history cannot be cleaned later | Audited at licence time: history holds only the stub and the documented source drops, no data blobs; ignore rules in place |
+| ✅ CI: validator + link + catalog-sync checks on every push | The eight checks currently run locally; public contributions need the gate automated | `.github/workflows/validate.yml`: curriculum gate, generated-catalog drift check, internal link check |
+| ✅ CONTRIBUTING.md | Contributors need the doctrine (measure before asserting; unknown is an answer) stated as rules, not folklore | File exists; doctrine as rules, pre-PR checklist, contribution licensing |
 
 ## 4. v1.1 — The state layer, wave one
 
