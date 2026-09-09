@@ -80,6 +80,13 @@ by data availability.
 **Proof:** each wave state gets a "record coverage" table with a source and pull date for every
 row — no row without a source.
 
+*Status:* wave one **started** — [`states/coverage/`](states/coverage/README.md) holds the
+inventories for Louisiana and California (anchor markets; shipped-feed rows cite the
+editions and [`PULL_RECIPE.md`](PULL_RECIPE.md)) and Florida (the new wave state, chosen
+for the DOR statewide NAL/SDF rolls). Wave one completes when every `named` row has a
+recorded probe: advanced to `pulled`, or converted to `blocked`/`no public record` with
+the reason dated.
+
 ## 5. v1.2 — The resource graph
 
 Turn the resource directory from lists into a cross-referenced graph:

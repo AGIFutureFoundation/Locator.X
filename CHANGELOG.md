@@ -7,7 +7,11 @@ such.
 
 ## [Unreleased]
 
-- v1.1 wave one begins: per-state record-coverage inventories for the anchor states.
+- v1.1 wave one begins: per-state record-coverage inventories
+  ([`docs/states/coverage/`](docs/states/coverage/README.md)) for Louisiana and California
+  (anchor markets, shipped-feed rows cited) and Florida (the new wave state, chosen for
+  the DOR statewide rolls), with the status vocabulary that keeps unfetched sources
+  honestly marked `named` or `no public record`.
 
 ## 1.0.0 — 2026-09-09
 
