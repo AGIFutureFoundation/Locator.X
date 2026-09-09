@@ -13,9 +13,12 @@ such.
   parameter, and a Florida template that refuses to build until filled in. Its first
   dry run surfaced three stale pairs in the original atlas builders (content fix
   tracked separately; parity preserved via `known_stale`).
-- **Companion pages deployed** — `pages/index.html` landing page and
-  `.github/workflows/deploy-pages.yml` publish `pages/` to GitHub Pages on every
-  change; the full editions remain build products per the publish map.
+- **Companion pages deployment wired** — `pages/index.html` landing page plus two
+  deploy routes: `.github/workflows/deploy-pages.yml` (GitHub Pages — activates when
+  the repository is public; the first run confirmed Pages cannot be created on this
+  private repo) and `.github/workflows/deploy-vercel.yml` (armed but dormant until a
+  `VERCEL_TOKEN` secret is added). The full editions remain build products per the
+  publish map.
 - **Wave-one probes dated** — Louisiana GIS/open-data hosts (NOLA, EBR, Jefferson,
   Tax Commission, qPublic) probed from the container 2026-09-09: the whole host class
   is egress-blocked; rows updated to `blocked` with the desktop route named.

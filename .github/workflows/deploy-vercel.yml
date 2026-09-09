@@ -1,0 +1,38 @@
+name: deploy vercel
+
+# Deploys pages/ (the standalone companion pages) to Vercel as a static site.
+#
+# ARMED BUT DORMANT until a VERCEL_TOKEN secret exists: create a token at
+# vercel.com/account/tokens and add it under repo Settings → Secrets and
+# variables → Actions → New repository secret, name VERCEL_TOKEN. Optionally
+# add VERCEL_ORG_ID and VERCEL_PROJECT_ID to pin an existing Vercel project;
+# without them the first deploy creates a project automatically.
+#
+# GitHub Pages (deploy-pages.yml) is the zero-account route and activates when
+# the repository is public; this workflow is the Vercel alternative.
+
+on:
+  push:
+    branches: [main]
+    paths: ["pages/**", ".github/workflows/deploy-vercel.yml"]
+  workflow_dispatch:
+
+jobs:
+  vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for Vercel token
+        id: token
+        run: echo "have=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - name: Skip notice
+        if: steps.token.outputs.have != 'true'
+        run: echo "No VERCEL_TOKEN secret — skipping. Add one under Settings → Secrets → Actions to enable Vercel deploys."
+      - name: Deploy pages/ to Vercel
+        if: steps.token.outputs.have == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: pages
+        run: npx vercel@latest deploy . --prod --yes --token "$VERCEL_TOKEN"
