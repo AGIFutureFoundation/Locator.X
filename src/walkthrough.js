@@ -43,6 +43,7 @@ function boot(){
     '.lxwalk-hi{outline:2px solid var(--accent) !important;outline-offset:2px;border-radius:6px;' +
       'animation:lxwalkpulse 1.2s ease-in-out infinite}\n' +
     '@keyframes lxwalkpulse{0%,100%{outline-offset:2px}50%{outline-offset:5px}}\n' +
+    '@media (prefers-reduced-motion: reduce){ .lxwalk-hi{animation:none} }\n' +
     '@media (max-width:640px){ #lxwalk .lxwtext{display:none} }';
   document.head.appendChild(style);
 
@@ -98,12 +99,15 @@ function boot(){
     go(at + 1);
   }
 
+  var navByWalk = false; // our own showView() calls must not read as user navigation
   function go(i){
     if(!active) return;
     clearTimer(); V.stopSpeak();
     at = Math.max(0, Math.min(VIEWS.length - 1, i));
     var v = VIEWS[at];
+    navByWalk = true;
     try{ window.LX.showView(v[0]); }catch(e){}
+    setTimeout(function(){ navByWalk = false; }, 0);
     clearHighlight();
     var tb = tabButton(v[0]);
     if(tb) tb.classList.add('lxwalk-hi');
@@ -154,6 +158,17 @@ function boot(){
   document.addEventListener('keydown', function(ev){
     if(active && ev.key === 'Escape') stop();
   });
+
+  /* The user outranks the tour: navigating by hand mid-walk pauses it there
+     instead of the agent yanking the view back on its next step. */
+  var navEl = document.querySelector('nav.tabs');
+  if(navEl && window.MutationObserver){
+    new MutationObserver(function(){
+      if(!active || !playing || navByWalk) return;
+      var cur = navEl.querySelector('button[aria-selected="true"]');
+      if(cur && VIEWS[at] && cur.dataset.view !== VIEWS[at][0]) pause();
+    }).observe(navEl, {attributes: true, attributeFilter: ['aria-selected'], subtree: true});
+  }
 
   function start(fromIdx){
     if(active){ go(fromIdx == null ? at : fromIdx); return; }

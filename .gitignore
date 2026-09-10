@@ -32,6 +32,7 @@ deployment-task4/
 
 # ── Tooling ───────────────────────────────────────────────────────────────
 node_modules/
+shots/            # scripts/shoot_pages.js output — regenerable page captures
 __pycache__/
 *.pyc
 *.bak

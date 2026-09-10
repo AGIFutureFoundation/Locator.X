@@ -7,6 +7,27 @@ such.
 
 ## [Unreleased]
 
+- **Learning-environment page: read-aloud + spoken guided tour** — the standalone
+  learning environment (`pages/locator-x-learning-environment.html`) now carries the
+  voice layer on a surface that ships without a build machine: a Listen button in the
+  course sheet reads the sheet's own visible text, and a Guided tour button walks the
+  page section by section, scrolling each into view and reading its own heading and
+  lead copy. Browser text-to-speech only (local, no network); where speechSynthesis is
+  absent neither control renders. Verified under headless Chromium: capability-gated
+  rendering, tour start/highlight/stop lifecycle, zero page errors.
+- **Walkthrough agent hardening** — `src/walkthrough.js`: a manual tab switch during a
+  walk pauses the tour instead of the agent yanking the view back, and the highlight
+  pulse respects `prefers-reduced-motion`.
+- **Reproducible page screenshots** — `scripts/shoot_pages.js` captures all seven
+  companion pages at 1920×1080, including deck slides via their ArrowRight navigation
+  (a plain screenshot only ever shows slide one of a 100svh scroll-snap deck); output
+  dir gitignored. First used by hand for the explainer video's style lock, now a
+  one-command artifact.
+- **Explainer-video production record** — `docs/marketing/explainer-video.md`: the
+  locked narration (as measured against the speech gates), the screenshot-derived
+  style decision, per-figure sources in this repo, and the dated production state
+  (9/12 blocks, 11/12 takes; stopped by a measured credit exhaustion, resumable
+  without regenerating anything).
 - **User's guide button + voice walkthrough agent** — a visible "User's guide"
   header button (`src/body.html`) opens the existing app guide, and a new
   `src/walkthrough.js` module adds a hands-free walkthrough: the app opens each
