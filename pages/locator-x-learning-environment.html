@@ -202,6 +202,8 @@ h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:clamp(21px,2.5
   <span class="bd"><b>Locator.X</b> &nbsp;Learning Environment</span>
   <span class="sp"></span>
   <span class="ov"><span id="oc" class="mono">0 / 50</span><span class="ovb"><i id="ob" style="width:0%"></i></span></span>
+  <button class="mb" id="tour" hidden
+    title="A spoken walk through this page: each section scrolls into view and its own text is read aloud (browser text-to-speech, runs locally, no network). Click again or press Escape to stop.">&#9205; Guided tour</button>
   <button class="mb" id="reset">Reset</button>
 </div></div>
 
@@ -514,6 +516,9 @@ function openSheet(id){
    + '</div>'
    + '<div class="sh-act">'
    +   '<button class="btn primary" id="mark">' + (done[x.id] ? 'Mark not complete' : 'Mark complete') + '</button>'
+   +   ('speechSynthesis' in window
+        ? '<button class="btn" id="lsheet" title="Read this course aloud (browser text-to-speech, runs locally, no network)">&#128266; Listen</button>'
+        : '')
    +   '<button class="btn" id="close">Close</button>'
    + '</div>';
   document.getElementById('mark').dataset.id = x.id;
@@ -589,4 +594,77 @@ document.getElementById('fws').innerHTML = FW.map(function(f){
 
 renderGrid(); renderPaths(); renderLevels(); syncTop();
 
+/* ---- voice: read-aloud and the guided tour -------------------------------
+   Same rules as the app's voice layer (src/voice.js): real browser
+   text-to-speech only, running locally with no network request; where the
+   browser does not ship speechSynthesis the controls never render, and
+   everything spoken is text already on this page — never separate copy that
+   could drift from what the reader sees. */
+(function(){
+  var synth = window.speechSynthesis || null;
+  if(!synth) return; // no capability -> no controls, never a dead button
+
+  function say(text, onEnd){
+    try{
+      synth.cancel();
+      var plain = String(text || '').replace(/\s+/g, ' ').trim();
+      if(!plain) { if(onEnd) onEnd(); return; }
+      var u = new SpeechSynthesisUtterance(plain.length > 6000 ? plain.slice(0, 6000) : plain);
+      u.onend = function(){ if(onEnd) onEnd(); };
+      u.onerror = function(){ if(onEnd) onEnd(); };
+      synth.speak(u);
+    }catch(e){ if(onEnd) onEnd(); }
+  }
+
+  /* Listen inside the course sheet: reads the sheet's own visible text. */
+  document.addEventListener('click', function(ev){
+    var b = ev.target.closest && ev.target.closest('#lsheet');
+    if(!b) return;
+    if(synth.speaking){ synth.cancel(); b.innerHTML = '&#128266; Listen'; return; }
+    var sheet = document.getElementById('sheet');
+    b.innerHTML = '&#9208; Stop';
+    say(sheet ? sheet.textContent : '', function(){ if(b.isConnected) b.innerHTML = '&#128266; Listen'; });
+  });
+
+  /* The guided tour: scroll each top-level section into view and read its own
+     heading and lead text. Sections and copy come straight from the DOM. */
+  var touring = false, tourBtn = document.getElementById('tour');
+  function stops(){
+    var els = [document.querySelector('.hero')]
+      .concat(Array.prototype.slice.call(document.querySelectorAll('.wrap > section')));
+    return els.filter(Boolean);
+  }
+  function sectionText(el){
+    var head = el.querySelector('h1, h2');
+    var body = el.querySelector('.lede, .secb, p');
+    return (head ? head.textContent + '. ' : '') + (body ? body.textContent : '');
+  }
+  function endTour(){
+    touring = false;
+    try{ synth.cancel(); }catch(e){}
+    var hi = document.querySelector('.tour-hi'); if(hi) hi.classList.remove('tour-hi');
+    tourBtn.innerHTML = '&#9205; Guided tour';
+  }
+  function step(list, i){
+    if(!touring) return;
+    if(i >= list.length){ endTour(); return; }
+    var el = list[i];
+    var hi = document.querySelector('.tour-hi'); if(hi) hi.classList.remove('tour-hi');
+    el.classList.add('tour-hi');
+    try{ el.scrollIntoView({behavior: 'smooth', block: 'start'}); }catch(e){ el.scrollIntoView(); }
+    say(sectionText(el), function(){ setTimeout(function(){ step(list, i + 1); }, 500); });
+  }
+  tourBtn.hidden = false;
+  tourBtn.addEventListener('click', function(){
+    if(touring){ endTour(); return; }
+    touring = true;
+    tourBtn.innerHTML = '&#9209; Stop tour';
+    step(stops(), 0);
+  });
+  document.addEventListener('keydown', function(ev){ if(touring && ev.key === 'Escape') endTour(); });
+  var st = document.createElement('style');
+  st.textContent = '.tour-hi{outline:2px solid var(--field);outline-offset:6px;border-radius:4px}'
+    + '@media (prefers-reduced-motion: reduce){ .tour-hi{outline-offset:2px} }';
+  document.head.appendChild(st);
+})();
 </script>
