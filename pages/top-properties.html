@@ -39,6 +39,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
 th{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-3);cursor:pointer;white-space:nowrap}
+tbody tr.sel{outline:2px solid var(--field);outline-offset:-2px}
+.chip:disabled{opacity:.45;cursor:default}
 td.num{font-family:"IBM Plex Mono",monospace;text-align:right;white-space:nowrap}
 .tag{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3)}
 .warn{color:var(--flag)}
@@ -66,6 +68,8 @@ footer{margin-top:26px;color:var(--ink-3);font-size:12.5px;max-width:76ch}
       <input type="search" id="q" placeholder="Search city, district, address, code…" disabled>
       <select id="juri" disabled><option value="">All jurisdictions</option></select>
       <span id="chips"></span>
+      <button class="chip" id="csv" disabled
+        title="Download the rows matching the current filters as CSV — assessments, never prices; every row keeps its value_field label">Export CSV</button>
     </div>
   </div>
 
@@ -99,7 +103,7 @@ footer{margin-top:26px;color:var(--ink-3);font-size:12.5px;max-width:76ch}
 </div>
 <script>
 'use strict';
-var IDX=null, entries=[], sortK='value', sortDesc=true, activeClasses={};
+var IDX=null, entries=[], sortK='value', sortDesc=true, activeClasses={}, lastList=[], selRow=-1;
 var $=function(s){return document.querySelector(s)};
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -149,6 +153,7 @@ function boot(){
     ev.appendChild(d);
   });
   $('#evidence').hidden=false; $('#q').disabled=false; jsel.disabled=false;
+  $('#csv').disabled=false;
   $('#tbl').hidden=false; $('#empty').hidden=true;
   render();
 }
@@ -178,6 +183,7 @@ function render(){
     x=String(x||''); y=String(y||'');
     return sortDesc? y.localeCompare(x) : x.localeCompare(y);
   });
+  lastList=list; selRow=-1;
   var tb=$('#rows'); tb.innerHTML='';
   list.slice(0,500).forEach(function(e){
     var loc=Object.keys(e.locality||{}).map(function(k){return e.locality[k]})
@@ -194,6 +200,46 @@ function render(){
     tb.innerHTML='<tr><td colspan="6" class="note">No entries match the current filters.</td></tr>';
   }
 }
+
+/* CSV export of the CURRENT filter result (all matches, not just the 500 shown).
+   Column names say what the numbers are — assessment, never price — and every
+   row carries its jurisdiction's declared value_field, same as the table. */
+$('#csv').addEventListener('click',function(){
+  if(!lastList.length){ alert('No rows match the current filters.'); return; }
+  function cell(v){ v=String(v==null?'':v); return /[",\n]/.test(v)? '"'+v.replace(/"/g,'""')+'"' : v; }
+  var lines=['assessment,value_field,class,jurisdiction,locality,address,use_code'];
+  lastList.forEach(function(e){
+    var loc=Object.keys(e.locality||{}).map(function(k){return e.locality[k]}).filter(Boolean).join(' / ');
+    lines.push([e.value!=null?e.value:'', e.value_field||'', e['class'], e.jurisdiction,
+      loc, e.address||'', e.code].map(cell).join(','));
+  });
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([lines.join('\n')+'\n'],{type:'text/csv'}));
+  a.download='top-properties-assessments.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+});
+
+/* Keyboard: "/" focuses search; ArrowUp/Down walk the rendered rows with a
+   visible highlight (Escape clears it). Typing in a field is never hijacked. */
+document.addEventListener('keydown',function(ev){
+  var inField=/^(INPUT|SELECT|TEXTAREA)$/.test((ev.target.tagName||''));
+  if(ev.key==='/' && !inField){ ev.preventDefault(); $('#q').focus(); return; }
+  if(inField && ev.key!=='ArrowDown') return;
+  if($('#tbl').hidden) return;
+  var rows=$('#rows').children;
+  if(!rows.length) return;
+  if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){
+    ev.preventDefault();
+    if(inField) ev.target.blur();
+    if(rows[selRow]) rows[selRow].classList.remove('sel');
+    selRow=ev.key==='ArrowDown'? Math.min(rows.length-1, selRow+1) : Math.max(0, selRow-1);
+    rows[selRow].classList.add('sel');
+    rows[selRow].scrollIntoView({block:'nearest'});
+  }else if(ev.key==='Escape' && rows[selRow]){
+    rows[selRow].classList.remove('sel'); selRow=-1;
+  }
+});
 </script>
 </body>
 </html>

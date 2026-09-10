@@ -85,6 +85,8 @@ td.r,th.r{text-align:right}
 <div class="mh"><div class="mh-in">
   <span class="bd"><b>Locator.X</b> &nbsp;Cohort Review</span>
   <span class="sp"></span>
+  <button id="tour" hidden
+    title="A spoken walk through this page: each section scrolls into view and its own text is read aloud (browser text-to-speech, runs locally, no network). Click again or press Escape to stop.">&#9205; Guided tour</button>
   <span id="connstate" class="badge">checking…</span>
 </div></div>
 
@@ -492,5 +494,66 @@ function noRuntime(){
 }
 renderTheses(); renderPool();
 if(window.claude && window.claude.use){ boot(); } else { noRuntime(); }
+})();
+
+/* ---- voice: the spoken guided tour --------------------------------------
+   Same rules as the app's voice layer (src/voice.js) and the learning
+   environment's tour: real browser text-to-speech only, local, no network;
+   no speechSynthesis means the control never renders; everything spoken is
+   text already on this page, never separate copy that could drift. */
+(function(){
+  var synth = window.speechSynthesis || null;
+  if(!synth) return;
+  function say(text, onEnd){
+    try{
+      synth.cancel();
+      var plain = String(text || '').replace(/\s+/g, ' ').trim();
+      if(!plain){ if(onEnd) onEnd(); return; }
+      var u = new SpeechSynthesisUtterance(plain.length > 6000 ? plain.slice(0, 6000) : plain);
+      u.onend = function(){ if(onEnd) onEnd(); };
+      u.onerror = function(){ if(onEnd) onEnd(); };
+      synth.speak(u);
+    }catch(e){ if(onEnd) onEnd(); }
+  }
+  var touring = false, tourBtn = document.getElementById('tour');
+  function stops(){
+    return [document.querySelector('.hero')]
+      .concat(Array.prototype.slice.call(document.querySelectorAll('.wrap > section')))
+      .filter(Boolean);
+  }
+  function sectionText(el){
+    var head = el.querySelector('h1, h2');
+    var body = el.querySelector('.lede, p');
+    return (head ? head.textContent + '. ' : '') + (body ? body.textContent : '');
+  }
+  function endTour(){
+    touring = false;
+    try{ synth.cancel(); }catch(e){}
+    var hi = document.querySelector('.tour-hi'); if(hi) hi.classList.remove('tour-hi');
+    tourBtn.innerHTML = '&#9205; Guided tour';
+  }
+  function step(list, i){
+    if(!touring) return;
+    if(i >= list.length){ endTour(); return; }
+    var el = list[i];
+    var hi = document.querySelector('.tour-hi'); if(hi) hi.classList.remove('tour-hi');
+    el.classList.add('tour-hi');
+    try{ el.scrollIntoView({behavior: 'smooth', block: 'start'}); }catch(e){ el.scrollIntoView(); }
+    say(sectionText(el), function(){ setTimeout(function(){ step(list, i + 1); }, 500); });
+  }
+  tourBtn.hidden = false;
+  tourBtn.addEventListener('click', function(){
+    if(touring){ endTour(); return; }
+    touring = true;
+    tourBtn.innerHTML = '&#9209; Stop tour';
+    step(stops(), 0);
+  });
+  document.addEventListener('keydown', function(ev){ if(touring && ev.key === 'Escape') endTour(); });
+  var st = document.createElement('style');
+  st.textContent = '#tour{border:1px solid var(--rule);background:var(--card);color:var(--ink-2);'
+    + 'border-radius:999px;padding:4px 10px;font:inherit;font-size:12px;cursor:pointer;margin-right:8px}'
+    + '.tour-hi{outline:2px solid var(--field);outline-offset:6px;border-radius:4px}'
+    + '@media (prefers-reduced-motion: reduce){ .tour-hi{outline-offset:2px} }';
+  document.head.appendChild(st);
 })();
 </script>
