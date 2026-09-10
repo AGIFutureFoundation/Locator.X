@@ -105,10 +105,11 @@ def main():
           "top: entry missing its value_field label")
 
     # ---- 4. build_state dry-run: clean pairs, template refuses -------------
-    out = run(["build_state.py", "--dry-run", "nola", "bay", "below", "income",
-               "launi", "match", "nola-classic", "sheltercove", "uscorridor",
-               "usnew5", "uswide"])
+    out = run(["build_state.py", "--dry-run", "--all"])
     check("    ! " not in out, "build_state: dry-run reported problems", out)
+    check("skipping 3 unfilled template(s)" in out,
+          "build_state: --all did not name the skipped templates", out)
+    check(out.count("spec '") == 11, "build_state: --all did not cover all 11 specs", out)
     run(["build_state.py", "--dry-run", "florida-template"], expect_rc=1)
     run(["build_state.py", "--dry-run", "omaha-template"], expect_rc=1)
     run(["build_state.py", "--dry-run", "lincoln-template"], expect_rc=1)

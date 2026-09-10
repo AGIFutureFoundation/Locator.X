@@ -460,6 +460,7 @@ $('#importFile').addEventListener('change',function(ev){
     var miss=(rec.outputs&&rec.outputs.missing_required)||[];
     note.hidden=false;
     note.textContent='Imported '+rec.asset_class+' worksheet from '+String(rec.generated||'').slice(0,10)+
+      (rec.exported_from? ' ('+rec.exported_from+')' : '')+
       (miss.length? ' — it was exported with unknowns ('+miss.join(', ')+'), and they are still unknown.' : '.');
   };
   r.readAsText(f);

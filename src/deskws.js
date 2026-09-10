@@ -65,7 +65,8 @@ function boot(){
           : '') +
         '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:baseline;margin:6px 0 8px">' +
           '<span><b style="font-size:22px;font-family:var(--mono)">' + dscr + '</b> <span style="font-size:11px;color:var(--muted)">DSCR (desk)</span></span>' +
-          '<span style="font-size:13px;color:var(--muted)">' + esc(rec.asset_class || '') + ' · exported ' + esc(String(rec.generated || '').slice(0, 10)) + '</span>' +
+          '<span style="font-size:13px;color:var(--muted)">' + esc(rec.asset_class || '') + ' · exported ' + esc(String(rec.generated || '').slice(0, 10)) +
+            (rec.exported_from ? ' · from ' + esc(rec.exported_from) : '') + '</span>' +
         '</div>' +
         '<table style="font-size:12.5px;border-collapse:collapse">' +
           '<tr><td style="padding-right:14px">NOI</td><td style="text-align:right;font-family:var(--mono)">' + fmt$(o.noi) + '</td></tr>' +
@@ -73,6 +74,12 @@ function boot(){
         '</table>' +
         '<details style="margin-top:8px;font-size:12.5px"><summary style="cursor:pointer;color:var(--muted)">Every input the desk typed (' +
           (rows.split('<tr>').length - 1) + ')</summary><table style="border-collapse:collapse;margin-top:4px">' + rows + '</table></details>' +
+        (rec.provenance
+          ? '<details style="margin-top:6px;font-size:12.5px"><summary style="cursor:pointer;color:var(--muted)">Where each number came from</summary><table style="border-collapse:collapse;margin-top:4px">' +
+            Object.keys(rec.provenance).map(function(k){
+              return '<tr><td style="padding-right:14px;white-space:nowrap;vertical-align:top">' + esc(k) + '</td><td style="color:var(--muted)">' + esc(rec.provenance[k]) + '</td></tr>';
+            }).join('') + '</table></details>'
+          : '') +
         '<p style="font-size:11.5px;color:var(--muted);margin:8px 0 0">' + esc(rec.disclaimer || '') + '</p>';
     };
     r.readAsText(f);
