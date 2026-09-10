@@ -475,5 +475,5 @@ function deskRecord(l, u, uw, a){
     disclaimer:'Education, not advice; not a valuation. Exported from record-plus-assumption numbers: every input needs its document before relying, and the blank insurance field needs a real quote. Unknown means unknown.'
   };
 }
-window.LXUW={render, openSheet, underwrite, sheetFor, deskRecord, maxOffer, get bb(){ return bb; }};
+window.LXUW={render, openSheet, underwrite, sheetFor, deskRecord, maxOffer, matches, get bb(){ return bb; }};
 })();
