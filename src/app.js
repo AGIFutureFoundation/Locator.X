@@ -419,9 +419,12 @@ function applyLayer(){
 $('#layer').addEventListener('change', e=>{ state.layer=e.target.value; applyLayer(); });
 function setBasemap(mode, silent){
   state.basemap=mode; $('#basemap').value=mode;
+  // capture the shell's regionalized footer once, so restoring vector mode
+  // restores the edition's own credits rather than a hard-coded region's
+  if(!setBasemap._attrib0) setBasemap._attrib0=$('#attrib').textContent;
   if(USE_GL){ if(map.getLayer('raster')) map.removeLayer('raster'); if(map.getSource('raster')) map.removeSource('raster'); }
   const vecLayers=['land','urban','parks','rivers','county','nb','rail','roads-casing','roads'];
-  if(mode==='vector'){ rasterOn=false; if(USE_GL) vecLayers.forEach(id=>map.setLayoutProperty(id,'visibility','visible')); else map.setRaster(null); cityMarkers.forEach(m=>m.getElement().style.display=''); applyLayer(); $('#attrib').textContent='Basemap: Natural Earth · US Census TIGER · Zillow neighborhood boundaries · Market data © Zillow Research · Records: SF Assessor, Alameda County Assessor'; return; }
+  if(mode==='vector'){ rasterOn=false; if(USE_GL) vecLayers.forEach(id=>map.setLayoutProperty(id,'visibility','visible')); else map.setRaster(null); cityMarkers.forEach(m=>m.getElement().style.display=''); applyLayer(); $('#attrib').textContent=setBasemap._attrib0; return; }
   let tiles, attrib;
   if(mode.startsWith('mapbox')){ let tok=state.token; if(!tok){ tok=prompt('Paste a Mapbox public access token (pk.…). It is stored only in this browser.'); if(!tok){ setBasemap('vector'); return; } state.token=tok; store('mapboxToken', tok); } const st=mode==='mapbox-satellite'?'satellite-streets-v12':'streets-v12'; tiles=[`https://api.mapbox.com/styles/v1/mapbox/${st}/tiles/512/{z}/{x}/{y}@2x?access_token=${encodeURIComponent(tok)}`]; attrib='© Mapbox © OpenStreetMap · Improve this map'; }
   else if(mode==='esri-satellite'){ tiles=[ESRI_TILE]; attrib='Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community'; }
