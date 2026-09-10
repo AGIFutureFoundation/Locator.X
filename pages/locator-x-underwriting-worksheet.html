@@ -52,6 +52,7 @@ h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:18px;margin:0 0 
 .lines{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:12px}
 .lines td{padding:5px 0;border-bottom:1px solid var(--rule)}
 .lines td:last-child{font-family:"IBM Plex Mono",monospace;text-align:right;white-space:nowrap}
+#sens td:not(:first-child){font-family:"IBM Plex Mono",monospace;text-align:right;white-space:nowrap}
 .unknown{border:1px dashed var(--flag);border-radius:8px;padding:10px 12px;color:var(--ink-2);
   font-size:13.5px;margin-bottom:12px}
 .unknown b{color:var(--flag)}
@@ -265,6 +266,29 @@ function solveBreakEven(v,target){
   return {x:(lo+hi)/2,key:key};
 }
 
+/* sensitivity strip: the same arithmetic, one input nudged at a time —
+   how fragile the DSCR is to the two levers a pro forma always leans on.
+   Rendered only when the base DSCR is known; nudges never touch stored inputs. */
+function sensitivity(v,base){
+  if(base==null) return '';
+  var driverKey=cls==='hotel'?'occ':(cls==='student'?'rentBed':'rentUnit');
+  var driverName=cls==='hotel'?'Occupancy':(cls==='student'?'Rent per bed':'Rent per unit');
+  function at(key,val){ var w={}; for(var k in v) w[k]=v[k]; w[key]=val; return dscrAt(w); }
+  function cell(d){ if(d==null) return '<td>unknown</td>';
+    return '<td class="'+(d>=target?'good':'bad')+'">'+d.toFixed(2)+'</td>'; }
+  var rows=[
+    ['Interest rate −0.50 / +0.50', at('rate',v.rate-0.5), at('rate',v.rate+0.5)],
+    [driverName+' −5% / +5%', at(driverKey,v[driverKey]*0.95), at(driverKey,v[driverKey]*1.05)]
+  ];
+  return '<div class="solver" style="margin-top:12px"><div class="row"><b>Sensitivity</b> '+
+    '<span class="note">— same arithmetic, one input nudged at a time; green clears the target</span></div>'+
+    '<table class="lines" id="sens" style="margin-top:6px"><tr><td></td><td style="text-align:right">lower</td>'+
+    '<td style="text-align:right">base</td><td style="text-align:right">higher</td></tr>'+
+    rows.map(function(r){return '<tr><td>'+esc(r[0])+'</td>'+cell(r[1])+
+      '<td class="'+(base>=target?'good':'bad')+'">'+base.toFixed(2)+'</td>'+cell(r[2])+'</tr>';}).join('')+
+    '</table></div>';
+}
+
 /* ---- render -------------------------------------------------------------- */
 function renderTabs(){
   var t=$('#tabs'); t.innerHTML='';
@@ -331,6 +355,7 @@ function recalc(){
     out+='<p class="note" style="margin:8px 0 0">Break-even: '+esc(sv.reason)+'.</p>';
   }
   out+='</div>';
+  out+=sensitivity(v,dscr);
   $('#out').innerHTML=out;
   $('#target').addEventListener('change',function(){
     var t=Number(this.value); if(isFinite(t)&&t>0) target=t; recalc();

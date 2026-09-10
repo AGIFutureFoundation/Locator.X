@@ -104,6 +104,8 @@ def main():
     out = run(["build_state.py", "--dry-run", "nola", "bay"])
     check("    ! " not in out, "build_state: dry-run reported problems", out)
     run(["build_state.py", "--dry-run", "florida-template"], expect_rc=1)
+    run(["build_state.py", "--dry-run", "omaha-template"], expect_rc=1)
+    run(["build_state.py", "--dry-run", "lincoln-template"], expect_rc=1)
 
     # ---- 5. repo gates hold from the committed tree ------------------------
     run(["crosswalk/validate_usecodes.py"])
