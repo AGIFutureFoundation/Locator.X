@@ -448,7 +448,25 @@ function filtered(){
   /* A chart drill-down can pin a set of ids; while a pin is live the map shows
      exactly those records and the map toolbar carries a Clear button. */
   const PIN=window.__lxPinned;
+  /* The criteria chip: membership in the same match set the Underwriting tab
+     computes (LXUW.matches) — ONE definition of "meets the Locator X criteria",
+     never a second copy of it here. If the set cannot be computed the chip
+     turns itself off out loud, because silently not applying a filter the user
+     switched on would be a quiet pass. Records whose DSCR is unknown cannot
+     pass a DSCR floor, so they are excluded while the chip is on — the chip's
+     tooltip says so rather than hiding it. */
+  let BB=null;
+  if(f.chips.bb){
+    try{ BB=new Set(window.LXUW.matches().map(r=>r.l.id)); }
+    catch(e){
+      f.chips.bb=false; BB=null;
+      const c=document.querySelector('#chips .chip[data-f="bb"]');
+      if(c) c.setAttribute('aria-pressed','false');
+      toast('The Locator X criteria set could not be computed — chip cleared');
+    }
+  }
   return allListings().filter(l=>{
+    if(BB && !BB.has(l.id)) return false;
     if(PIN && !PIN.has(l.id)) return false;
     if(VW && !VW.pass(l)) return false;
     if(f.county && l.county!==f.county) return false; if(f.city && l.city!==f.city) return false;
@@ -496,7 +514,11 @@ let listShown=250;
 function renderList(more){
   if(!more) listShown=250;
   const all=sorted(filtered()); const ls=all.slice(0,listShown); const list=$('#list'); list.innerHTML='';
-  $('#count').textContent=`${fmtN(all.length)} of ${fmtN(allListings().length)} properties`;
+  let countLine=`${fmtN(all.length)} of ${fmtN(allListings().length)} properties`;
+  if(state.filters.chips.bb && window.LXUW){
+    try{ const b=LXUW.bb; countLine+=` · Locator X criteria: score ≥ ${b.minScore}, cap ≥ ${b.minCap}%, DSCR ≥ ${b.minDscr}, ≤ ${fmt$(b.maxPrice)} (set on the Underwriting tab)`; }catch(e){}
+  }
+  $('#count').textContent=countLine;
   const frag=document.createDocumentFragment();
   ls.forEach(l=>{ const d=deal(l); const el=document.createElement('div'); el.className='card'+(state.sel===l.id?' sel':''); el.setAttribute('role','listitem'); el.dataset.id=l.id;
     const badge = d ? (d.cf>0 ? `<span class="badge good">+${fmt$(d.cfMo)}/mo</span>` : `<span class="badge bad">${fmt$(d.cfMo)}/mo</span>`) : '';

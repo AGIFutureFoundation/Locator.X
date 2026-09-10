@@ -7,6 +7,23 @@ such.
 
 ## [Unreleased]
 
+- **The map can show exactly the properties that meet the Locator X
+  criteria** — a new "Meets the Locator X criteria" chip on the find/map
+  filter row applies the full buy box from the Underwriting tab (price,
+  score, cap rate, DSCR, units, evidence grade, category) to the map pins
+  and the list. It is membership in the same `LXUW.matches()` set that tab
+  computes — one definition of the criteria, never a second copy — and the
+  count line names the active thresholds while the chip is on. Honesty
+  edges handled out loud: a record whose DSCR is unknown cannot pass a
+  DSCR floor and is excluded while the chip is on (the tooltip says so
+  instead of hiding it), and if the match set cannot be computed the chip
+  turns itself off with a toast rather than silently not filtering. No new
+  property rows: adding records to the maps takes the desktop pull session
+  (`docs/PULL_QUEUE.md`); this container cannot reach county hosts and
+  fabricates nothing. Verified: syntax gates, `matches()` export under the
+  stub harness, all repo gates; runtime behavior queued for the fleet
+  sweep on the data machine.
+
 - **The app exports to the desk — and refuses to launder its one estimate** —
   the record-driven Underwriting sheet gains a "Desk worksheet JSON" button:
   the open case in the standalone worksheet's own shape (per-unit rent, opex
