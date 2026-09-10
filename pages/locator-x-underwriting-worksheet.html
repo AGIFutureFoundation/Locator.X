@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Locator.X underwriting worksheet — the per-class arithmetic (apartments 5+, hotels, small multifamily, student housing) on numbers you supply. Education, not advice; blank inputs stay unknown.">
+<title>Locator.X — Underwriting Worksheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F2EFE9; --card:#FBF9F5; --ink:#17140F; --ink-2:#4A443A; --ink-3:#7C7264;
+  --rule:#D5CDBE; --field:#2C6B4E; --flag:#B9531F;
+  --shadow:0 1px 2px rgba(23,20,15,.05), 0 10px 26px -16px rgba(23,20,15,.22);
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#14120E; --card:#1D1A15; --ink:#F1ECE1; --ink-2:#BDB4A4; --ink-3:#8A8073;
+  --rule:#332E26; --field:#5FA483; --flag:#E0742F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -16px rgba(0,0,0,.6);
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;padding:0 16px}
+.wrap{max-width:1060px;margin:0 auto;padding-block:40px 64px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(24px,4vw,34px);margin:0 0 4px}
+h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:18px;margin:0 0 10px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--field);margin:0 0 12px}
+.sub{color:var(--ink-2);max-width:76ch;margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;
+  padding:16px 18px;box-shadow:var(--shadow);margin-bottom:16px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.tabs button{border:1px solid var(--rule);border-radius:999px;padding:7px 14px;cursor:pointer;
+  background:var(--card);color:var(--ink-2);font:inherit;font-size:13.5px}
+.tabs button[aria-selected=true]{background:var(--field);border-color:var(--field);color:#fff}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){ .cols{grid-template-columns:1fr} }
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.fields label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink-2)}
+.fields label.wide{grid-column:1/-1}
+.fields input,.fields select{background:var(--paper);color:var(--ink);border:1px solid var(--rule);
+  border-radius:7px;padding:7px 9px;font:inherit;min-width:0;width:100%}
+.fields .req::after{content:" · required";color:var(--flag);font-size:11px}
+.fields .opt::after{content:" · blank = none recorded";color:var(--ink-3);font-size:11px}
+.fields .info::after{content:" · informational only";color:var(--ink-3);font-size:11px}
+.hint{font-size:11px;color:var(--ink-3)}
+.stat{display:flex;align-items:baseline;gap:10px;margin:2px 0 10px}
+.stat .v{font-family:"IBM Plex Mono",monospace;font-size:30px;font-weight:500}
+.stat .l{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3)}
+.good{color:var(--field)} .bad{color:var(--flag)}
+.lines{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:12px}
+.lines td{padding:5px 0;border-bottom:1px solid var(--rule)}
+.lines td:last-child{font-family:"IBM Plex Mono",monospace;text-align:right;white-space:nowrap}
+.unknown{border:1px dashed var(--flag);border-radius:8px;padding:10px 12px;color:var(--ink-2);
+  font-size:13.5px;margin-bottom:12px}
+.unknown b{color:var(--flag)}
+.solver{border-top:2px solid var(--rule);padding-top:10px}
+.solver .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px}
+.solver input{width:76px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);
+  border-radius:7px;padding:5px 8px;font:inherit}
+.note{color:var(--ink-3);font-size:12.5px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.btn{border:1px solid var(--rule);border-radius:7px;padding:7px 12px;cursor:pointer;
+  background:var(--card);color:var(--ink-2);font:inherit;font-size:13.5px}
+.ledger{font-size:12.5px;color:var(--ink-2)}
+.ledger li{margin:2px 0}
+footer{margin-top:26px;color:var(--ink-3);font-size:12.5px;max-width:80ch}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Locator.X · underwriting worksheet</p>
+  <h1>Per-class underwriting, on your numbers</h1>
+  <p class="sub">The same arithmetic the platform's underwriting layer runs — net operating income,
+  annual debt service, DSCR, and the <b>bisection break-even solver</b> against the Investment
+  Standard's lender-ready test (DSCR&nbsp;1.20) — here running only on numbers <b>you</b> type in.
+  Nothing is bundled and nothing is assumed: a blank load-bearing field makes the answer
+  <b>unknown</b>, because a worksheet that quietly fills in a number you never gave it is guessing
+  on your behalf. The full editions run this against the public record; this page is the arithmetic
+  alone.</p>
+
+  <div class="tabs" role="tablist" aria-label="Asset class" id="tabs"></div>
+
+  <div class="cols">
+    <div class="card">
+      <h2 id="inTitle">Inputs</h2>
+      <div class="fields" id="fields"></div>
+      <div class="actions">
+        <button class="btn" id="export">Export worksheet (JSON)</button>
+        <button class="btn" id="clear">Clear this class</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Result</h2>
+      <div id="out"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Assumptions ledger</h2>
+    <p class="note">Every number the result rests on, listed back — the worksheet's version of
+    "the count of unanswerable tests travels with every score". Verify each against its document
+    before relying on anything downstream.</p>
+    <ul class="ledger" id="ledger"><li class="note">Nothing entered yet.</li></ul>
+  </div>
+
+  <footer>Education: how the per-class arithmetic works, so a printed number can be argued with.
+  Not legal, tax, securities or investment advice, and not a valuation — lender terms, insurance
+  quotes, tax bills and operating figures vary by property and by parish/county; verify every
+  input against its source document. Inputs stay in this browser only.
+  © AGI Future Foundation.</footer>
+</div>
+<script>
+'use strict';
+var $=function(s){return document.querySelector(s)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function fmt(n){return n==null?'unknown':Math.round(n).toLocaleString()}
+function fmt$(n){return n==null?'unknown':'$'+Math.round(n).toLocaleString()}
+
+/* ---- field schemas -------------------------------------------------------
+   req:true  -> blank makes every dependent output UNKNOWN (never a default).
+   req:false -> income/reserve extras where blank honestly means "none
+   recorded" and zero UNDERSTATES the result, stated on the label. */
+var CLASSES={
+ apartments5:{name:'Apartments 5+',solveLabel:'rent per unit that clears DSCR',solveUnit:'$/unit/mo',
+  fields:[
+   ['units','Units','count',true,'e.g. 24'],
+   ['rentUnit','Rent per unit','$/mo',true,'in-place, from the rent roll'],
+   ['otherInc','Other income','$/yr',false,'laundry, parking, fees'],
+   ['vacancy','Vacancy + credit loss','% of gross',true,'from the T-12, not hope'],
+   ['opexPct','Operating expenses','% of effective income',true,'excl. taxes & insurance below'],
+   ['taxes','Property taxes','$/yr',true,'the recomputed bill, not the seller’s'],
+   ['insurance','Insurance — quoted','$/yr',true,'a real quote, incl. wind where coastal'],
+   ['loan','Loan amount','$',true,''],
+   ['rate','Interest rate','%/yr',true,''],
+   ['amort','Amortization','years',true,'30 typical']]},
+ smallmulti:{name:'Small multifamily',solveLabel:'rent per unit that clears DSCR',solveUnit:'$/unit/mo',
+  fields:[
+   ['units','Units','count',true,'2–4'],
+   ['rentUnit','Rent per unit','$/mo',true,'in-place or documented market'],
+   ['otherInc','Other income','$/yr',false,''],
+   ['vacancy','Vacancy + credit loss','% of gross',true,'small n — one empty unit is huge'],
+   ['opexPct','Operating expenses','% of effective income',true,'self-managed is still a cost'],
+   ['taxes','Property taxes','$/yr',true,'recomputed at your basis'],
+   ['insurance','Insurance — quoted','$/yr',true,''],
+   ['loan','Loan amount','$',true,''],
+   ['rate','Interest rate','%/yr',true,''],
+   ['amort','Amortization','years',true,'']]},
+ hotel:{name:'Hotels',solveLabel:'occupancy that clears DSCR',solveUnit:'% occupancy',
+  fields:[
+   ['keys','Keys (rooms)','count',true,''],
+   ['adr','ADR','$/night',true,'average daily rate, from the STR set or the books'],
+   ['occ','Occupancy','%',true,'a hotel signs a new lease every night'],
+   ['otherRevPct','Other revenue','% of room revenue',false,'F&B, parking, fees'],
+   ['opexPct','Operating expenses','% of total revenue',true,'departmental + undistributed'],
+   ['taxes','Property taxes','$/yr',true,''],
+   ['insurance','Insurance — quoted, incl. wind/storm','$/yr',true,'a QUOTE, never an assumption — coastal wind pricing breaks pro formas'],
+   ['loan','Loan amount','$',true,''],
+   ['rate','Interest rate','%/yr',true,''],
+   ['amort','Amortization','years',true,'']]},
+ student:{name:'Student housing',solveLabel:'rent per bed that clears DSCR',solveUnit:'$/bed/mo',
+  fields:[
+   ['beds','Beds','count',true,'priced by the bed, not the unit'],
+   ['rentBed','Rent per bed','$/mo',true,''],
+   ['leaseMonths','Lease structure','months',true,'9 academic / 12 full-year',['9','12']],
+   ['acadOcc','Academic-year occupancy','%',true,'the campus ring sets this'],
+   ['summerOcc','Summer occupancy','%',false,'9-month structures only; blank = empty summers'],
+   ['opexPct','Operating expenses','% of effective income',true,'turn costs are real — every bed, every year'],
+   ['taxes','Property taxes','$/yr',true,''],
+   ['insurance','Insurance — quoted','$/yr',true,''],
+   ['loan','Loan amount','$',true,''],
+   ['rate','Interest rate','%/yr',true,''],
+   ['amort','Amortization','years',true,''],
+   ['walkMin','Walk to the university gate','minutes',null,'the campus ring — shown in the ledger, not used in arithmetic']]}
+};
+var cls='apartments5', store={}, target=1.20;
+try{ store=JSON.parse(localStorage.getItem('lx_uw_sheet')||'{}')||{}; }catch(e){ store={}; }
+function saveStore(){ try{ localStorage.setItem('lx_uw_sheet', JSON.stringify(store)); }catch(e){} }
+
+function val(id){
+  var el=document.getElementById('f_'+id); if(!el) return null;
+  var s=(el.value||'').trim(); if(s==='') return null;
+  var n=Number(s.replace(/,/g,'')); return isFinite(n)? n : null;
+}
+function inputs(){
+  var m={}; CLASSES[cls].fields.forEach(function(f){ m[f[0]]=val(f[0]); }); return m;
+}
+function missingRequired(v){
+  return CLASSES[cls].fields.filter(function(f){return f[3]===true && v[f[0]]==null})
+    .map(function(f){return f[1]});
+}
+
+/* ---- the engine: revenue model per class, shared NOI/DS/DSCR ------------- */
+function annualDebtService(v){
+  if(v.loan==null||v.rate==null||v.amort==null) return null;
+  if(v.loan<=0) return 0;
+  var r=v.rate/100/12, n=v.amort*12;
+  if(n<=0) return null;
+  if(r===0) return v.loan/n*12;
+  return v.loan*r/(1-Math.pow(1+r,-n))*12;
+}
+function model(v){
+  /* returns {gross, effective, opex, noi, lines:[[label,val]...]} or null pieces */
+  var L=[], gross=null, eff=null, opex=null;
+  if(cls==='hotel'){
+    if(v.keys!=null&&v.adr!=null&&v.occ!=null){
+      var roomRev=v.keys*v.adr*365*(v.occ/100);
+      var revpar=v.adr*(v.occ/100);
+      var other=roomRev*((v.otherRevPct||0)/100);
+      gross=roomRev+other; eff=gross;
+      L.push(['RevPAR (ADR × occupancy)','$'+revpar.toFixed(2)]);
+      L.push(['Room revenue',fmt$(roomRev)]);
+      L.push(['Other revenue'+(v.otherRevPct==null?' (none recorded)':''),fmt$(other)]);
+    }
+  }else if(cls==='student'){
+    if(v.beds!=null&&v.rentBed!=null&&v.leaseMonths!=null&&v.acadOcc!=null){
+      var acadMonths=v.leaseMonths===9?9:12;
+      var acad=v.beds*v.rentBed*acadMonths*(v.acadOcc/100);
+      var summer=v.leaseMonths===9? v.beds*v.rentBed*3*((v.summerOcc||0)/100) : 0;
+      gross=v.beds*v.rentBed*12; eff=acad+summer;
+      L.push(['Gross potential (12 mo, every bed)',fmt$(gross)]);
+      L.push(['Academic-year income ('+acadMonths+' mo @ '+v.acadOcc+'%)',fmt$(acad)]);
+      if(v.leaseMonths===9) L.push(['Summer income'+(v.summerOcc==null?' (none recorded)':''),fmt$(summer)]);
+    }
+  }else{
+    if(v.units!=null&&v.rentUnit!=null&&v.vacancy!=null){
+      gross=v.units*v.rentUnit*12+(v.otherInc||0);
+      eff=gross*(1-v.vacancy/100);
+      L.push(['Gross potential income',fmt$(gross)]);
+      if(v.otherInc==null) L.push(['Other income (none recorded)','$0']);
+      L.push(['Effective income (after '+v.vacancy+'% vacancy)',fmt$(eff)]);
+    }
+  }
+  if(eff!=null&&v.opexPct!=null){
+    opex=eff*(v.opexPct/100);
+    L.push(['Operating expenses ('+v.opexPct+'%)','−'+fmt$(opex).replace('$','$')]);
+  }
+  var noi=null;
+  if(eff!=null&&opex!=null&&v.taxes!=null&&v.insurance!=null){
+    noi=eff-opex-v.taxes-v.insurance;
+    L.push(['Property taxes','−'+fmt$(v.taxes)]);
+    L.push(['Insurance (quoted)','−'+fmt$(v.insurance)]);
+    L.push(['Net operating income',fmt$(noi)]);
+  }
+  return {gross:gross,effective:eff,opex:opex,noi:noi,lines:L};
+}
+function dscrAt(v){
+  var m=model(v), ds=annualDebtService(v);
+  if(m.noi==null||ds==null||ds<=0) return null;
+  return m.noi/ds;
+}
+/* bisection: find x where DSCR(v with solveKey=x) = target; DSCR monotone in x */
+function solveBreakEven(v,target){
+  var key=cls==='hotel'?'occ':(cls==='student'?'rentBed':'rentUnit');
+  var hiCap=cls==='hotel'?100:1e7;
+  var probe=function(x){ var w={}; for(var k in v) w[k]=v[k]; w[key]=x; return dscrAt(w); };
+  if(probe(hiCap)==null) return {x:null,reason:'missing inputs'};
+  if(probe(hiCap)<target) return {x:null,reason:cls==='hotel'?'not reachable even at 100% occupancy':'not reachable'};
+  var lo=0,hi=cls==='hotel'?100:Math.max(v[key]||1,1);
+  while(probe(hi)<target&&hi<hiCap) hi=Math.min(hi*2,hiCap);
+  for(var i=0;i<80;i++){ var mid=(lo+hi)/2; (probe(mid)<target)? lo=mid : hi=mid; }
+  return {x:(lo+hi)/2,key:key};
+}
+
+/* ---- render -------------------------------------------------------------- */
+function renderTabs(){
+  var t=$('#tabs'); t.innerHTML='';
+  Object.keys(CLASSES).forEach(function(k){
+    var b=document.createElement('button');
+    b.setAttribute('role','tab'); b.setAttribute('aria-selected',String(k===cls));
+    b.textContent=CLASSES[k].name;
+    b.onclick=function(){ cls=k; renderTabs(); renderFields(); recalc(); };
+    t.appendChild(b);
+  });
+}
+function renderFields(){
+  var C=CLASSES[cls]; $('#inTitle').textContent='Inputs — '+C.name;
+  var h=C.fields.map(function(f){
+    var id=f[0],label=f[1],unit=f[2],req=f[3],hint=f[4],opts=f[5];
+    var cl=req===true?'req':(req===false?'opt':'info');
+    var saved=(store[cls]||{})[id]; saved=saved==null?'':saved;
+    var ctrl=opts
+      ? '<select id="f_'+id+'"><option value=""></option>'+opts.map(function(o){
+          return '<option'+(String(saved)===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select>'
+      : '<input id="f_'+id+'" inputmode="decimal" value="'+esc(saved)+'" placeholder="'+esc(unit)+'">';
+    return '<label class="'+(hint&&hint.length>42?'wide ':'')+'"><span class="'+cl+'">'+esc(label)+
+      ' <span class="hint">('+esc(unit)+')</span></span>'+ctrl+
+      (hint?'<span class="hint">'+esc(hint)+'</span>':'')+'</label>';
+  }).join('');
+  $('#fields').innerHTML=h;
+  C.fields.forEach(function(f){
+    var el=document.getElementById('f_'+f[0]);
+    el.addEventListener('input',function(){
+      store[cls]=store[cls]||{}; store[cls][f[0]]=el.value; saveStore(); recalc();
+    });
+    el.addEventListener('change',function(){
+      store[cls]=store[cls]||{}; store[cls][f[0]]=el.value; saveStore(); recalc();
+    });
+  });
+}
+function recalc(){
+  var v=inputs(), C=CLASSES[cls];
+  var miss=missingRequired(v);
+  var m=model(v), ds=annualDebtService(v), dscr=dscrAt(v);
+  var out='';
+  if(miss.length){
+    out+='<div class="unknown"><b>Unknown.</b> The record you typed cannot answer yet — missing: '+
+      miss.map(esc).join(', ')+'. Blanks are never filled in for you.</div>';
+  }
+  out+='<div class="stat"><span class="v '+(dscr==null?'':(dscr>=target?'good':'bad'))+'">'+
+    (dscr==null?'unknown':dscr.toFixed(2))+'</span><span class="l">DSCR (NOI / debt service)</span></div>';
+  out+='<table class="lines">'+m.lines.map(function(l){
+    return '<tr><td>'+esc(l[0])+'</td><td>'+esc(l[1])+'</td></tr>';}).join('')+
+    '<tr><td>Annual debt service</td><td>'+(ds==null?'unknown':'−'+fmt$(ds))+'</td></tr>'+
+    '<tr><td><b>Cash flow after debt service</b></td><td><b>'+
+    ((m.noi!=null&&ds!=null)?fmt$(m.noi-ds):'unknown')+'</b></td></tr></table>';
+  out+='<div class="solver"><div class="row"><b>Break-even solver</b> — bisection, DSCR = '+
+    '<input id="target" type="number" step="0.05" min="0.5" value="'+target.toFixed(2)+'"'+
+    ' aria-label="DSCR target"> <span class="note">(1.20 = the Investment Standard’s lender-ready test)</span></div>';
+  var sv=solveBreakEven(v,target);
+  if(sv.x!=null){
+    var cur=cls==='hotel'?v.occ:(cls==='student'?v.rentBed:v.rentUnit);
+    out+='<p style="margin:8px 0 0">'+esc(C.solveLabel)+' '+target.toFixed(2)+': <b>'+
+      (cls==='hotel'? sv.x.toFixed(1)+'%' : '$'+sv.x.toFixed(0))+'</b> '+
+      '<span class="note">('+esc(C.solveUnit)+(cur!=null?'; you entered '+
+      (cls==='hotel'?cur+'%':'$'+cur):'')+')</span></p>';
+  }else{
+    out+='<p class="note" style="margin:8px 0 0">Break-even: '+esc(sv.reason)+'.</p>';
+  }
+  out+='</div>';
+  $('#out').innerHTML=out;
+  $('#target').addEventListener('change',function(){
+    var t=Number(this.value); if(isFinite(t)&&t>0) target=t; recalc();
+  });
+  renderLedger(v);
+}
+function renderLedger(v){
+  var C=CLASSES[cls], items=[];
+  C.fields.forEach(function(f){
+    var x=v[f[0]];
+    if(x!=null) items.push('<li><b>'+esc(f[1])+'</b>: '+esc(String(x))+' '+esc(f[2])+
+      ' — <span class="note">verify against its document before relying</span></li>');
+  });
+  $('#ledger').innerHTML=items.length?items.join(''):'<li class="note">Nothing entered yet.</li>';
+}
+$('#export').addEventListener('click',function(){
+  var v=inputs(), m=model(v), ds=annualDebtService(v), dscr=dscrAt(v);
+  var rec={worksheet:'Locator.X per-class underwriting', asset_class:CLASSES[cls].name,
+    generated:new Date().toISOString(), inputs:v,
+    outputs:{effective_income:m.effective, operating_expenses:m.opex, noi:m.noi,
+      annual_debt_service:ds, dscr:dscr, missing_required:missingRequired(inputs())},
+    disclaimer:'Education, not advice; not a valuation. Unknown means unknown — no blank was filled in. Verify every input against its source document.'};
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(rec,null,1)],{type:'application/json'}));
+  a.download='locator-x-underwriting-'+cls+'.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
+});
+$('#clear').addEventListener('click',function(){
+  delete store[cls]; saveStore(); renderFields(); recalc();
+});
+renderTabs(); renderFields(); recalc();
+</script>
+</body>
+</html>
