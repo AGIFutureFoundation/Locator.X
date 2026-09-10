@@ -80,6 +80,7 @@ function boot(){
       '<p style="font-size:13px;color:var(--ink2);margin:0 0 6px">' + esc(v[3]) + '</p>' +
       '<p style="font-size:12.5px;color:var(--muted);margin:0"><b>Do this first.</b> ' + esc(v[4]) + '</p>' +
       (window.LXVoice ? LXVoice.speakButton('lxg-tour-' + at) : '') +
+      (window.LXWalkthrough ? ' <button class="btn" id="lxgwalk" title="The app opens each section and reads the guide aloud; say next, back, or stop where the browser supports voice commands">&#9205; Voice walkthrough</button>' : '') +
       '<div id="lxgnav">' +
         '<button class="btn" id="lxgprev"' + (at <= 0 ? ' disabled' : '') + '>&larr; Back</button>' +
         '<button class="btn primary" id="lxgopen">Open ' + esc(v[2]) + '</button>' +
@@ -88,6 +89,7 @@ function boot(){
     const p = $('#lxgprev'); if(p) p.onclick = () => { at = Math.max(0, at - 1); renderTour(); };
     const n = $('#lxgnext'); if(n) n.onclick = () => { at = Math.min(VIEWS.length - 1, at + 1); renderTour(); };
     const o = $('#lxgopen'); if(o) o.onclick = () => { try{ window.LX.showView(v[0]); }catch(e){} };
+    const w = $('#lxgwalk'); if(w) w.onclick = () => { open = false; $('#lxgpanel').hidden = true; window.LXWalkthrough.start(at); };
     if(window.LXVoice) LXVoice.wireSpeakButtons(b, function(id){
       const i = +id.split('-').pop(); const vv = VIEWS[i];
       return vv ? (vv[2] + '. ' + vv[3] + '. Do this first: ' + vv[4]) : '';
