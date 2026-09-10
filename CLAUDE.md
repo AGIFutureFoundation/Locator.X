@@ -10,6 +10,7 @@ python3 curriculum/validate.py        # eight checks; raises, never warns
 python3 scripts/check_links.py        # internal markdown links
 python3 crosswalk/validate_usecodes.py
 python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/
+python3 tests/run.py                  # doctrine smoke tests (PII strip, sample floor, ...)
 ```
 
 CI (`.github/workflows/validate.yml`) runs exactly these. A red check is real — the

@@ -7,6 +7,14 @@ such.
 
 ## [Unreleased]
 
+- **Doctrine smoke tests in CI** — `tests/run.py` (stdlib-only, synthetic fixtures,
+  no data needed) locks the honesty guarantees a refactor could silently break: the
+  NAL probe's PII strip and owner_out_of_state flag, class_screen's sample floor /
+  unverified warning / unmatched surfacing / clean unknown-jurisdiction refusal,
+  top_screen's declared-fields-only ranking with counted exclusions and correct
+  national ordering, build_state's clean dry-run and template refusal, and the
+  repo gates themselves. Wired as a fifth CI step; gate lists in CLAUDE.md and
+  CONTRIBUTING.md updated.
 - **Top-properties pipeline** — the national "find the top properties" machinery:
   crosswalk jurisdictions gain measured/documented `value_field`, `locality_fields`
   and `dedupe_key` declarations (absent means unknown — scripts must not guess);
