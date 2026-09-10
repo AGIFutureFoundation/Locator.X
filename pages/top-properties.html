@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Locator.X top-properties index viewer — load a locally built index and search the highest-assessed lodging, apartments and multifamily by city and district.">
+<title>Locator.X — Top Properties</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F2EFE9; --card:#FBF9F5; --ink:#17140F; --ink-2:#4A443A; --ink-3:#7C7264;
+  --rule:#D5CDBE; --field:#2C6B4E; --flag:#B9531F;
+  --shadow:0 1px 2px rgba(23,20,15,.05), 0 10px 26px -16px rgba(23,20,15,.22);
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#14120E; --card:#1D1A15; --ink:#F1ECE1; --ink-2:#BDB4A4; --ink-3:#8A8073;
+  --rule:#332E26; --field:#5FA483; --flag:#E0742F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -16px rgba(0,0,0,.6);
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;padding:0 16px}
+.wrap{max-width:1060px;margin:0 auto;padding-block:40px 64px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(24px,4vw,34px);margin:0 0 4px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--field);margin:0 0 12px}
+.sub{color:var(--ink-2);max-width:72ch;margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;
+  padding:16px 18px;box-shadow:var(--shadow);margin-bottom:16px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.controls input[type=search],.controls select{background:var(--paper);color:var(--ink);
+  border:1px solid var(--rule);border-radius:7px;padding:7px 10px;font:inherit;min-width:0}
+.controls input[type=search]{flex:1 1 200px}
+.chip{border:1px solid var(--rule);border-radius:999px;padding:5px 12px;cursor:pointer;
+  background:var(--paper);color:var(--ink-2);font-size:13px}
+.chip.on{background:var(--field);border-color:var(--field);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);cursor:pointer;white-space:nowrap}
+td.num{font-family:"IBM Plex Mono",monospace;text-align:right;white-space:nowrap}
+.tag{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3)}
+.warn{color:var(--flag)}
+.note{color:var(--ink-3);font-size:13px}
+.empty{padding:34px 10px;text-align:center;color:var(--ink-2)}
+.tablewrap{overflow-x:auto}
+details summary{cursor:pointer;color:var(--field);font-size:14px}
+footer{margin-top:26px;color:var(--ink-3);font-size:12.5px;max-width:76ch}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Locator.X · top-properties index</p>
+  <h1>Top properties, searchable</h1>
+  <p class="sub">The highest-<b>assessed</b> lodging, apartments&nbsp;5+, small multifamily and
+  neighboring classes from real pulls, searchable by jurisdiction, city and district. This page
+  bundles <b>no data by design</b> — build an index locally with
+  <code>python3&nbsp;scripts/top_screen.py … --out&nbsp;data/top_index.json</code> and load it here.
+  Everything stays in this browser.</p>
+
+  <div class="card">
+    <div class="controls">
+      <input type="file" id="file" accept=".json,application/json">
+      <input type="search" id="q" placeholder="Search city, district, address, code…" disabled>
+      <select id="juri" disabled><option value="">All jurisdictions</option></select>
+      <span id="chips"></span>
+    </div>
+  </div>
+
+  <div class="card" id="evidence" hidden>
+    <details><summary>Evidence notes — what these values are, per jurisdiction</summary>
+      <div id="evbody"></div>
+    </details>
+  </div>
+
+  <div class="card">
+    <div class="tablewrap">
+      <table id="tbl" hidden>
+        <thead><tr>
+          <th data-k="value">Assessment ▾</th><th data-k="class">Class</th>
+          <th data-k="jurisdiction">Jurisdiction</th><th>Locality</th><th>Address</th>
+          <th data-k="code">Use code</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty">No index loaded. The honest empty state: this viewer shows
+      only what a real pull produced — nothing is bundled, nothing is invented.<br>
+      <span class="note">Pipeline: pull per <code>docs/PULL_RECIPE.md</code> →
+      <code>scripts/top_screen.py</code> → load the JSON here.</span></div>
+  </div>
+
+  <footer id="disc">Values are assessed/just values from public rolls — assessments, not
+  prices; non-disclosure jurisdictions carry no sale prices at all (see the evidence notes).
+  Navigation of the public record, not a recommendation or advice.
+  © AGI Future Foundation.</footer>
+</div>
+<script>
+'use strict';
+var IDX=null, entries=[], sortK='value', sortDesc=true, activeClasses={};
+var $=function(s){return document.querySelector(s)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+$('#file').addEventListener('change',function(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{ IDX=JSON.parse(r.result); }catch(e){ alert('Not a valid index JSON: '+e.message); return; }
+    if(!IDX || !Array.isArray(IDX.jurisdictions) || typeof IDX.national_top!=='object'){
+      alert('This JSON does not look like a top_screen.py index.'); return; }
+    boot();
+  };
+  r.readAsText(f);
+});
+function boot(){
+  entries=[];
+  var seen={};
+  Object.keys(IDX.national_top||{}).forEach(function(cls){
+    (IDX.national_top[cls]||[]).forEach(function(e){ add(e, seen); });
+  });
+  Object.keys(IDX.per_jurisdiction_top||{}).forEach(function(k){
+    (IDX.per_jurisdiction_top[k]||[]).forEach(function(e){ add(e, seen); });
+  });
+  var juris={}; entries.forEach(function(e){juris[e.jurisdiction]=1});
+  var jsel=$('#juri'); jsel.innerHTML='<option value="">All jurisdictions</option>';
+  Object.keys(juris).sort().forEach(function(j){
+    var o=document.createElement('option'); o.value=j; o.textContent=j; jsel.appendChild(o);
+  });
+  var classes={}; entries.forEach(function(e){classes[e['class']]=1});
+  activeClasses={}; Object.keys(classes).forEach(function(c){activeClasses[c]=true});
+  var chips=$('#chips'); chips.innerHTML='';
+  Object.keys(classes).sort().forEach(function(c){
+    var b=document.createElement('button'); b.className='chip on'; b.textContent=c;
+    b.onclick=function(){ activeClasses[c]=!activeClasses[c];
+      b.className='chip'+(activeClasses[c]?' on':''); render(); };
+    chips.appendChild(b);
+  });
+  var ev=$('#evbody'); ev.innerHTML='';
+  (IDX.jurisdictions||[]).forEach(function(j){
+    var d=document.createElement('div'); d.style.margin='10px 0';
+    var bits=['<b>'+esc(j.name||j.id)+'</b> — ranks on <code>'+
+      esc(j.value_field||'nothing (unranked: '+(j.unranked_reason||'')+')')+'</code>'];
+    if(j.vocabulary_unverified) bits.push('<span class="warn">vocabulary unverified — provisional</span>');
+    if(j.ranking_note) bits.push(esc(j.ranking_note));
+    (j.caveats||[]).forEach(function(c){bits.push('<span class="note">caveat: '+esc(c)+'</span>')});
+    d.innerHTML=bits.join('<br>');
+    ev.appendChild(d);
+  });
+  $('#evidence').hidden=false; $('#q').disabled=false; jsel.disabled=false;
+  $('#tbl').hidden=false; $('#empty').hidden=true;
+  render();
+}
+function add(e, seen){
+  var k=e.jurisdiction+'|'+(e.row&&(e.row.PARCEL_ID||e.row.PIN||e.row.STKEY))+'|'+e.value+'|'+e.code+'|'+(e.address||'');
+  if(seen[k]) return; seen[k]=1; entries.push(e);
+}
+document.querySelectorAll('th[data-k]').forEach(function(th){
+  th.onclick=function(){ var k=th.dataset.k;
+    if(sortK===k) sortDesc=!sortDesc; else { sortK=k; sortDesc=(k==='value'); }
+    render(); };
+});
+$('#q').addEventListener('input',render);
+$('#juri').addEventListener('change',render);
+function render(){
+  var q=($('#q').value||'').toLowerCase(), jf=$('#juri').value;
+  var list=entries.filter(function(e){
+    if(!activeClasses[e['class']]) return false;
+    if(jf && e.jurisdiction!==jf) return false;
+    if(!q) return true;
+    var loc=Object.keys(e.locality||{}).map(function(k){return e.locality[k]||''}).join(' ');
+    return (loc+' '+(e.address||'')+' '+e.code+' '+e.jurisdiction).toLowerCase().indexOf(q)>=0;
+  });
+  list.sort(function(a,b){
+    var x=a[sortK], y=b[sortK];
+    if(sortK==='value'){ x=x||0; y=y||0; return sortDesc? y-x : x-y; }
+    x=String(x||''); y=String(y||'');
+    return sortDesc? y.localeCompare(x) : x.localeCompare(y);
+  });
+  var tb=$('#rows'); tb.innerHTML='';
+  list.slice(0,500).forEach(function(e){
+    var loc=Object.keys(e.locality||{}).map(function(k){return e.locality[k]})
+      .filter(Boolean).join(' · ');
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="num">'+(e.value!=null? Number(e.value).toLocaleString():'—')+
+      ' <span class="tag">'+esc(e.value_field||'')+'</span></td>'+
+      '<td>'+esc(e['class'])+'</td><td class="tag">'+esc(e.jurisdiction)+'</td>'+
+      '<td>'+esc(loc||'—')+'</td><td>'+esc(e.address||'—')+'</td>'+
+      '<td class="tag">'+esc(e.code)+'</td>';
+    tb.appendChild(tr);
+  });
+  if(!tb.children.length){
+    tb.innerHTML='<tr><td colspan="6" class="note">No entries match the current filters.</td></tr>';
+  }
+}
+</script>
+</body>
+</html>
