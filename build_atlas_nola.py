@@ -14,6 +14,11 @@ for a,b in [
  ('for every Bay Area ZIP and city','for every ZIP and city this edition covers'),
  ('see where the Bay Area can cash-flow','see where this market can cash-flow'),
  ('Live mapping for a Bay Area listings app','Live mapping for a New Orleans listings app'),
+ ('Records: SF Assessor, Alameda County Assessor','Records: Orleans & Jefferson Parish Assessors'),
+ ('1500 Grand Ave, Oakland, CA 94610','1500 Canal St, New Orleans, LA 70112'),
+ ('placeholder="Oakland"','placeholder="New Orleans"'),
+ ('location=Oakland%2C%20CA','location=New%20Orleans%2C%20LA'),
+ ('Oakland for-sale','New Orleans for-sale'),
  ('Every one of the 128,319 sites','Every one of the 125,803 parcels'),
 ]: body=body.replace(a,b)
 body=body.replace('<title>','<title>')  # title lives in head

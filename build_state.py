@@ -46,7 +46,15 @@ import lxbuild as B
 # reworded; the four visible "Bay Area" phrasings are replaced below — the
 # market-panel lines with region-neutral wording, because asserting a
 # specific ZIP footprint the data module may not carry would be a certainty
-# error in prose.
+# error in prose. Second pass (2026-09-10): the visible SF/Oakland strings
+# gained pairs too (map footer credits, research address/city placeholders,
+# scout/data preset searches). The map footer needed an app-side fix as
+# well — src/app.js used to RESTORE a hard-coded SF credit string when
+# switching back to vector basemap, which would have undone the body pair
+# at runtime; it now captures the shell's regionalized footer on first
+# switch and restores that. Deliberately unchanged everywhere: the academy
+# biography (factual history) and the mapping-review dataset table (facts
+# about the datasets that review actually used).
 SPECS = {
     'nola': dict(
         output='atlas_nola.html',
@@ -64,6 +72,12 @@ SPECS = {
             ('see where the Bay Area can cash-flow', 'see where this market can cash-flow'),
             ('Live mapping for a Bay Area listings app',
              'Live mapping for a New Orleans listings app'),
+            ('Records: SF Assessor, Alameda County Assessor',
+             'Records: Orleans & Jefferson Parish Assessors'),
+            ('1500 Grand Ave, Oakland, CA 94610', '1500 Canal St, New Orleans, LA 70112'),
+            ('placeholder="Oakland"', 'placeholder="New Orleans"'),
+            ('location=Oakland%2C%20CA', 'location=New%20Orleans%2C%20LA'),
+            ('Oakland for-sale', 'New Orleans for-sale'),
             ('Every one of the 128,319 sites', 'Every one of the 125,803 parcels'),
         ],
         app_pairs=[
