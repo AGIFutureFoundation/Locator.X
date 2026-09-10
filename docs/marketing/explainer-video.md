@@ -42,11 +42,11 @@ Each line is one 10-second block; wording below is what passed the speech gates
 4. Hotels, apartments, multifamily and student housing are four businesses in one zoning word, and lease length sets the risk.
 5. For apartments the survival number is coverage. The solver pins debt service at one point two and asks which rent level breaks you.
 6. A hotel signs a new lease every night, so underwriting runs on revenue swings and quoted storm insurance, not imaginary rent rolls.
-7. Student housing prices by the campus ring, so you draw the walking distance from the university gate, and the map reveals every dormitory bed inside. *(take pending — see state)*
+7. Student housing prices by the campus ring, so you draw the walking distance from the university gate, and the map reveals every dormitory bed inside.
 8. Louisiana is the proving ground, where one edition maps one hundred twenty-five thousand parcels across Orleans and Jefferson along the river crescent.
 9. New Orleans hides its sale prices. The comps desk refuses to guess there, so income, permits, and assessments carry the valuation honestly.
 10. The opportunity lives in conversion stock, where restoration abatements freeze the property tax bill while stacked historic credits turn empty offices into housing math.
-11. The turn is this, refusing to answer is the feature, and a tool that admits ignorance earns real lasting trust.
+11. The turn is this, refusing to answer is the feature, because every unknown is counted, and a tool that admits ignorance earns trust.
 12. The top property is not the prettiest listing. It is the parcel whose record survives seven gates, education here, never investment advice.
 
 Every figure the script asserts traces to this repository:
