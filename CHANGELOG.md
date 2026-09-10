@@ -7,6 +7,15 @@ such.
 
 ## [Unreleased]
 
+- **Top-properties pipeline** — the national "find the top properties" machinery:
+  crosswalk jurisdictions gain measured/documented `value_field`, `locality_fields`
+  and `dedupe_key` declarations (absent means unknown — scripts must not guess);
+  `scripts/top_screen.py` merges any number of pulled jurisdictions into one index
+  (top-N per jurisdiction × class + national top-N, city/district facets, zero-value
+  exclusions counted, unranked-with-reason where no value field is declared,
+  assessments never called prices); `pages/top-properties.html` is the searchable
+  viewer — bundles no data by design, loads a locally built index, shows each
+  jurisdiction's evidence notes beside the numbers.
 - **First record-layer case candidate (v1.3)** — `docs/cases/wework-lease-duration.md`:
   the duration mismatch from published filings, every claim marked documented/reported,
   sources verified 2026-09-10, with the three circulating restructuring figures kept

@@ -113,6 +113,36 @@ graph LR
 - Lodging never borrows an apartment cap rate: the classes exist precisely because the
   five businesses price differently (A2's whole argument).
 
+## The top-properties pipeline
+
+The "find the top properties" goal, as machinery (all of it runs only on real pulls):
+
+```mermaid
+graph LR
+  P["Pulled rows
+(browser-pane route)"] --> TS["scripts/top_screen.py
+rank on DECLARED value fields only"]
+  XW["crosswalk
+value_field · locality_fields · dedupe_key"] --> TS
+  TS --> IX["data/top_index.json
+(gitignored)"]
+  IX --> V["pages/top-properties.html
+search by city / district / class"]
+```
+
+- The crosswalk now declares, **only where measured or documented**, each jurisdiction's
+  `value_field` (what a rank may honestly sort on — an assessment, never called a price),
+  `locality_fields` (the city/district search facets) and `dedupe_key` (the measured
+  multi-polygon collapse). A jurisdiction without a declared value field is counted but
+  **unranked, with the reason printed** — unknown is an answer.
+- `top_screen.py` merges any number of pulled jurisdictions into one national index:
+  top-N per (jurisdiction × class), a national top-N per class, city/district facets,
+  zero-value rows excluded and counted (Wake's condo shells are shells, not bargains),
+  unverified vocabularies flagged on every run.
+- `pages/top-properties.html` is the searchable front end — it bundles no data by design
+  and loads a locally built index; the evidence notes panel carries each jurisdiction's
+  ranking note and caveats next to the numbers.
+
 ## Growing the layer
 
 1. Run a probe pull in the target county (browser-pane route, `PULL_RECIPE.md`).

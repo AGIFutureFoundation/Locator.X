@@ -40,7 +40,10 @@ Ordering rationale: #1–2 are the two single-probe unlocks (a new market; 67 co
    result** (counts + date), run `python3 crosswalk/validate_usecodes.py`.
 4. Run `python3 scripts/class_screen.py` on the transferred rows — its unmatched-codes
    list is the research queue; never map a code by guess.
-5. Commit with the gates green (`validate.py`, `check_links.py`, the crosswalk gate).
+5. Feed the national index: `python3 scripts/top_screen.py --out data/top_index.json
+   <rows>:<jid> ...` — every new pull deepens the same searchable top-properties index
+   (`pages/top-properties.html`), ranked only on the crosswalk's declared value fields.
+6. Commit with the gates green (`validate.py`, `check_links.py`, the crosswalk gate).
 
 ## When the session also holds the data tree
 
