@@ -55,12 +55,22 @@ def open_nal(path):
 
 
 def main():
-    if len(sys.argv) < 2:
-        sys.exit(__doc__)
-    path = sys.argv[1]
+    argv = sys.argv[1:]
     out = None
-    if "--out" in sys.argv:
-        out = sys.argv[sys.argv.index("--out") + 1]
+    args = []
+    i = 0
+    while i < len(argv):
+        if argv[i] == "--out":
+            if i + 1 >= len(argv):
+                sys.exit("--out needs a path")
+            out = argv[i + 1]
+            i += 2
+        else:
+            args.append(argv[i])
+            i += 1
+    if not args:
+        sys.exit(__doc__)
+    path = args[0]
 
     with open_nal(path) as f:
         reader = csv.DictReader(f)

@@ -106,7 +106,7 @@ def main():
                     lines.append(f"  {p}([{p}]) -.-> {r['ID']}")
         lines.append("```")
         if exts:
-            named = ", ".join(f"**{e}** ({by_id[e]['Title']}, {by_id[e]['Pillar']})" for e in sorted(exts))
+            named = ", ".join(f"**{e}** ({by_id.get(e, {}).get('Title', '?')}, {by_id.get(e, {}).get('Pillar', '?')})" for e in sorted(exts))
             lines.append("")
             lines.append(f"Dashed nodes are prerequisites from other pillars: {named}.")
         lines.append("")
@@ -203,7 +203,7 @@ def main():
     lines.append("")
     lines.append("| ID | Title | Pillar | Level | Kind |")
     lines.append("|----|-------|--------|-------|------|")
-    slug_of = {p: s for p, s, _, _ in [(p, s, x, i) for p, s, x, i in PILLARS]}
+    slug_of = {p: s for p, s, _, _ in PILLARS}
     for r in rows:
         lines.append(f"| {r['ID']} | {r['Title']} | [{r['Pillar']}]({slug_of[r['Pillar']]}.md) | {r['Level']} | {r['Kind']} |")
     lines.append("")

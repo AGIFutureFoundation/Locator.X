@@ -39,6 +39,7 @@ docs/                overview, roadmap, platform notes, publish map, pull recipe
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | The doctrine as rules, the pre-PR checklist, contribution licensing |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | What deploys, over which routes, and what each needs |
 | [`docs/asset-classes/`](docs/asset-classes/README.md) | Hotels, apartments, 5+ multifamily — the sourced use-code crosswalk, the doctrine-enforcing class screen, and the measured region matrix |
+| [`docs/PULL_QUEUE.md`](docs/PULL_QUEUE.md) | The ordered probe queue for the next data session — what each pull unlocks, ingest tools ready |
 
 ## Requirements
 
