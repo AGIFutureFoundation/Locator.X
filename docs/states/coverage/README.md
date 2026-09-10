@@ -32,10 +32,32 @@ packed into a built edition and survived the fleet sweep.
 | Florida | New wave state, chosen by data availability: the DOR statewide assessment rolls (NAL/SDF) are the best bulk entry point of any large state | [`florida.md`](florida.md) |
 | Nebraska *(wave two, opened early by Foundation direction)* | Omaha + wider Nebraska as asset-class expansion candidates — anchors named, probes defined | [`nebraska.md`](nebraska.md) |
 
-Corridor counties already pulled and documented outside the wave states (Wake NC,
-Tippecanoe IN, Utah UT, Mahoning OH, Bernalillo NM, Maricopa AZ, Onondaga NY, …) keep
-their findings in [`PULL_RECIPE.md`](../../PULL_RECIPE.md); they graduate into per-state
-inventories when their states enter a wave.
+## Graduated corridor states
+
+The corridor pulls of 2026-09-04/05 are now per-state inventories — every row measured
+and cited to [`PULL_RECIPE.md`](../../PULL_RECIPE.md), including the field-reliability
+verdicts (the deep-assessment layer: which value, area, year and unit fields actually
+work, and which are documented traps):
+
+| State | Measured counties | File |
+|-------|-------------------|------|
+| North Carolina | Wake, Guilford, Chatham | [`north-carolina.md`](north-carolina.md) |
+| Ohio | Franklin, Mahoning (+ Trumbull `blocked`) | [`ohio.md`](ohio.md) |
+| Indiana | Marion, Tippecanoe | [`indiana.md`](indiana.md) |
+| Utah | Utah County | [`utah.md`](utah.md) |
+| Arizona | Maricopa | [`arizona.md`](arizona.md) |
+| New Mexico | Bernalillo, Sandoval | [`new-mexico.md`](new-mexico.md) |
+| New York | Onondaga (NYC `named`) | [`new-york.md`](new-york.md) |
+
+## Egress routes, dated
+
+- **Container `curl`** — county GIS/open-data hosts blocked as a class (CONNECT 403,
+  verified 2026-09-09 across six Louisiana hosts and the FL DOR).
+- **WebFetch (API-side fetch)** — probed 2026-09-10 against the known-good Bernalillo
+  endpoint: **blocked by the same egress policy.** No route from this environment
+  reaches county records.
+- **Desktop browser pane** — the proven route ([`PULL_RECIPE.md`](../../PULL_RECIPE.md));
+  all `named` probes queue behind a desktop session.
 
 ## How a row is filled
 

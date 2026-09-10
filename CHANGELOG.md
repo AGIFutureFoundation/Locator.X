@@ -7,6 +7,14 @@ such.
 
 ## [Unreleased]
 
+- **Seven corridor states graduated into coverage inventories** — NC, OH, IN, UT, AZ,
+  NM, NY (`docs/states/coverage/`): every row a measured 2026-09-04/05 finding cited to
+  the pull recipe, including the field-reliability verdicts (Wake's TOTUNITS trap,
+  Franklin's no-year-built-for-apartments, Marion's no-price ceiling, Bernalillo's
+  wrong-server reversal, Sandoval's no-use-class ceiling, Onondaga's GFA-vs-SQ_FT).
+  Egress routes dated in the coverage index: container curl and API-side WebFetch are
+  both policy-blocked (2026-09-09/10); the desktop browser pane remains the only route
+  to county records.
 - **The 90-day path, state by state (v1.3)** — `docs/states/ninety-day-path.md`: F6's
   three phases (calibrate / build flow / close or walk clean) with every state-varying
   checkpoint mapped to the state guides — tax-line recompute rules, disclosure regimes,

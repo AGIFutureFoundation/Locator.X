@@ -88,7 +88,10 @@ recorded probe: advanced to `pulled`, or converted to `blocked`/`no public recor
 the reason dated. **Wave two opened early by Foundation direction (2026-09-09):**
 Nebraska — Omaha, Lincoln, Sarpy and the smaller metros as asset-class expansion
 candidates ([`states/coverage/nebraska.md`](states/coverage/nebraska.md)), feeding the
-[asset-class layer](asset-classes/README.md).
+[asset-class layer](asset-classes/README.md). **Corridor states graduated (2026-09-10):**
+the measured 2026-09-04/05 pulls for NC, OH, IN, UT, AZ, NM and NY are now per-state
+coverage inventories with field-reliability verdicts — eleven states carry inventories
+in [`states/coverage/`](states/coverage/README.md).
 
 ## 5. v1.2 — The resource graph
 
