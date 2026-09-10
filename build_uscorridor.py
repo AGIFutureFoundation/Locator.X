@@ -8,8 +8,7 @@ data = B.read('data_uscorridor.js')
 
 # ---- regionalization ----
 for a,b in [
- ('Locator X dashboard · SF Bay Area','Locator X dashboard · New Orleans'),
- ('SF Bay Area','New Orleans'),
+ ('Locator X dashboard · SF Bay Area','Locator X dashboard · US growth corridors'),
  ('Every one of the 128,319 sites','Every one of the 90,000 parcels'),
 ]: body=body.replace(a,b)
 body=body.replace('<title>','<title>')  # title lives in head
@@ -20,7 +19,6 @@ for a,b in [
  ('128,319 real sites from county records','84,116 parcels from five county assessors'),
  ('extruding 128,319 sites','extruding 84,116 parcels'),
 ]: app=app.replace(a,b)
-body=body.replace('Locator X dashboard \u00b7 SF Bay Area','Locator X dashboard \u00b7 US growth corridors')
 body=body.replace('Which of these properties would pay you?','Multifamily, lodging and commercial where the capital is landing')
 body=body.replace('A walkable Bay Area, built from the catalog','Five corridors, built from five county assessors')
 # hide Bay-specific tabs (guide, house hacks) on the NOLA edition

@@ -56,8 +56,9 @@ validator has no flake mode.
   `docs/PULL_RECIPE.md`. Do not fake what you cannot fetch.
 - `node_modules` is not installed by default; `build_state.py --dry-run` deliberately
   avoids needing it or any data.
-- Regionalization pairs in builders must match `src/body.html` exactly —
-  `build_state.py --dry-run nola bay` fails loudly on a stale pair; keep
-  `build_atlas_*.py` and the specs in lockstep.
+- Regionalization pairs in builders must match `src/body.html` exactly, **at their
+  turn in sequence** — `build_state.py --dry-run <spec>` and `scripts/check_pairs.py`
+  both fail loudly on a stale or shadowed pair, and `tests/run.py` holds every hand
+  builder and its spec in lockstep by AST comparison (every shipped edition has both).
 - Full builds and the Playwright fleet sweep need the local data tree
   (`data/README.md`); from a clean checkout only the gates above can run.

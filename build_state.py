@@ -18,10 +18,11 @@ Honesty rules, inherited from the rest of the build:
     record cannot support (the NOLA edition hides the Bay guide and house-hack
     tabs today; a non-disclosure state would hide the comps desk the same way).
 
-The existing build_atlas_*.py remain the canonical builders until a fleet sweep
-verifies this builder's output at parity — the 'nola' and 'bay' specs below are
-transcribed from them for exactly that comparison. Do not delete the originals
-on the strength of a dry run.
+The existing hand builders remain the canonical builders until a fleet sweep
+verifies this builder's output at parity — every shipped edition now has a spec
+below, transcribed pair-for-pair from its builder for exactly that comparison
+(2026-09-10; tests/run.py holds the two in lockstep by AST comparison). Do not
+delete the originals on the strength of a dry run.
 
 Usage:
     python3 build_state.py --list
@@ -105,6 +106,215 @@ SPECS = {
             ('extruding 128,319 sites', 'extruding 161,000 records'),
         ],
         known_stale=[],
+        standalone=True,
+    ),
+    # ---- the rest of the fleet, transcribed 2026-09-10 ---------------------
+    # One spec per remaining hand builder, pair-for-pair and in the builder's
+    # own execution order (order matters: _apply mutates as it goes, which is
+    # how the shadowed-eyebrow bug fixed the same day was even possible).
+    # tests/run.py holds builder and spec in lockstep by comparing this
+    # registry against the AST-extracted pairs of each hand builder.
+    'below': dict(
+        output='below100.html',
+        title='Locator X Below Market',
+        self_id='below',
+        data_module='data_below.js',
+        extra_modules=['sig2_bay.js'],
+        hide_tabs=['hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area',
+             'Locator X dashboard · Bay Area — Below Market 100k'),
+            ('Every one of the 128,319 sites', 'Every one of the 100,000 below-market records'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '100,000 below-market records — condos, townhouses, multi-residence and upgrade candidates'),
+            ('extruding 128,319 sites', 'extruding 100,000 below-market records'),
+        ],
+        standalone=True,
+    ),
+    'income': dict(
+        output='income50.html',
+        title='Locator X Income Fifty',
+        self_id='income',
+        data_module='data_income.js',
+        extra_modules=['sig2_bay.js'],
+        hide_tabs=['hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area',
+             'Locator X dashboard · Bay Area — Income Fifty (income-property classes)'),
+            ('Every one of the 128,319 sites', 'Every one of the 50,000 income-class records'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '50,000 income-property records — multifamily, apartments, hotels, commercial'),
+            ('extruding 128,319 sites', 'extruding 50,000 income-class records'),
+        ],
+        standalone=True,
+    ),
+    'launi': dict(
+        output='launi.html',
+        title='Locator X Baton Rouge',
+        self_id='launi',
+        data_module='data_launi.js',
+        extra_modules=['sig2_launi.js'],
+        hide_tabs=['guide', 'hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area',
+             'Locator X dashboard · Baton Rouge &amp; Louisiana university cities'),
+            ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),
+            ('Which of these properties would pay you?',
+             'Student housing, rentals and land around Louisiana’s biggest campuses'),
+            ('A walkable Bay Area, built from the catalog',
+             'A walkable Baton Rouge, built from the catalog'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '120,000 parcels from the East Baton Rouge Parish roll'),
+            ('extruding 128,319 sites', 'extruding 120,000 parcels'),
+        ],
+        standalone=True,
+    ),
+    'match': dict(
+        output='match50.html',
+        title='Locator X Match Fifty',
+        self_id='match',
+        data_module='data_match.js',
+        extra_modules=['sig2_bay.js'],
+        hide_tabs=['hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area',
+             'Locator X dashboard · Bay Area — Match Fifty (high-match band)'),
+            ('Every one of the 128,319 sites', 'Every one of the 50,000 match-band records'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '50,000 recent-basis records in the 85–90% match band'),
+            ('extruding 128,319 sites', 'extruding 50,000 match-band records'),
+        ],
+        standalone=True,
+    ),
+    # build_nola.py — the original New Orleans edition (Orleans Parish only);
+    # distinct from 'nola' above, which is the two-parish atlas. It opens on
+    # the Map view, not Home: the campus pins and highlighted candidate deals
+    # (src/campus.js) are the point of this edition, and they live on the map.
+    'nola-classic': dict(
+        output='nola.html',
+        title='Locator X New Orleans',
+        self_id='nola',
+        data_module='data_nola.js',
+        extra_modules=['sig2_nola.js'],
+        hide_tabs=['guide', 'hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · New Orleans'),
+            ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),
+            ('Basemap: Natural Earth · US Census TIGER · Zillow neighborhood boundaries '
+             '· Market data © Zillow Research · Records: SF Assessor, Alameda County Assessor',
+             'Basemap: Natural Earth · US Census TIGER · Zillow neighborhood boundaries '
+             '· Market data © Zillow Research · Records: City of New Orleans parcel + '
+             'building-footprint GIS (data.nola.gov)'),
+            ('<button data-gsel="start" aria-selected="true">Start</button>',
+             '<button data-gsel="start">Start</button>'),
+            ('<button data-gsel="find">Find</button>',
+             '<button data-gsel="find" aria-selected="true">Find</button>'),
+            ('<button role="tab" data-view="home" data-group="start" aria-selected="true">Home</button>',
+             '<button role="tab" data-view="home" data-group="start">Home</button>'),
+            ('<button role="tab" data-view="mapview" data-group="find">Map</button>',
+             '<button role="tab" data-view="mapview" data-group="find" aria-selected="true">Map</button>'),
+            ('<section id="mapview" class="view">',
+             '<section id="mapview" class="view active">'),
+            ('<section id="home" class="view active"><div class="page"><div class="inner wide">',
+             '<section id="home" class="view"><div class="page"><div class="inner wide">'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '90,000 real parcels from Orleans Parish records'),
+            ('extruding 128,319 sites', 'extruding 90,000 parcels'),
+        ],
+        standalone=True,
+    ),
+    'sheltercove': dict(
+        output='sheltercove.html',
+        title='Locator X Shelter Cove',
+        self_id='sc',
+        data_module='data_sc.js',
+        extra_modules=['sig2_bay.js'],
+        hide_tabs=['guide', 'hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · Shelter Cove'),
+            ('Every one of the 128,319 sites', 'Every one of the 4,284 parcels'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '4,284 real parcels from Humboldt County records'),
+            ('extruding 128,319 sites', 'extruding 4,284 parcels'),
+        ],
+        standalone=True,
+    ),
+    'uscorridor': dict(
+        output='uscorridor.html',
+        title='Locator X US Corridors',
+        self_id='corr',
+        data_module='data_uscorridor.js',
+        extra_modules=['sig2_uscorridor.js'],
+        hide_tabs=['guide', 'hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · US growth corridors'),
+            ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),
+            ('Which of these properties would pay you?',
+             'Multifamily, lodging and commercial where the capital is landing'),
+            ('A walkable Bay Area, built from the catalog',
+             'Five corridors, built from five county assessors'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '84,116 parcels from five county assessors'),
+            ('extruding 128,319 sites', 'extruding 84,116 parcels'),
+        ],
+        standalone=True,
+    ),
+    'usnew5': dict(
+        output='usnew5.html',
+        title='Locator X New Corridors',
+        self_id='new5',
+        data_module='data_usnew5.js',
+        extra_modules=['sig2_uscorridor.js'],
+        hide_tabs=['guide', 'hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · US growth corridors'),
+            ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),
+            ('Which of these properties would pay you?',
+             'Multifamily, lodging and commercial where the capital is landing'),
+            ('A walkable Bay Area, built from the catalog',
+             'Five corridors, built from five county assessors'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '84,116 parcels from five county assessors'),
+            ('extruding 128,319 sites', 'extruding 84,116 parcels'),
+        ],
+        standalone=True,
+    ),
+    'uswide': dict(
+        output='uswide.html',
+        title='Locator X Conversion Stock',
+        self_id='wide',
+        data_module='data_uswide.js',
+        extra_modules=['sig2_uscorridor.js'],
+        hide_tabs=['guide', 'hacks'],
+        body_pairs=[
+            ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · US growth corridors'),
+            ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),
+            ('Which of these properties would pay you?',
+             'Multifamily, lodging and commercial where the capital is landing'),
+            ('A walkable Bay Area, built from the catalog',
+             'Five corridors, built from five county assessors'),
+        ],
+        app_pairs=[
+            ('128,319 real sites from county records',
+             '84,116 parcels from five county assessors'),
+            ('extruding 128,319 sites', 'extruding 84,116 parcels'),
+        ],
         standalone=True,
     ),
     # Template for the next wave state. Copy, fill, dry-run. It deliberately

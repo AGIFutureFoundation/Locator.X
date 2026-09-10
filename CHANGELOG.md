@@ -7,6 +7,25 @@ such.
 
 ## [Unreleased]
 
+- **The whole fleet is spec-driven; four editions' eyebrows fixed** — every
+  shipped edition now has a `build_state.py` spec, transcribed pair-for-pair
+  and in execution order from its hand builder (nine added: `below`, `income`,
+  `launi`, `match`, `nola-classic`, `sheltercove`, `uscorridor`, `usnew5`,
+  `uswide`, joining `nola`/`bay`); all eleven dry-run clean. `tests/run.py`
+  holds builder and spec in lockstep by AST comparison — the same pairs, in
+  the same order, and the same title, or the suite fails — so a fix landing
+  on one side can no longer drift from the other. The originals remain
+  canonical until the fleet sweep proves byte-parity (roadmap v2.0).
+  Enabling find: `check_pairs.py` upgraded to sequential semantics (each find
+  must match *at its turn* against the mutating text, exactly as a builder
+  runs), which surfaced thirteen more silent no-ops — nine dead generic
+  `'SF Bay Area'` pairs whose only occurrence an earlier pair had already
+  consumed, and four shadowed eyebrow replaces, meaning `launi`,
+  `uscorridor`, `usnew5` and `uswide` had shipped a "New Orleans" dashboard
+  eyebrow instead of their intended "Baton Rouge & Louisiana university
+  cities" / "US growth corridors" wording since those lines were written.
+  Fixed by folding the intended wording into the first (live) pair; 80 live
+  pairs now verify sequentially clean across 14 builders.
 - **Fleet parity gate; two dead pairs removed** — new `scripts/check_pairs.py`
   extracts every per-file builder's literal replace pairs via the `ast` module
   (no builder executed, no data or node_modules needed) and fails when a `find`

@@ -19,6 +19,14 @@ two builders keep them as placeholders. The app source is the src/ modules
 concatenated, the same shortcut build_state.py --dry-run documents: enough to
 verify app pairs without node_modules.
 
+SEQUENTIAL, not per-pair: pairs are applied in source order to a mutating copy
+of each target, exactly as the builder itself runs, and each find must exist AT
+ITS TURN. A find that matches pristine source but was already consumed by an
+earlier, broader pair is a shadowed replacement — the second failure class this
+check found on its own upgrade day (2026-09-10): four builders replaced the
+dashboard eyebrow generically first, so their later edition-specific eyebrow
+text silently never landed.
+
 Exit 1 with every stale pair named. Run: python3 scripts/check_pairs.py
 (tests/run.py runs it, so CI holds this on every push and PR. An optional
 root argument points it at another tree — the test suite uses that to prove
@@ -35,7 +43,7 @@ TARGETS = ("body", "head", "app")
 
 
 def extract(path):
-    """(kind, target, literal) for every checkable replacement in one builder."""
+    """(lineno, kind, target, find, repl) in source order, one builder."""
     tree = ast.parse(open(path, encoding="utf-8").read())
     found = []
     for node in ast.walk(tree):
@@ -53,7 +61,8 @@ def extract(path):
                     if (isinstance(el, ast.Tuple) and len(el.elts) == 2
                             and all(isinstance(e, ast.Constant) for e in el.elts)
                             and el.elts[0].value != el.elts[1].value):
-                        found.append(("replace", target, el.elts[0].value))
+                        found.append((el.lineno, "replace", target,
+                                      el.elts[0].value, el.elts[1].value))
         if not (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
                 and isinstance(node.value.func, ast.Attribute)):
             continue
@@ -63,13 +72,16 @@ def extract(path):
                 and fn.value.id in TARGETS and len(call.args) == 2
                 and all(isinstance(a, ast.Constant) for a in call.args)
                 and call.args[0].value != call.args[1].value):
-            found.append(("replace", fn.value.id, call.args[0].value))
+            found.append((node.lineno, "replace", fn.value.id,
+                          call.args[0].value, call.args[1].value))
         # X = re.sub(r'pattern', repl, X, ...)
         if (fn.attr == "sub" and isinstance(fn.value, ast.Name) and fn.value.id == "re"
                 and len(call.args) >= 3 and isinstance(call.args[0], ast.Constant)
+                and isinstance(call.args[1], ast.Constant)
                 and isinstance(call.args[2], ast.Name) and call.args[2].id in TARGETS):
-            found.append(("re.sub", call.args[2].id, call.args[0].value))
-    return found
+            found.append((node.lineno, "re.sub", call.args[2].id,
+                          call.args[0].value, call.args[1].value))
+    return sorted(found, key=lambda f: f[0])
 
 
 def main():
@@ -93,18 +105,26 @@ def main():
     for b in builders:
         pairs = extract(os.path.join(root, b))
         total += len(pairs)
-        for kind, target, lit in pairs:
-            ok = (re.search(lit, src[target]) if kind == "re.sub"
-                  else lit in src[target])
-            if not ok:
-                stale.append((b, kind, target, lit))
+        # each builder mutates its own copy, in the builder's own source order
+        text = dict(src)
+        for lineno, kind, target, find, repl in pairs:
+            if kind == "re.sub":
+                if not re.search(find, text[target]):
+                    stale.append((b, lineno, kind, target, find))
+                text[target] = re.sub(find, repl, text[target])
+            else:
+                if find not in text[target]:
+                    stale.append((b, lineno, kind, target, find))
+                text[target] = text[target].replace(find, repl)
         print("  %-30s %3d pairs %s" % (b, len(pairs),
               "ok" if not any(s[0] == b for s in stale) else "STALE"))
 
     if stale:
-        print("\nSTALE PAIRS — these replacements silently no-op today:")
-        for b, kind, target, lit in stale:
-            print("  %s: %s on %s finds nothing: %r" % (b, kind, target, lit))
+        print("\nSTALE PAIRS — these replacements silently no-op today")
+        print("(dead against current source, or shadowed by an earlier pair):")
+        for b, lineno, kind, target, find in stale:
+            print("  %s:%d: %s on %s finds nothing at its turn: %r"
+                  % (b, lineno, kind, target, find))
         print("Fix the builder (or delete a pair whose text left the shell for good).")
         return 1
     print("  ✓ %d literal pairs across %d builders all match current source"

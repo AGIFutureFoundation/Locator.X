@@ -12,8 +12,9 @@ cannot silently un-enforce them:
   3. top_screen ranks only on declared value fields (undeclared jurisdictions are
      UNRANKED with the reason), excludes and counts zero/blank values, orders the
      national top correctly across jurisdictions, and never calls a value a price.
-  4. build_state --dry-run passes for nola/bay with zero '!' problems against the
-     current shell, and the unfilled template refuses.
+  4. build_state --dry-run passes for every shipped edition's spec with zero '!'
+     problems against the current shell, the unfilled templates refuse, and each
+     hand builder's pairs match its spec exactly (lockstep, compared by AST).
   5. check_pairs holds fleet parity: every per-file builder's literal replace
      pairs match current source, and a synthetic tree with one dead find fails —
      the check itself is checked, not just today's pairs.
@@ -104,11 +105,45 @@ def main():
           "top: entry missing its value_field label")
 
     # ---- 4. build_state dry-run: clean pairs, template refuses -------------
-    out = run(["build_state.py", "--dry-run", "nola", "bay"])
+    out = run(["build_state.py", "--dry-run", "nola", "bay", "below", "income",
+               "launi", "match", "nola-classic", "sheltercove", "uscorridor",
+               "usnew5", "uswide"])
     check("    ! " not in out, "build_state: dry-run reported problems", out)
     run(["build_state.py", "--dry-run", "florida-template"], expect_rc=1)
     run(["build_state.py", "--dry-run", "omaha-template"], expect_rc=1)
     run(["build_state.py", "--dry-run", "lincoln-template"], expect_rc=1)
+
+    # ---- 4b. spec registry and hand builders stay in lockstep --------------
+    # Every shipped edition has both a hand builder (canonical until byte
+    # parity) and a spec. The pairs must be IDENTICAL, in the same order —
+    # a fix landing in one but not the other is the drift this fails on.
+    sys.path.insert(0, ROOT)
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import check_pairs
+    import build_state
+    LOCKSTEP = {
+        "build_atlas_nola.py": "nola", "build_atlas_bay.py": "bay",
+        "build_below.py": "below", "build_income.py": "income",
+        "build_launi.py": "launi", "build_match.py": "match",
+        "build_nola.py": "nola-classic", "build_sc.py": "sheltercove",
+        "build_uscorridor.py": "uscorridor", "build_usnew5.py": "usnew5",
+        "build_uswide.py": "uswide",
+    }
+    for bfile, skey in sorted(LOCKSTEP.items()):
+        got = check_pairs.extract(os.path.join(ROOT, bfile))
+        body = [(f, r) for _, k, t, f, r in got if k == "replace" and t == "body"]
+        app = [(f, r) for _, k, t, f, r in got if k == "replace" and t == "app"]
+        titles = [r for _, k, t, f, r in got if k == "re.sub" and t == "head"]
+        spec = build_state.SPECS[skey]
+        check(body == [tuple(p) for p in spec["body_pairs"]],
+              "lockstep: %s body pairs differ from spec %r" % (bfile, skey),
+              "builder: %s\nspec:    %s" % (body, spec["body_pairs"]))
+        check(app == [tuple(p) for p in spec["app_pairs"]],
+              "lockstep: %s app pairs differ from spec %r" % (bfile, skey),
+              "builder: %s\nspec:    %s" % (app, spec["app_pairs"]))
+        check(titles == ["<title>%s</title>" % spec["title"]],
+              "lockstep: %s title differs from spec %r" % (bfile, skey),
+              "builder: %s vs spec title %r" % (titles, spec["title"]))
 
     # ---- 5. check_pairs: fleet parity, and the failure mode itself ---------
     out = run(["scripts/check_pairs.py"])

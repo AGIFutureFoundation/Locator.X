@@ -7,7 +7,6 @@ data = B.read('data_sc.js')
 
 for a, b in [
  ('Locator X dashboard · SF Bay Area','Locator X dashboard · Shelter Cove'),
- ('SF Bay Area','Shelter Cove & the Lost Coast'),
  ('Every one of the 128,319 sites','Every one of the 4,284 parcels'),
 ]: body = body.replace(a, b)
 head = re.sub(r'<title>[^<]*</title>', '<title>Locator X Shelter Cove</title>', head, 1)
