@@ -52,13 +52,22 @@ def to_num(v):
 
 
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    argv = sys.argv[1:]
+    value_field = "JV"
+    args = []
+    i = 0
+    while i < len(argv):
+        if argv[i] == "--value-field":
+            if i + 1 >= len(argv):
+                sys.exit("--value-field needs a field name")
+            value_field = argv[i + 1]
+            i += 2
+        else:
+            args.append(argv[i])
+            i += 1
     if len(args) < 2:
         sys.exit(__doc__)
     rows_path, jid = args[0], args[1]
-    value_field = "JV"
-    if "--value-field" in sys.argv:
-        value_field = sys.argv[sys.argv.index("--value-field") + 1]
 
     with open(os.path.join(ROOT, "crosswalk", "usecodes.json"), encoding="utf-8") as f:
         xw = json.load(f)

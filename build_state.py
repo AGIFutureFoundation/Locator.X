@@ -167,12 +167,15 @@ def check(key, spec):
             errors.append((kind, 'app pair not found in src modules: %r' % find))
     data_path = B.R + spec['data_module']
     data_ok = os.path.exists(data_path)
+    missing_extra = [m for m in spec['extra_modules'] if not os.path.exists(B.R + m)]
     print('spec %r:' % key)
     print('  output        %s (+ standalone)' % spec['output'] if spec.get('standalone')
           else '  output        %s' % spec['output'])
     print('  data module   %s — %s' % (spec['data_module'],
           'present' if data_ok else 'ABSENT (build will refuse; see data/README.md)'))
-    print('  modules       %d in registry, %d extra' % (len(B.MODULES), len(spec['extra_modules'])))
+    print('  modules       %d in registry, %d extra%s' % (len(B.MODULES), len(spec['extra_modules']),
+          '' if not missing_extra else ' — ABSENT: %s (generated locally, e.g. build_sig2.py; build will refuse)'
+          % ', '.join(missing_extra)))
     print('  hidden tabs   %s' % (', '.join(spec['hide_tabs']) or 'none'))
     hard = [m for k, m in errors if k == 'error']
     soft = [m for k, m in errors if k == 'warn']
@@ -198,6 +201,11 @@ def build(key, spec):
         raise SystemExit('BUILD STOPPED — data module missing: %s\n'
                          'Rebuild it locally first; the data tree is never committed '
                          '(data/README.md).' % data_path)
+    for m in spec['extra_modules']:
+        if not os.path.exists(B.R + m):
+            raise SystemExit('BUILD STOPPED — extra module missing: %s\n'
+                             'It is generated locally (e.g. build_sig2.py) and never '
+                             'committed; rebuild it first.' % (B.R + m))
     app = _apply(B.app_source(spec['self_id']), spec['app_pairs'], 'app', errors,
                  spec.get('known_stale', ()))
     hard = [m for k, m in errors if k == 'error']

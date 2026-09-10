@@ -54,6 +54,8 @@ def probe(url):
                 continue  # server dislikes HEAD; retry as GET
             return e.code
         except Exception as e:
+            if method == "HEAD":
+                continue  # some hosts drop/reset HEAD but serve GET; never call it rot untried
             return "ERR " + type(e).__name__
     return "ERR"
 

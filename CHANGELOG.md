@@ -7,6 +7,17 @@ such.
 
 ## [Unreleased]
 
+- **Review fixes across the session's tooling** — six findings from a correctness pass:
+  `build_state.py` now refuses (and dry-run flags) missing extra modules with the exact
+  path instead of a raw traceback; the link sweep retries GET when a host drops HEAD
+  (killing a false-rot path); `class_screen.py` and `fl_nal_probe.py` gained real flag
+  parsing (flag-anywhere ordering, clean errors on missing values); `gen_courses.py`
+  prereq lookups are defensive and an identity comprehension removed (catalog output
+  byte-identical).
+- **`docs/PULL_QUEUE.md`** — the ordered ten-probe queue for the next desktop data
+  session: what each pull unlocks (Douglas NE seeds a market; one Orange FL file flips
+  67 counties), which rows and crosswalk entries it advances, and the two build-machine
+  verifications queued behind it (fleet sweep after the shell change; build_state parity).
 - **Seven corridor states graduated into coverage inventories** — NC, OH, IN, UT, AZ,
   NM, NY (`docs/states/coverage/`): every row a measured 2026-09-04/05 finding cited to
   the pull recipe, including the field-reliability verdicts (Wake's TOTUNITS trap,
