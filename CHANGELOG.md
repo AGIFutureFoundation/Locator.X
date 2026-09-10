@@ -7,6 +7,29 @@ such.
 
 ## [Unreleased]
 
+- **The app exports to the desk — and refuses to launder its one estimate** —
+  the record-driven Underwriting sheet gains a "Desk worksheet JSON" button:
+  the open case in the standalone worksheet's own shape (per-unit rent, opex
+  excl. taxes & insurance, the worksheet's own debt arithmetic), importable
+  by the worksheet page and renderable by any edition's Desk-worksheet
+  panel. The insurance field ships BLANK on purpose: the app carries an
+  estimate, the worksheet field demands a written quote, and writing one
+  into the other would launder a guess — so the exported DSCR reads unknown
+  until a real quote is typed. Every input's derivation travels in a
+  `provenance` map ("an offer, not a record", "not a rent roll", "not a
+  T-12"), which the desk panel and the worksheet import note both display.
+  Built as a pure `LXUW.deskRecord` function, verified end-to-end under
+  headless Chromium (16 checks): the mapped reference case imports with its
+  unknown intact and completes to DSCR 0.89 the moment the quote is typed.
+- **Ninth evidence lesson: where a number lives** — the applied-courses
+  evidence track teaches the four kinds the tooling now enforces (public
+  record / demand the document / quote / measurement), the laundering
+  failure the vocabulary exists to stop, and lands on the app's own
+  deliberate blank; drill included, rendered and answered in the smoke.
+- **`build_state.py --all`** — one entry point for the fleet: every filled
+  spec runs, unfilled templates are skipped BY NAME (a refusal stays
+  visible, never a silent no-op); `tests/run.py` drives the dry run through
+  it and asserts all 11 specs + 3 named skips.
 - **The whole fleet is spec-driven; four editions' eyebrows fixed** — every
   shipped edition now has a `build_state.py` spec, transcribed pair-for-pair
   and in execution order from its hand builder (nine added: `below`, `income`,

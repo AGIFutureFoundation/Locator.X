@@ -27,7 +27,9 @@ delete the originals on the strength of a dry run.
 Usage:
     python3 build_state.py --list
     python3 build_state.py --dry-run nola
+    python3 build_state.py --dry-run --all   # every filled spec; templates skipped, named
     python3 build_state.py nola          # full build; needs data + node_modules
+    python3 build_state.py --all         # build the whole fleet (data machine)
 """
 import os
 import re
@@ -472,6 +474,17 @@ def main():
         return
     dry = '--dry-run' in args
     keys = [a for a in args if not a.startswith('--')]
+    if '--all' in args:
+        # every spec whose fields are filled; templates are skipped BY NAME so
+        # the skip is visible, never silent — a template is a refusal, not a no-op
+        filled = [k for k in sorted(SPECS)
+                  if not any('REQUIRED' in str(SPECS[k].get(f, 'REQUIRED'))
+                             for f in ('output', 'title', 'self_id', 'data_module'))]
+        skipped = [k for k in sorted(SPECS) if k not in filled]
+        if skipped:
+            print('--all: skipping %d unfilled template(s): %s'
+                  % (len(skipped), ', '.join(skipped)))
+        keys = filled + [k for k in keys if k not in filled]
     if not keys:
         raise SystemExit('name a spec: ' + ', '.join(sorted(SPECS)))
     ok = True
