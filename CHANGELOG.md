@@ -7,6 +7,38 @@ such.
 
 ## [Unreleased]
 
+- **Fleet parity gate; two dead pairs removed** — new `scripts/check_pairs.py`
+  extracts every per-file builder's literal replace pairs via the `ast` module
+  (no builder executed, no data or node_modules needed) and fails when a `find`
+  no longer exists in current source, because `str.replace()` silently no-ops
+  on a stale find and the edition ships the original prose. Its first run
+  measured 38 flags across 14 builders: 20 were deliberate no-op placeholders
+  (now skipped), and 18 were two genuinely dead pairs carried by nine builders
+  (`'locator.x — Bay Area'`, `'San Francisco bay area'`) whose finds never
+  matched any committed `src/body.html` — deleted, since the eyebrow retitle
+  they aimed at is already covered by each builder's live
+  `'Locator X dashboard · SF Bay Area'` pair. `tests/run.py` now runs the
+  check (93 pairs verified) and proves the failure mode on a synthetic tree
+  with one dead find, so the check itself is checked.
+- **Every worksheet input names where its answer lives** — the underwriting
+  worksheet's fields each carry a source line in one of four honest kinds:
+  public record (assessor parcel record, tax collector's bill), demand the
+  document (rent roll, T-12, STR report — rents and occupancy are not public
+  record), quote / term sheet (insurance and loan terms are offers, not
+  records), or measure it (the campus-ring walk). The unknowns banner, the
+  assumptions ledger, and the JSON export all carry the same sources, so an
+  unknown is now a navigation target, not a dead end — and the app's desk
+  panel names where each missing answer lives when it renders an export that
+  carries unknowns (older exports without sources still render). Smokes
+  extended: 22 worksheet + 14 interop checks, all passing.
+- **Nebraska landing rows** — `docs/states/coverage/nebraska.md` gains a
+  landing-rows section for probes #1 (Douglas) and #4 (Lancaster): exactly
+  what each probe measures, the repository row where the number lands (the
+  crosswalk, this file's verdicts, the refusing `omaha-template` /
+  `lincoln-template` specs), and an honest "not probed / template refuses,
+  by design" status per row, so the desktop pull session writes into
+  pre-built rows instead of prose. The pull queue's #1 and #4 entries link
+  to the section and name the waiting scaffolds.
 - **Desk-worksheet interop** — a standalone analysis can now travel into an
   edition. The underwriting worksheet gains an Import that is the exact inverse
   of its export (inputs come back as typed; a record exported with unknowns

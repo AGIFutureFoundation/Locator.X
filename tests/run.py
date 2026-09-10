@@ -14,7 +14,10 @@ cannot silently un-enforce them:
      national top correctly across jurisdictions, and never calls a value a price.
   4. build_state --dry-run passes for nola/bay with zero '!' problems against the
      current shell, and the unfilled template refuses.
-  5. The crosswalk gate and internal link check pass from the tree as committed.
+  5. check_pairs holds fleet parity: every per-file builder's literal replace
+     pairs match current source, and a synthetic tree with one dead find fails —
+     the check itself is checked, not just today's pairs.
+  6. The crosswalk gate and internal link check pass from the tree as committed.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -107,7 +110,22 @@ def main():
     run(["build_state.py", "--dry-run", "omaha-template"], expect_rc=1)
     run(["build_state.py", "--dry-run", "lincoln-template"], expect_rc=1)
 
-    # ---- 5. repo gates hold from the committed tree ------------------------
+    # ---- 5. check_pairs: fleet parity, and the failure mode itself ---------
+    out = run(["scripts/check_pairs.py"])
+    check("all match current source" in out, "pairs: fleet parity check failed", out)
+    ptree = os.path.join(tmp, "pairtree")
+    os.makedirs(os.path.join(ptree, "src"))
+    open(os.path.join(ptree, "src", "body.html"), "w").write("<p>real text</p>")
+    open(os.path.join(ptree, "src", "head.html"), "w").write("<title>t</title>")
+    open(os.path.join(ptree, "src", "app.js"), "w").write("var x = 1\n")
+    open(os.path.join(ptree, "lxbuild.py"), "w").write("MODULES = ['src/app.js']\n")
+    open(os.path.join(ptree, "build_synth.py"), "w").write(
+        "for a,b in [('real text','regional text'),('gone text','x')]:\n"
+        "    body = body.replace(a, b)\n")
+    out = run(["scripts/check_pairs.py", ptree], expect_rc=1)
+    check("'gone text'" in out, "pairs: a stale find did not fail the check", out)
+
+    # ---- 6. repo gates hold from the committed tree ------------------------
     run(["crosswalk/validate_usecodes.py"])
     run(["scripts/check_links.py"])
 
@@ -117,7 +135,7 @@ def main():
             print("  ✗ " + fmsg.replace("\n", "\n    "))
         return 1
     print("  ✓ all doctrine smoke tests pass (PII strip, sample floor, declared-field "
-          "ranking, dry-run pairs, gates)")
+          "ranking, dry-run pairs, fleet parity, gates)")
     return 0
 
 

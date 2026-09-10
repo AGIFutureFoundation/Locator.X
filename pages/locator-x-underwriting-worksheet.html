@@ -44,6 +44,9 @@ h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:18px;margin:0 0 
 .fields .opt::after{content:" · blank = none recorded";color:var(--ink-3);font-size:11px}
 .fields .info::after{content:" · informational only";color:var(--ink-3);font-size:11px}
 .hint{font-size:11px;color:var(--ink-3)}
+.src{font-size:11px;color:var(--ink-3)}
+.src b{font-weight:600;letter-spacing:.03em}
+.src.record b{color:var(--field)}
 .stat{display:flex;align-items:baseline;gap:10px;margin:2px 0 10px}
 .stat .v{font-family:"IBM Plex Mono",monospace;font-size:30px;font-weight:500}
 .stat .l{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
@@ -181,6 +184,37 @@ var CLASSES={
    ['amort','Amortization','years',true,''],
    ['walkMin','Walk to the university gate','minutes',null,'the campus ring — shown in the ledger, not used in arithmetic']]}
 };
+/* ---- where each answer lives --------------------------------------------
+   Every input is a question with an address. Four honest kinds:
+     record   — the public record answers it (the platform's home turf)
+     document — a document the seller can be made to produce; not public record
+     market   — a live quote or term sheet; an assumption here breaks pro formas
+     measure  — measure it yourself; it is a distance, not an opinion
+   No field pretends the record carries what it does not: rents, rates and
+   occupancy are documents, insurance is a quote — saying so IS the navigation. */
+var KINDS={record:'public record',document:'demand the document',market:'quote / term sheet',measure:'measure it'};
+var SOURCES={
+ units:['record','the county assessor’s parcel record where the roll publishes a unit count; otherwise the rent roll'],
+ keys:['document','the STR report or the books; some assessor rolls publish a room count'],
+ beds:['document','the rent roll and floor plans — beds, not units, is the count that earns'],
+ rentUnit:['document','the rent roll — rents are not public record'],
+ rentBed:['document','the rent roll — rents are not public record'],
+ adr:['document','the STR report or the books — nightly rates are not public record'],
+ occ:['document','the STR report or the books'],
+ otherInc:['document','the T-12 — if it isn’t on the books, it doesn’t count'],
+ otherRevPct:['document','the departmental statements'],
+ vacancy:['document','the T-12 — measured loss, not hoped-for loss'],
+ opexPct:['document','the T-12 and operating statements'],
+ taxes:['record','the county tax collector’s bill for the parcel — recompute at your basis where a sale resets the assessment'],
+ insurance:['market','a written quote from a carrier — never an assumption, never public record'],
+ loan:['market','your lender’s term sheet — terms are offers, not records'],
+ rate:['market','your lender’s term sheet'],
+ amort:['market','your lender’s term sheet'],
+ leaseMonths:['document','the lease files'],
+ acadOcc:['document','the books across academic years'],
+ summerOcc:['document','the books'],
+ walkMin:['measure','walk it on a map — the campus ring is a distance, not an opinion']
+};
 var cls='apartments5', store={}, target=1.20;
 try{ store=JSON.parse(localStorage.getItem('lx_uw_sheet')||'{}')||{}; }catch(e){ store={}; }
 function saveStore(){ try{ localStorage.setItem('lx_uw_sheet', JSON.stringify(store)); }catch(e){} }
@@ -314,9 +348,12 @@ function renderFields(){
       ? '<select id="f_'+id+'"><option value=""></option>'+opts.map(function(o){
           return '<option'+(String(saved)===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select>'
       : '<input id="f_'+id+'" inputmode="decimal" value="'+esc(saved)+'" placeholder="'+esc(unit)+'">';
+    var src=SOURCES[id];
     return '<label class="'+(hint&&hint.length>42?'wide ':'')+'"><span class="'+cl+'">'+esc(label)+
       ' <span class="hint">('+esc(unit)+')</span></span>'+ctrl+
-      (hint?'<span class="hint">'+esc(hint)+'</span>':'')+'</label>';
+      (hint?'<span class="hint">'+esc(hint)+'</span>':'')+
+      (src?'<span class="src '+esc(src[0])+'"><b>'+esc(KINDS[src[0]])+'</b> — '+esc(src[1])+'</span>':'')+
+      '</label>';
   }).join('');
   $('#fields').innerHTML=h;
   C.fields.forEach(function(f){
@@ -335,8 +372,11 @@ function recalc(){
   var m=model(v), ds=annualDebtService(v), dscr=dscrAt(v);
   var out='';
   if(miss.length){
+    var where=C.fields.filter(function(f){return f[3]===true && v[f[0]]==null && SOURCES[f[0]];})
+      .map(function(f){return esc(f[1])+' <span class="note">('+esc(KINDS[SOURCES[f[0]][0]])+')</span>';});
     out+='<div class="unknown"><b>Unknown.</b> The record you typed cannot answer yet — missing: '+
-      miss.map(esc).join(', ')+'. Blanks are never filled in for you.</div>';
+      (where.length?where.join(', '):miss.map(esc).join(', '))+
+      '. Blanks are never filled in for you; each field above names the record or document that answers it.</div>';
   }
   out+='<div class="stat"><span class="v '+(dscr==null?'':(dscr>=target?'good':'bad'))+'">'+
     (dscr==null?'unknown':dscr.toFixed(2))+'</span><span class="l">DSCR (NOI / debt service)</span></div>';
@@ -370,15 +410,20 @@ function renderLedger(v){
   var C=CLASSES[cls], items=[];
   C.fields.forEach(function(f){
     var x=v[f[0]];
+    var src=SOURCES[f[0]];
     if(x!=null) items.push('<li><b>'+esc(f[1])+'</b>: '+esc(String(x))+' '+esc(f[2])+
-      ' — <span class="note">verify against its document before relying</span></li>');
+      ' — <span class="note">verify against '+esc(src?src[1]:'its document')+'</span></li>');
   });
   $('#ledger').innerHTML=items.length?items.join(''):'<li class="note">Nothing entered yet.</li>';
 }
 $('#export').addEventListener('click',function(){
   var v=inputs(), m=model(v), ds=annualDebtService(v), dscr=dscrAt(v);
+  var srcs={};
+  CLASSES[cls].fields.forEach(function(f){
+    if(SOURCES[f[0]]) srcs[f[1]]=KINDS[SOURCES[f[0]][0]]+' — '+SOURCES[f[0]][1];
+  });
   var rec={worksheet:'Locator.X per-class underwriting', asset_class:CLASSES[cls].name,
-    generated:new Date().toISOString(), inputs:v,
+    generated:new Date().toISOString(), inputs:v, sources:srcs,
     outputs:{effective_income:m.effective, operating_expenses:m.opex, noi:m.noi,
       annual_debt_service:ds, dscr:dscr, missing_required:missingRequired(inputs())},
     disclaimer:'Education, not advice; not a valuation. Unknown means unknown — no blank was filled in. Verify every input against its source document.'};
