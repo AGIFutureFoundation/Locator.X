@@ -7,6 +7,11 @@ such.
 
 ## [Unreleased]
 
+- **The 90-day path, state by state (v1.3)** — `docs/states/ninety-day-path.md`: F6's
+  three phases (calibrate / build flow / close or walk clean) with every state-varying
+  checkpoint mapped to the state guides — tax-line recompute rules, disclosure regimes,
+  distress-channel mechanics, closing customs, the regional "big four" inspection lists,
+  and what "won" means before a bid is final — plus four state archetypes.
 - **Asset-class layer** — hotels / apartments 5+ / small multifamily / student housing /
   MHP / mixed: `crosswalk/usecodes.json` (48 sourced-and-dated code mappings across 8
   jurisdictions, gated by `crosswalk/validate_usecodes.py` in CI), `scripts/class_screen.py`
