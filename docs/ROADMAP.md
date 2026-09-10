@@ -137,6 +137,13 @@ The catalog is complete at 50; growth means depth, not count inflation:
 - Case-study additions to the record layer, each claim still marked documented / reported /
   disputed.
 
+  *Status:* the first candidate is drafted docs-side under the record discipline —
+  [`cases/wework-lease-duration.md`](cases/wework-lease-duration.md) (the duration
+  mismatch, 2019 S-1 → 2023 chapter 11 → 2024 emergence; eight marked claims, sources
+  verified 2026-09-10, a measurement note separating the three circulating figures).
+  Porting into the in-app record track changes lesson counts and follows the module
+  supply workflow.
+
 **Proof:** validator check 8 goes from "none supplied yet" to a counted, non-zero note set with
 zero unresolved anchors.
 
