@@ -7,6 +7,24 @@ such.
 
 ## [Unreleased]
 
+- **Per-class underwriting worksheet (standalone)** —
+  `pages/locator-x-underwriting-worksheet.html`: the platform's underwriting
+  arithmetic on numbers the user supplies, for all four anchor classes —
+  apartments 5+, hotels (RevPAR model, insurance labeled *quoted, incl.
+  wind/storm* and required), small multifamily, and student housing (priced by
+  the bed, 9- vs 12-month lease structure, summer occupancy separate) — with
+  NOI, annual debt service, DSCR, and the bisection break-even solver against
+  the Investment Standard's lender-ready DSCR 1.20 (target editable). The
+  doctrine is enforced in the arithmetic: a blank load-bearing input makes every
+  dependent output **unknown** with the missing fields named — never a quiet
+  default — while optional income blanks are labeled "none recorded"; an
+  assumptions ledger lists every entered number with a verify-before-relying
+  note, and the JSON export carries the disclaimer and the missing-fields list.
+  Verified under headless Chromium (16 checks): a hand-computed apartments case
+  matches to the dollar (NOI 106,800, DSCR 0.89, break-even rent $1,270), the
+  solved break-even occupancy fed back in reproduces DSCR 1.20, and
+  unknown-propagation fires on a missing quoted-insurance line. Linked from the
+  companion-pages landing card grid.
 - **Voice layer completed across the Academy pages; viewer power tools** — the
   cohort-review page gains the same spoken guided tour as the learning
   environment, and the applied-courses reader gains a "Read this" control that
