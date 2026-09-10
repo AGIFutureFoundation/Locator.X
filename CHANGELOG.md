@@ -7,6 +7,20 @@ such.
 
 ## [Unreleased]
 
+- **Desk-worksheet interop** — a standalone analysis can now travel into an
+  edition. The underwriting worksheet gains an Import that is the exact inverse
+  of its export (inputs come back as typed; a record exported with unknowns
+  imports with the same unknowns, said out loud), and a new dependency-free
+  `src/deskws.js` panel on the app's Underwriting tab renders a loaded export
+  read-only beside the record-driven pipeline — desk numbers were typed by a
+  person, so they are labeled as such and never overwrite anything the tab
+  computed from the record; an export carrying unknowns shows the missing
+  fields by name. Verified under headless Chromium (13 checks): the round trip
+  restores DSCR 0.89 exactly, unknowns survive both import paths, and both
+  surfaces reject non-worksheet files cleanly; the panel was exercised in a
+  container-only harness with zero page errors. Editions pick the module up on
+  their next build (wired once in `lxbuild.py`; fleet-sweep verification
+  queued as usual).
 - **Worksheet sensitivity strip; wave-two edition scaffolds** — the underwriting
   worksheet gains a sensitivity table (the same arithmetic with one input nudged
   at a time: interest rate ±0.50, the class's revenue driver ±5%; green clears

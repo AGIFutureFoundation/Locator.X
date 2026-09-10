@@ -90,8 +90,12 @@ footer{margin-top:26px;color:var(--ink-3);font-size:12.5px;max-width:80ch}
       <div class="fields" id="fields"></div>
       <div class="actions">
         <button class="btn" id="export">Export worksheet (JSON)</button>
+        <button class="btn" id="importBtn"
+          title="Restore a previously exported worksheet — inputs come back exactly as typed, unknowns stay unknown">Import worksheet</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
         <button class="btn" id="clear">Clear this class</button>
       </div>
+      <p class="note" id="importNote" hidden></p>
     </div>
     <div class="card">
       <h2>Result</h2>
@@ -386,6 +390,35 @@ $('#export').addEventListener('click',function(){
 });
 $('#clear').addEventListener('click',function(){
   delete store[cls]; saveStore(); renderFields(); recalc();
+});
+/* Import: the exact inverse of export. Inputs come back as typed; nothing is
+   filled in, so a record exported with unknowns imports with the same unknowns. */
+$('#importBtn').addEventListener('click',function(){ $('#importFile').click(); });
+$('#importFile').addEventListener('change',function(ev){
+  var f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  var note=$('#importNote');
+  var r=new FileReader();
+  r.onload=function(){
+    var rec;
+    try{ rec=JSON.parse(r.result); }
+    catch(e){ note.hidden=false; note.textContent='Not valid JSON: '+e.message; return; }
+    if(!rec || rec.worksheet!=='Locator.X per-class underwriting' || !rec.inputs){
+      note.hidden=false; note.textContent='This file is not a Locator.X underwriting worksheet export.'; return; }
+    var k=Object.keys(CLASSES).filter(function(c){ return CLASSES[c].name===rec.asset_class; })[0];
+    if(!k){ note.hidden=false; note.textContent='Unknown asset class in file: '+String(rec.asset_class); return; }
+    cls=k; store[cls]={};
+    CLASSES[cls].fields.forEach(function(fd){
+      var x=rec.inputs[fd[0]];
+      if(x!=null) store[cls][fd[0]]=String(x);
+    });
+    saveStore(); renderTabs(); renderFields(); recalc();
+    var miss=(rec.outputs&&rec.outputs.missing_required)||[];
+    note.hidden=false;
+    note.textContent='Imported '+rec.asset_class+' worksheet from '+String(rec.generated||'').slice(0,10)+
+      (miss.length? ' — it was exported with unknowns ('+miss.join(', ')+'), and they are still unknown.' : '.');
+  };
+  r.readAsText(f);
+  ev.target.value='';
 });
 renderTabs(); renderFields(); recalc();
 </script>
