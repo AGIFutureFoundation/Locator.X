@@ -120,6 +120,39 @@ SPECS = {
         app_pairs=[],
         standalone=True,
     ),
+    # Wave two (Foundation-directed, docs/states/coverage/nebraska.md). Both
+    # refuse to build until the desktop pull session delivers real data —
+    # pull queue #1 (Douglas groupBy) and #4 (Lancaster groupBy) — and the
+    # REQUIRED fields are filled from what the pull actually returned.
+    'omaha-template': dict(
+        output='atlas_omaha.html',
+        title='REQUIRED: edition title',
+        self_id='REQUIRED',
+        data_module='REQUIRED: data_atlas_omaha.js — Douglas County groupBy through '
+                    'the crosswalk gate and class_screen (pull queue #1)',
+        extra_modules=[],
+        # Nebraska is a disclosure state (documentary stamp; recorded
+        # consideration exists — coverage row, 2026-09-04): the comps desk
+        # stays once the deed pull backs it. Until then hiding it here would
+        # assert a pull that has not happened, so the decision is deferred to
+        # whoever fills this spec from the measured result.
+        hide_tabs=[],
+        body_pairs=[],  # REQUIRED: regionalize the shell prose, pair by pair
+        app_pairs=[],
+        standalone=True,
+    ),
+    'lincoln-template': dict(
+        output='launi_lincoln.html',
+        title='REQUIRED: edition title',
+        self_id='REQUIRED',
+        data_module='REQUIRED: data_launi_lincoln.js — Lancaster County groupBy plus '
+                    'the UNL campus ring (pull queue #4; the launi method\'s second market)',
+        extra_modules=[],
+        hide_tabs=[],
+        body_pairs=[],  # REQUIRED: campus-ring prose is Louisiana's today — re-pair it
+        app_pairs=[],
+        standalone=True,
+    ),
 }
 
 

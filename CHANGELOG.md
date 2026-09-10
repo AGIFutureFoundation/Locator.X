@@ -7,6 +7,18 @@ such.
 
 ## [Unreleased]
 
+- **Worksheet sensitivity strip; wave-two edition scaffolds** — the underwriting
+  worksheet gains a sensitivity table (the same arithmetic with one input nudged
+  at a time: interest rate ±0.50, the class's revenue driver ±5%; green clears
+  the target, rendered only when the base DSCR is known; hand-verified nudges —
+  rate +0.50 → DSCR 0.85 and rent −5% → 0.83 on the reference case). And
+  `build_state.py` gains `omaha-template` and `lincoln-template` — the wave-two
+  Nebraska markets from the Foundation directive, each refusing to build until
+  the desktop pull session (queue #1 Douglas, #4 Lancaster + the UNL campus
+  ring) fills the REQUIRED fields from measured results; the Omaha spec records
+  the sourced disclosure-state note (documentary stamp, coverage row 2026-09-04)
+  and defers the comps-desk decision to whoever fills it from the pull. Both
+  refusals locked in `tests/run.py`.
 - **Per-class underwriting worksheet (standalone)** —
   `pages/locator-x-underwriting-worksheet.html`: the platform's underwriting
   arithmetic on numbers the user supplies, for all four anchor classes —
