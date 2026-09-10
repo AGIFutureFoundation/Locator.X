@@ -156,10 +156,15 @@ screens" to "any wave state at national-baseline depth".
   `build_atlas_*.py` already is.
 
   *Status:* shipped as a spec-driven builder with `--dry-run` verification (every
-  regionalization pair checked against current source; a stale pair fails loudly). The
-  `nola`/`bay` specs are transcribed for parity; the originals remain canonical until a
-  fleet sweep verifies byte-parity. The dry run's first run found three stale pairs in
-  the original builders (tracked as a separate content-fix task).
+  regionalization pair checked against current source; a stale pair fails loudly). All
+  eleven shipped editions are transcribed as specs (2026-09-10), pair-for-pair from
+  their hand builders; `tests/run.py` holds builder and spec in lockstep by AST
+  comparison, and `scripts/check_pairs.py` checks every hand builder's pairs
+  sequentially (its first two runs found and removed thirty-one dead or shadowed
+  replacements — eighteen dead finds, then thirteen more once the check became
+  order-aware, including four editions whose intended dashboard eyebrow had never
+  shipped). The originals remain canonical until a fleet sweep verifies byte-parity;
+  on parity they retire.
 - The evidence ceiling honestly enforced per state — a state whose record cannot support the
   conversion engine ships without it, and the edition says so.
 - The fleet sweep extended to every state edition; the 19-track / 92-lesson assertion holds in

@@ -9,7 +9,6 @@ data = B.read('data_nola.js')
 # ---- regionalization ----
 for a,b in [
  ('Locator X dashboard · SF Bay Area','Locator X dashboard · New Orleans'),
- ('SF Bay Area','New Orleans'),
  ('Every one of the 128,319 sites','Every one of the 90,000 parcels'),
  ('Basemap: Natural Earth · US Census TIGER · Zillow neighborhood boundaries · Market data © Zillow Research · Records: SF Assessor, Alameda County Assessor',
   'Basemap: Natural Earth · US Census TIGER · Zillow neighborhood boundaries · Market data © Zillow Research · Records: City of New Orleans parcel + building-footprint GIS (data.nola.gov)'),

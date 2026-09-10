@@ -8,8 +8,7 @@ data = B.read('data_launi.js')
 
 # ---- regionalization ----
 for a,b in [
- ('Locator X dashboard · SF Bay Area','Locator X dashboard · New Orleans'),
- ('SF Bay Area','New Orleans'),
+ ('Locator X dashboard · SF Bay Area','Locator X dashboard · Baton Rouge &amp; Louisiana university cities'),
  ('Every one of the 128,319 sites','Every one of the 90,000 parcels'),
 ]: body=body.replace(a,b)
 body=body.replace('<title>','<title>')  # title lives in head
@@ -20,7 +19,6 @@ for a,b in [
  ('128,319 real sites from county records','120,000 parcels from the East Baton Rouge Parish roll'),
  ('extruding 128,319 sites','extruding 120,000 parcels'),
 ]: app=app.replace(a,b)
-body=body.replace('Locator X dashboard \u00b7 SF Bay Area','Locator X dashboard \u00b7 Baton Rouge &amp; Louisiana university cities')
 body=body.replace('Which of these properties would pay you?','Student housing, rentals and land around Louisiana\u2019s biggest campuses')
 body=body.replace('A walkable Bay Area, built from the catalog','A walkable Baton Rouge, built from the catalog')
 # hide Bay-specific tabs (guide, house hacks) on the NOLA edition

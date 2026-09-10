@@ -9,7 +9,6 @@ data = B.read('data_below.js')
 # ---- regionalization ----
 for a,b in [
  ('Locator X dashboard · SF Bay Area','Locator X dashboard · Bay Area — Below Market 100k'),
- ('SF Bay Area','SF Bay Area (full-market atlas)'),
  ('Every one of the 128,319 sites','Every one of the 100,000 below-market records'),
 ]: body=body.replace(a,b)
 body=body.replace('<title>','<title>')  # title lives in head
