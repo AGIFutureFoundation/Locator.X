@@ -7,6 +7,18 @@ such.
 
 ## [Unreleased]
 
+- **User's guide button + voice walkthrough agent** — a visible "User's guide"
+  header button (`src/body.html`) opens the existing app guide, and a new
+  `src/walkthrough.js` module adds a hands-free walkthrough: the app opens each
+  section in tour order, reads the same `LXHome.VIEWS` help text aloud through
+  `voice.js` (browser text-to-speech, no network), highlights the active tab, and
+  advances when the narration ends; where the browser implements speech
+  recognition it also takes spoken commands (next / back / pause / resume /
+  repeat / stop, with voice.js's Chrome-sends-audio-to-Google disclosure), and
+  where speech is absent it steps silently on a visible timer rather than faking
+  a capability. Content comes only from the written guide, so the spoken tour
+  cannot drift from it. Wired once in `lxbuild.py`; every edition picks it up on
+  its next build (build machine required — noted for the fleet sweep).
 - **Doctrine smoke tests in CI** — `tests/run.py` (stdlib-only, synthetic fixtures,
   no data needed) locks the honesty guarantees a refactor could silently break: the
   NAL probe's PII strip and owner_out_of_state flag, class_screen's sample floor /
