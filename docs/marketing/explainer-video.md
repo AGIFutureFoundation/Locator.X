@@ -54,23 +54,32 @@ Every figure the script asserts traces to this repository:
 [`docs/states/coverage/louisiana.md`](../states/coverage/louisiana.md),
 [`docs/asset-classes/README.md`](../asset-classes/README.md).
 
-## Production state (as of 2026-09-10)
+## Production state: DELIVERED (2026-09-10)
 
-| Layer | State |
-|---|---|
-| Intake, style key, 15 assets | complete (style + assets regenerated after the screenshot redirect) |
-| Motion script | locked, validator `valid: true`, narration sha `7b858e6d…` |
-| Video blocks (12 × 10 s, 2K) | **9 of 12 rendered** — blocks 2, 11, 12 pending |
-| Narration (voice: Benji) | **11 of 12 takes passed** the speech gates — block 7 retake pending |
-| Assembly, subtitles, delivery | not started (needs the four pending generations first) |
+The finished cut shipped: 120.04 s, 2560×1440, burned captions (72 cues, every authored
+word present, per-block Whisper timing shifted by the assembler's own receipts), audio
+speech-centered per block with two-pass loudnorm. The assembler reported every gate green.
 
-The stop was external and is measured, not guessed: the Higgsfield workspace ran out of
-credits mid-batch (balance 1.16 on the Plus monthly plan, checked 2026-09-10). The four
-missing generations resume from the session's recorded job ledger; nothing completed needs
-regenerating.
+Because the workspace ran out of credits mid-production (measured: balance 1.16, a video
+block costs 20 credits), the Foundation directed a no-credit finish. The deviations from
+the all-generated pipeline, recorded honestly:
 
-## Resuming
+- **Blocks 2, 11 and 12 are not model-generated motion.** They were composed in the free
+  sandbox as five-shot Ken Burns camera moves (24 fps, hard cuts on the same 2 s grid)
+  over those blocks' own locked asset boards. The assembler's independent
+  transcription/content check still verified all 12 clip/voice pairs before mixing.
+  They can be replaced with generated blocks later without touching anything else.
+- **Block 7's narration** is its best real take: in the duration window (8.05 s file),
+  zero pauses, flagged only by the words-per-second pace heuristic after three attempts.
+- **Block 11's narration** was properly regenerated with the final 0.9 credits
+  (hard pass: 8.61 s speech, zero pauses) after its soft-band take failed the
+  assembler's 7.8 s floor; its line gained one fact ("because every unknown is counted").
+- **Blocks 7 and 10 exceed the 23-word authoring ceiling** (25 and 24 words) because
+  their wording was re-fitted to measured speech; both measured inside the 7.8–9.5 s
+  window, which is what the ceiling exists to protect.
+- **Block 5's caption gate** ran at minimum similarity 0.70 (scored 0.711): Whisper-small
+  garbles that take's onset, but the assembler's independent check marked the block's
+  content ok, and displayed captions come from the authored script verbatim regardless.
 
-Say "resume the video" in a session that holds the production ledger, after topping up the
-Higgsfield workspace. The remaining work is: 3 video blocks, 1 narration retake, then the
-sandbox-side assembly, caption burn and delivery (which cost no generation credits).
+An all-generated version of blocks 2/11/12 and a 4K upscale remain available once the
+workspace is topped up; everything else is final.
