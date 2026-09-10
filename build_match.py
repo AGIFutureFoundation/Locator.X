@@ -8,10 +8,8 @@ data = B.read('data_match.js')
 
 # ---- regionalization ----
 for a,b in [
- ('locator.x — Bay Area','locator.x — Match Fifty'),
  ('Locator X dashboard · SF Bay Area','Locator X dashboard · Bay Area — Match Fifty (high-match band)'),
  ('SF Bay Area','SF Bay Area (full-market atlas)'),
- ('San Francisco bay area','bay area'),
  ('Every one of the 128,319 sites','Every one of the 50,000 match-band records'),
 ]: body=body.replace(a,b)
 body=body.replace('<title>','<title>')  # title lives in head

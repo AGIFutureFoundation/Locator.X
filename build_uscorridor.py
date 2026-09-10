@@ -8,10 +8,8 @@ data = B.read('data_uscorridor.js')
 
 # ---- regionalization ----
 for a,b in [
- ('locator.x — Bay Area','locator.x — New Orleans'),
  ('Locator X dashboard · SF Bay Area','Locator X dashboard · New Orleans'),
  ('SF Bay Area','New Orleans'),
- ('San Francisco bay area','New Orleans'),
  ('Every one of the 128,319 sites','Every one of the 90,000 parcels'),
 ]: body=body.replace(a,b)
 body=body.replace('<title>','<title>')  # title lives in head

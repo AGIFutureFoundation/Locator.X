@@ -46,6 +46,37 @@ floor binds almost everywhere.
 2026-09-09 — see [Louisiana's note](louisiana.md)); Nebraska probes run over the desktop
 browser-pane route per [`PULL_RECIPE.md`](../../PULL_RECIPE.md).
 
+## Landing rows — exactly what the pull session fills, and where it lands
+
+Both wave-two editions now have refusing scaffolds waiting in
+[`build_state.py`](../../../build_state.py) (`omaha-template` → `atlas_omaha.html`,
+`lincoln-template` → `launi_lincoln.html`, added 2026-09-10; each `--dry-run` refuses
+until its REQUIRED fields are filled from measured results, and `tests/run.py` locks
+the refusal). So a probe result does not land in prose — it lands in these rows, each
+of which is honest about being unfilled today:
+
+### Douglas County (probe [#1](../../PULL_QUEUE.md))
+
+| What the probe measures | Where the number lands | Today |
+|---|---|---|
+| The use-class field's name and its groupBy counts | A new jurisdiction in [`crosswalk/usecodes.json`](../../../crosswalk/usecodes.json) — source + date per code, gated by `validate_usecodes.py` | not probed |
+| Whether apartments 5+ / lodging are identifiable in that vocabulary | This file's asset-class row above; the candidate table's Omaha verdict | not probed |
+| Parcel count and the measured value field | `omaha-template`'s REQUIRED `data_module` (`data_atlas_omaha.js`) — the build refuses until this exists | template refuses, by design |
+| Whether a parcel's TIF-increment status is in the record | The Omaha edition's tax-line caveat (the spec defers this decision to whoever fills it) | not probed |
+
+### Lancaster County (probe [#4](../../PULL_QUEUE.md))
+
+| What the probe measures | Where the number lands | Today |
+|---|---|---|
+| Use-class field + groupBy counts | Same crosswalk path as Douglas | not probed |
+| Student-housing identifiability in the assessor vocabulary | This file's Lincoln row; the campus-ring comparison against Louisiana's | not probed |
+| The UNL campus-ring extract (parcels within the ring) | `lincoln-template`'s REQUIRED `data_module` (`data_launi_lincoln.js`) — the `launi` method's second market | template refuses, by design |
+
+A probe that comes back negative (field absent, vocabulary opaque, export blocked) is
+still a landing: the row moves to `blocked` with the reason and the date, never to a
+quiet guess — the [after-each-probe list](../../PULL_QUEUE.md#after-each-probe-in-this-order)
+is the write path.
+
 ## The probe order
 
 1. **Douglas County groupBy** on its use-class field — one call answers whether Omaha's

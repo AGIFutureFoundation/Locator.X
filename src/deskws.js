@@ -56,7 +56,12 @@ function boot(){
       out.innerHTML =
         (miss.length
           ? '<p style="font-size:13px;color:var(--muted);border:1px dashed var(--line2);border-radius:8px;padding:8px 10px">' +
-            '<b>Carries unknowns.</b> The desk left these blank, so its results are unknown, not zero: ' + miss.map(esc).join(', ') + '.</p>'
+            '<b>Carries unknowns.</b> The desk left these blank, so its results are unknown, not zero: ' +
+            miss.map(function(m){
+              // newer exports say where each answer lives; older ones just name the field
+              var s = rec.sources && rec.sources[m];
+              return esc(m) + (s ? ' <span style="opacity:.8">(' + esc(s) + ')</span>' : '');
+            }).join('; ') + '.</p>'
           : '') +
         '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:baseline;margin:6px 0 8px">' +
           '<span><b style="font-size:22px;font-family:var(--mono)">' + dscr + '</b> <span style="font-size:11px;color:var(--muted)">DSCR (desk)</span></span>' +
