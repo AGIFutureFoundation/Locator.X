@@ -29,11 +29,14 @@ make sense.
 ```bash
 python3 curriculum/validate.py     # the eight-check gate — must pass
 python3 scripts/check_links.py     # every relative markdown link must resolve
+python3 crosswalk/validate_usecodes.py
+python3 tests/run.py               # doctrine smoke tests — the honesty rules, executable
 node curriculum/extract_tracks.js  # if you touched Academy modules
 ```
 
-CI runs the first two on every push and PR; a red check is a real failure, not a flake —
-the validator raises rather than warns by design.
+CI runs all of these (plus the generated-catalog drift check) on every push and PR; a
+red check is a real failure, not a flake — the validator raises rather than warns by
+design.
 
 ## What makes a good change
 
