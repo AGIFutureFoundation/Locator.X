@@ -7,6 +7,13 @@ such.
 
 ## [Unreleased]
 
+- **`package.json` now declares everything a build actually needs** — `fflate`
+  and `terser` were required by `lxbuild.py` (the gzip loader shell and the
+  minifier) but missing from the dependency list, so `npm install` on a clean
+  checkout could not feed a build; found by running a real assemble in this
+  container. Both added with the lockfile committed for pinned installs, and
+  `.build_cache/` (created by `lxbuild`'s minify cache) is now gitignored.
+
 - **The map can show exactly the properties that meet the Locator X
   criteria** — a new "Meets the Locator X criteria" chip on the find/map
   filter row applies the full buy box from the Underwriting tab (price,
