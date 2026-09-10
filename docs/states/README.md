@@ -155,6 +155,12 @@ Every state entry carries the same four sections — *Run the record here* (port
 | [Mountain West](mountain-west.md) | AZ, CO, ID, MT, NV, NM, UT, WY |
 | [Pacific](pacific.md) | AK, CA, HI, OR, WA |
 
+## The 90-day path, localized
+
+Curriculum item F6's ninety-day runway (calibrate → build flow → close or walk clean)
+with every state-varying checkpoint mapped to these guides —
+[`ninety-day-path.md`](ninety-day-path.md).
+
 ## Record-coverage inventories
 
 The deepening layer (roadmap v1.1): per-state tables of which gates the record actually

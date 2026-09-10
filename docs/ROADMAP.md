@@ -125,6 +125,12 @@ The catalog is complete at 50; growth means depth, not count inflation:
 - **The 90-day path (F6)** upgraded with per-state checkpoints once wave-one states land —
   the written offer at day 90 looks different in a judicial-foreclosure lien state than in a
   nonjudicial deed state.
+
+  *Status:* the docs-side companion is shipped —
+  [`states/ninety-day-path.md`](states/ninety-day-path.md) localizes all three F6 phases
+  against the state guides (phase names taken from the in-app guide's §9), with four
+  state archetypes. In-app per-state checkpoint content follows the instructor-notes
+  supply workflow once wave states reach `pulled`.
 - Case-study additions to the record layer, each claim still marked documented / reported /
   disputed.
 
