@@ -1,0 +1,62 @@
+# Locator.X — agent onboarding
+
+Real-estate analytics platform + Academy. Every edition is one self-contained HTML file;
+this repo is the **source** — built editions and the ~4 GB data tree are never committed.
+
+## Run before any commit
+
+```bash
+python3 curriculum/validate.py        # eight checks; raises, never warns
+python3 scripts/check_links.py        # internal markdown links
+python3 crosswalk/validate_usecodes.py
+python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/
+```
+
+CI (`.github/workflows/validate.yml`) runs exactly these. A red check is real — the
+validator has no flake mode.
+
+## The rules that are never bent
+
+- **Measure before asserting.** No size/coverage/performance claim without the
+  measurement. No factual doc row without a source and date.
+- **Unknown is an answer.** Never convert an unanswerable question into a quiet pass —
+  in code, in docs, in coverage tables (`named` / `blocked` / `no public record` are
+  honest statuses, see `docs/states/coverage/README.md`).
+- **Never fabricate a row, coordinate, price or use class** (`docs/PULL_RECIPE.md` hard
+  rules). Use codes map only via measured groupBys or published manuals —
+  `crosswalk/usecodes.json` carries source + date per code.
+- **No PII, no data commits.** `data/` stays ignored; owner fields are stripped on
+  ingest; git history cannot be cleaned later.
+- **Derived things are generated, not edited.** `curriculum/courses/` comes from
+  `gen_courses.py`; an item's status comes from `status_of()`; regenerate, never patch.
+- **Instructor notes ship empty** until the platform owner supplies words
+  (`src/notes.js`; authoring guide in `curriculum/INSTRUCTOR_NOTES.md`). Record-layer
+  case claims are marked documented / reported / disputed (`docs/cases/`).
+- **No advice.** Everything state/program/lender-shaped is navigation of the public
+  record with verify-before-relying disclaimers, never a recommendation.
+
+## Where things live
+
+| Thing | Place |
+|---|---|
+| App + Academy modules (84) | `src/` (shared shell: `src/head.html`, `src/body.html`) |
+| Builders | `build_*.py`; shared lib `lxbuild.py`; parameterised `build_state.py` (`--dry-run` verifies pairs against source) |
+| Curriculum source of truth | `curriculum/curriculum.py` + `curriculum-50.csv` |
+| State layer | `docs/states/` (guides, `coverage/` inventories, `ninety-day-path.md`) |
+| Resources | `docs/resources/` (data sources, lenders, programs, administrators) |
+| Asset classes | `crosswalk/usecodes.json` + `scripts/class_screen.py` + `docs/asset-classes/` |
+| Next data session | `docs/PULL_QUEUE.md` (ordered probes; ingest tools ready) |
+| Roadmap / history | `docs/ROADMAP.md` (every milestone names its proof) / `CHANGELOG.md` |
+
+## Environment gotchas
+
+- This container has **no egress to county GIS / open-data hosts** (dated in
+  `docs/states/coverage/README.md`); data pulls run over the desktop browser pane per
+  `docs/PULL_RECIPE.md`. Do not fake what you cannot fetch.
+- `node_modules` is not installed by default; `build_state.py --dry-run` deliberately
+  avoids needing it or any data.
+- Regionalization pairs in builders must match `src/body.html` exactly —
+  `build_state.py --dry-run nola bay` fails loudly on a stale pair; keep
+  `build_atlas_*.py` and the specs in lockstep.
+- Full builds and the Playwright fleet sweep need the local data tree
+  (`data/README.md`); from a clean checkout only the gates above can run.

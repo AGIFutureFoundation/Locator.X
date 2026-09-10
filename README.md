@@ -40,6 +40,7 @@ docs/                overview, roadmap, platform notes, publish map, pull recipe
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | What deploys, over which routes, and what each needs |
 | [`docs/asset-classes/`](docs/asset-classes/README.md) | Hotels, apartments, 5+ multifamily — the sourced use-code crosswalk, the doctrine-enforcing class screen, and the measured region matrix |
 | [`docs/PULL_QUEUE.md`](docs/PULL_QUEUE.md) | The ordered probe queue for the next data session — what each pull unlocks, ingest tools ready |
+| [`docs/cases/`](docs/cases/wework-lease-duration.md) | Record-layer case candidates — published filings, every claim marked documented / reported / disputed |
 
 ## Requirements
 

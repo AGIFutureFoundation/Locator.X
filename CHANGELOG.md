@@ -7,6 +7,12 @@ such.
 
 ## [Unreleased]
 
+- **First record-layer case candidate (v1.3)** — `docs/cases/wework-lease-duration.md`:
+  the duration mismatch from published filings, every claim marked documented/reported,
+  sources verified 2026-09-10, with the three circulating restructuring figures kept
+  deliberately separate. In-app porting follows the module supply workflow.
+- **CLAUDE.md** — agent onboarding: the gates to run, the never-bent rules, where
+  everything lives, and the environment gotchas (egress, dry-run, lockstep pairs).
 - **Review fixes across the session's tooling** — six findings from a correctness pass:
   `build_state.py` now refuses (and dry-run flags) missing extra modules with the exact
   path instead of a raw traceback; the link sweep retries GET when a host drops HEAD
