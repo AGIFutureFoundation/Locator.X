@@ -241,6 +241,8 @@ h1.ltitle{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.
   <button class="mbtn" id="tocover" hidden>&larr; Cover</button>
   <span class="overall"><span id="ocount" class="mono">0 / 24</span>
     <span class="obar"><i id="obar" style="width:0%"></i></span></span>
+  <button class="mbtn" id="listen" hidden
+    title="Read the open lesson (or the cover) aloud — browser text-to-speech, runs locally, no network">&#128266; Read this</button>
   <button class="mbtn" id="export" hidden>Export record</button>
   <button class="mbtn" id="reset">Reset progress</button>
 </div></div>
@@ -533,4 +535,35 @@ document.getElementById('reset').addEventListener('click', function(){
 
 buildRail(); renderLesson(); syncRail(); setView('cover');
 
+/* ---- voice: read the open view aloud ------------------------------------
+   Same rules as the app's voice layer (src/voice.js): real browser
+   text-to-speech only, local, no network; without speechSynthesis the button
+   never renders. It reads exactly what is on screen — the open lesson in the
+   reader, or the cover — never separate copy. Navigating (rail, back to
+   cover) stops the reading so the voice can never lag behind the page. */
+(function(){
+  var synth = window.speechSynthesis || null;
+  var btn = document.getElementById('listen');
+  if(!synth || !btn) return;
+  function reset(){ try{ synth.cancel(); }catch(e){} btn.innerHTML = '&#128266; Read this'; }
+  btn.hidden = false;
+  btn.addEventListener('click', function(){
+    if(synth.speaking){ reset(); return; }
+    var work = document.getElementById('work');
+    var src = (work && !work.hidden) ? document.getElementById('lesson') : document.getElementById('cover');
+    var plain = (src ? src.textContent : '').replace(/\s+/g, ' ').trim();
+    if(!plain) return;
+    try{
+      var u = new SpeechSynthesisUtterance(plain.length > 6000 ? plain.slice(0, 6000) : plain);
+      u.onend = reset; u.onerror = reset;
+      btn.innerHTML = '⏸ Stop reading';
+      synth.speak(u);
+    }catch(e){ reset(); }
+  });
+  document.addEventListener('click', function(ev){
+    if(!synth.speaking) return;
+    if(ev.target.closest && (ev.target.closest('#rail') || ev.target.closest('#tocover'))) reset();
+  });
+  document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape' && synth.speaking) reset(); });
+})();
 </script>

@@ -7,6 +7,17 @@ such.
 
 ## [Unreleased]
 
+- **Voice layer completed across the Academy pages; viewer power tools** — the
+  cohort-review page gains the same spoken guided tour as the learning
+  environment, and the applied-courses reader gains a "Read this" control that
+  reads the open lesson (or the cover) aloud and stops itself on navigation so
+  the voice can never lag the page (browser text-to-speech only; controls never
+  render without `speechSynthesis`). The top-properties viewer gains CSV export
+  of the current filter result — header says `assessment`, never price, every
+  row keeps its `value_field` label — plus keyboard navigation ("/" to search,
+  arrows walk rows with a visible highlight, Escape clears). All verified under
+  headless Chromium, the viewer against a real `top_screen.py` index built from
+  the test suite's synthetic fixtures: 16 checks, zero page errors.
 - **Learning-environment page: read-aloud + spoken guided tour** — the standalone
   learning environment (`pages/locator-x-learning-environment.html`) now carries the
   voice layer on a surface that ships without a build machine: a Listen button in the
