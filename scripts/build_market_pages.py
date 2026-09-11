@@ -16,7 +16,7 @@ The honesty rules are in the rendering, not in prose bolted on afterwards:
   * Every row that carries a source renders that source as a link, and every
     edition renders whether its record count was measured or only inherited.
 
-Usage: python3 scripts/build_market_pages.py <site_dir>
+Usage: python3 scripts/build_market_pages.py <site_dir> [market_dir]
 """
 import html
 import json
@@ -25,6 +25,8 @@ import sys
 from collections import Counter, OrderedDict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# Defaults to the committed data; tests/run.py passes a synthetic market dir to
+# exercise the unknown-handling paths the live data happens not to reach.
 MARKET = os.path.join(os.path.dirname(HERE), 'market')
 
 PUBLISH_MAP = ('https://github.com/agifuturefoundation/locator.x/blob/main/docs/PUBLISH_MAP.md')
@@ -591,12 +593,13 @@ BAY_METROS = {'San Francisco-Oakland-Berkeley, CA', 'San Jose-Sunnyvale-Santa Cl
 
 def main():
     if len(sys.argv) < 2:
-        raise SystemExit('usage: python3 scripts/build_market_pages.py <site_dir>')
+        raise SystemExit('usage: python3 scripts/build_market_pages.py <site_dir> [market_dir]')
     site = sys.argv[1]
+    market = os.path.abspath(sys.argv[2]) if len(sys.argv) > 2 else MARKET
     os.makedirs(site, exist_ok=True)
 
     def load(name):
-        with open(os.path.join(MARKET, name), encoding='utf-8') as f:
+        with open(os.path.join(market, name), encoding='utf-8') as f:
             return json.load(f)
 
     ED, B, C = load('editions.json'), load('belts.json'), load('corridors.json')
