@@ -22,6 +22,7 @@ on:
       - "build_state.py"
       - "scripts/build_fleet_demo.py"
       - "scripts/build_crosswalk_page.py"
+      - "scripts/build_editions_index.py"
       - "crosswalk/usecodes.json"
       - "package.json"
       - "package-lock.json"
@@ -58,6 +59,7 @@ jobs:
           cp -r pages/. _site/
           python3 scripts/build_fleet_demo.py _site/demo.html
           python3 scripts/build_crosswalk_page.py _site/crosswalk.html
+          python3 scripts/build_editions_index.py _site
       - uses: actions/configure-pages@v5
         with:
           enablement: true
