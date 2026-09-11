@@ -7,6 +7,29 @@ such.
 
 ## [Unreleased]
 
+- **The synthetic fixture was never deterministic** — it says "deterministic"
+  in its own docstring and three builds of identical code produced three
+  different files. The cause was `set(citymap.values())`: iteration order over
+  a set of strings moves with `PYTHONHASHSEED`, so the city series came out in
+  a different order every run. Only the key ORDER moved, never a value, inside
+  a packed base64 payload nobody diffs — which is exactly why it survived every
+  build, every deploy and every fleet smoke. Sorted, and `tests/run.py` now
+  builds the fixture twice and compares the decompressed payloads (the page
+  bytes carry a gzip timestamp, so the comparison has to be on content).
+  Verified by reinstating the `set()` and watching the suite name it.
+
+- **`scripts/placegen.py`** — the geography machinery lifted out of the fleet
+  demo into a shared module with two profiles: `market_island()` (coast, street
+  grid, districts, parks, river, rail — what the demo uses) and `campus()`, for
+  a trades campus: an irregular boundary, a quad, hall footprints on two arcs
+  with the loud wide-door bays pushed to the edge the way a real trades campus
+  is laid out, bent walking paths rather than straight spokes, zones, and
+  stations placed **on** the path network for the same reason parcels sit on
+  streets. Halls carry their trade, kind and zone, so a caller can colour,
+  filter or route by discipline without inventing a join. Deterministic given a
+  seed, and invented — the module docstring is explicit that it exists to
+  exercise a renderer honestly, never to imply a survey.
+
 - **The demo map became a place** — the fixture drew its island as one
   rectangle, its parks as two more and its roads as three straight lines, then
   scattered property uniformly inside the box. It rendered as confetti on a
