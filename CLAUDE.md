@@ -47,6 +47,7 @@ validator has no flake mode.
 | Resources | `docs/resources/` (data sources, lenders, programs, administrators) |
 | Asset classes | `crosswalk/usecodes.json` + `scripts/class_screen.py` + `docs/asset-classes/` |
 | Next data session | `docs/PULL_QUEUE.md` (ordered probes; ingest tools ready) |
+| Desk ↔ app interop contract | `docs/INTEROP.md` (the worksheet JSON shape; the no-laundering rule) |
 | Roadmap / history | `docs/ROADMAP.md` (every milestone names its proof) / `CHANGELOG.md` |
 
 ## Environment gotchas

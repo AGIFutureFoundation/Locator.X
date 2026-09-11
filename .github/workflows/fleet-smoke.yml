@@ -1,0 +1,55 @@
+name: fleet smoke
+
+# The whole application, driven, with no data tree: builds the synthetic-fleet
+# demo (scripts/build_fleet_demo.py — deterministic fixtures, asserts nothing
+# about the real world) and drives every edition in headless Chromium via
+# tests/fleet_smoke.js. Zero page errors per edition or the check fails. This
+# complements — never replaces — the five validate gates and the data
+# machine's real-edition fleet sweep.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "lxbuild.py"
+      - "build_state.py"
+      - "scripts/build_fleet_demo.py"
+      - "tests/fleet_smoke.js"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/fleet-smoke.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "lxbuild.py"
+      - "build_state.py"
+      - "scripts/build_fleet_demo.py"
+      - "tests/fleet_smoke.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fleet-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      - run: npx playwright install --with-deps chromium
+      - name: Build the synthetic-fleet demo
+        run: python3 scripts/build_fleet_demo.py /tmp/demo.html
+      - name: Drive every edition
+        run: node tests/fleet_smoke.js /tmp/demo.html
