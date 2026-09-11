@@ -76,7 +76,7 @@ MODULES = [
   'src/packages_data.js', '@SELF@', 'src/packages.js', 'src/tiers.js',
   'src/sources_data.js', 'src/sources.js', 'src/rooms.js',
   'src/network.js', 'src/reo.js', 'src/ar.js', 'src/nav.js', 'src/home.js',
-  'src/gradschool.js', 'src/mindset.js', 'src/devcourse.js', 'src/pmcourse.js', 'src/datacourse.js', 'src/eqcourse.js', 'src/labcourse.js', 'src/widercourse.js', 'src/thesis.js', 'src/gate.js', 'src/routes.js', 'src/notes.js', 'src/telemetry.js', 'src/assistant.js', 'src/walkthrough.js', 'src/deskws.js', 'src/cover.js',
+  'src/gradschool.js', 'src/mindset.js', 'src/devcourse.js', 'src/pmcourse.js', 'src/datacourse.js', 'src/eqcourse.js', 'src/labcourse.js', 'src/widercourse.js', 'src/thesis.js', 'src/gate.js', 'src/routes.js', 'src/notes.js', 'src/telemetry.js', 'src/assistant.js', 'src/walkthrough.js', 'src/deskws.js', 'src/packet_data.js', 'src/packet.js', 'src/geoexport.js', 'src/cover.js',
 ]
 
 # reference data blobs, identical in every package

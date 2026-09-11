@@ -1070,3 +1070,65 @@ nav.tabs button[aria-selected="true"]{
 .methodnote p{ font-size:13.5px; color:var(--ink2); line-height:1.75; margin:0 0 9px; max-width:84ch }
 @media (prefers-reduced-motion: reduce){ .methodnote>summary{ transition:none !important } }
 </style>
+<style>
+/* ---- the city rail -------------------------------------------------------
+   One map per city, in one click. Built from the records, so an edition whose
+   records name a single city renders nothing here rather than a chooser with
+   one choice. */
+.cityrail{display:flex;gap:6px;flex-wrap:wrap;padding:12px 14px 2px;
+  border-bottom:1px solid var(--hairline)}
+.cityrail:empty{display:none}
+.citychip{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+  padding:6px 12px;font-size:12.5px;font-weight:500;color:var(--ink2);cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+  box-shadow:var(--lift);background-image:var(--gloss);
+  transition:background .18s var(--ease),color .18s var(--ease),
+             border-color .18s var(--ease),box-shadow .18s var(--ease)}
+.citychip:hover{box-shadow:var(--lift-2);color:var(--ink)}
+.citychip i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+.citychip.on{background:var(--ink);border-color:var(--ink);color:var(--bg);font-weight:600}
+.citychip.on i{color:var(--bg);opacity:.72}
+:root[data-theme="contrast"] .citychip{background-image:none}
+@media (prefers-reduced-motion: reduce){.citychip{transition:none!important}}
+
+/* ---- closing-file packet (src/packet.js) ----
+   The due-diligence list grown into a file: grouped by evidence kind, with the
+   state block and the questions for counsel underneath it. Deliberately plain —
+   this is the part of the app a reader prints and carries to an attorney. */
+.packet{font-size:13px}
+.pkh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.pkh2{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.pkopen{color:var(--cat3);font-weight:600}
+.pkdone{color:var(--good);font-weight:600}
+.pknote{font-size:11.5px;color:var(--muted);line-height:1.5;max-width:70ch}
+.pkkind{margin:0 0 10px}
+.pkkind h5{margin:0;font-size:12.5px;color:var(--ink)}
+.pkkind h5 span{font-weight:400;color:var(--muted)}
+.pkkind .checklist{columns:1;margin-top:4px}
+.pklesson{font-style:normal;font-size:10px;letter-spacing:.04em;color:var(--muted);
+  border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:4px;white-space:nowrap}
+.pkstate{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;background:var(--tile)}
+.pkstate.pkunknown{border-style:dashed}
+.pkfacts{display:grid;grid-template-columns:1fr;gap:2px;margin:6px 0}
+.pkfacts>div{display:flex;justify-content:space-between;gap:12px;padding:2px 0;border-bottom:1px solid var(--line)}
+.pkfacts span:first-child{color:var(--muted)}
+.pkclauses{width:100%;border-collapse:collapse;font-size:12px}
+.pkclauses th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;padding:0 8px 4px 0;border-bottom:1px solid var(--line)}
+.pkclauses td{vertical-align:top;padding:6px 8px 6px 0;border-bottom:1px solid var(--line)}
+.pkcont{margin:0 0 8px}
+.pkrule{margin-top:12px;padding-left:10px;border-left:3px solid var(--line);color:var(--muted);
+  font-size:12px;line-height:1.55;max-width:74ch}
+@media (max-width:700px){.pkclauses,.pkclauses tr,.pkclauses td{display:block;width:auto}
+  .pkclauses th{display:none}.pkclauses td{border-bottom:none;padding-bottom:2px}
+  .pkclauses tr{border-bottom:1px solid var(--line);padding-bottom:6px;display:block}}
+
+/* ---- interchange export (src/geoexport.js) ---- */
+.exportpair{display:inline-flex;gap:4px;margin:0 auto 0 10px}
+.exportbtn{font:inherit;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--tile);color:var(--muted);border:1px solid var(--line);border-radius:6px;
+  padding:2px 7px;cursor:pointer;transition:color .15s,border-color .15s}
+.exportbtn:hover{color:var(--ink);border-color:var(--ink)}
+@media (prefers-reduced-motion: reduce){.exportbtn{transition:none!important}}
+</style>

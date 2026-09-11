@@ -18,6 +18,8 @@ head=re.sub(r'<title>[^<]*</title>','<title>Locator X Bay Atlas</title>',head,1)
 for a,b in [
  ('128,319 real sites from county records','161,000 records across four counties'),
  ('extruding 128,319 sites','extruding 161,000 records'),
+ ('const EDITION_STATE = null;',
+  "const EDITION_STATE = 'California';"),
 ]: app=app.replace(a,b)
 # hide Bay-specific tabs (guide, house hacks) on the NOLA edition
 head=head.replace('</style>', 'button[data-view="hacks"],#hacks{display:none!important}\n</style>',1)

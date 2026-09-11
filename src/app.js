@@ -8,6 +8,17 @@ const fmtFull = n => n==null||isNaN(n) ? '—' : '$'+Math.round(n).toLocaleStrin
 const fmtPct = (n,d=1) => n==null||isNaN(n)||!isFinite(n) ? '—' : n.toFixed(d)+'%';
 const fmtN = n => n==null||isNaN(n) ? '—' : Math.round(n).toLocaleString('en-US');
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+/* The edition's state, spelled exactly as the 50-state table in
+   docs/states/README.md spells it, because the closing packet joins on that
+   name. build_state.py rewrites this one line per edition (the `state` key in
+   SPECS), and an edition that spans several states leaves it null on purpose:
+   the packet then reports every state-sensitive item as unanswerable from this
+   record rather than picking a state. Unknown is an answer.
+
+   It lived nowhere before, which is why the Letter of Intent printed ", CA "
+   into a New Orleans address and the due-diligence checklist asked a Louisiana
+   buyer for an SF 3R report. */
+const EDITION_STATE = null;
 function store(k, v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem('bayledger.'+k)); localStorage.setItem('bayledger.'+k, JSON.stringify(v)); }catch(e){ return null; } }
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),2600); }
 
@@ -438,6 +449,69 @@ function setBasemap(mode, silent){
 $('#basemap').addEventListener('change', e=>setBasemap(e.target.value));
 const _lensEl=$('#lens'); if(_lensEl) _lensEl.addEventListener('change', e=>{ state.lens=e.target.value; renderMarkers(); const lg=$('#lenslegend'); if(lg){ lg.innerHTML= state.lens==='cat'? '<span><i style="background:var(--cat1)"></i>asset</span><span><i style="background:var(--cat2)"></i>hack</span><span><i style="background:var(--cat3)"></i>value</span><span><i style="background:var(--cat4)"></i>growth</span><span><i style="background:var(--cat5)"></i>liability</span>' : state.lens==='conv'? '<span><i style="background:var(--accent)"></i>conversion class · size = units</span><span><i style="background:#66748a"></i>other</span>' : state.lens==='dis'? '<span><i style="background:#1F8A4C"></i>hard distress on record</span><span><i style="background:#D96F0E"></i>elevated</span><span><i style="background:#66748a"></i>no live record</span>' : state.lens==='fcast'? '<span><i style="background:#1F8A4C"></i>ZIP forecast ≥ +2.5%</span><span><i style="background:#D96F0E"></i>flat-to-up</span><span><i style="background:#C42B55"></i>declining</span><span style="color:var(--muted)">dim = weak model fit</span>' : state.lens==='bmkt'? '<span><i style="background:#1F8A4C"></i>index ≥ 45</span><span><i style="background:#D96F0E"></i>25–45</span><span><i style="background:#C42B55"></i>under 25</span><span style="color:var(--muted)">size = index</span>' : '<span><i style="background:#1F8A4C"></i>best match</span><span><i style="background:#D96F0E"></i>close — needs a lever</span><span><i style="background:#C42B55"></i>weak fit</span><span style="color:var(--muted)">size = fit</span>'; } });
 $('#fitbtn').addEventListener('click', fitToResults);
+/* The city rail — one map per city, in one click.
+   ----------------------------------------------------------------------------
+   An edition carries a single region box: one centre, one zoom, one set of max
+   bounds. That is right for a market edition and useless for finding a city
+   inside one, because a catalogue spanning several cities opens showing all of
+   them at once and offers no way to say "show me that one" short of filtering
+   the list and then pressing Fit to results.
+
+   The rail is built FROM THE RECORDS, not from a hand-kept list of places: the
+   cities are whatever the records say they are, the counts are counts, and the
+   bounds are computed from the coordinates each city actually holds. An edition
+   whose records name one city renders no rail at all, because a chooser with a
+   single choice is furniture.
+
+   Selecting a city drives the same filter the dropdown does — there is one
+   definition of "city selected", not two — and then frames the map on that
+   city's own extent rather than on the edition's. */
+function cityStats(){
+  const by = new Map();
+  allListings().forEach(l => {
+    if(!l.city) return;
+    let r = by.get(l.city);
+    if(!r){ r = {city:l.city, n:0, w:1e9, s:1e9, e:-1e9, nn:-1e9, prices:[]}; by.set(l.city, r); }
+    r.n++;
+    if(typeof l.lng === 'number'){ r.w = Math.min(r.w, l.lng); r.e = Math.max(r.e, l.lng); }
+    if(typeof l.lat === 'number'){ r.s = Math.min(r.s, l.lat); r.nn = Math.max(r.nn, l.lat); }
+    const p = price(l); if(p) r.prices.push(p);
+  });
+  return [...by.values()].sort((a,b) => b.n - a.n);
+}
+
+function focusCity(city){
+  state.filters.city = city || '';
+  const sel = $('#fcity'); if(sel) sel.value = state.filters.city;
+  refresh();
+  renderCityRail();
+  if(!mapReady) return;
+  if(!city){ fitToResults(); return; }
+  const r = cityStats().find(x => x.city === city);
+  if(!r || r.w > r.e) return;
+  let {w, s, e, nn:n} = r;
+  if(e - w < 0.01){ w -= 0.01; e += 0.01; }
+  if(n - s < 0.01){ s -= 0.01; n += 0.01; }
+  map.fitBounds([[w,s],[e,n]], {padding:56, maxZoom:14.5, duration:650});
+}
+
+function renderCityRail(){
+  const host = $('#cityrail'); if(!host) return;
+  const cs = cityStats();
+  // One city is not a choice; no rail rather than a rail that does nothing.
+  if(cs.length < 2){ host.innerHTML=''; host.style.display='none'; return; }
+  host.style.display='';
+  const cur = state.filters.city;
+  const total = cs.reduce((a,c) => a + c.n, 0);
+  host.innerHTML = '<button class="citychip' + (cur ? '' : ' on') + '" data-city="">'
+    + 'All cities <i>' + fmtN(total) + '</i></button>'
+    + cs.map(c => '<button class="citychip' + (cur === c.city ? ' on' : '') + '" data-city="'
+        + esc(c.city) + '" title="' + esc(c.city + ' — ' + fmtN(c.n) + ' records in this edition')
+        + '">' + esc(c.city) + ' <i>' + fmtN(c.n) + '</i></button>').join('');
+  $$('#cityrail .citychip').forEach(b =>
+    b.addEventListener('click', () => focusCity(b.dataset.city)));
+}
+
 function fitToResults(){ const ls=filtered(); if(!ls.length) return; let w=1e9,s=1e9,e=-1e9,n=-1e9; ls.forEach(l=>{ w=Math.min(w,l.lng); e=Math.max(e,l.lng); s=Math.min(s,l.lat); n=Math.max(n,l.lat); }); if(e-w<0.01){ w-=0.01; e+=0.01; } if(n-s<0.01){ s-=0.01; n+=0.01; } map.fitBounds([[w,s],[e,n]],{padding:60, maxZoom:14, duration:600}); }
 
 /* ---------------- filters & list ---------------- */
@@ -644,11 +718,15 @@ function toggleStar(id){ state.stars.has(id)?state.stars.delete(id):state.stars.
 })();
 
 function refresh(){ dealSync(); dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
-['q','fcounty','fcity','fkind','fsrc','fmin','fmax'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ const f=state.filters; f.q=$('#q').value; f.county=$('#fcounty').value; f.city=$('#fcity').value; f.kind=$('#fkind').value; f.src=$('#fsrc').value; f.min=$('#fmin').value; f.max=$('#fmax').value; if(id==='fcounty') fillCities(); refresh(); }));
+['q','fcounty','fcity','fkind','fsrc','fmin','fmax'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ const f=state.filters; f.q=$('#q').value; f.county=$('#fcounty').value; f.city=$('#fcity').value; f.kind=$('#fkind').value; f.src=$('#fsrc').value; f.min=$('#fmin').value; f.max=$('#fmax').value; if(id==='fcounty') fillCities(); refresh(); renderCityRail(); }));
 $$('#chips .chip').forEach(c=>c.addEventListener('click', ()=>{ const on=c.getAttribute('aria-pressed')!=='true'; c.setAttribute('aria-pressed', on); state.filters.chips[c.dataset.f]=on; refresh(); }));
 $('#sort').addEventListener('change', e=>{ state.sort=e.target.value; renderList(); });
+/* The filtered set as an interchange file. Handlers live here rather than in
+   geoexport.js so the module stays a pure function of its arguments and can be
+   tested without the DOM. */
+['expgeo','expcsv'].forEach((id,i)=>{ const b=$('#'+id); if(b) b.addEventListener('click', ()=>{ if(!window.LXGEO) return; i? LXGEO.exportCSV() : LXGEO.exportGeoJSON(); }); });
 function fillCities(){ const sel=$('#fcity'); const cur=sel.value; const cs=[...new Set(allListings().filter(l=>!state.filters.county||l.county===state.filters.county).map(l=>l.city))].sort(); sel.innerHTML='<option value="">All cities</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); sel.value=cs.includes(cur)?cur:''; state.filters.city=sel.value; }
-function fillCounties(){ const cs=[...new Set(allListings().map(l=>l.county).filter(Boolean))].sort(); $('#fcounty').innerHTML='<option value="">All counties</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); fillCities(); }
+function fillCounties(){ const cs=[...new Set(allListings().map(l=>l.county).filter(Boolean))].sort(); $('#fcounty').innerHTML='<option value="">All counties</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); fillCities(); renderCityRail(); }
 
 /* ---------------- selection & drawer ---------------- */
 function select(id, fly){ state.sel=id; const l=allListings().find(x=>x.id===id); if(!l) return; showView('mapview'); if(fly) map.flyTo({center:[l.lng,l.lat], zoom:Math.max(map.getZoom(),13.2), duration:700, padding:{right: window.innerWidth>900? 420 : 0}}); refresh(); const c=$(`.card[data-id="${id}"]`); if(c) c.scrollIntoView({block:'nearest'}); }
@@ -1049,7 +1127,7 @@ $$('#toc a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); con
 
 function updateZipsSource(){ if(USE_GL && mapReady && map.getSource && map.getSource('zips')) map.getSource('zips').setData(BA.geo.zips); else if(map && map.draw) map.draw(); }
 /* ---------------- public API for dashboard/research ---------------- */
-window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine};
+window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine, EDITION_STATE};
 /* ---------------- boot ---------------- */
 fillCounties(); renderList(); initMap(); renderRentMarkets(); setTimeout(()=>{ try{ if(window.LXScout&&LXScout.autoStart) LXScout.autoStart(); }catch(e){} }, 800); setTimeout(()=>{ if(window.LXDash) window.LXDash.render(); },0); $('#impcount').textContent = state.imported.length? `${state.imported.length} imported in this browser` : '';
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !tour.open && state.sel) closeDrawer(); });

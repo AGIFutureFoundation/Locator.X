@@ -207,6 +207,21 @@ settings held by the Foundation, not code. Stated as blockers with the measureme
 establishes each, per §12's rule that the roadmap says *unknown* and names the probe
 rather than inventing a date.
 
+## 7b. v1.5 — The transaction layer, and a set that can leave
+
+Two layers that turn a screen into work a reader can take somewhere.
+
+| Item | Why it matters | Proof it shipped |
+|------|----------------|------------------|
+| ✅ The closing file, assembled from the record | The due-diligence checklist was twelve hardcoded San Francisco strings shipped in every edition — it asked a Louisiana buyer for an SF 3R report — and the offer draft printed `CA` into every address everywhere | `content/closing_packet.json` → `scripts/build_packet.py` → [`CLOSING_PACKET.md`](CLOSING_PACKET.md) + `src/packet.js`: 12 clause families as questions for counsel, 24 document requests filtered by asset class (hotel 21 items, single-family 13), state facts parsed from the guides that carry their sources. Four guards, each proven by breaking what it protects |
+| ✅ The stress block | Screening numbers say how a deal looks; nothing said where it stops working | `src/underwrite.js`: break-even rent and cushion, break-even rate and headroom, the loan this NOI supports at DSCR 1.25, and DSCR under +200 bp / rent −10% / vacancy +5 pts / all three. Arithmetic over the existing stack; unknown inputs stay unknown |
+| ✅ The geospatial interchange | A screened set could not reach QGIS, ArcGIS, a Mapbox tileset or anyone else's map | `src/geoexport.js` writes RFC 7946 GeoJSON and matching CSV; every feature carries `lx:price_basis` and `lx:geometry_basis` so an index estimate cannot be read as a price and a ZIP centroid cannot be read as a parcel. Contract in [`INTEROP.md`](INTEROP.md); locked by `tests/fleet_smoke.js` |
+| ⬜ Import of a foreign GeoJSON | The interchange is one-way out | Not started. Reading someone else's file means deciding what its provenance claims are worth, which is a doctrine question before it is a parsing one |
+
+**Proof of the version:** a reader can screen a set, export it as geography without
+laundering a number, and walk into an attorney's office with the file the course taught
+them to assemble.
+
 ## 8. v2.0 — Multi-state editions at full depth
 
 The version boundary where an edition changes meaning: from "three markets plus thematic

@@ -108,8 +108,57 @@ function underwrite(l, u){ // returns full sheet numbers for financing option u.
   const ltc = (P+rehabAll)>0? loan/(P+rehabAll)*100 : null;        // 8. loan-to-cost incl. rehab
   const oer = egi>0? opex/egi*100 : null;                          // 9. operating expense ratio
   const paybackYears = cf>0? cash/cf : null;                       // 10. years to recoup cash from cash flow alone
+  /* ---- the stress block: what a credit committee asks next ----
+     Screening numbers say how the deal looks today. These say how far it can be
+     pushed before it stops working, which is the question that decides whether
+     you keep the building through a bad year (curriculum N3, C1, C3).
+
+     All of it is arithmetic over the stack already computed above — no new
+     source and no new assumption. Where an input is unknown the output is null
+     and the sheet says so; nothing here defaults. */
+  // Rent at which NOI exactly covers debt service. Invert the expense stack:
+  // NOI = rent*(1-vac)*(1 - (maint+capex+mgmt shares)) - fixed, so solve for rent.
+  const fixed = tax + ins + hoa + util;
+  const varShare = (a.maint + a.capex)/100 + (u.selfManage? 0 : (1-a.vacancy/100)*a.mgmt/100);
+  const netPerRent = (1 - a.vacancy/100) - varShare;   // NOI added per $1 of gross rent
+  const breakevenRent = (ds>0 && netPerRent>0)? (ds + fixed)/netPerRent/12 : null;
+  // How far rent can fall from here before DSCR hits 1.0. Negative means it is
+  // already below, which is a different sentence from "0% cushion".
+  const rentCushion = (breakevenRent!=null && rentMo>0)? (rentMo - breakevenRent)/rentMo*100 : null;
+  // The rate at which this loan's payment eats the whole NOI, by bisection on
+  // the same annuity factor the sheet uses everywhere else.
+  let breakevenRate = null;
+  if(loan>0 && noi>0){
+    let lo=0, hi=40;
+    if(loan*payK(hi, a.term) > noi){
+      for(let i=0;i<50;i++){ const mid=(lo+hi)/2; if(loan*payK(mid, a.term) <= noi) lo=mid; else hi=mid; }
+      breakevenRate = lo;
+    }
+  }
+  const rateHeadroom = (breakevenRate!=null)? breakevenRate - fin.rate : null;
+  // Lender sizing: the largest loan this NOI supports at a target coverage.
+  const loanAtDscr = t => { const k2=payK(fin.rate, a.term); return (k2>0 && noi>0)? noi/t/k2 : null; };
+  const maxLoan125 = loanAtDscr(1.25);
+  const loanGap = (maxLoan125!=null)? maxLoan125 - loan : null;   // negative: the lender sizes you down
+  // Three single-factor stresses and the combined one, each reported as a DSCR.
+  const dscrAt = (rentMult, vacAdd, rateAdd) => {
+    const r2 = rent*rentMult;
+    const egi2 = r2*(1 - (a.vacancy+vacAdd)/100);
+    const var2 = r2*(a.maint+a.capex)/100 + (u.selfManage? 0 : egi2*a.mgmt/100);
+    const noi2 = egi2 - (fixed + var2);
+    const ds2 = loan*payK(fin.rate+rateAdd, a.term) + loan*(fin.mi||0)/100;
+    return ds2>0? noi2/ds2 : null;
+  };
+  const stress = {
+    rate200: dscrAt(1, 0, 2),           // +200 bp at refinance or reset
+    rent10:  dscrAt(0.90, 0, 0),        // rents 10% below the basis
+    vac5:    dscrAt(1, 5, 0),           // five more points of vacancy
+    all:     dscrAt(0.90, 5, 2)         // all three at once
+  };
+  const stressPass = Object.keys(stress).filter(k => stress[k]!=null && stress[k]>=1).length;
   return {P, rehab, rehabAll, rentMo, rent, vac, egi, tax, ins, maint, capex, mgmt, hoa, util, opex, noi, loan, ds, cf, cfMo:cf/12, cash, dscr, coc, capCost, beOcc, arv, irr, appr, apprSrc, flows, fhaSelfSuff,
-    eqMult, grm, pricePerUnit, pricePerSqft, rentPerSqft, onePctRule, debtYield, ltv, ltc, oer, paybackYears};
+    eqMult, grm, pricePerUnit, pricePerSqft, rentPerSqft, onePctRule, debtYield, ltv, ltc, oer, paybackYears,
+    breakevenRent, rentCushion, breakevenRate, rateHeadroom, maxLoan125, loanGap, stress, stressPass};
 }
 function targetTest(uw){ switch(bb.target){ case 'dscr12': return uw.dscr!=null && uw.dscr>=1.2; case 'dscr10': return uw.dscr!=null && uw.dscr>=1.0; case 'coc6': return uw.coc!=null && uw.coc>=6; default: return uw.cfMo>=200; } }
 function maxOffer(l, base){ // bisection on offer price; rent fixed
@@ -253,13 +302,23 @@ function renderSheet(){
   const mo=s.maxOffer!=null? s.maxOffer : (()=>{ const v=maxOffer(l,u); if(v){ s.maxOffer=Math.round(v); s.gap=(v/price0(l)-1)*100; saveScen(); } return s.maxOffer; })();
   const tname=TARGETS.find(t=>t[0]===bb.target)[1];
   const ok=targetTest(uw);
-  const checks=['Three rent comps from a property manager (not Zillow)','Interior inspection: foundation, roof, drainage, sewer lateral','Electrical: panel amperage, knob-and-tube, aluminum','Seismic: soft-story status, bolting, cripple walls','Verify unit count is legal (certificate of occupancy / 3R report in SF)','Current leases, estoppels, security deposits, rent board history','Preliminary title report — liens, easements, unpermitted work','Insurance quote in hand (not an estimate)','HOA docs: reserves, litigation, rental caps (if condo)','Permit history for additions and decks','Flood / liquefaction / fire-hazard maps checked','Financing pre-approval matches this structure'];
-  const done=new Set(s.checks||[]);
+  /* The due-diligence list used to be twelve hardcoded strings, written for San
+     Francisco and shipped unchanged in every edition: it asked a New Orleans
+     buyer for an SF 3R report and for rent-board history that Louisiana has no
+     such thing as, and it never mentioned a franchise agreement to anyone
+     buying a hotel. It is now the closing packet — generated from the Academy's
+     own transaction checklist, filtered to this property's asset class, and
+     joined to the edition's state (src/packet.js, docs/CLOSING_PACKET.md).
+
+     Ticks are stored by item id. They used to be stored by POSITION, so every
+     edit to the list silently re-pointed a saved tick at a different item;
+     numbers left in an old scenario are dropped rather than reinterpreted. */
+  const done=new Set((s.checks||[]).filter(x=>typeof x==='string'));
   const rates=[u.finOpt.rate-1,u.finOpt.rate-0.5,u.finOpt.rate,u.finOpt.rate+0.5,u.finOpt.rate+1];
   const offers=[0.85,0.9,0.95,1,1.05].map(k=>Math.round(u.offer*k/1000)*1000);
   const sens=`<table class="sens"><tr><th>Offer ↓ / Rate →</th>${rates.map(r=>`<th>${r.toFixed(2)}%</th>`).join('')}</tr>${offers.map(of=>`<tr><td>${X.fmt$(of)}${of===u.offer?' ←':''}</td>${rates.map(rt=>{ const t=underwrite(l, Object.assign({},u,{offer:of, finOpt:Object.assign({},u.finOpt,{rate:rt})})); return `<td class="${t.cfMo>0?'pos':'neg'}">${(t.cfMo>0?'+':'')+X.fmt$(t.cfMo)}</td>`; }).join('')}</tr>`).join('')}</table>`;
   const devLine=applied.length? `Planned improvements: ${applied.map(o=>o.name+' ('+X.fmt$(o.capex)+')').join('; ')}\n` : '';
-  const draft=`LETTER OF INTENT — NON-BINDING\n\nProperty: ${l.addr}, ${l.city}, CA ${l.zip||''}\nAPN: ${l.apn||'—'}\n\nPurchase price: ${X.fmtFull(u.offer)}\nEarnest money: ${X.fmtFull(Math.round(u.offer*0.03))} (3%)\nFinancing: ${u.finOpt.name} — ${u.finOpt.down}% down at ~${u.finOpt.rate.toFixed(2)}%\nInspection contingency: 10 days\nFinancing contingency: 21 days\nClose of escrow: 30 days\n${(l.units||1)>1?'Condition: delivery of estoppel certificates and current rent roll\n':''}${u.rehab>0?`Basis for price: ${X.fmtFull(u.rehab)} of documented repair scope (attached)\n`:''}${devLine}\nRationale (for your negotiation, not the letter):\n- At ${X.fmtFull(price0(l))} the property runs ${uw.cfMo<0?X.fmt$(-uw.cfMo)+'/mo negative':X.fmt$(uw.cfMo)+'/mo positive'} at ${u.finOpt.down}% down.\n- ${mo? `It meets "${tname}" at ${X.fmtFull(Math.round(mo))}.` : `It does not meet "${tname}" at any realistic price with these rents.`}\n- Rent basis: $${X.fmtN(u.rentMo)}/mo (${X.esc(u.analysis.d.rentHow)}).\n\nThis summary was generated by locator.x from public records and index data. Verify everything; not legal advice.`;
+  const draft=`LETTER OF INTENT — NON-BINDING\n\nProperty: ${window.LXPACKET? LXPACKET.addressLine(l) : [l.addr,l.city,l.zip].filter(Boolean).join(', ')}\nAPN: ${l.apn||'—'}\n\nPurchase price: ${X.fmtFull(u.offer)}\nEarnest money: ${X.fmtFull(Math.round(u.offer*0.03))} (3%)\nFinancing: ${u.finOpt.name} — ${u.finOpt.down}% down at ~${u.finOpt.rate.toFixed(2)}%\nInspection contingency: 10 days\nFinancing contingency: 21 days\nClose of escrow: 30 days\n${(l.units||1)>1?'Condition: delivery of estoppel certificates and current rent roll\n':''}${u.rehab>0?`Basis for price: ${X.fmtFull(u.rehab)} of documented repair scope (attached)\n`:''}${devLine}\nRationale (for your negotiation, not the letter):\n- At ${X.fmtFull(price0(l))} the property runs ${uw.cfMo<0?X.fmt$(-uw.cfMo)+'/mo negative':X.fmt$(uw.cfMo)+'/mo positive'} at ${u.finOpt.down}% down.\n- ${mo? `It meets "${tname}" at ${X.fmtFull(Math.round(mo))}.` : `It does not meet "${tname}" at any realistic price with these rents.`}\n- Rent basis: $${X.fmtN(u.rentMo)}/mo (${X.esc(u.analysis.d.rentHow)}).\n\nThis summary was generated by locator.x from public records and index data. Verify everything; not legal advice.`;
   box.innerHTML=`<div class="sheet"><div class="sheethead">${D().ring(u.analysis.score,u.analysis.cat,84,true)}<div style="flex:1;min-width:260px"><div class="eyebrow">Underwriting sheet · ${STG[s.stage][1]}</div><h3>${X.esc(l.addr)}, ${X.esc(l.city)}</h3><div style="font-size:13px;color:var(--muted)">Recorded ${X.fmt$(price0(l))} (${l.priceDate||'—'}) · ${X.esc(l.kind)}${l.sqft?' · '+X.fmtN(l.sqft)+' sf':''}${l.year?' · built '+l.year:''} · ${X.esc(l.nb||l.anb||l.zip||'')}</div>
     <div class="solver"><div><div class="v">${mo? X.fmt$(mo) : 'No price'}</div><div class="l">max offer for ${X.esc(tname)}</div></div><div><div class="v" style="color:${gapColor(s.gap)}">${s.gap!=null? (s.gap>0?'+':'')+s.gap.toFixed(0)+'%':'—'}</div><div class="l">vs recorded price</div></div><div><div class="v" style="color:${ok?'var(--good)':'var(--bad)'}">${ok?'PASSES':'FAILS'}</div><div class="l">at your current offer</div></div><button class="btn" id="useMax" ${mo?'':'disabled'}>Use max offer</button></div></div>
     <div style="display:flex;flex-direction:column;gap:6px"><button class="btn" id="uwmap">Open on map</button><button class="btn" id="uwres">Research report</button><button class="btn primary" id="uwpdf">Export PDF memo</button><button class="btn" id="uwreel">Render video reel</button><button class="btn" id="uwcopy">Copy sheet</button><button class="btn" id="uwdesk" title="This case in the standalone worksheet's JSON shape — insurance ships blank because the app only has an estimate and that field requires a quote">Desk worksheet JSON</button>${window.LXVoice?LXVoice.speakButton('uwsheet-'+l.id,null,'&#128266; Listen to summary'):''}<button class="btn" id="uwclose">Close</button></div></div>
@@ -305,6 +364,19 @@ function renderSheet(){
         <div class="out"><div class="v">${uw.paybackYears!=null?uw.paybackYears.toFixed(1)+' yr':'∞'}</div><div class="l">Cash payback (cash flow only)</div></div>
         <div class="out"><div class="v">${uw.eqMult!=null?uw.eqMult.toFixed(2)+'×':'—'}</div><div class="l">5-yr equity multiple</div></div>
       </div>
+      <h4 style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 4px">How far it can be pushed — the stress block</h4>
+      <div style="font-size:11.5px;color:var(--muted);margin:0 0 6px;max-width:72ch">The screening numbers above say how the deal looks today. These say where it stops working — the questions a credit committee asks next, and the ones that decide whether you keep the building through a bad year. All arithmetic over the same stack; nothing new is assumed.</div>
+      <div class="outs">
+        <div class="out"><div class="v">${uw.breakevenRent!=null? X.fmt$(uw.breakevenRent):'—'}</div><div class="l">Break-even rent / mo<div style="font-size:10px;color:var(--muted);margin-top:2px">where NOI exactly covers debt service</div></div></div>
+        <div class="out ${uw.rentCushion==null?'':uw.rentCushion>=20?'good':uw.rentCushion>=0?'warn':'bad'}"><div class="v">${uw.rentCushion!=null? (uw.rentCushion>0?'−':'+')+Math.abs(uw.rentCushion).toFixed(0)+'%':'—'}</div><div class="l">Rent cushion<div style="font-size:10px;color:var(--muted);margin-top:2px">${uw.rentCushion==null?'unknown':uw.rentCushion>=0? 'rent can fall this far first':'rent is already below break-even'}</div></div></div>
+        <div class="out"><div class="v">${uw.breakevenRate!=null? uw.breakevenRate.toFixed(2)+'%':'—'}</div><div class="l">Break-even rate<div style="font-size:10px;color:var(--muted);margin-top:2px">${uw.rateHeadroom!=null? (uw.rateHeadroom>0? '+'+uw.rateHeadroom.toFixed(2)+' pts of headroom':'already past it'):'NOI does not cover any rate'}</div></div></div>
+        <div class="out ${uw.loanGap==null?'':uw.loanGap>=0?'good':'bad'}"><div class="v">${uw.maxLoan125!=null? X.fmt$(uw.maxLoan125):'—'}</div><div class="l">Loan this NOI supports at DSCR 1.25<div style="font-size:10px;color:var(--muted);margin-top:2px">${uw.loanGap==null?'unknown':uw.loanGap>=0? X.fmt$(uw.loanGap)+' above the modeled loan':X.fmt$(-uw.loanGap)+' short — a lender sizes you down'}</div></div></div>
+        <div class="out ${uw.stressPass>=3?'good':uw.stressPass>=2?'warn':'bad'}"><div class="v">${uw.stressPass}/4</div><div class="l">Stresses still covering debt</div></div>
+      </div>
+      <table class="sens" style="margin-top:8px"><tr><th>Stress</th><th>DSCR</th><th>Covers debt?</th></tr>
+      ${[['Rate +200 bp','rate200'],['Rent −10%','rent10'],['Vacancy +5 pts','vac5'],['All three at once','all']].map(([lab,k])=>{ const v=uw.stress[k]; return `<tr><td>${lab}</td><td>${v!=null? v.toFixed(2):'—'}</td><td class="${v==null?'':v>=1?'pos':'neg'}">${v==null?'unknown':v>=1?'yes':'no'}</td></tr>`; }).join('')}
+      </table>
+      <div style="font-size:11px;color:var(--muted);margin:6px 0 0;max-width:72ch">A stress is not a forecast. It is the same deal with one input moved to a level that has happened before, which is the only honest way to ask what the margin of safety is. Unknown inputs stay unknown here too — a blank row is a missing input, never a passing one.</div>
       ${(()=>{ try{
         if(!window.LXPredict || !l.zip) return '';
         const f = LXPredict.forecastZip(l.zip, 'val');
@@ -357,7 +429,7 @@ function renderSheet(){
         <div class="out"><div class="v">${X.fmt$(uw.arv+devValue)}</div><div class="l">Stabilized value</div></div>
       </div><div style="font-size:11px;color:var(--muted);margin-top:6px">Stabilized: all applied work complete and the new rent in place. During construction, carry the as-is numbers plus the draw schedule.</div></div>`:''}
       <div class="two" style="margin-top:14px">
-        <div><h4 style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px">Due-diligence checklist (${done.size}/${checks.length})</h4><div class="checklist">${checks.map((c,i)=>`<label class="${done.has(i)?'done':''}"><input type="checkbox" data-ck="${i}" ${done.has(i)?'checked':''}>${c}</label>`).join('')}</div></div>
+        <div>${window.LXPACKET? LXPACKET.render(l, {done}) : ''}<div class="toolbar" style="margin-top:8px"><button class="btn" id="copypacket">Copy closing file</button></div></div>
         <div><h4 style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px">Draft offer terms</h4><div class="offerdraft" id="offerdraft">${X.esc(draft)}</div><div class="toolbar" style="margin-top:8px"><button class="btn primary" id="copydraft">Copy terms</button><button class="btn" id="markoff">Mark stage: Offer drafted</button></div></div>
       </div>
     </div>
@@ -375,7 +447,8 @@ function renderSheet(){
   $$('#uwsheet .fincard[data-fin]').forEach(b=>{ const go=()=>{ s.fin=b.dataset.fin; if(s.stage==='new'||s.stage==='scr') s.stage='uw'; saveScen(); renderSheet(); renderFunnel(matches()); renderTable(matches()); }; b.addEventListener('click', go); b.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } }); });
   $('#useMax').addEventListener('click', ()=>{ if(s.maxOffer){ s.offer=s.maxOffer; if(s.stage==='new'||s.stage==='scr') s.stage='uw'; saveScen(); renderSheet(); } });
   $$('#uwsheet [data-dev]').forEach(c=>c.addEventListener('change', ()=>{ const set=new Set(s.dev||[]); c.checked? set.add(c.dataset.dev) : set.delete(c.dataset.dev); s.dev=[...set]; if(s.stage==='new'||s.stage==='scr') s.stage='uw'; saveScen(); renderSheet(); renderTable(matches()); renderFunnel(matches()); }));
-  $$('#uwsheet .checklist input').forEach(c=>c.addEventListener('change', ()=>{ const set=new Set(s.checks||[]); c.checked? set.add(+c.dataset.ck) : set.delete(+c.dataset.ck); s.checks=[...set]; saveScen(); renderSheet(); }));
+  $$('#uwsheet .checklist input').forEach(c=>c.addEventListener('change', ()=>{ const set=new Set((s.checks||[]).filter(x=>typeof x==='string')); c.checked? set.add(c.dataset.pk) : set.delete(c.dataset.pk); s.checks=[...set]; saveScen(); renderSheet(); }));
+  { const b=$('#copypacket'); if(b) b.addEventListener('click', ()=>{ const t=window.LXPACKET? LXPACKET.asText(l, done) : ''; navigator.clipboard.writeText(t).then(()=>X.toast('Closing file copied — take it to your attorney, not instead of one')).catch(()=>X.toast('Copy failed')); }); }
   $('#uwmap').onclick=()=>X.select(l.id,true); $('#uwres').onclick=()=>{ window.LXResearch.subjectFrom(l); X.showView('research'); };
   if(window.LXVoice) LXVoice.wireSpeakButtons($('#uwsheet'), function(){
     return `${l.addr}, ${l.city}. ${tname}. Recorded price ${X.fmt$(price0(l))}. `

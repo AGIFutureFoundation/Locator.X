@@ -74,6 +74,7 @@
 <!-- ================= MAP ================= -->
 <section id="mapview" class="view">
   <aside id="rail">
+    <div class="cityrail" id="cityrail" role="group" aria-label="Cities in this edition"></div>
     <div class="filters">
       <div class="row"><input type="text" id="q" placeholder="Search address, neighborhood, ZIP, city…" aria-label="Search"></div>
       <div class="row"><label for="fcounty">Area</label><select id="fcounty"><option value="">All counties</option></select><select id="fcity"><option value="">All cities</option></select></div>
@@ -87,7 +88,7 @@
         <button class="chip" data-f="tour" aria-pressed="false">Has 360° tour</button>
       </div>
     </div>
-    <div class="listhead"><span id="count"></span><span>Sort <select id="sort"><option value="cap">Cap rate</option><option value="cf">Cash flow</option><option value="price">Price ↑</option><option value="priced">Price ↓</option><option value="ppsf">$/sq ft</option><option value="date">Sale date</option></select></span></div>
+    <div class="listhead"><span id="count"></span><span class="exportpair"><button id="expgeo" class="exportbtn" title="The filtered set as RFC 7946 GeoJSON — for QGIS, ArcGIS, a Mapbox tileset, or anyone else's map. Every feature carries whether its price is an assessed value or an index estimate, and whether its point is the parcel or a ZIP centroid.">GeoJSON</button><button id="expcsv" class="exportbtn" title="The same columns, flat">CSV</button></span><span>Sort <select id="sort"><option value="cap">Cap rate</option><option value="cf">Cash flow</option><option value="price">Price ↑</option><option value="priced">Price ↓</option><option value="ppsf">$/sq ft</option><option value="date">Sale date</option></select></span></div>
     <div id="list" role="list"></div>
   </aside>
   <div id="mapwrap">

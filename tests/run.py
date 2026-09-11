@@ -286,6 +286,60 @@ def main():
     # ---- 10. the lodging expansion plan is derived, not drifting -----------
     run(["scripts/hotel_candidates.py", "--check"])
 
+    # ---- 12. the closing packet is derived, and states nothing on its own ---
+    run(["scripts/build_packet.py", "--check"])
+    packet = json.load(open(os.path.join(ROOT, "content/closing_packet.json"),
+                            encoding="utf-8"))
+    # Every state-sensitive clause must be a QUESTION. The whole reason this
+    # platform can ship transaction material at all is that it asks rather than
+    # asserts (docs/CONTRACT_ANATOMY.md), and the failure mode is a well-meaning
+    # edit that turns one row into a statement of what some state's law is.
+    for c in packet["clauses"]:
+        check(c["ask_counsel"].rstrip().endswith("?"),
+              "clause %r does not ask a question: %r" % (c["id"], c["ask_counsel"]),
+              "state-sensitive rows are questions for counsel, never claims about "
+              "what the law says")
+    # The packet's state layer must be exactly what the guides publish. If the
+    # generated table ever carries a state the sourced table does not, something
+    # invented a row.
+    pjs = open(os.path.join(ROOT, "src/packet_data.js"), encoding="utf-8").read()
+    pdata = json.loads(pjs[pjs.index("=") + 1:].rstrip().rstrip(";"))
+    guides = open(os.path.join(ROOT, "docs/states/README.md"), encoding="utf-8").read()
+    for st in pdata["states"]:
+        check(("| %s |" % st["state"]) in guides,
+              "packet carries state %r, which is not a row in docs/states/README.md"
+              % st["state"])
+    check(len(pdata["states"]) == 51,
+          "packet state layer has %d rows, not 51 (50 states + DC)"
+          % len(pdata["states"]))
+
+    # ---- 12b. no edition ships a hardcoded state in its paperwork ----------
+    # The Letter of Intent printed ", CA " into every address in every edition,
+    # including the New Orleans ones, because the state was a literal in
+    # src/underwrite.js rather than a fact resolved from the record. The state
+    # now comes from EDITION_STATE, which build_state.py rewrites per spec.
+    uwsrc = open(os.path.join(ROOT, "src/underwrite.js"), encoding="utf-8").read()
+    check(", CA " not in uwsrc and ", CA$" not in uwsrc,
+          "src/underwrite.js contains a hardcoded state — paperwork must resolve "
+          "the state from the record (src/packet.js addressLine)")
+    import build_state as _bs
+    multi = {"uscorridor", "usnew5", "uswide"}
+    for key, spec in _bs.SPECS.items():
+        pairs = [b for a, b in spec["app_pairs"] if "EDITION_STATE" in a]
+        if key in multi or key.endswith("-template"):
+            check(not pairs,
+                  "spec %r declares a state, but it spans several (or is a refusing "
+                  "template) — it must resolve to unknown" % key)
+        else:
+            check(len(pairs) == 1,
+                  "spec %r does not declare its state; its closing packet would "
+                  "report unknown for an edition that covers exactly one state" % key)
+            if pairs:
+                name = pairs[0].split("'")[1]
+                check(("| %s |" % name) in guides,
+                      "spec %r declares state %r, which is not a row in the state "
+                      "table" % (key, name))
+
     # ---- 11c. the synthetic fixture is actually deterministic --------------
     # The fixture calls itself deterministic, and was not: it emitted the city
     # series from a set(), whose iteration order over strings moves with
@@ -298,6 +352,14 @@ def main():
         txt = open(path, encoding="utf-8", errors="replace").read()
         return [_gz.decompress(_b64.b64decode(m.group(1)))
                 for m in re.finditer(r'atob\("([A-Za-z0-9+/=]{200,})"\)', txt)]
+    # Say the actual cause rather than letting a FileNotFoundError out of the
+    # builder stand in for it: the fleet demo inlines d3-delaunay, maplibre,
+    # fflate and terser, and CI failed for six runs with a traceback that never
+    # named the missing install.
+    if not os.path.isdir(os.path.join(ROOT, "node_modules", "d3-delaunay")):
+        FAILURES.append(
+            "node_modules is absent, so the fixture determinism guard cannot "
+            "build the demo. Run `npm ci` (CI does this before the smokes).")
     d1 = os.path.join(tempfile.mkdtemp(), "a.html")
     d2 = os.path.join(tempfile.mkdtemp(), "b.html")
     run(["scripts/build_fleet_demo.py", d1, "--fragment"])

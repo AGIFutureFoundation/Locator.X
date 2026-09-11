@@ -18,6 +18,8 @@ head=re.sub(r'<title>[^<]*</title>','<title>Locator X Match Fifty</title>',head,
 for a,b in [
  ('128,319 real sites from county records','50,000 recent-basis records in the 85–90% match band'),
  ('extruding 128,319 sites','extruding 50,000 match-band records'),
+ ('const EDITION_STATE = null;',
+  "const EDITION_STATE = 'California';"),
 ]: app=app.replace(a,b)
 # hide Bay-specific tabs (guide, house hacks) on the NOLA edition
 head=head.replace('</style>', 'button[data-view="hacks"],#hacks{display:none!important}\n</style>',1)
