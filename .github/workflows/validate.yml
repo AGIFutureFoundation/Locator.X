@@ -22,8 +22,9 @@ jobs:
       # never installed them, so three checks — including the fixture
       # determinism guard — failed on every run with a FileNotFoundError rather
       # than with a finding. A gate that cannot run is not a gate.
-      # Browsers are not needed here: tests/run.py drives no page, and the
-      # headless-Chromium fleet smoke runs on the data machine.
+      # Browsers are not needed in THIS workflow: tests/run.py builds pages but
+      # drives none. The headless-Chromium fleet smoke is its own workflow
+      # (fleet-smoke.yml), which installs Chromium itself.
       - name: Install the JS libraries the builders inline
         run: npm ci
         env:
