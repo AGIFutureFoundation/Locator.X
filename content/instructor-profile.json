@@ -1,0 +1,9 @@
+{
+ "_about": "The instructor profile that leads into the courses. SHIPS EMPTY BY DESIGN, for the same reason src/notes.js does: the platform asserts no words, biography or endorsement that the person whose byline the courses carry has not supplied. An empty file renders no profile at all — never a placeholder pretending to be one, and never a drafted biography waiting to be corrected. Authoring guide: curriculum/INSTRUCTOR_PROFILE.md",
+ "supplied": false,
+ "name": "Chris Barideaux",
+ "role": "",
+ "lede": "",
+ "sections": [],
+ "references": []
+}

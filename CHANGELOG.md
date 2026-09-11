@@ -7,6 +7,40 @@ such.
 
 ## [Unreleased]
 
+- **Articles, with every figure generated rather than typed** — a new
+  `content/blog/` plus `scripts/build_blog.py` renders long-form articles in
+  the house style at deploy time. The design rule is that an article states a
+  number by naming it (`{{fig:corridor_heap_gb}}`) and draws a chart by naming
+  it (`{{chart:scale-heap}}`), and both resolve from `market/*.json` at build
+  time — so an article can never quote one figure in a sentence and draw a
+  different one in its chart, which is the ordinary failure of writing about
+  your own data. `tests/run.py` fails any article asking for a figure or chart
+  the measured data cannot answer. Three articles ship: underwriting in a
+  non-disclosure state, what a property record actually costs in memory, and
+  the 4,443 lodging records the product could not search for.
+
+- **The instructor profile ships empty, like the notes layer** —
+  `content/instructor-profile.json` and `curriculum/INSTRUCTOR_PROFILE.md` are
+  the paved road for the profile that leads into the courses, and they contain
+  **no drafted biography**. The annotation layer's founding rule already
+  covered this in as many words: the platform asserts no words, *biography* or
+  endorsement it was not supplied. A biography is a set of claims about a real
+  person's life; a platform that refuses to invent a parcel's sale price does
+  not get to invent one. The guide carries the shape, the supply workflow, and
+  one rule that is not stylistic — a claim about a feeling or a motive needs no
+  reference, a checkable claim does. Unsupplied, the build renders no profile
+  page at all rather than a placeholder.
+
+- **The market pages were generated AND committed** — making them a deploy-time
+  build product removed them from `pages/`, except the deletion was never
+  actually recorded, so seven stale copies stayed in the repository. Nothing
+  broke, which is why nobody noticed: the deploy copies `pages/` first and the
+  generator overwrites afterwards, so the served site was always correct while
+  the committed twins drifted further behind with every later fix. Removed for
+  real, and `tests/run.py` now asserts the generated set and the committed set
+  are disjoint — verified by restoring the duplicates and watching the suite
+  name all seven.
+
 - **The demo could never draw the thing the platform is for** — `predict.js`
   pools its backtest across series and returns null below **eight** of them;
   the synthetic fixture generated **six** ZIPs. Off by two, and the

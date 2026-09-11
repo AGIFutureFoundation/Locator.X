@@ -24,6 +24,8 @@ cannot silently un-enforce them:
   8. The market pages render, and render their unknowns as unknowns.
   9. The link-rot sweep still covers the sourced per-row citations.
  10. The generated lodging expansion plan matches the measured layer.
+ 11. No deploy-generated page is also committed under pages/, and every article
+     figure and chart resolves from the committed measured data.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -282,6 +284,28 @@ def main():
 
     # ---- 10. the lodging expansion plan is derived, not drifting -----------
     run(["scripts/hotel_candidates.py", "--check"])
+
+    # ---- 11b. every article figure resolves from committed data ------------
+    # An article states numbers in prose and draws them in charts; both come from
+    # market/*.json at build time so the two can never disagree. This fails if an
+    # article asks for a figure or a chart the data cannot answer.
+    run(["scripts/build_blog.py", "--check"])
+
+    # ---- 11. no generated page is ALSO committed under pages/ --------------
+    # The market pages became a deploy-time build product, and a committed copy
+    # survived the change anyway: it was never actually recorded as deleted, so
+    # the repository carried stale duplicates of files the deploy regenerates.
+    # They shadowed nothing at deploy (the generator runs after the copy) which
+    # is exactly why nobody noticed. Assert the two sets are disjoint.
+    gendir = tempfile.mkdtemp()
+    run(["scripts/build_market_pages.py", gendir])
+    generated = {f for f in os.listdir(gendir) if f.endswith(".html")}
+    committed = set(os.listdir(os.path.join(ROOT, "pages")))
+    both = sorted(generated & committed)
+    check(not both,
+          "pages/: %s %s generated at deploy AND committed - a derived file with a "
+          "stale twin" % (", ".join(both), "is" if len(both) == 1 else "are"))
+    shutil.rmtree(gendir, ignore_errors=True)
     shutil.rmtree(mtree, ignore_errors=True)
 
     if FAILURES:
