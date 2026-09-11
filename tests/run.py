@@ -20,11 +20,8 @@ cannot silently un-enforce them:
      the check itself is checked, not just today's pairs.
   6. The crosswalk gate, the market-data gate and the internal link check pass from
      the tree as committed.
-<<<<<<< HEAD
   7. The market gate's cross-file rule fires on a drifted record count.
   8. The market pages render, and render their unknowns as unknowns.
-=======
->>>>>>> origin/main
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -197,7 +194,6 @@ def main():
     check(drifted in out and "PUBLISH_MAP" in out,
           "market: a record count drifting from PUBLISH_MAP did not fail the gate", out)
 
-<<<<<<< HEAD
     # ---- 8. the market pages actually render ------------------------------
     # The pages are a deploy-time build product, so a renderer that crashes on
     # an honest null would break the site with every gate still green. Render
@@ -263,8 +259,6 @@ def main():
     shutil.rmtree(msite, ignore_errors=True)
     shutil.rmtree(mtree, ignore_errors=True)
 
-=======
->>>>>>> origin/main
     if FAILURES:
         print("FAIL — %d problem(s):" % len(FAILURES))
         for fmsg in FAILURES:
