@@ -5,6 +5,17 @@
 > metrics. The current platform is the single-file edition family listed in
 > [`PUBLISH_MAP.md`](PUBLISH_MAP.md) and described in [`OVERVIEW.md`](OVERVIEW.md);
 > where this guide and those documents disagree, they win. Kept as lineage.
+>
+> **Where the measured figures are.** Every property count, score, median price,
+> percentile and tier on this page is illustrative — none was measured. The measured
+> record layer now exists: [`market/editions.json`](../market/editions.json) carries the
+> live record counts of the shipped editions (four measured 2026-09-11 by driving the
+> published artifacts headless), and
+> [`CORRIDOR_PROJECT_COMPLETION_SUMMARY.md`](CORRIDOR_PROJECT_COMPLETION_SUMMARY.md)
+> opens with a figure-by-figure reconciliation of this generation's numbers against
+> them. The short version: the 87,578 New Orleans figure is exact; the 500K national,
+> 245K Bay Area and 120K Baton Rouge totals match no measurement, and no scoring
+> system, price field or tier assignment exists in the measured layer at all.
 
 **Status: ✅ PRODUCTION READY**
 

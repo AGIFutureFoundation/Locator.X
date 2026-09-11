@@ -7,6 +7,14 @@ such.
 
 ## [Unreleased]
 
+- **The lineage documents point at the measured layer** — the platform guide
+  and the editions manifest carried the corridor era's illustrative figures
+  behind a "historical document" banner, which was honest but left a reader
+  with nowhere to go for the real numbers. Both banners now name where the
+  measured record layer is (`market/editions.json` for the live record
+  counts) and link the figure-by-figure reconciliation, so the lineage is
+  navigable rather than merely disclaimed.
+
 - **The link-rot sweep was passing over nothing; now it checks the citations
   that matter** — v1.2 shipped the sweep claiming it covered "every URL in
   `docs/resources/` and `docs/states/`", proven by the script exiting zero.
