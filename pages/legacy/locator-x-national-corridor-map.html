@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Corridor Map - Locator.X</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg: #ffffff;
+            --color-surface: #f9fafb;
+            --color-border: #e5e7eb;
+            --color-text: #111827;
+            --color-text-secondary: #6b7280;
+            --color-text-muted: #9ca3af;
+
+            --tier-a: #2563eb;
+            --tier-b: #9333ea;
+            --tier-c: #f97316;
+            --tier-a-light: #dbeafe;
+            --tier-b-light: #e9d5ff;
+            --tier-c-light: #fed7aa;
+
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #9333ea 100%);
+            --gradient-secondary: linear-gradient(135deg, #9333ea 0%, #f97316 100%);
+
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            color: var(--color-text);
+            background-color: var(--color-bg);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --color-bg: #111827;
+                --color-surface: #1f2937;
+                --color-border: #374151;
+                --color-text: #f3f4f6;
+                --color-text-secondary: #d1d5db;
+                --color-text-muted: #9ca3af;
+                --tier-a-light: #1e3a8a;
+                --tier-b-light: #6b21a8;
+                --tier-c-light: #92400e;
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --color-bg: #111827;
+            --color-surface: #1f2937;
+            --color-border: #374151;
+            --color-text: #f3f4f6;
+            --color-text-secondary: #d1d5db;
+            --color-text-muted: #9ca3af;
+            --tier-a-light: #1e3a8a;
+            --tier-b-light: #6b21a8;
+            --tier-c-light: #92400e;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .header-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            text-wrap: balance;
+        }
+
+        .header-back {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .header-back:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-2px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            grid-row: 2;
+            background: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-muted);
+        }
+
+        .quick-stat {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quick-stat-label {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+        }
+
+        .quick-stat-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-text);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            background: var(--color-bg);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            transition: all 0.2s;
+            color: var(--color-text);
+        }
+
+        .filter-btn:hover {
+            background: var(--color-surface);
+            border-color: var(--tier-a);
+        }
+
+        .filter-btn.active {
+            background: var(--tier-a);
+            color: white;
+            border-color: var(--tier-a);
+        }
+
+        /* Main Map Area */
+        .map-area {
+            grid-row: 2;
+            grid-column: 2;
+            display: flex;
+            flex-direction: column;
+            background: var(--color-bg);
+            overflow: hidden;
+        }
+
+        .map-toolbar {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background: var(--color-surface);
+        }
+
+        .toolbar-left {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-box {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            width: 250px;
+            font-size: 13px;
+            color: var(--color-text);
+        }
+
+        .toolbar-right {
+            display: flex;
+            gap: 8px;
+        }
+
+        .view-toggle {
+            padding: 8px 12px;
+            border: 1px solid var(--color-border);
+            background: var(--color-bg);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: var(--color-text);
+        }
+
+        .view-toggle.active {
+            background: var(--tier-a);
+            color: white;
+            border-color: var(--tier-a);
+        }
+
+        /* Map Canvas */
+        .map-canvas {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(135deg, #f5f7fa 0%, #eef2f5 100%);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .map-container:not([data-theme="light"]) {
+                background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            }
+        }
+
+        :root[data-theme="dark"] .map-container {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        }
+
+        .map-viz {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Cluster Visualization */
+        .cluster {
+            position: absolute;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            font-family: 'IBM Plex Mono', monospace;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            border: 2px solid white;
+        }
+
+        .cluster:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            z-index: 100;
+        }
+
+        .cluster.tier-a {
+            background-color: var(--tier-a);
+        }
+
+        .cluster.tier-b {
+            background-color: var(--tier-b);
+        }
+
+        .cluster.tier-c {
+            background-color: var(--tier-c);
+        }
+
+        /* Info Panel */
+        .info-panel {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 320px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+        }
+
+        .panel-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--color-text);
+        }
+
+        .panel-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .panel-metric {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text);
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--color-text-muted);
+            margin-top: 4px;
+        }
+
+        /* Legend */
+        .legend {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+            z-index: 40;
+        }
+
+        .legend-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-muted);
+            margin-bottom: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--color-text);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                flex-direction: row;
+                padding: 12px 16px;
+                overflow-x: auto;
+                max-height: 120px;
+            }
+
+            .sidebar-section {
+                flex-direction: row;
+                gap: 8px;
+                align-items: center;
+                white-space: nowrap;
+            }
+
+            .map-area {
+                grid-column: 1 / -1;
+                grid-row: 3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .info-panel {
+                right: 12px;
+                bottom: 12px;
+                max-width: 100%;
+                width: calc(100% - 24px);
+            }
+
+            .legend {
+                top: 12px;
+                right: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">National Corridor Map</div>
+            <button class="header-back" onclick="window.location.href='locator-x-master-dashboard.html'">← Back to Dashboard</button>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-label">Portfolio Overview</div>
+                <div class="quick-stat">
+                    <span class="quick-stat-label">Total Properties</span>
+                    <span class="quick-stat-value">500K</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="quick-stat-label">Avg Score</span>
+                    <span class="quick-stat-value">72.5</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="quick-stat-label">Median Price</span>
+                    <span class="quick-stat-value">$425K</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Filter by Tier</div>
+                <div class="filter-group">
+                    <button class="filter-btn active" onclick="filterTier('all')">All Tiers (A, B, C)</button>
+                    <button class="filter-btn" onclick="filterTier('a')">Tier A (Top 20%)</button>
+                    <button class="filter-btn" onclick="filterTier('b')">Tier B (50-80%)</button>
+                    <button class="filter-btn" onclick="filterTier('c')">Tier C (Bottom 50%)</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Category</div>
+                <div class="filter-group">
+                    <button class="filter-btn active" onclick="filterCategory('all')">All Categories</button>
+                    <button class="filter-btn" onclick="filterCategory('residential')">Residential (40%)</button>
+                    <button class="filter-btn" onclick="filterCategory('multifamily')">Multi-Family (30%)</button>
+                    <button class="filter-btn" onclick="filterCategory('commercial')">Commercial (18%)</button>
+                    <button class="filter-btn" onclick="filterCategory('industrial')">Industrial (12%)</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-area">
+            <div class="map-toolbar">
+                <div class="toolbar-left">
+                    <input type="text" class="search-box" placeholder="Search properties, markets, locations..." id="searchInput">
+                </div>
+                <div class="toolbar-right">
+                    <button class="view-toggle active" onclick="setView('clustered')">Clustered View</button>
+                    <button class="view-toggle" onclick="setView('density')">Density Heatmap</button>
+                    <button class="view-toggle" onclick="setView('list')">List View</button>
+                </div>
+            </div>
+
+            <div class="map-canvas">
+                <div class="map-container">
+                    <div class="map-viz" id="mapViz">
+                        <!-- Clusters will be inserted here -->
+                    </div>
+                    <div class="legend">
+                        <div class="legend-title">Investment Tiers</div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--tier-a);"></div>
+                            <span>Tier A - Premium (20%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--tier-b);"></div>
+                            <span>Tier B - Secondary (30%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--tier-c);"></div>
+                            <span>Tier C - Value (50%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel" id="infoPanel">
+                <div class="panel-title">Market Snapshot</div>
+                <div class="panel-metrics">
+                    <div class="panel-metric">
+                        <span class="metric-value" id="panelTierA">100K</span>
+                        <span class="metric-label">Tier A</span>
+                    </div>
+                    <div class="panel-metric">
+                        <span class="metric-value" id="panelTierB">150K</span>
+                        <span class="metric-label">Tier B</span>
+                    </div>
+                    <div class="panel-metric">
+                        <span class="metric-value" id="panelAvgScore">72.5</span>
+                        <span class="metric-label">Avg Score</span>
+                    </div>
+                    <div class="panel-metric">
+                        <span class="metric-value" id="panelPercentile">50th</span>
+                        <span class="metric-label">Percentile</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // National Corridor Cluster Data
+        const clusterData = [
+            // West Coast Clusters
+            { x: 15, y: 20, tier: 'a', size: 45, properties: 22500, label: 'Silicon Valley', avgScore: 76, category: 'residential' },
+            { x: 12, y: 25, tier: 'b', size: 38, properties: 19000, label: 'Bay Area South', avgScore: 71, category: 'multifamily' },
+            { x: 18, y: 18, tier: 'a', size: 40, properties: 20000, label: 'San Francisco', avgScore: 78, category: 'commercial' },
+            { x: 25, y: 30, tier: 'b', size: 35, properties: 17500, label: 'Sacramento Valley', avgScore: 68, category: 'residential' },
+
+            // Southwest Clusters
+            { x: 20, y: 45, tier: 'b', size: 36, properties: 18000, label: 'Phoenix Metro', avgScore: 70, category: 'residential' },
+            { x: 22, y: 50, tier: 'c', size: 32, properties: 16000, label: 'Arizona Growth', avgScore: 65, category: 'multifamily' },
+            { x: 18, y: 55, tier: 'b', size: 34, properties: 17000, label: 'Las Vegas Corridor', avgScore: 69, category: 'commercial' },
+
+            // Texas Clusters
+            { x: 38, y: 45, tier: 'a', size: 42, properties: 21000, label: 'Austin Tech Hub', avgScore: 75, category: 'residential' },
+            { x: 40, y: 50, tier: 'b', size: 37, properties: 18500, label: 'Houston Metro', avgScore: 72, category: 'multifamily' },
+            { x: 42, y: 48, tier: 'b', size: 36, properties: 18000, label: 'Dallas Corridor', avgScore: 71, category: 'commercial' },
+            { x: 36, y: 52, tier: 'c', size: 31, properties: 15500, label: 'San Antonio Valley', avgScore: 64, category: 'industrial' },
+
+            // Midwest Clusters
+            { x: 48, y: 35, tier: 'b', size: 35, properties: 17500, label: 'Chicago Growth', avgScore: 70, category: 'multifamily' },
+            { x: 50, y: 38, tier: 'b', size: 34, properties: 17000, label: 'Midwest Corridor', avgScore: 69, category: 'residential' },
+            { x: 46, y: 40, tier: 'c', size: 30, properties: 15000, label: 'Great Lakes', avgScore: 63, category: 'industrial' },
+
+            // Southeast Clusters
+            { x: 55, y: 50, tier: 'a', size: 41, properties: 20500, label: 'Atlanta Premium', avgScore: 74, category: 'residential' },
+            { x: 57, y: 52, tier: 'b', size: 36, properties: 18000, label: 'Miami Growth', avgScore: 71, category: 'commercial' },
+            { x: 58, y: 48, tier: 'b', size: 35, properties: 17500, label: 'Southeast Tech', avgScore: 70, category: 'multifamily' },
+            { x: 60, y: 55, tier: 'c', size: 32, properties: 16000, label: 'Florida Expansion', avgScore: 66, category: 'residential' },
+
+            // Northeast Clusters
+            { x: 72, y: 25, tier: 'a', size: 44, properties: 22000, label: 'New York Premium', avgScore: 77, category: 'commercial' },
+            { x: 70, y: 28, tier: 'a', size: 42, properties: 21000, label: 'Boston Tech', avgScore: 76, category: 'residential' },
+            { x: 68, y: 32, tier: 'b', size: 37, properties: 18500, label: 'Mid-Atlantic', avgScore: 72, category: 'multifamily' },
+            { x: 75, y: 30, tier: 'b', size: 35, properties: 17500, label: 'Philadelphia Corridor', avgScore: 70, category: 'commercial' },
+
+            // Mountain/Denver Clusters
+            { x: 28, y: 32, tier: 'b', size: 35, properties: 17500, label: 'Denver Metro', avgScore: 70, category: 'residential' },
+            { x: 30, y: 35, tier: 'b', size: 33, properties: 16500, label: 'Mountain Growth', avgScore: 68, category: 'multifamily' },
+            { x: 26, y: 38, tier: 'c', size: 29, properties: 14500, label: 'Rocky Mountain', avgScore: 62, category: 'industrial' },
+        ];
+
+        let currentTier = 'all';
+        let currentCategory = 'all';
+        let currentView = 'clustered';
+
+        function renderClusters() {
+            const mapViz = document.getElementById('mapViz');
+            mapViz.innerHTML = '';
+
+            const filteredClusters = clusterData.filter(cluster => {
+                if (currentTier !== 'all' && cluster.tier !== currentTier) return false;
+                if (currentCategory !== 'all' && cluster.category !== currentCategory) return false;
+                return true;
+            });
+
+            filteredClusters.forEach(cluster => {
+                const div = document.createElement('div');
+                div.className = `cluster tier-${cluster.tier}`;
+                div.style.left = cluster.x + '%';
+                div.style.top = cluster.y + '%';
+                div.style.transform = 'translate(-50%, -50%)';
+                div.style.width = cluster.size + 'px';
+                div.style.height = cluster.size + 'px';
+                div.textContent = (cluster.properties / 1000).toFixed(0) + 'K';
+                div.title = `${cluster.label}\n${cluster.properties} properties\nAvg Score: ${cluster.avgScore}`;
+
+                div.addEventListener('click', () => showClusterDetails(cluster));
+                mapViz.appendChild(div);
+            });
+
+            updateMetrics(filteredClusters);
+        }
+
+        function showClusterDetails(cluster) {
+            alert(`
+${cluster.label}
+
+Properties: ${cluster.properties.toLocaleString()}
+Avg Score: ${cluster.avgScore}
+Tier: ${cluster.tier.toUpperCase()}
+Category: ${cluster.category.charAt(0).toUpperCase() + cluster.category.slice(1)}
+            `);
+        }
+
+        function updateMetrics(clusters) {
+            const tierACount = clusters.filter(c => c.tier === 'a').reduce((sum, c) => sum + c.properties, 0);
+            const tierBCount = clusters.filter(c => c.tier === 'b').reduce((sum, c) => sum + c.properties, 0);
+            const avgScore = (clusters.reduce((sum, c) => sum + c.avgScore * c.properties, 0) / clusters.reduce((sum, c) => sum + c.properties, 0)).toFixed(1);
+
+            document.getElementById('panelTierA').textContent = (tierACount / 1000).toFixed(0) + 'K';
+            document.getElementById('panelTierB').textContent = (tierBCount / 1000).toFixed(0) + 'K';
+            document.getElementById('panelAvgScore').textContent = avgScore;
+        }
+
+        function filterTier(tier) {
+            currentTier = tier;
+            document.querySelectorAll('[onclick^="filterTier"]').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderClusters();
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('[onclick^="filterCategory"]').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderClusters();
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-toggle').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (view === 'clustered') {
+                document.getElementById('mapViz').style.opacity = '1';
+            } else if (view === 'density') {
+                document.getElementById('mapViz').style.opacity = '0.7';
+            } else if (view === 'list') {
+                // List view would be implemented separately
+            }
+        }
+
+        // Initialize
+        renderClusters();
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.cluster').forEach(cluster => {
+                const title = cluster.title.toLowerCase();
+                cluster.style.opacity = title.includes(query) ? '1' : '0.3';
+            });
+        });
+    </script>
+
+<div style="position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#B9531F;color:#fff;font:600 13px/1.45 system-ui,sans-serif;padding:8px 16px;text-align:center">Preserved corridor-era demonstration &mdash; the figures on this page are illustrative, not measured records (<a href="https://github.com/agifuturefoundation/locator.x/blob/main/docs/CORRIDOR_PROJECT_COMPLETION_SUMMARY.md" style="color:#fff">why</a>). The measured record layer lives on the <a href="../market-dashboard.html" style="color:#fff">Market Dashboard</a>.</div>
+</body>
+</html>
