@@ -277,6 +277,105 @@ function btBlock(bt, label){
     + '</div>';
 }
 
+
+/* ---- the headline: lead with the answer, not with the method -------------
+   This page used to open with two hundred words of method and put its first
+   number below the fold. The method is what makes the number worth having, but
+   a reader who has to earn the answer by reading an essay never gets to it -
+   and the prose is still here, one scroll down, unchanged.
+
+   Which ZIP gets the headline is a doctrine decision, not a design one. The
+   obvious choice is the biggest projected move, which is exactly the number a
+   page should not lead with: the largest forecast is usually the least
+   trustworthy series. This leads with the series whose OWN held-out month came
+   closest - where this method has earned the most trust on this edition's data
+   - and says what that error was. A hero that cherry-picks the most exciting
+   projection is an advert; one that picks the best-tested projection is a
+   measurement.
+
+   The drawing animates because the shape IS the finding: history is fixed and
+   drawn first, the projection extends from it, and the band around it widens
+   with the horizon because the measured error grows. Nothing about the values
+   moves - only the reveal - and the whole thing is still under the
+   reduced-motion guard. */
+function bestTested(){
+  var D = data(); if(!D) return null;
+  var best = null;
+  for(var z in D.val){
+    var ho = holdout(D.val[z]);
+    if(!ho) continue;
+    var f = forecastZip(z, 'val');
+    if(!f) continue;
+    if(!best || Math.abs(ho.err) < Math.abs(best.ho.err)) best = {zip: z, ho: ho, f: f};
+  }
+  return best;
+}
+
+function heroSVG(f){
+  var D = data(); if(!D) return '';
+  var hist = D.val[f.zip].filter(function(v){ return v != null; }).slice(-18);
+  var all = hist.concat(f.points);
+  var lo = Math.min.apply(null, all.concat(f.lo ? [f.lo] : []));
+  var hi = Math.max.apply(null, all.concat(f.hi ? [f.hi] : []));
+  var pad = (hi - lo) * 0.12 || 1;
+  lo -= pad; hi += pad;
+  var W = 620, H = 140, n = hist.length + f.points.length - 1;
+  var X = function(i){ return 8 + (W - 16) * (i / n); };
+  var Y = function(v){ return H - 10 - (H - 20) * ((v - lo) / (hi - lo || 1)); };
+  var hp = hist.map(function(v, i){ return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
+  var j0 = hist.length - 1;
+  var fp = 'M' + X(j0).toFixed(1) + ' ' + Y(hist[j0]).toFixed(1) + ' '
+    + f.points.map(function(v, i){ return 'L' + X(j0 + 1 + i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
+  var band = '';
+  if(f.lo != null && f.hi != null){
+    /* The band opens from the last real point and reaches its measured width at
+       the horizon - the error is what the backtest recorded at H months, and it
+       is nothing at month zero because month zero is published. */
+    var up = [], dn = [];
+    for(var i = 0; i < f.points.length; i++){
+      var t = (i + 1) / f.points.length;
+      var v = f.points[i];
+      up.push(X(j0 + 1 + i).toFixed(1) + ' ' + Y(v + (f.hi - f.end) * t).toFixed(1));
+      dn.push(X(j0 + 1 + i).toFixed(1) + ' ' + Y(v - (f.end - f.lo) * t).toFixed(1));
+    }
+    band = '<polygon class="pvband" points="' + X(j0).toFixed(1) + ' ' + Y(hist[j0]).toFixed(1)
+      + ' ' + up.join(' ') + ' ' + dn.reverse().join(' ') + '"/>';
+  }
+  return '<svg class="pvhero" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="'
+    + esc(hist.length + ' published months for ZIP ' + f.zip + ', then a ' + HORIZON
+    + '-month projection with the measured backtest band') + '">'
+    + band
+    + '<path class="pvhist" d="' + hp + '"/>'
+    + '<path class="pvproj" d="' + fp + '"/>'
+    + '<circle class="pvnow" cx="' + X(j0).toFixed(1) + '" cy="' + Y(hist[j0]).toFixed(1) + '" r="3.5"/>'
+    + '</svg>';
+}
+
+function hero(){
+  var b = bestTested(); if(!b) return '';
+  var f = b.f, pc = (f.change * 100), err = b.ho.err * 100;
+  var dirCol = f.change >= 0 ? 'var(--good)' : 'var(--bad)';
+  var bandTxt = (f.lo != null && f.hi != null)
+    ? 'between <b>' + L().fmt$(f.lo) + '</b> and <b>' + L().fmt$(f.hi) + '</b>'
+    : '<b>no band</b> &mdash; this method was not testable on this edition, so none is drawn';
+  return '<div class="chart pvhero-card" style="margin-bottom:14px">'
+    + '<p class="eyebrow" style="margin:0 0 3px">The best-tested series in this edition</p>'
+    + '<h3 style="margin:0 0 2px">ZIP ' + esc(f.zip) + ' &mdash; projected '
+    + '<span style="color:' + dirCol + '">' + (pc >= 0 ? '+' : '') + pc.toFixed(1) + '%</span> over '
+    + HORIZON + ' months</h3>'
+    + '<p style="font-size:13px;color:var(--ink2);margin:0 0 8px;max-width:88ch">From a published '
+    + L().fmt$(f.last) + ' today to ' + bandTxt + '. This series is shown first because its own held-out '
+    + 'month came closest of any in this edition &mdash; the method missed it by <b>'
+    + (err >= 0 ? '+' : '') + err.toFixed(1) + '%</b>, predicting ' + L().fmt$(b.ho.predicted)
+    + ' against an actual ' + L().fmt$(b.ho.actual) + '. It is one observation, not a distribution.</p>'
+    + heroSVG(f)
+    + '<p style="font-size:11.5px;color:var(--muted);margin:8px 0 0">Solid line: published index. '
+    + 'Extending line: the projection. The band is the p10&ndash;p90 of the <b>measured</b> backtest error '
+    + 'and widens with the horizon because that is how the error grew &mdash; it is not an assumed '
+    + 'distribution. A ZIP index is not a property: nothing here forecasts a parcel.</p>'
+    + '</div>';
+}
+
 function render(){
   var host = $('#predroot'); if(!host) return;
   invalidate();
@@ -323,6 +422,9 @@ function render(){
            + 'wider error band.</p>')
       + '</div>';
   }
+
+  /* the headline projection, directly under the coverage verdict */
+  h += hero();
 
   /* horizon toggle — only appears where the long horizon can actually be
      backtested (LONG_MINMONTHS of published history); otherwise there is
