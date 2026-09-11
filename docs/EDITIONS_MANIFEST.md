@@ -6,6 +6,12 @@
 > [`OVERVIEW.md`](OVERVIEW.md) §4 and the README). The authoritative list of current
 > editions and their published URLs is [`PUBLISH_MAP.md`](PUBLISH_MAP.md); this file is
 > kept as lineage (see the changelog's "Corridor era" entry).
+>
+> **Figures here are illustrative.** The measured record layer lives in
+> [`market/`](../market/README.md) — `editions.json` carries the shipped editions' live
+> record counts, and
+> [`CORRIDOR_PROJECT_COMPLETION_SUMMARY.md`](CORRIDOR_PROJECT_COMPLETION_SUMMARY.md)
+> reconciles this generation's numbers against them.
 
 ## 🎯 Interactive HTML Editions - Complete List
 
