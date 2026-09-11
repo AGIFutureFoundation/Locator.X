@@ -7,6 +7,20 @@ such.
 
 ## [Unreleased]
 
+- **The real record layer joins the public site** — a new
+  `scripts/build_crosswalk_page.py` renders `crosswalk/usecodes.json` into
+  `crosswalk.html` at deploy time: all 8 jurisdictions, 48 code mappings
+  (44 measured, 4 transcribed-unverified and flagged as such on the page),
+  the 12,339 parcels behind the measured counts, each jurisdiction's value
+  field ("an assessment, never a price"), ranking notes, and the caveats
+  found the hard way — a straight rendering of the sourced data file,
+  nothing invented at build time. The landing page gains a "real record
+  layer" section: the crosswalk page plus links to the coverage
+  inventories, the pull queue, and the interop contract on the public
+  repository, with the synthetic-vs-real boundary stated in the section
+  lede. Verified: 48 code rows and 4 unverified flags rendered, zero page
+  errors.
+
 - **The demo carries a large database** — the synthetic fleet scales to
   ~11,500 deterministic records (bay 2,500; below-market 1,500; corridors
   1,200 each; every edition sized to its character), exercising the app's
