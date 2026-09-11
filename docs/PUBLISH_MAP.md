@@ -110,3 +110,46 @@ repo keeps its never-commit-built-editions rule:
 3. The site deploy triggers on the source repo, so after publishing editions
    run `gh workflow run 'deploy pages' -R AGIFutureFoundation/Locator.X` (or
    push anything) to pick them up.
+
+## Install from the live artifacts — 2026-09-11
+
+The user directed the editions channel to be loaded from **the HTML versions that
+exist** — the live artifact set above — rather than waiting on a data-machine
+rebuild. Executed in-session on 2026-09-11:
+
+1. All twelve editions fetched from their published artifact URLs; every `<title>`
+   matched this map 1:1.
+2. The four editions with documented record counts were driven headless and
+   re-counted live: **bay-ledger 182,124 · uscorridor 354,260 · atlas_nola
+   125,803 · nola 87,578** — all exact matches, zero page errors. (A re-count of
+   the remaining eight was declined mid-run; they are recorded as
+   title-verified, never as measured.)
+3. The set was staged with an `editions.json` manifest (sha256, bytes, build date
+   from each artifact's last republish, measured counts where they exist) and
+   verified end-to-end through `scripts/build_editions_index.py`:
+   **12 live, 0 refused.**
+
+| File | Key | Size | sha256 (first 16) | Built | Records |
+|---|---|---|---|---|---|
+| atlas_bay.html | bay-atlas | 6.76 MB | `4105792baec710dd` | 2026-09-09 | title-verified, not re-counted |
+| atlas_nola.html | nola-classic | 4.88 MB | `e27ddb4470741831` | 2026-09-09 | 125,803 (measured 2026-09-11) |
+| bay-ledger.html | bay | 10.93 MB | `d1644f62a15c49d7` | 2026-09-09 | 182,124 (measured 2026-09-11) |
+| below100.html | below | 5.91 MB | `913afec23c8744e6` | 2026-09-07 | title-verified, not re-counted |
+| income50.html | income | 4.24 MB | `fc3fdd3eeb4e29d1` | 2026-09-07 | title-verified, not re-counted |
+| launi.html | launi | 6.28 MB | `afe57741bbb2bec8` | 2026-09-07 | title-verified, not re-counted |
+| match50.html | match | 4.08 MB | `b001a21b955fa55d` | 2026-09-07 | title-verified, not re-counted |
+| nola.html | nola | 5.60 MB | `4ab1a71a4378c28c` | 2026-09-09 | 87,578 (measured 2026-09-11) |
+| sheltercove.html | sheltercove | 2.23 MB | `909b6f7f2c15cbd1` | 2026-09-07 | title-verified, not re-counted |
+| uscorridor.html | uscorridor | 15.28 MB | `511fcb1434153574` | 2026-09-09 | 354,260 (measured 2026-09-11) |
+| usnew5.html | usnew5 | 9.14 MB | `3b20f379ee224c6a` | 2026-09-07 | title-verified, not re-counted |
+| uswide.html | uswide | 11.00 MB | `7e352579d5b19d35` | 2026-09-09 | title-verified, not re-counted |
+
+**Blocked on one user-side step:** this session's GitHub credential cannot create
+repositories (403), and `AGIFutureFoundation/Locator.X-editions` does not exist
+yet. Create it once — `gh repo create AGIFutureFoundation/Locator.X-editions
+--public` — and grant the Claude workspace access; the staged set then publishes
+with `SKIP_BUILD=1 bash scripts/publish_editions.sh` from any checkout holding
+these twelve files (their hashes above are the verification), or by re-running
+the fetch-and-stage in a session. The editions stay live at their artifact URLs
+in the meantime, and the site's `/editions/` page keeps saying honestly that
+nothing is published to the channel yet.
