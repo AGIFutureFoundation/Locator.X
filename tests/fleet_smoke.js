@@ -105,6 +105,28 @@ async function main() {
       if (!(await page.$('#predroot .pvband'))) errs.push('the measured error band did not draw');
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(600);
+      // The city rail: one map per city. Built from the records, so an edition
+      // naming a single city renders none — assert the behaviour, not a count.
+      // Click by selector, never by a retained handle: focusCity() rebuilds the
+      // rail's innerHTML, so every chip element captured before a click is
+      // detached by the time the next one is needed.
+      const nChips = await page.$$eval('#cityrail .citychip', n => n.length);
+      if (nChips) {
+        if (nChips < 2) errs.push('city rail rendered with fewer than two choices');
+        const all = parseInt(((await page.textContent('#count')) || '').replace(/,/g, ''), 10);
+        await page.click('#cityrail .citychip:nth-of-type(2)');
+        await page.waitForTimeout(900);
+        const one = parseInt(((await page.textContent('#count')) || '').replace(/,/g, ''), 10);
+        if (!(one > 0 && one < all)) {
+          errs.push('selecting a city did not narrow the list: ' + all + ' -> ' + one);
+        }
+        const synced = await page.inputValue('#fcity');
+        if (!synced) errs.push('the city rail did not sync the city dropdown');
+        await page.click('#cityrail .citychip:nth-of-type(1)');
+        await page.waitForTimeout(500);
+        const back = parseInt(((await page.textContent('#count')) || '').replace(/,/g, ''), 10);
+        if (back !== all) errs.push('clearing the city rail did not restore the list: ' + back + ' of ' + all);
+      }
     }
     const ok = errs.length === 0 && info.n > 0 && info.options === expectedOptions
       && info.title.indexOf(fleet.labels[key]) === 0;
