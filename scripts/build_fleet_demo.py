@@ -64,9 +64,28 @@ def make_ba(seed, count, wide, tall, campus):
     roads = fc([line([[0, H * .28], [W + .02, H * .32]], {"type": "Major Highway"}),
                 line([[W * .17, 0], [W * .2, H]], {"type": "Road"}),
                 line([[W * .75, 0], [W * .72, H]], {"type": "Road"})])
-    zids = ["%05d" % (seed * 100 + i + 11) for i in range(6)]
-    cell_w, cell_h = (W - 0.04) / 3, (H - 0.02) / 2
-    cells = {z: (0.02 + (i % 3) * cell_w, 0.01 + (i // 3) * cell_h) for i, z in enumerate(zids)}
+    # The index bundle covers NZIP ZIPs; property sits in a subset of them. Two
+    # reasons, and the first one is a bug this fixture used to hide.
+    #
+    # predict.js pools a backtest across series and returns null below EIGHT of
+    # them (`if(errs.length < 8) return null`). The fixture generated SIX, so the
+    # measured-error band - the single most distinctive thing this platform does -
+    # could never draw in the public demo, and the predictions page advertised
+    # "not testable, too few series" as though that were a property of the method
+    # rather than of the fixture. Off by two.
+    #
+    # The subset is the second reason: in a real edition the index bundle and the
+    # parcel bundle are separate deliveries that do not cover the same ZIPs, which
+    # is what the coverage panel exists to state. A fixture where every index ZIP
+    # holds property makes that panel say something trivially true and leaves the
+    # partial-coverage path unexercised.
+    NZIP, COLS = 24, 6
+    ROWS = NZIP // COLS
+    zids = ["%05d" % (seed * 100 + i + 11) for i in range(NZIP)]
+    pzids = zids[::2]                     # property lands in half of them
+    cell_w, cell_h = (W - 0.04) / COLS, (H - 0.02) / ROWS
+    cells = {z: (0.02 + (i % COLS) * cell_w, 0.01 + (i // COLS) * cell_h)
+             for i, z in enumerate(zids)}
     citymap = {z: cities[i % 3] for i, z in enumerate(zids)}
     zipfc = fc([poly(rect(x, y, x + cell_w, y + cell_h), {"zip": z, "city": citymap[z]})
                 for z, (x, y) in cells.items()])
@@ -74,21 +93,33 @@ def make_ba(seed, count, wide, tall, campus):
                poly(rect(W * .4, 0.02, W * .62, H * .35), {"name": nbs[1]}),
                poly(rect(W * .7, H * .62, W * .95, H * .95), {"name": nbs[2]})])
     months = ['%d-%02d' % (2023 + (8 + m) // 12, (8 + m) % 12 + 1) for m in range(36)]
-    def series(base, drift):
-        return [round(base * (1 + drift * m / 36 + 0.006 * math.sin(m / 3.1))) for m in range(36)]
+    # Each ZIP gets its own wobble. A set of perfectly smooth curves would let the
+    # log-linear fit land almost exactly, and the honest consequence of that is a
+    # band near zero width - a demo that advertises an accuracy the method does
+    # not have on real series. The amplitudes are drawn from the seeded rng, so
+    # the build stays deterministic while the backtest sees a real spread of
+    # error to measure.
+    def series(base, drift, amp, phase):
+        out = []
+        for m in range(36):
+            wob = amp * (math.sin(m * 0.9 + phase) + 0.6 * math.sin(m * 2.3 + phase * 1.7))
+            out.append(round(base * (1 + drift * m / 36 + 0.006 * math.sin(m / 3.1) + wob)))
+        return out
     zips_m, cities_m = {}, {}
     for i, z in enumerate(zids):
         v0 = 330000 + 80000 * ((seed + i) % 6)
         r0 = 1800 + 260 * ((seed + i) % 6)
         drift = [-.02, .01, .03, .04, .05, .07][(seed + i) % 6]
-        zips_m[z] = {"v": series(v0, drift), "r": series(r0, drift + .02)}
+        amp, phase = rng.uniform(.004, .022), rng.uniform(0, 6.28)
+        zips_m[z] = {"v": series(v0, drift, amp, phase),
+                     "r": series(r0, drift + .02, amp * .8, phase + 1.1)}
     for c in set(citymap.values()):
         zs = [z for z in zids if citymap[z] == c]
         cities_m[c] = {"v": [round(sum(zips_m[z]["v"][m] for z in zs) / len(zs)) for m in range(36)],
                        "r": [round(sum(zips_m[z]["r"][m] for z in zs) / len(zs)) for m in range(36)]}
     listings = []
     for i in range(count):
-        z = zids[i % 6]; x0, y0 = cells[z]
+        z = pzids[i % len(pzids)]; x0, y0 = cells[z]
         kind, units = KINDS[i % len(KINDS)]
         if units == 0: units = rng.choice([6, 8, 12, 16, 24])
         zv = zips_m[z]["v"][0]
