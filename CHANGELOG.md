@@ -7,6 +7,22 @@ such.
 
 ## [Unreleased]
 
+- **Predictions leads with the answer** — the page opened with roughly 180
+  words of method and put its first number below the fold, so a reader had to
+  earn the answer by reading an essay. The method is unchanged and one click
+  away under the lede; above it now sits the headline projection. **Which ZIP
+  gets the headline is a doctrine decision, not a design one:** the obvious
+  choice is the biggest projected move, which is exactly what a page should
+  not lead with, because the largest forecast is usually the least trustworthy
+  series. It leads instead with the series whose own held-out month came
+  closest — where the method has earned the most trust on this edition's data
+  — and states that error in the card. The drawing animates because the shape
+  is the finding: history is fixed and draws first, the projection extends
+  from its last published point, and the measured band widens with the horizon
+  because that is how the error grew. Values never move, only the reveal, and
+  the finished state is drawn immediately under reduced motion. Where the
+  backtest is not testable the card says so and draws no band.
+
 - **The Type filter reaches every screening class — hotels included** — the
   app classified property into four buckets (`sfr`, `multi`, `condo`, `apt`),
   which left three of the crosswalk's six screening classes unreachable: there

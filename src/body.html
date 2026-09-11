@@ -518,8 +518,17 @@
 <section id="predict" class="view"><div class="page"><div class="inner wide">
   <p class="eyebrow">Predictions &middot; every forecast carries the error it earned in backtest</p>
   <h1>What the record says is about to happen &mdash; and how often that has been wrong</h1>
-  <p class="lede">A forecast without a measured error is a guess in a suit. Every projection on this page is produced the same way: the last six months are held out, a model is fitted on the twelve before them, and the model is scored against the months it never saw. The band you see is that <b>measured</b> backtest error, not an assumed normal distribution around a trend line. Where the backtest was poor, the page says so and widens the band rather than hiding it.</p>
-  <p style="font-size:13px;color:var(--ink2);max-width:84ch;margin:-4px 0 12px">This engine forecasts <b>geographies</b> &mdash; ZIPs, sectors, corridors &mdash; and refuses to forecast an individual parcel. A single property has no time series; what it has is an index applied to it. Anything claiming to predict one house&rsquo;s price to the dollar is projecting the neighbourhood and putting a street address on the answer.</p>
+  <p class="lede">A forecast without a measured error is a guess in a suit. Every band on this page is the error this method actually earned against months it never saw.</p>
+  <!-- The method used to open this page at full length, which put the first
+       number below the fold: a reader had to earn the answer by reading an
+       essay. It is unchanged and one click away, immediately under the lede,
+       because the method is what makes the number worth having - it is just no
+       longer in front of it. -->
+  <details class="methodnote">
+    <summary>How every projection here is produced, and what it refuses to do</summary>
+    <p>Every projection on this page is produced the same way: the last six months are held out, a model is fitted on the twelve before them, and the model is scored against the months it never saw. The band you see is that <b>measured</b> backtest error, not an assumed normal distribution around a trend line. Where the backtest was poor, the page says so and widens the band rather than hiding it.</p>
+    <p>This engine forecasts <b>geographies</b> &mdash; ZIPs, sectors, corridors &mdash; and refuses to forecast an individual parcel. A single property has no time series; what it has is an index applied to it. Anything claiming to predict one house&rsquo;s price to the dollar is projecting the neighbourhood and putting a street address on the answer.</p>
+  </details>
   <div id="predroot"></div>
 </div></div></section>
 
