@@ -7,6 +7,27 @@ such.
 
 ## [Unreleased]
 
+- **The second map renderer was broken, and no test had ever run it** — the
+  platform ships two map implementations, MapLibre GL and a CanvasMap fallback
+  for machines with no WebGL, and every test run used the GL one. `CanvasMap`
+  implemented thirty methods of the MapLibre shim and not `getCanvasContainer()`,
+  so on the fallback the sector-fabric overlay threw a `TypeError` and its
+  control silently did nothing. Fixed as parity, not as a patch: the shim
+  implements `getCanvasContainer()` and `getCanvas()`, `resize()` now emits the
+  `resize` event MapLibre emits and overlays listen for, and the two unguarded
+  call sites degrade instead of throwing. `tests/fleet_smoke.js` gained a second
+  pass with WebGL disabled — and says so loudly if the browser ignores the flags,
+  rather than reporting a pass it did not earn.
+
+- **An unknown view id blanked the whole app, silently** — `showView()` toggles
+  `.active` on every view whose id matches, so a name matching nothing switched
+  them all off and left the chrome over an empty page with nothing logged. Found
+  by calling `showView('underwrite')` when the id is `uw` — the same typo sitting
+  in the closing-packet assertions committed an hour earlier, which read the
+  sheet out of the DOM and passed while the app on screen was blank. The id is
+  now refused loudly, and the test asserts the sheet is **visible**, not merely
+  present.
+
 - **The paperwork stopped being written in California** — two defects with one
   cause: the transaction material was literals rather than facts resolved from
   the record. The Letter of Intent printed `, CA ` into every address in every
