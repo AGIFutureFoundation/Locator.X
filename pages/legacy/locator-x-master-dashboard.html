@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locator.X — Investment Mapping Platform</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-ground: #f1f5f9;
+            --color-surface: #ffffff;
+            --color-border: #e2e8f0;
+            --color-text-primary: #0f172a;
+            --color-text-secondary: #475569;
+            --color-text-tertiary: #94a3b8;
+
+            --color-tier-a: #2563eb;
+            --color-tier-b: #9333ea;
+            --color-tier-c: #f97316;
+            --color-accent: #06b6d4;
+
+            --font-display: 'DM Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --color-ground: #0f172a;
+                --color-surface: #1e293b;
+                --color-border: #334155;
+                --color-text-primary: #f1f5f9;
+                --color-text-secondary: #cbd5e1;
+                --color-text-tertiary: #64748b;
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --color-ground: #0f172a;
+            --color-surface: #1e293b;
+            --color-border: #334155;
+            --color-text-primary: #f1f5f9;
+            --color-text-secondary: #cbd5e1;
+            --color-text-tertiary: #64748b;
+        }
+
+        html, body {
+            height: 100%;
+            background-color: var(--color-ground);
+            color: var(--color-text-primary);
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        #root {
+            display: flex;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #9333ea 50%, #f97316 100%);
+            color: white;
+            padding: 32px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+            padding: 24px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .content-max {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-tertiary);
+            margin-bottom: 16px;
+        }
+
+        .market-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .market-btn {
+            padding: 14px 16px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-ground);
+            color: var(--color-text-primary);
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            position: relative;
+        }
+
+        .market-btn:hover {
+            border-color: var(--color-accent);
+            background-color: var(--color-surface);
+        }
+
+        .market-btn.active {
+            background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%);
+            border-color: #2563eb;
+            color: white;
+        }
+
+        .market-btn.active.nola {
+            background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%);
+            border-color: #9333ea;
+        }
+
+        .market-btn.active.national {
+            background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            border-color: #2563eb;
+        }
+
+        .market-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 6px;
+        }
+
+        .badge-tier-a {
+            background-color: rgba(37, 99, 235, 0.15);
+            color: #2563eb;
+        }
+
+        .badge-tier-b {
+            background-color: rgba(147, 51, 234, 0.15);
+            color: #9333ea;
+        }
+
+        .badge-emerging {
+            background-color: rgba(249, 115, 22, 0.15);
+            color: #f97316;
+        }
+
+        .quick-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 13px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .stat-line:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--color-text-secondary);
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .stat-value.tier-a {
+            color: var(--color-tier-a);
+        }
+
+        .stat-value.tier-b {
+            color: var(--color-tier-b);
+        }
+
+        .stat-value.tier-c {
+            color: var(--color-tier-c);
+        }
+
+        .hero-section {
+            margin-bottom: 48px;
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            letter-spacing: -0.8px;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            max-width: 600px;
+            margin-bottom: 32px;
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .market-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 28px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .market-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb, #06b6d4);
+        }
+
+        .market-card.nola::before {
+            background: linear-gradient(90deg, #9333ea, #6366f1);
+        }
+
+        .market-card.batonrouge::before {
+            background: linear-gradient(90deg, #f97316, #9333ea);
+        }
+
+        .market-card.national::before {
+            background: linear-gradient(90deg, #2563eb, #06b6d4);
+        }
+
+        .market-card:hover {
+            border-color: var(--color-accent);
+            box-shadow: 0 12px 32px rgba(6, 182, 212, 0.12);
+            transform: translateY(-4px);
+        }
+
+        .market-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .market-card-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+
+        .market-card-icon {
+            font-size: 28px;
+            opacity: 0.6;
+        }
+
+        .market-card-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .metric-tile {
+            padding: 12px;
+            background-color: var(--color-ground);
+            border-radius: 6px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--color-text-tertiary);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+
+        .market-card-description {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .market-card-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background-color: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .market-card-cta:hover {
+            background-color: #0891b2;
+            transform: translateX(2px);
+        }
+
+        .comparison-section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--color-text-primary);
+        }
+
+        .comparison-table {
+            width: 100%;
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-table thead {
+            background-color: var(--color-ground);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .comparison-table th {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .comparison-table tbody tr {
+            border-bottom: 1px solid var(--color-border);
+            transition: background-color 0.2s ease;
+        }
+
+        .comparison-table tbody tr:hover {
+            background-color: var(--color-ground);
+        }
+
+        .comparison-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .region-name {
+            font-family: var(--font-display);
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .tier-badge-inline {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .tier-a-badge {
+            background-color: var(--color-tier-a);
+        }
+
+        .tier-b-badge {
+            background-color: var(--color-tier-b);
+        }
+
+        .insights-section {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(147, 51, 234, 0.08) 100%);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 48px;
+        }
+
+        .insights-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--color-text-primary);
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .insight-card {
+            padding: 16px;
+            background-color: var(--color-surface);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        .insight-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--color-text-tertiary);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .insight-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--color-text-secondary);
+        }
+
+        .footer {
+            background-color: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            padding: 24px 40px;
+            font-size: 12px;
+            color: var(--color-text-tertiary);
+            text-align: center;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+
+            .content {
+                padding: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .market-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="header">
+            <div class="header-content">
+                <h1>Locator.X</h1>
+                <p>Deep investment mapping across national corridors and emerging markets</p>
+            </div>
+        </div>
+
+        <div class="main-container">
+            <div class="sidebar">
+                <div>
+                    <div class="section-label">Map Views</div>
+                    <div class="market-nav">
+                        <button class="market-btn active national" onclick="location.href='locator-x-national-corridor-map.html'">
+                            📍 National Corridor
+                            <div class="market-badge badge-tier-a">Tier A Baseline</div>
+                        </button>
+                        <button class="market-btn batonrouge" onclick="location.href='https://claude.ai/code/artifact/0f9acddd-6a09-4e15-afdc-6096852c2262'">
+                            🏙️ Bay Area
+                            <div class="market-badge badge-tier-a">Tier A Market</div>
+                        </button>
+                        <button class="market-btn nola" onclick="location.href='locator-x-nola-map.html'">
+                            🎭 New Orleans
+                            <div class="market-badge badge-tier-b">Tier B Entry</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-label">Portfolio Summary</div>
+                    <div class="quick-stats">
+                        <div class="stat-line">
+                            <span class="stat-label">Total Properties</span>
+                            <span class="stat-value">707K</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">National Avg Score</span>
+                            <span class="stat-value tier-a">72.5</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Median Entry</span>
+                            <span class="stat-value">$425K</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Tier A Coverage</span>
+                            <span class="stat-value tier-a">20%</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Tier B Coverage</span>
+                            <span class="stat-value tier-b">30%</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Value Opportunity</span>
+                            <span class="stat-value tier-c">50%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="content-max">
+                    <div class="hero-section">
+                        <h1 class="hero-title">Investment Mapping Reimagined</h1>
+                        <p class="hero-subtitle">
+                            Explore 707K properties across national corridors and emerging regional markets.
+                            Compare investment tiers, price efficiency, and market positioning in real-time across
+                            Bay Area, New Orleans, and the national investment corridor baseline.
+                        </p>
+                    </div>
+
+                    <div class="market-grid">
+                        <div class="market-card national">
+                            <div class="market-card-header">
+                                <div>
+                                    <div class="market-card-title">National Corridor</div>
+                                    <span class="market-badge badge-tier-a" style="display: inline-block; margin-top: 8px;">Tier A Baseline</span>
+                                </div>
+                                <div class="market-card-icon">🗺️</div>
+                            </div>
+                            <div class="market-card-metrics">
+                                <div class="metric-tile">
+                                    <div class="metric-label">Properties</div>
+                                    <div class="metric-value">500K</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Avg Score</div>
+                                    <div class="metric-value">72.5</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Median Price</div>
+                                    <div class="metric-value">$425K</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Percentile</div>
+                                    <div class="metric-value">50th</div>
+                                </div>
+                            </div>
+                            <div class="market-card-description">
+                                The complete baseline. 500K properties across the nation's strongest investment corridors, setting the investment benchmark for all regional markets.
+                            </div>
+                            <button class="market-card-cta" onclick="location.href='locator-x-national-corridor-map.html'">
+                                Explore Map →
+                            </button>
+                        </div>
+
+                        <div class="market-card batonrouge">
+                            <div class="market-card-header">
+                                <div>
+                                    <div class="market-card-title">Bay Area</div>
+                                    <span class="market-badge badge-tier-a" style="display: inline-block; margin-top: 8px;">Tier A Market</span>
+                                </div>
+                                <div class="market-card-icon">🏙️</div>
+                            </div>
+                            <div class="market-card-metrics">
+                                <div class="metric-tile">
+                                    <div class="metric-label">Properties</div>
+                                    <div class="metric-value">245K</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Avg Score</div>
+                                    <div class="metric-value">78.2</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Median Price</div>
+                                    <div class="metric-value">$650K</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Percentile</div>
+                                    <div class="metric-value">68th</div>
+                                </div>
+                            </div>
+                            <div class="market-card-description">
+                                Premium quality market. Above-national positioning with strongest investment scores and highest tier-A concentration. Premium entry, premium returns potential.
+                            </div>
+                            <button class="market-card-cta" onclick="location.href='https://claude.ai/code/artifact/0f9acddd-6a09-4e15-afdc-6096852c2262'">
+                                Explore Map →
+                            </button>
+                        </div>
+
+                        <div class="market-card nola">
+                            <div class="market-card-header">
+                                <div>
+                                    <div class="market-card-title">New Orleans</div>
+                                    <span class="market-badge badge-tier-b" style="display: inline-block; margin-top: 8px;">Tier B Entry</span>
+                                </div>
+                                <div class="market-card-icon">🎭</div>
+                            </div>
+                            <div class="market-card-metrics">
+                                <div class="metric-tile">
+                                    <div class="metric-label">Properties</div>
+                                    <div class="metric-value">207K</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Avg Score</div>
+                                    <div class="metric-value">68.1</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Median Price</div>
+                                    <div class="metric-value">$380K</div>
+                                </div>
+                                <div class="metric-tile">
+                                    <div class="metric-label">Percentile</div>
+                                    <div class="metric-value">33rd</div>
+                                </div>
+                            </div>
+                            <div class="market-card-description">
+                                Emerging opportunity. Strong value positioning with 10.6% price advantage over national median. High-growth secondary market.
+                            </div>
+                            <button class="market-card-cta" onclick="location.href='locator-x-nola-map.html'">
+                                Explore Map →
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="comparison-section">
+                        <h2 class="section-title">Cross-Market Analysis</h2>
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Market</th>
+                                    <th>Properties</th>
+                                    <th>Avg Score</th>
+                                    <th>Median Price</th>
+                                    <th>Percentile</th>
+                                    <th>Tier</th>
+                                    <th>Price Advantage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="region-name">National Corridor</span></td>
+                                    <td>500,000</td>
+                                    <td><strong>72.5</strong></td>
+                                    <td><strong>$425,000</strong></td>
+                                    <td>50th (baseline)</td>
+                                    <td><span class="tier-badge-inline tier-a-badge">Mixed A/B/C</span></td>
+                                    <td>—</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="region-name">Bay Area</span></td>
+                                    <td>245,000</td>
+                                    <td><strong style="color: var(--color-tier-a);">78.2</strong></td>
+                                    <td>$650,000</td>
+                                    <td>68th</td>
+                                    <td><span class="tier-badge-inline tier-a-badge">Tier A</span></td>
+                                    <td>+52.9%</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="region-name">New Orleans</span></td>
+                                    <td>207,578</td>
+                                    <td><strong style="color: var(--color-tier-b);">68.1</strong></td>
+                                    <td>$380,000</td>
+                                    <td>33rd</td>
+                                    <td><span class="tier-badge-inline tier-b-badge">Tier B</span></td>
+                                    <td>−10.6%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="insights-section">
+                        <h2 class="insights-title">Investment Strategies</h2>
+                        <div class="insights-grid">
+                            <div class="insight-card">
+                                <div class="insight-label">🎯 Conservative</div>
+                                <div class="insight-content">
+                                    National baseline with diversified tier A/B/C portfolio. Standard entry at $425K median. Proven returns, established markets.
+                                </div>
+                            </div>
+                            <div class="insight-card">
+                                <div class="insight-label">⭐ Premium</div>
+                                <div class="insight-content">
+                                    Bay Area tier-A positioning at 78.2 avg score. Higher entry ($650K) but strongest fundamentals and growth potential.
+                                </div>
+                            </div>
+                            <div class="insight-card">
+                                <div class="insight-label">💡 Value</div>
+                                <div class="insight-content">
+                                    New Orleans emerging market at 33rd percentile with best entry price ($380K) and highest growth-to-cost ratio.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Locator.X — Investment Mapping Platform | 707K Properties | National Corridors + Emerging Markets | Real-time Analysis</p>
+        </div>
+    </div>
+
+<div style="position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#B9531F;color:#fff;font:600 13px/1.45 system-ui,sans-serif;padding:8px 16px;text-align:center">Preserved corridor-era demonstration &mdash; the figures on this page are illustrative, not measured records (<a href="https://github.com/agifuturefoundation/locator.x/blob/main/docs/CORRIDOR_PROJECT_COMPLETION_SUMMARY.md" style="color:#fff">why</a>). The measured record layer lives on the <a href="../market-dashboard.html" style="color:#fff">Market Dashboard</a>.</div>
+</body>
+</html>

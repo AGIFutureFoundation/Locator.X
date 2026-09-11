@@ -7,6 +7,43 @@ such.
 
 ## [Unreleased]
 
+- **The measured market layer joins the public site, mined from the shipped
+  editions themselves** — six new market pages and a master dashboard, every
+  figure extracted 2026-09-11 from the live published editions and carrying
+  the source and as-of date those editions publish. `market-dashboard.html`
+  lists all twelve shipped editions with their live record counts: four
+  measured this session by driving the published artifacts headless
+  (bay-ledger 182,124 · uscorridor 354,260 · atlas_nola 125,803 · nola
+  87,578 — each matching the documented 2026-09-09 verification exactly,
+  zero page errors), the other eight marked fetched-and-title-verified
+  rather than silently trusted. `new-orleans-louisiana.html` and
+  `sf-bay-area.html` join each market's measured editions to its
+  High-Potential-Belts submarkets and its sourced project record (42
+  Louisiana / 19 California announcements with per-row status and
+  jobs-basis). `high-potential-belts.html` republishes the 464-submarket
+  rent-versus-price ranking with both published views, its open weights and
+  its coverage stated first; expansion is named as a data job — absent
+  states join when their ZIPs carry both series, never before.
+  `jobs-to-housing.html` renders the corridor record's announced-jobs per
+  permitted-unit measure across 24 areas with all 37 carried caveats;
+  `core-cities.html` lists the corridor anchors live, staged and dropped —
+  dropped named rather than hidden; `louisiana-universities.html` renders
+  the 49-campus Louisiana enrolment record behind the Baton Rouge edition,
+  source and term per row. All eleven site pages driven headless: zero page
+  errors, every internal link resolving.
+
+- **The corridor-era dashboards join the repository as annotated lineage** —
+  the three surviving pages of the earlier three-map dashboard generation
+  are preserved under `pages/legacy/`, each behind a fixed banner stating
+  its figures are illustrative, with the un-preserved Bay page's links
+  repointed at the live Bay ledger. Their completion summary lands as
+  `docs/CORRIDOR_PROJECT_COMPLETION_SUMMARY.md` under the same historical
+  header as the platform guide, opening with a figures reconciliation
+  against the measured layer: the one figure it got exactly right (87,578
+  New Orleans records) and the ones that match no measurement (500K
+  national / 245K Bay / 120K Baton Rouge, and every score, tier, median
+  and percentile), with the strategy sections kept as lineage only.
+
 - **The editions channel: one command from data machine to live site** —
   `scripts/publish_editions.sh` (run where the data tree lives) builds every
   filled edition and publishes the HTML plus an integrity manifest to the
