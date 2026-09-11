@@ -13,6 +13,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      # The doctrine smokes build the synthetic fleet demo, and the builders
+      # inline d3-delaunay, maplibre, fflate and terser from node_modules. CI
+      # never installed them, so three checks — including the fixture
+      # determinism guard — failed on every run with a FileNotFoundError rather
+      # than with a finding. A gate that cannot run is not a gate.
+      # Browsers are not needed here: tests/run.py drives no page, and the
+      # headless-Chromium fleet smoke runs on the data machine.
+      - name: Install the JS libraries the builders inline
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
       - name: Curriculum gate (eight checks)
         run: python3 curriculum/validate.py
       - name: Course catalog is in sync with the CSV

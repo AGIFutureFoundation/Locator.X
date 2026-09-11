@@ -352,6 +352,14 @@ def main():
         txt = open(path, encoding="utf-8", errors="replace").read()
         return [_gz.decompress(_b64.b64decode(m.group(1)))
                 for m in re.finditer(r'atob\("([A-Za-z0-9+/=]{200,})"\)', txt)]
+    # Say the actual cause rather than letting a FileNotFoundError out of the
+    # builder stand in for it: the fleet demo inlines d3-delaunay, maplibre,
+    # fflate and terser, and CI failed for six runs with a traceback that never
+    # named the missing install.
+    if not os.path.isdir(os.path.join(ROOT, "node_modules", "d3-delaunay")):
+        FAILURES.append(
+            "node_modules is absent, so the fixture determinism guard cannot "
+            "build the demo. Run `npm ci` (CI does this before the smokes).")
     d1 = os.path.join(tempfile.mkdtemp(), "a.html")
     d2 = os.path.join(tempfile.mkdtemp(), "b.html")
     run(["scripts/build_fleet_demo.py", d1, "--fragment"])
