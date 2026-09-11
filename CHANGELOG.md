@@ -7,6 +7,28 @@ such.
 
 ## [Unreleased]
 
+- **The roadmap reconciled with what is actually true** — §2 still read "the
+  repository is release-ready; flipping it public is a Foundation switch",
+  which stopped being true two days and fifty-three commits ago. Measured
+  rather than assumed before rewriting: `v1.0.0` is tagged at `529513d`
+  (2026-09-09), the GitHub API reports the repository `public` with
+  Apache-2.0 detected, and `origin/main` carries 53 commits since the tag.
+  §2 now says so and names the three layers that landed in them, each with
+  its check.
+
+  The distribution layer — the public site and the editions channel — had
+  shipped with no roadmap entry at all, so it gains one as **v1.4** (§7),
+  with a proof column per item and its two open items stated as blockers
+  carrying the measurement that establishes each: GitHub Pages is not
+  enabled (`has_pages: false`, measured 2026-09-11, which is also why
+  `configure-pages` fails every run) and the editions companion repository
+  does not exist. Both are repository settings, not code. Distribution joins
+  the standing workstreams and the sequencing graph; the sequencing note's
+  claim that the licence is the only hard external dependency is replaced by
+  the two that actually remain. Sections after v1.3 renumber; the four
+  documents linking to roadmap §4 and §5 point below the insertion and are
+  unaffected (link gate green).
+
 - **The market renderer is now under test, including the path the live data
   never reaches** — `tests/run.py` renders all seven market pages from the
   committed data and reads them back for what the data says must show: the

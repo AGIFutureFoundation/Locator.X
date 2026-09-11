@@ -14,11 +14,12 @@ rule — **measure before asserting** — so every milestone names the check tha
 4. [v1.1 — The state layer, wave one](#4-v11--the-state-layer-wave-one)
 5. [v1.2 — The resource graph](#5-v12--the-resource-graph)
 6. [v1.3 — Curriculum growth](#6-v13--curriculum-growth)
-7. [v2.0 — Multi-state editions at full depth](#7-v20--multi-state-editions-at-full-depth)
-8. [Workstreams](#8-workstreams)
-9. [Sequencing and dependencies](#9-sequencing-and-dependencies)
-10. [Non-goals](#10-non-goals)
-11. [How this roadmap is governed](#11-how-this-roadmap-is-governed)
+7. [v1.4 — Distribution: the public site and the editions channel](#7-v14--distribution-the-public-site-and-the-editions-channel)
+8. [v2.0 — Multi-state editions at full depth](#8-v20--multi-state-editions-at-full-depth)
+9. [Workstreams](#9-workstreams)
+10. [Sequencing and dependencies](#10-sequencing-and-dependencies)
+11. [Non-goals](#11-non-goals)
+12. [How this roadmap is governed](#12-how-this-roadmap-is-governed)
 
 ---
 
@@ -31,13 +32,31 @@ rule — **measure before asserting** — so every milestone names the check tha
   version; [`EDITIONS_MANIFEST.md`](EDITIONS_MANIFEST.md) records the per-edition lineage.
 - History lives in [`../CHANGELOG.md`](../CHANGELOG.md).
 
-## 2. Where we are — v1.0
+## 2. Where we are — v1.0 released and public; the distribution layer is shipping
 
-**All five v1.0 gates are closed** (§3): licence chosen (Apache-2.0 code / CC BY 4.0
-content), attribution signed off by the Foundation, git history audited clean of data
-blobs, CI running the validator + drift + link gates, CONTRIBUTING published. The
-repository is release-ready; flipping it public is a Foundation switch, not a code change.
-Current work is v1.1 wave one (§4).
+**v1.0 is cut and the repository is public.** All five release gates are closed (§3):
+licence chosen (Apache-2.0 code / CC BY 4.0 content), attribution signed off, git history
+audited clean of data blobs, CI gates running, CONTRIBUTING published. The tag is
+`v1.0.0` (`529513d`, 2026-09-09), and GitHub reports the repository `public` with the
+Apache-2.0 licence detected (checked 2026-09-11). The licence dependency everything
+queued behind (§10) is discharged.
+
+**Fifty-three commits have landed since the tag** (measured against `origin/main`,
+2026-09-11). They are not a version boundary yet — §12 says the CHANGELOG records a
+boundary when it is crossed, not when it is hoped for — but they are three layers, each
+with its own check:
+
+- **The whole app under CI.** `fleet-smoke.yml` builds the synthetic-fleet demo from
+  source with no data tree and drives all eleven editions headless: zero page errors,
+  per-edition title, fixture count and full version selector.
+- **The public site.** `deploy-pages.yml` assembles `pages/` plus four layers generated
+  at deploy time. Verified building in CI; publication is blocked on one repository
+  setting (§7).
+- **The measured market layer.** `market/` carries figures extracted from the shipped
+  editions with their provenance, gated by `market/validate_market.py` (eight rules,
+  raising) and rendered by `scripts/build_market_pages.py`.
+
+Current work: v1.1 wave one (§4) and distribution (§7).
 
 Shipped and verified at v0.9 (fleet sweep of 2026-09-09):
 
@@ -147,7 +166,31 @@ The catalog is complete at 50; growth means depth, not count inflation:
 **Proof:** validator check 8 goes from "none supplied yet" to a counted, non-zero note set with
 zero unresolved anchors.
 
-## 7. v2.0 — Multi-state editions at full depth
+## 7. v1.4 — Distribution: the public site and the editions channel
+
+The layer that puts the work in front of someone who has not cloned the repository.
+Everything here is generated at deploy time and never committed, so a published page
+cannot drift from the source it claims to render — the same rule the curriculum catalogs
+follow.
+
+| Item | Why it matters | Proof it shipped |
+|------|----------------|------------------|
+| ✅ The app, runnable with no data tree | An edition is 5–15 MB of county records; a visitor cannot be asked to build one to see the tool | `scripts/build_fleet_demo.py` generates the 84-module shell over deterministic synthetic fixtures (~11,500 records on a fictional island, labelled in a fixed banner) — 1.59 MB built in CI; `fleet-smoke.yml` drives all eleven editions green |
+| ✅ The real record layer, published | The crosswalk is the platform's most checkable claim and lived only in a JSON file | `scripts/build_crosswalk_page.py` renders 8 jurisdictions, 48 codes (44 measured, 4 flagged unverified), 12,339 parcels — built in CI on every deploy |
+| ✅ The measured market layer | The market figures were hand-committed HTML nobody could rebuild | `market/` + `scripts/build_market_pages.py` render seven pages; `market/validate_market.py` gates the data and `tests/run.py` renders the set and proves the unknown-handling path on a synthetic tree |
+| ✅ The editions channel | Built editions may never enter this repository, but they still have to reach the site | `scripts/publish_editions.sh` → companion repo → `scripts/build_editions_index.py`, which verifies every file against its manifest sha256 before it may appear and refuses a mismatch by name; renders an honest empty state when nothing is published |
+| ⬜ The site actually published | Everything above is built and discarded until Pages is on | **Blocked, measured:** the GitHub API reports `has_pages: false` (2026-09-11) and `configure-pages` fails every run with "Resource not accessible by integration" — a token cannot create the Pages site. Unblocks with one repository setting: Settings → Pages → Source: "GitHub Actions" |
+| ⬜ The real editions live on the site | The channel is loaded but has nothing to read | **Blocked, measured:** `AGIFutureFoundation/Locator.X-editions` does not exist and this session's credential cannot create repositories (403). The twelve editions are staged and hash-verified (12 live, 0 refused) with their sha256 table in [`PUBLISH_MAP.md`](PUBLISH_MAP.md); they remain live at their individual artifact URLs meanwhile |
+
+**Proof of the version:** the site deploys, `/editions/` lists the published set with every
+file's hash verified, and the landing page's links all resolve.
+
+*Status:* everything buildable is built and green in CI; both open items are repository
+settings held by the Foundation, not code. Stated as blockers with the measurement that
+establishes each, per §12's rule that the roadmap says *unknown* and names the probe
+rather than inventing a date.
+
+## 8. v2.0 — Multi-state editions at full depth
 
 The version boundary where an edition changes meaning: from "three markets plus thematic
 screens" to "any wave state at national-baseline depth".
@@ -173,9 +216,9 @@ screens" to "any wave state at national-baseline depth".
 **Proof:** the sweep matrix — every edition × every assertion — green, published in the
 manifest.
 
-## 8. Workstreams
+## 9. Workstreams
 
-Six standing workstreams cut across the versions:
+Seven standing workstreams cut across the versions:
 
 | Workstream | Owner-of-record artifact | Version focus |
 |------------|--------------------------|---------------|
@@ -185,23 +228,30 @@ Six standing workstreams cut across the versions:
 | **States & programs** | [`states/`](states/README.md) | 1.1 waves → 1.2 cross-checks |
 | **Resources** | [`resources/`](resources/README.md) | 1.2 graph + link-rot sweeps |
 | **Release & community** | README, CONTRIBUTING, CHANGELOG | 1.0 licence, CI, sign-off |
+| **Distribution** (the public site, the editions channel) | `pages/`, `market/`, `scripts/build_*_page*.py`, `.github/workflows/deploy-pages.yml` | 1.4 site + channel |
 
-## 9. Sequencing and dependencies
+## 10. Sequencing and dependencies
 
 ```mermaid
 graph TD
-  v09["v0.9 — current: 50/50 live, 12 editions verified"] --> v10["v1.0 — public release\nLICENSE · CI · CONTRIBUTING · PII audit"]
+  v09["v0.9 — 50/50 live, 12 editions verified"] --> v10["v1.0 — released 2026-09-09\nLICENSE · CI · CONTRIBUTING · PII audit"]
   v10 --> v11["v1.1 — state layer wave one\nrecord inventories · pull recipes"]
   v10 --> v12["v1.2 — resource graph\nlender-deal mapping · link-rot sweep"]
   v11 --> v13["v1.3 — curriculum growth\ninstructor notes · F6 per-state path"]
+  v10 --> v14["v1.4 — distribution\npublic site · editions channel"]
   v11 --> v20["v2.0 — state editions\nbuild_state.py · fleet matrix"]
   v12 --> v20
 ```
 
-The licence decision is the only hard external dependency: it belongs to the Foundation and
-everything public queues behind it.
+**The licence decision — the one hard external dependency everything public queued behind —
+is discharged** (Apache-2.0 / CC BY 4.0, chosen and signed off 2026-09-09; the repository has
+been public since). Two external dependencies remain, both repository settings held by the
+Foundation rather than code, and both are recorded in §7 with the measurement that establishes
+them: GitHub Pages is not enabled (`has_pages: false`, 2026-09-11), and the editions companion
+repository does not exist yet. Neither blocks any other workstream — the site and the channel
+build and verify in CI regardless; they simply are not served until those switches flip.
 
-## 10. Non-goals
+## 11. Non-goals
 
 Stated so they do not creep back in:
 
@@ -214,7 +264,7 @@ Stated so they do not creep back in:
   advice; the state and resource layers are navigation aids to the public record, not
   recommendations.
 
-## 11. How this roadmap is governed
+## 12. How this roadmap is governed
 
 - Every milestone ships with its **proof** — the measurable check named in its table. A
   milestone without a check is not on the roadmap; it is a wish.
