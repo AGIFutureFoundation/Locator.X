@@ -23,6 +23,7 @@ cannot silently un-enforce them:
   7. The market gate's cross-file rule fires on a drifted record count.
   8. The market pages render, and render their unknowns as unknowns.
   9. The link-rot sweep still covers the sourced per-row citations.
+ 10. The generated lodging expansion plan matches the measured layer.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -278,6 +279,9 @@ def main():
           "link-rot: the announced-project sources are not in the sweep set")
     check("laregents.edu" in out or "subr.edu" in out,
           "link-rot: the campus enrolment sources are not in the sweep set")
+
+    # ---- 10. the lodging expansion plan is derived, not drifting -----------
+    run(["scripts/hotel_candidates.py", "--check"])
     shutil.rmtree(mtree, ignore_errors=True)
 
     if FAILURES:

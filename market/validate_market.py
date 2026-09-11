@@ -6,7 +6,9 @@ every rule exists because it prevents a specific way this data could start
 lying. The market pages are a straight rendering of these files, so a rule
 enforced here is a rule the published page cannot break.
 
-  1. every file declares `about` and the provenance of its extraction
+  1. every file declares `about` and its provenance — an `extracted` statement
+     for data copied out of a shipped edition, or a `method` block for data
+     produced by measurement
   2. every announced project carries company, project, status and a source URL
      — a headcount whose announcement cannot be opened is a rumour. Where a
      project also carries `jobsBasis` (whose figure the headcount is, and
@@ -67,14 +69,18 @@ def main():
     # 1. provenance on every file
     files = {}
     for name in ('corridors.json', 'projects.json', 'campuses.json', 'belts.json',
-                 'editions.json'):
+                 'editions.json', 'edition_scale.json'):
         data = load(name)
         files[name] = data
         if not data.get('about'):
             errs.append('%s: no `about` block — a data file that cannot say what it is '
                         'cannot be checked against what it claims' % name)
-        if not (data.get('extracted') or data.get('note')):
-            errs.append('%s: no extraction provenance' % name)
+        # Provenance takes one of two honest forms: an extraction statement for a
+        # file copied out of a shipped edition, or a method block for one produced
+        # by measurement. A file with neither cannot be audited.
+        if not (data.get('extracted') or data.get('note') or data.get('method')):
+            errs.append('%s: no provenance — needs an `extracted` statement or a '
+                        '`method` block' % name)
 
     # 2. projects
     projects = files['projects.json']['projects']
@@ -220,6 +226,30 @@ def main():
                                 'docs/PUBLISH_MAP.md — the data file and the documented '
                                 'verification have drifted apart' % (where, figure))
 
+    # 9. the scale measurements name their method and stay attached to the editions
+    S = files['edition_scale.json']
+    if not S.get('method'):
+        errs.append('edition_scale.json: no `method` block — a load time or a heap figure '
+                    'without the conditions that produced it is not a measurement')
+    known = {e['key'] for e in eds}
+    for e in S.get('editions') or []:
+        where = 'edition_scale %s' % e.get('key', '?')
+        if e.get('key') not in known:
+            errs.append('%s: not an edition in editions.json' % where)
+        for f in ('records', 'bytes', 'heap_mb', 'load_ms'):
+            if not positive(e.get(f)):
+                errs.append('%s: %s missing or not positive' % (where, f))
+        lg = e.get('lodging') or {}
+        if lg.get('total') is None:
+            errs.append('%s: no lodging count' % where)
+        elif lg['total'] and lg.get('kinds') is None:
+            errs.append('%s: a lodging count with no kind breakdown behind it' % where)
+        # the record count here must match the one the editions manifest measured
+        match = next((x for x in eds if x['key'] == e.get('key')), None)
+        if match and 'records_measured' in match and match['records_measured'] != e.get('records'):
+            errs.append('%s: %s records here against %s in editions.json'
+                        % (where, e.get('records'), match['records_measured']))
+
     if errs:
         print('MARKET DATA GATE FAILED — %d problem%s:'
               % (len(errs), '' if len(errs) == 1 else 's'), file=sys.stderr)
@@ -240,6 +270,10 @@ def main():
              len(covered), len(absent)))
     print('  · %d editions, %d with live-measured record counts, all matching PUBLISH_MAP'
           % (len(eds), len(measured)))
+    print('  · %d editions benchmarked · %s lodging records counted across them'
+          % (len(S.get('editions') or []),
+             format(sum((e.get('lodging') or {}).get('total') or 0
+                        for e in S.get('editions') or []), ',')))
     print('  ✓ market data consistent: every figure sourced, dated, or honestly absent')
 
 

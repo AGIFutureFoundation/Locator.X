@@ -7,6 +7,12 @@ file is the queue for that session: what to probe, in what order, and exactly wh
 repository rows each probe advances — so the session spends its time pulling, not
 re-deriving the plan.
 
+**Lodging expansion sits alongside this queue.**
+[`HOTEL_EXPANSION.md`](HOTEL_EXPANSION.md) carries 96 candidate areas in evidence
+tiers, generated from the measured layer, plus the measured cost of growing an
+edition. Its first probe outranks most of this queue for a hotel focus: the anchor
+markets hold the most lodging stock and have no lodging vocabulary mapped.
+
 **Ground rules carried in from the recipe:** count query first, never a blind pull;
 never conclude a field is empty from a timeout (async-launch and poll); transfer each
 layer as soon as it finishes; PII stripped on ingest; record the disappointments in the
