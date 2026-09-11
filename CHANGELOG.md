@@ -7,6 +7,26 @@ such.
 
 ## [Unreleased]
 
+- **`docs/LOUISIANA_DEVELOPMENT_FRICTION.md`** — what in the Louisiana record
+  actually slows a development, ranked by what each blocks, synthesised from
+  material already sourced in the repository (the state guide, the coverage
+  inventory, the measured editions) rather than from new legal research: this
+  container has no egress to parish, clerk or state hosts, and the page says
+  so at the top. Non-disclosure of sale prices leads, because it is the one
+  that disables a whole desk — the Comps desk cannot function in Orleans or
+  EBR, and the platform's answer is to say so rather than estimate. Then the
+  2023 tax-sale transition (mid-phase-in, so verify per parish before
+  bidding), civil-law title chains, executory process, insurance as the line
+  that breaks coastal pro formas, block-by-block millage, and per-parish
+  assessors. Each carries what it blocks, what the platform does about it, and
+  the probe that would advance it.
+
+  It also records a measured gap that is this platform's own: **no Louisiana
+  jurisdiction is mapped in the crosswalk**, although the two Louisiana
+  editions hold 213,381 measured records between them — so a class screen
+  cannot run on the anchor market. That is one `groupBy` per jurisdiction, and
+  it is already the first probe in the lodging expansion plan.
+
 - **Predictions leads with the answer** — the page opened with roughly 180
   words of method and put its first number below the fold, so a reader had to
   earn the answer by reading an essay. The method is unchanged and one click

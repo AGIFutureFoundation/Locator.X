@@ -73,6 +73,10 @@ trusting a median.
 [`../LOCATOR_X_PLATFORM_GUIDE.md`](../LOCATOR_X_PLATFORM_GUIDE.md) and the Louisiana
 developer deck in `pages/`.)*
 
+**The friction, ranked:** [`../LOUISIANA_DEVELOPMENT_FRICTION.md`](../LOUISIANA_DEVELOPMENT_FRICTION.md)
+synthesises what in this record actually slows a development — non-disclosure first — and
+names the probe for each.
+
 **Run the record here.** Parishes, not counties. Assessors are elected per parish — Orleans
 publishes through the Orleans Parish Assessor and NOLA.gov open data (permits, code
 enforcement, short-term-rental licenses); East Baton Rouge through EBRGIS. Clerks of court
