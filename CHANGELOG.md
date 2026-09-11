@@ -7,6 +7,52 @@ such.
 
 ## [Unreleased]
 
+- **The Type filter reaches every screening class — hotels included** — the
+  app classified property into four buckets (`sfr`, `multi`, `condo`, `apt`),
+  which left three of the crosswalk's six screening classes unreachable: there
+  was no way to search for a hotel, and the 4,443 lodging records measured
+  across the shipped editions fell into "5+ units" because a hotel has many
+  units. `kindClass()` now returns the crosswalk's vocabulary and the filter
+  offers lodging, student housing and mobile-home park alongside the
+  residential classes. Two orderings are load-bearing and both were settled
+  against measured labels rather than guessed: student housing is tested
+  before lodging, because Onondaga's `Room/dorm` code maps to student_housing
+  while the editions render it as "Inn, lodge, rooming or fraternity house —
+  Room/dorm"; and lodging is tested before the unit-count rules, which is what
+  makes hotels findable at all. Verified against the 16 real `kind` strings
+  measured in the shipped editions — every one classifies as the crosswalk
+  says. The synthetic fixtures gain a label per class (including the Bay's
+  compound "Hotel / motel / MH park") so the demo exercises every branch, and
+  `fleet_smoke.js` now asserts each class selects a non-empty set — an option
+  that filters to nothing being the same defect as no option, only harder to
+  notice.
+
+- **The map is visible again: tools are a disclosure at every width** — the
+  map toolbar was permanent on desktop, putting thirteen controls in a slab
+  across the top-left of the map they exist to annotate. It now sits behind a
+  single Layers control at all widths, shut by default, with the choice
+  remembered per browser and Escape to close. Every control stays in the DOM
+  open or shut, so deep links, keyboard paths and the modules writing into the
+  tower/sector/legend slots are untouched — the rule the grouped navigation
+  already follows. **A real bug surfaced doing it:** `.maptools` sets an
+  explicit `display`, which beats the browser's `[hidden]{display:none}`, so
+  the attribute did nothing outside the old mobile media query — the panel
+  read as hidden to a script while staying visible to the eye, and the first
+  version of the test asserted the attribute and passed while the screenshot
+  showed it open. The override is now stated once for every width and the
+  smoke asserts visibility.
+
+- **The gloss pass** — a surface layer over the existing tokens, not a second
+  design system: every colour resolves from `--panel` / `--line` / `--ink`, so
+  light, dark and high-contrast keep working. The section bar becomes a
+  segmented control, tabs and buttons become pills with a light gloss and a
+  settle-easing, cards answer the pointer, figures are tabular, and focus
+  rings are visible everywhere. Vibrancy is applied only where something sits
+  behind it — the map tools, the cover card — because translucency over a flat
+  grid costs a compositor layer and shows nothing. High contrast opts out of
+  translucency entirely, and every transition sits inside the reduced-motion
+  guard.
+
 - **The edition scale ceiling, measured — and it is memory** — four shipped
   editions were driven headless at their real record counts and the result
   changes what "add 50,000 records per area" means. A record costs **54 bytes**

@@ -864,3 +864,170 @@ select.stagesel{border:1px solid var(--line);border-radius:999px;padding:3px 8px
   .homenav .btn{flex:1 1 auto}
 }
 </style>
+<style>
+/* ============================================================================
+   Surface layer — the gloss pass.
+
+   A refinement over the tokens above, not a second design system: every colour
+   here resolves from --panel / --line / --ink, so the light, dark and
+   high-contrast themes keep working and a token change still propagates.
+
+   Three rules kept it honest rather than decorative:
+
+   1. VIBRANCY ONLY WHERE SOMETHING IS BEHIND IT. Translucency reads as quality
+      when it reveals depth and as mud when it does not. The map tools, the
+      drawers and the cover card float over content and get real backdrop
+      blur; the header and the section bar sit in a grid with nothing behind
+      them, so they get gradient, hairline and shadow instead of a blur that
+      would cost a compositor layer and show nothing.
+   2. HIGH CONTRAST IS EXEMPT. Translucency lowers effective contrast, so the
+      contrast theme opts out of every glass surface and keeps flat fills.
+   3. NOTHING MOVES THAT CANNOT BE STILLED. Every transition here is inside the
+      reduced-motion guard at the end.
+   ========================================================================== */
+:root{
+  --r-lg:16px;
+  --ease:cubic-bezier(.32,.72,0,1);          /* iOS-ish: quick out, soft settle */
+  --ring:color-mix(in srgb, var(--accent) 55%, transparent);
+  --gloss:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 58%);
+  --glass:color-mix(in srgb, var(--panel) 78%, transparent);
+  --hairline:color-mix(in srgb, var(--line) 78%, transparent);
+  --lift:0 1px 1px rgba(23,34,32,.04), 0 4px 12px -4px rgba(23,34,32,.14);
+  --lift-2:0 2px 4px rgba(23,34,32,.06), 0 14px 34px -12px rgba(23,34,32,.22);
+}
+@supports not (color: color-mix(in srgb, red 50%, transparent)){
+  :root{ --ring:var(--accent); --glass:var(--panel); --hairline:var(--line); }
+}
+:root[data-theme="dark"], :root:not([data-theme="light"]){
+  --lift:0 1px 1px rgba(0,0,0,.36), 0 4px 12px -4px rgba(0,0,0,.5);
+  --lift-2:0 2px 4px rgba(0,0,0,.4), 0 14px 34px -12px rgba(0,0,0,.62);
+}
+
+/* ---- chrome: gradient + hairline, no wasted blur ------------------------- */
+header{
+  background:linear-gradient(180deg,
+    color-mix(in srgb, var(--panel) 100%, #fff 4%), var(--panel));
+  border-bottom:1px solid var(--hairline);
+  box-shadow:inset 0 2px 0 0 var(--good), 0 1px 0 rgba(23,34,32,.04);
+}
+.groupbar{
+  gap:2px; padding:7px 12px 7px; background:var(--panel);
+  border-bottom:1px solid var(--hairline);
+}
+/* the section bar as a segmented control: a recessed track, a raised pill */
+.groupbar button{
+  border-radius:999px; padding:6px 14px; min-height:34px; font-size:12.5px;
+  letter-spacing:.005em; transition:color .18s var(--ease), background .18s var(--ease),
+  box-shadow .18s var(--ease), transform .18s var(--ease);
+}
+.groupbar button:hover{ background:color-mix(in srgb, var(--ink) 6%, transparent); }
+.groupbar button[aria-selected="true"]{
+  background:var(--panel2); color:var(--ink); box-shadow:var(--lift);
+  background-image:var(--gloss);
+}
+nav.tabs{ background:var(--bg); border-bottom:1px solid var(--hairline); padding:6px 12px; }
+nav.tabs button{ border-radius:999px; padding:7px 13px; min-height:34px;
+  transition:background .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease); }
+nav.tabs button:hover{ background:color-mix(in srgb, var(--ink) 7%, transparent); }
+nav.tabs button[aria-selected="true"]{
+  background:var(--ink); color:var(--bg); box-shadow:var(--lift); background-image:var(--gloss);
+}
+
+/* ---- controls: a little gloss, a lot of affordance ----------------------- */
+.btn{ border-radius:999px; box-shadow:var(--lift);
+  background-image:var(--gloss);
+  transition:transform .18s var(--ease), box-shadow .18s var(--ease),
+             border-color .18s var(--ease), background-color .18s var(--ease); }
+.btn:hover{ box-shadow:var(--lift-2); transform:translateY(-1px); }
+.btn:active{ transform:translateY(0); box-shadow:var(--lift); }
+.btn.primary{ background-image:var(--gloss); }
+.chip{ transition:background .18s var(--ease), color .18s var(--ease),
+                  border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.chip:hover{ box-shadow:var(--lift); }
+.chip[aria-pressed="true"]{ box-shadow:var(--lift); background-image:var(--gloss); }
+.filters input, .filters select, .listhead select, .maptools select{
+  border-radius:10px; transition:box-shadow .18s var(--ease), border-color .18s var(--ease);
+}
+:where(button, a, input, select, textarea, [tabindex]):focus-visible{
+  outline:2px solid var(--ring); outline-offset:2px; border-radius:8px;
+}
+
+/* ---- surfaces that DO have something behind them: real vibrancy ---------- */
+.maptools{
+  background:var(--glass);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);
+  border:1px solid var(--hairline); border-radius:var(--r-lg); box-shadow:var(--lift-2);
+}
+.covercard{
+  -webkit-backdrop-filter:saturate(180%) blur(24px);
+  backdrop-filter:saturate(180%) blur(24px);
+  border-radius:22px; box-shadow:var(--lift-2);
+}
+
+/* ---- the list: cards that answer the pointer ---------------------------- */
+.card{ transition:background .18s var(--ease), box-shadow .18s var(--ease); }
+.card:hover{ box-shadow:inset 3px 0 0 color-mix(in srgb, var(--accent) 45%, transparent); }
+.card.sel{ box-shadow:inset 3px 0 0 var(--accent), var(--lift); }
+.card .price{ font-variant-numeric:tabular-nums; }
+
+/* Every figure in the app is a number you should be able to scan in a column. */
+.num, .card .meta .num, .listhead{ font-variant-numeric:tabular-nums; }
+
+/* ---- high contrast opts out of translucency entirely -------------------- */
+:root[data-theme="contrast"] .maptools,
+:root[data-theme="contrast"] .covercard{
+  background:var(--panel); -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+:root[data-theme="contrast"] .groupbar button[aria-selected="true"],
+:root[data-theme="contrast"] nav.tabs button[aria-selected="true"],
+:root[data-theme="contrast"] .btn, :root[data-theme="contrast"] .chip{
+  background-image:none;
+}
+
+@media (prefers-reduced-motion: reduce){
+  header, .groupbar button, nav.tabs button, .btn, .chip, .card,
+  .filters input, .filters select{ transition:none !important; }
+  .btn:hover{ transform:none; }
+}
+</style>
+<style>
+/* ---- map tools: a disclosure at every width ------------------------------
+   The panel used to be permanent on desktop and covered the map it annotates.
+   It is now a vibrant popover behind a single control, at all widths. Layout
+   rules only; every control keeps its place in the DOM (see app.js). */
+.maptoggle{
+  display:inline-flex; align-items:center; gap:7px;
+  position:absolute; top:10px; left:10px; z-index:4;
+  padding:8px 14px; min-height:38px; border-radius:999px; cursor:pointer;
+  font-size:12.5px; font-weight:600; color:var(--ink);
+  border:1px solid var(--hairline); background:var(--glass);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);
+  box-shadow:var(--lift); background-image:var(--gloss);
+  transition:box-shadow .18s var(--ease), transform .18s var(--ease);
+}
+.maptoggle:hover{ box-shadow:var(--lift-2); transform:translateY(-1px); }
+.maptoggle.on{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+/* An explicit display on .maptools beats the UA's [hidden]{display:none}, so the
+   attribute silently did nothing outside the old mobile media query - the panel
+   read as hidden to a script and stayed visible to the eye. Stated once, here,
+   for every width. */
+.maptools[hidden]{ display:none !important; }
+.maptools{
+  top:56px; left:10px; right:auto; width:min(360px, calc(100% - 20px));
+  max-height:min(64vh, 620px); overflow:auto; flex-direction:column;
+  align-items:stretch; gap:8px; padding:12px;
+}
+.maptools select, .maptools button{ width:100%; box-sizing:border-box; text-align:left; }
+.maptools .legend2, .maptools .legend, .maptools .maplegend{ width:100%; }
+@media (max-width:720px){
+  .maptools{ right:10px; width:auto; max-height:58vh; }
+}
+:root[data-theme="contrast"] .maptoggle{
+  background:var(--panel); background-image:none;
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+@media (prefers-reduced-motion: reduce){ .maptoggle{ transition:none !important; }
+  .maptoggle:hover{ transform:none; } }
+</style>

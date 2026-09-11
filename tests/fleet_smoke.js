@@ -3,8 +3,9 @@
  * Loads the synthetic-fleet demo (scripts/build_fleet_demo.py output: the
  * complete 84-module shell over generated fixtures) in headless Chromium and
  * drives EVERY edition the page carries: load it, read its title and record
- * count, open the map, and on the first edition exercise one real control
- * (the "Meets the Locator X criteria" chip). Zero page errors per edition or
+ * count, open the map, and on the first edition exercise the real controls:
+ * the "Meets the Locator X criteria" chip, every screening class in the Type
+ * filter, and the map-tools disclosure. Zero page errors per edition or
  * exit 1. This is the first gate that runs the full app from a clean checkout
  * — the fleet sweep on the data machine still covers real editions.
  *
@@ -65,6 +66,33 @@ async function main() {
       const count = (await page.textContent('#count')).trim();
       if (!/Locator X criteria/.test(count)) { errs.push('criteria chip did not annotate the count line: ' + count); }
       chipNote = '  [chip: ' + count.split('·')[0].trim() + ']';
+      await page.click('#chips .chip[data-f="bb"]');
+      await page.waitForTimeout(400);
+
+      // Every screening class the crosswalk defines must be reachable AND must
+      // actually select something. A Type option that filters to nothing is the
+      // same defect as no option at all, just harder to notice.
+      for (const cls of ['lodging', 'student', 'mhp']) {
+        await page.selectOption('#fkind', cls);
+        await page.waitForTimeout(350);
+        const c = (await page.textContent('#count')).trim();
+        const n = parseInt(c.replace(/,/g, ''), 10);
+        if (!(n > 0)) errs.push('Type filter "' + cls + '" selected nothing: ' + c);
+      }
+      await page.selectOption('#fkind', '');
+      await page.waitForTimeout(250);
+
+      // The map tools are a disclosure at every width: shut by default so the
+      // map is visible, and really shut - visibility, not just the attribute,
+      // because an explicit display beats [hidden] and that bug shipped once.
+      if (await page.isVisible('#maptools')) errs.push('map tools are open before the toggle is pressed');
+      await page.click('#maptoggle');
+      await page.waitForTimeout(350);
+      if (!(await page.isVisible('#maptools'))) errs.push('map tools did not open on the toggle');
+      const held = await page.$$eval('#maptools select, #maptools button', n => n.length);
+      if (held < 10) errs.push('map tools lost controls: only ' + held + ' present');
+      await page.click('#maptoggle');
+      await page.waitForTimeout(250);
     }
     const ok = errs.length === 0 && info.n > 0 && info.options === expectedOptions
       && info.title.indexOf(fleet.labels[key]) === 0;

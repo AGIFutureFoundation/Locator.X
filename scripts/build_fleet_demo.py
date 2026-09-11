@@ -39,8 +39,15 @@ NB_POOL = ["Fixture Heights", "Demo Docks", "Sample Row", "Mock Quarter",
            "Draft Flats", "Synthetic Shore"]
 STREETS = ["Synthetic Ave", "Fixture St", "Placeholder Blvd", "Sample Way",
            "Demo Ct", "Mock Row"]
+# One entry per screening class the Type filter offers, so the demo exercises
+# every branch of kindClass() rather than only the residential ones. The three
+# non-residential labels deliberately mirror the shapes the real records use -
+# a flat "Hotel", a compound "Hotel / motel / MH park", and Onondaga's
+# "Room/dorm" - because those are the strings the classifier has to get right.
 KINDS = [("Single family", 1), ("Condominium", 1), ("Duplex", 2), ("Triplex", 3),
-         ("Fourplex", 4), ("Apartment 5+", 0)]
+         ("Fourplex", 4), ("Apartment 5+", 0), ("Hotel", 0),
+         ("Hotel / motel / MH park", 0), ("Room/dorm", 0),
+         ("Mobile home park", 0)]
 
 def make_ba(seed, count, wide, tall, campus):
     """One edition's fixture: its own island, grid, market and listings."""
