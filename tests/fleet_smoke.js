@@ -127,6 +127,68 @@ async function main() {
         const back = parseInt(((await page.textContent('#count')) || '').replace(/,/g, ''), 10);
         if (back !== all) errs.push('clearing the city rail did not restore the list: ' + back + ' of ' + all);
       }
+
+      // The closing packet: the transaction checklist, assembled from the
+      // record. It replaced twelve hardcoded San Francisco strings that shipped
+      // in every edition, so the assertions are the two things that were wrong:
+      // the list must respond to the ASSET CLASS, and no paperwork may name a
+      // state the record cannot support.
+      const pk = await page.evaluate(() => {
+        const pick = re => (window.BA.listings.find(l => re.test(l.kind || '')) || null);
+        const hotel = pick(/hotel|motel|inn\b|lodg/i), sfr = pick(/single family/i);
+        const ids = l => l ? LXPACKET.itemsFor(l).map(i => i.id) : null;
+        return {
+          hotel: ids(hotel), sfr: ids(sfr),
+          addr: window.BA.listings[0] ? LXPACKET.addressLine(window.BA.listings[0]) : '',
+          state: LXPACKET.stateName(window.BA.listings[0] || {}),
+          clauses: (window.LXPACKETDATA || {}).clauses ? LXPACKETDATA.clauses.length : 0
+        };
+      });
+      if (pk.clauses !== 12) errs.push('closing packet clause families: ' + pk.clauses + ', expected 12');
+      if (pk.hotel && pk.sfr) {
+        // A hotel needs the STR report and the franchise agreement; a house does
+        // not. If these two sets are equal the packet is not reading the class.
+        if (pk.hotel.length <= pk.sfr.length) {
+          errs.push('closing packet does not vary by asset class: hotel ' + pk.hotel.length
+            + ' items vs single-family ' + pk.sfr.length);
+        }
+        for (const need of ['str', 'franchise']) {
+          if (pk.hotel.indexOf(need) < 0) errs.push('lodging packet is missing ' + need);
+          if (pk.sfr.indexOf(need) >= 0) errs.push('single-family packet wrongly includes ' + need);
+        }
+      }
+      // Paperwork must never invent a state. The fixture declares none, so the
+      // address line has to say so rather than printing one.
+      if (!pk.state && !/\[STATE — not in this record\]/.test(pk.addr)) {
+        errs.push('paperwork named a state this edition does not declare: ' + pk.addr);
+      }
+
+      // The underwriting sheet, with the stress block that says where the deal
+      // stops working rather than only how it looks today.
+      await page.evaluate(() => {
+        const l = window.BA.listings.find(x => (x.units || 1) >= 2) || window.BA.listings[0];
+        LX.showView('underwrite'); LXUW.openSheet(l.id);
+      });
+      await page.waitForTimeout(1400);
+      const sheet = await page.evaluate(() => {
+        const box = document.getElementById('uwsheet');
+        return {
+          packet: !!box.querySelector('.packet'),
+          ticks: box.querySelectorAll('.packet input[data-pk]').length,
+          clauseRows: box.querySelectorAll('.pkclauses tr').length - 1,
+          stress: (box.textContent.match(/Stresses still covering debt/) || []).length,
+          rows: [...box.querySelectorAll('.sens')].some(t => /All three at once/.test(t.textContent)),
+          loi: (document.getElementById('offerdraft') || {}).textContent || ''
+        };
+      });
+      if (!sheet.packet) errs.push('the closing packet did not render on the underwriting sheet');
+      if (!(sheet.ticks > 0)) errs.push('the closing packet rendered no checkable items');
+      if (sheet.clauseRows !== 12) errs.push('clause question table rows: ' + sheet.clauseRows);
+      if (!sheet.stress) errs.push('the stress block did not render');
+      if (!sheet.rows) errs.push('the stress table did not render the combined case');
+      if (/,\s*CA\s/.test(sheet.loi)) errs.push('the letter of intent still hardcodes a state: ' + sheet.loi.slice(0, 120));
+      await page.evaluate(() => LX.showView('mapview'));
+      await page.waitForTimeout(400);
     }
     const ok = errs.length === 0 && info.n > 0 && info.options === expectedOptions
       && info.title.indexOf(fleet.labels[key]) === 0;

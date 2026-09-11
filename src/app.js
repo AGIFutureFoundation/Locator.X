@@ -8,6 +8,17 @@ const fmtFull = n => n==null||isNaN(n) ? '—' : '$'+Math.round(n).toLocaleStrin
 const fmtPct = (n,d=1) => n==null||isNaN(n)||!isFinite(n) ? '—' : n.toFixed(d)+'%';
 const fmtN = n => n==null||isNaN(n) ? '—' : Math.round(n).toLocaleString('en-US');
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+/* The edition's state, spelled exactly as the 50-state table in
+   docs/states/README.md spells it, because the closing packet joins on that
+   name. build_state.py rewrites this one line per edition (the `state` key in
+   SPECS), and an edition that spans several states leaves it null on purpose:
+   the packet then reports every state-sensitive item as unanswerable from this
+   record rather than picking a state. Unknown is an answer.
+
+   It lived nowhere before, which is why the Letter of Intent printed ", CA "
+   into a New Orleans address and the due-diligence checklist asked a Louisiana
+   buyer for an SF 3R report. */
+const EDITION_STATE = null;
 function store(k, v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem('bayledger.'+k)); localStorage.setItem('bayledger.'+k, JSON.stringify(v)); }catch(e){ return null; } }
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),2600); }
 
@@ -1112,7 +1123,7 @@ $$('#toc a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); con
 
 function updateZipsSource(){ if(USE_GL && mapReady && map.getSource && map.getSource('zips')) map.getSource('zips').setData(BA.geo.zips); else if(map && map.draw) map.draw(); }
 /* ---------------- public API for dashboard/research ---------------- */
-window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine};
+window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine, EDITION_STATE};
 /* ---------------- boot ---------------- */
 fillCounties(); renderList(); initMap(); renderRentMarkets(); setTimeout(()=>{ try{ if(window.LXScout&&LXScout.autoStart) LXScout.autoStart(); }catch(e){} }, 800); setTimeout(()=>{ if(window.LXDash) window.LXDash.render(); },0); $('#impcount').textContent = state.imported.length? `${state.imported.length} imported in this browser` : '';
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !tour.open && state.sel) closeDrawer(); });

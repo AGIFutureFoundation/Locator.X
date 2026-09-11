@@ -18,6 +18,8 @@ head=re.sub(r'<title>[^<]*</title>','<title>Locator X Baton Rouge</title>',head,
 for a,b in [
  ('128,319 real sites from county records','120,000 parcels from the East Baton Rouge Parish roll'),
  ('extruding 128,319 sites','extruding 120,000 parcels'),
+ ('const EDITION_STATE = null;',
+  "const EDITION_STATE = 'Louisiana';"),
 ]: app=app.replace(a,b)
 body=body.replace('Which of these properties would pay you?','Student housing, rentals and land around Louisiana\u2019s biggest campuses')
 body=body.replace('A walkable Bay Area, built from the catalog','A walkable Baton Rouge, built from the catalog')

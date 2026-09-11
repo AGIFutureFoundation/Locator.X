@@ -39,6 +39,8 @@ head=re.sub(r'<title>[^<]*</title>','<title>Locator X New Orleans</title>',head,
 for a,b in [
  ('128,319 real sites from county records','90,000 real parcels from Orleans Parish records'),
  ('extruding 128,319 sites','extruding 90,000 parcels'),
+ ('const EDITION_STATE = null;',
+  "const EDITION_STATE = 'Louisiana';"),
 ]: app=app.replace(a,b)
 # hide Bay-specific tabs (guide, house hacks) on the NOLA edition
 head=head.replace('</style>', 'button[data-view="guide"],button[data-view="hacks"],#guide,#hacks{display:none!important}\n</style>',1)

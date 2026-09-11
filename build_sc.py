@@ -13,6 +13,8 @@ head = re.sub(r'<title>[^<]*</title>', '<title>Locator X Shelter Cove</title>', 
 for a, b in [
  ('128,319 real sites from county records','4,284 real parcels from Humboldt County records'),
  ('extruding 128,319 sites','extruding 4,284 parcels'),
+ ('const EDITION_STATE = null;',
+  "const EDITION_STATE = 'California';"),
 ]: app = app.replace(a, b)
 head = head.replace('</style>', 'button[data-view="guide"],button[data-view="hacks"],#guide,#hacks{display:none!important}\n</style>', 1)
 
