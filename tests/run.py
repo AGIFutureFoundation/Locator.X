@@ -22,6 +22,7 @@ cannot silently un-enforce them:
      the tree as committed.
   7. The market gate's cross-file rule fires on a drifted record count.
   8. The market pages render, and render their unknowns as unknowns.
+  9. The link-rot sweep still covers the sourced per-row citations.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -29,6 +30,7 @@ values — nothing here asserts anything about the real world.
 """
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -257,6 +259,25 @@ def main():
               "market pages: a null enrolment leaked onto the page as None")
     shutil.rmtree(usite, ignore_errors=True)
     shutil.rmtree(msite, ignore_errors=True)
+
+    # ---- 9. the link-rot sweep actually covers the sourced citations -------
+    # The sweep walked only markdown, where this repo keeps almost no URLs, so
+    # it exited zero while checking essentially nothing. The per-row citations
+    # live in the data files; assert they are in the sweep set so the coverage
+    # cannot silently go vacuous again.
+    out = run(["scripts/check_external_links.py", "--collect-only"])
+    tail = out.strip().splitlines()[-1] if out.strip() else ""
+    cited = 0
+    m = re.search(r"(\d+) cited by a sourced data file", tail)
+    if m:
+        cited = int(m.group(1))
+    check(cited >= 300,
+          "link-rot: only %d URLs come from sourced data files - the sweep has gone "
+          "vacuous over the citations that matter" % cited, tail)
+    check("opportunitylouisiana.gov" in out,
+          "link-rot: the announced-project sources are not in the sweep set")
+    check("laregents.edu" in out or "subr.edu" in out,
+          "link-rot: the campus enrolment sources are not in the sweep set")
     shutil.rmtree(mtree, ignore_errors=True)
 
     if FAILURES:

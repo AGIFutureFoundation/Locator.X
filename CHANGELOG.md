@@ -7,6 +7,27 @@ such.
 
 ## [Unreleased]
 
+- **The link-rot sweep was passing over nothing; now it checks the citations
+  that matter** — v1.2 shipped the sweep claiming it covered "every URL in
+  `docs/resources/` and `docs/states/`", proven by the script exiting zero.
+  Measured 2026-09-11: those directories hold **zero URLs** between them, 6
+  and 20 files respectively, because their rows cite agencies and statutes by
+  name rather than by link. The sweep exited zero over nothing — a vacuous
+  proof, and the certainty error this platform exists to catch.
+
+  `scripts/check_external_links.py` now walks the sourced data files as well
+  as markdown: **361 URLs** from `market/` and `crosswalk/` (project
+  announcements, campus enrolment sources, permit and population series)
+  against 3 from markdown. Published artifact URLs are skipped by design —
+  they are private to their owner, so an anonymous probe cannot tell "gone"
+  from "not yours", and the sha256 manifest is the stronger check. A
+  `--collect-only` mode lists the set without network, which is what this
+  egress-less container can verify; the probing runs on GitHub runners.
+  `tests/run.py` asserts the data-file citation count and two known source
+  hosts, so the coverage cannot go vacuous again — verified by reinstating
+  the markdown-only sweep, which the suite names. The roadmap's v1.2
+  milestone carries the correction and its measurement.
+
 - **The roadmap reconciled with what is actually true** — §2 still read "the
   repository is release-ready; flipping it public is a Foundation switch",
   which stopped being true two days and fifty-three commits ago. Measured
