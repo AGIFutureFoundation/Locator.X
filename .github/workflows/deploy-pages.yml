@@ -21,6 +21,8 @@ on:
       - "lxbuild.py"
       - "build_state.py"
       - "scripts/build_fleet_demo.py"
+      - "scripts/build_crosswalk_page.py"
+      - "crosswalk/usecodes.json"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/deploy-pages.yml"
@@ -50,11 +52,12 @@ jobs:
       - run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-      - name: Assemble the site (pages + generated synthetic-fleet demo)
+      - name: Assemble the site (pages + generated demo + real-data pages)
         run: |
           mkdir -p _site
           cp -r pages/. _site/
           python3 scripts/build_fleet_demo.py _site/demo.html
+          python3 scripts/build_crosswalk_page.py _site/crosswalk.html
       - uses: actions/configure-pages@v5
         with:
           enablement: true
