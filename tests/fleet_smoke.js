@@ -93,6 +93,18 @@ async function main() {
       if (held < 10) errs.push('map tools lost controls: only ' + held + ' present');
       await page.click('#maptoggle');
       await page.waitForTimeout(250);
+
+      // The pooled backtest needs eight series and the fixture once shipped six,
+      // so the measured-error band — the most distinctive thing this platform
+      // does — could not draw in the public demo at all. Assert the band exists,
+      // not merely that the page rendered.
+      await page.evaluate(() => LX.showView('predict'));
+      await page.waitForTimeout(2200);
+      const predTxt = (await page.textContent('#predroot')) || '';
+      if (/not testable/i.test(predTxt)) errs.push('backtest is not testable on the fixture — too few index series');
+      if (!(await page.$('#predroot .pvband'))) errs.push('the measured error band did not draw');
+      await page.evaluate(() => LX.showView('mapview'));
+      await page.waitForTimeout(600);
     }
     const ok = errs.length === 0 && info.n > 0 && info.options === expectedOptions
       && info.title.indexOf(fleet.labels[key]) === 0;

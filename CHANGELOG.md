@@ -7,6 +7,29 @@ such.
 
 ## [Unreleased]
 
+- **The demo could never draw the thing the platform is for** — `predict.js`
+  pools its backtest across series and returns null below **eight** of them;
+  the synthetic fixture generated **six** ZIPs. Off by two, and the
+  consequence was that the measured-error band — the single most distinctive
+  thing this platform does — could not draw in the public demo at all, while
+  the predictions page advertised "not testable, too few series" as though
+  that were a property of the method rather than of the fixture.
+
+  The fixture now carries **24 index ZIPs with property in 12 of them**, which
+  fixes two things at once. The backtest runs (`VALUE METHOD, TESTED` goes
+  from "not testable" to **100%**, and the band draws), and the coverage panel
+  finally says something true: it always claimed "the index bundle holds N
+  ZIPs, most of which hold no property here" while every ZIP held property.
+  Separate bundles that do not cover the same ZIPs is what real editions look
+  like, and it is what that panel exists to state.
+
+  Each series also gets its own seeded wobble. Perfectly smooth curves let the
+  log-linear fit land almost exactly, and the honest consequence of that is a
+  band near zero width — a demo advertising an accuracy the method does not
+  have on real series. `fleet_smoke.js` now asserts the band actually draws
+  and that the page never reads "not testable", so the fixture cannot slip
+  back under the floor unnoticed.
+
 - **`docs/LOUISIANA_DEVELOPMENT_FRICTION.md`** — what in the Louisiana record
   actually slows a development, ranked by what each blocks, synthesised from
   material already sourced in the repository (the state guide, the coverage
