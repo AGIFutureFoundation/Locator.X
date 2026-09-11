@@ -24,7 +24,8 @@ cannot silently un-enforce them:
   8. The market pages render, and render their unknowns as unknowns.
   9. The link-rot sweep still covers the sourced per-row citations.
  10. The generated lodging expansion plan matches the measured layer.
- 11. No deploy-generated page is also committed under pages/, and every article
+ 11. The synthetic fixture builds reproducibly; no deploy-generated page is also
+     committed under pages/; and every article
      figure and chart resolves from the committed measured data.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
@@ -284,6 +285,29 @@ def main():
 
     # ---- 10. the lodging expansion plan is derived, not drifting -----------
     run(["scripts/hotel_candidates.py", "--check"])
+
+    # ---- 11c. the synthetic fixture is actually deterministic --------------
+    # The fixture calls itself deterministic, and was not: it emitted the city
+    # series from a set(), whose iteration order over strings moves with
+    # PYTHONHASHSEED, so three builds of identical code produced three different
+    # files. Only key ORDER moved, inside a packed payload nobody diffs, which
+    # is why it survived. Build the fixture twice and compare the decompressed
+    # payloads — the page bytes carry a gzip timestamp, so compare content.
+    import base64 as _b64, gzip as _gz
+    def _payloads(path):
+        txt = open(path, encoding="utf-8", errors="replace").read()
+        return [_gz.decompress(_b64.b64decode(m.group(1)))
+                for m in re.finditer(r'atob\("([A-Za-z0-9+/=]{200,})"\)', txt)]
+    d1 = os.path.join(tempfile.mkdtemp(), "a.html")
+    d2 = os.path.join(tempfile.mkdtemp(), "b.html")
+    run(["scripts/build_fleet_demo.py", d1, "--fragment"])
+    run(["scripts/build_fleet_demo.py", d2, "--fragment"])
+    if os.path.exists(d1) and os.path.exists(d2):
+        p1, p2 = _payloads(d1), _payloads(d2)
+        check(p1 == p2, "the synthetic fixture is not reproducible: two builds of "
+                        "identical code produced different payloads")
+    else:
+        FAILURES.append("fixture determinism check could not build the demo")
 
     # ---- 11b. every article figure resolves from committed data ------------
     # An article states numbers in prose and draws them in charts; both come from
