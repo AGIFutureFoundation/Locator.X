@@ -23,7 +23,9 @@ on:
       - "scripts/build_fleet_demo.py"
       - "scripts/build_crosswalk_page.py"
       - "scripts/build_editions_index.py"
+      - "scripts/build_market_pages.py"
       - "crosswalk/usecodes.json"
+      - "market/**"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/deploy-pages.yml"
@@ -59,6 +61,7 @@ jobs:
           cp -r pages/. _site/
           python3 scripts/build_fleet_demo.py _site/demo.html
           python3 scripts/build_crosswalk_page.py _site/crosswalk.html
+          python3 scripts/build_market_pages.py _site
           python3 scripts/build_editions_index.py _site
       - uses: actions/configure-pages@v5
         with:

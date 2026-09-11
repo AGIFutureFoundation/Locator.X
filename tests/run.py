@@ -18,7 +18,8 @@ cannot silently un-enforce them:
   5. check_pairs holds fleet parity: every per-file builder's literal replace
      pairs match current source, and a synthetic tree with one dead find fails —
      the check itself is checked, not just today's pairs.
-  6. The crosswalk gate and internal link check pass from the tree as committed.
+  6. The crosswalk gate, the market-data gate and the internal link check pass from
+     the tree as committed.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -26,6 +27,7 @@ values — nothing here asserts anything about the real world.
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -163,7 +165,32 @@ def main():
 
     # ---- 6. repo gates hold from the committed tree ------------------------
     run(["crosswalk/validate_usecodes.py"])
+    run(["market/validate_market.py"])
     run(["scripts/check_links.py"])
+
+    # ---- 7. the market gate's cross-file rule actually fires ---------------
+    # A measured record count that no longer matches docs/PUBLISH_MAP.md is the
+    # exact drift the rule exists to catch, so prove it on a synthetic tree
+    # rather than trusting that it would.
+    mtree = tempfile.mkdtemp()
+    shutil.copytree(os.path.join(ROOT, "market"), os.path.join(mtree, "market"))
+    os.makedirs(os.path.join(mtree, "docs"))
+    shutil.copy(os.path.join(ROOT, "docs", "PUBLISH_MAP.md"),
+                os.path.join(mtree, "docs", "PUBLISH_MAP.md"))
+    edpath = os.path.join(mtree, "market", "editions.json")
+    with open(edpath, encoding="utf-8") as fh:
+        ed = json.load(fh)
+    drifted = None
+    for e in ed["editions"]:
+        if "records_measured" in e:
+            e["records_measured"] += 1
+            drifted = e["file"]
+            break
+    with open(edpath, "w", encoding="utf-8") as fh:
+        json.dump(ed, fh)
+    out = run(["market/validate_market.py", mtree], expect_rc=1)
+    check(drifted in out and "PUBLISH_MAP" in out,
+          "market: a record count drifting from PUBLISH_MAP did not fail the gate", out)
 
     if FAILURES:
         print("FAIL — %d problem(s):" % len(FAILURES))

@@ -9,6 +9,7 @@ this repo is the **source** — built editions and the ~4 GB data tree are never
 python3 curriculum/validate.py        # eight checks; raises, never warns
 python3 scripts/check_links.py        # internal markdown links
 python3 crosswalk/validate_usecodes.py
+python3 market/validate_market.py    # sourced market data; cross-checks PUBLISH_MAP
 python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/
 python3 tests/run.py                  # doctrine smoke tests (PII strip, sample floor, ...)
 ```
@@ -29,7 +30,9 @@ validator has no flake mode.
 - **No PII, no data commits.** `data/` stays ignored; owner fields are stripped on
   ingest; git history cannot be cleaned later.
 - **Derived things are generated, not edited.** `curriculum/courses/` comes from
-  `gen_courses.py`; an item's status comes from `status_of()`; regenerate, never patch.
+  `gen_courses.py`; an item's status comes from `status_of()`; the public site's
+  `demo.html`, `crosswalk.html` and the seven market pages are built at deploy and
+  never committed; regenerate, never patch.
 - **Instructor notes ship empty** until the platform owner supplies words
   (`src/notes.js`; authoring guide in `curriculum/INSTRUCTOR_NOTES.md`). Record-layer
   case claims are marked documented / reported / disputed (`docs/cases/`).
@@ -46,6 +49,7 @@ validator has no flake mode.
 | State layer | `docs/states/` (guides, `coverage/` inventories, `ninety-day-path.md`) |
 | Resources | `docs/resources/` (data sources, lenders, programs, administrators) |
 | Asset classes | `crosswalk/usecodes.json` + `scripts/class_screen.py` + `docs/asset-classes/` |
+| Measured market layer | `market/` (extracted from the shipped editions, never hand-edited) rendered by `scripts/build_market_pages.py` at deploy |
 | Next data session | `docs/PULL_QUEUE.md` (ordered probes; ingest tools ready) |
 | Desk ↔ app interop contract | `docs/INTEROP.md` (the worksheet JSON shape; the no-laundering rule) |
 | Contract & underwriting anatomy | `docs/CONTRACT_ANATOMY.md` (education; the no-drafting line) |

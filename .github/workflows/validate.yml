@@ -23,5 +23,7 @@ jobs:
         run: python3 scripts/check_links.py
       - name: Asset-class crosswalk gate
         run: python3 crosswalk/validate_usecodes.py
+      - name: Market data gate
+        run: python3 market/validate_market.py
       - name: Doctrine smoke tests
         run: python3 tests/run.py
