@@ -7,6 +7,20 @@ such.
 
 ## [Unreleased]
 
+- **The market renderer is now under test, including the path the live data
+  never reaches** — `tests/run.py` renders all seven market pages from the
+  committed data and reads them back for what the data says must show: the
+  net-loss ratio, the unmarked headcounts, the un-recounted editions, and no
+  raw Python `None` anywhere on a page. Then it does the part that matters:
+  all four unknown enrolments in the live data sit outside Louisiana, so the
+  campus page never renders one and the null-handling code is never exercised
+  — so the suite writes a null into a Louisiana row on a synthetic market tree
+  (`build_market_pages.py` takes an optional market dir, as the gate takes an
+  optional root) and proves the page still renders, still lists that campus,
+  says "not published" beside it, and leaks no `None`. Verified by reinstating
+  the original bug: sorting on the null crashes the render and the suite names
+  it. A passing test that cannot fail is not a test.
+
 - **The market layer becomes data plus a renderer, and gains a gate** — the
   seven market pages stop being hand-committed HTML and become a build
   product, the same status as `demo.html` and `crosswalk.html`. The figures

@@ -20,6 +20,8 @@ cannot silently un-enforce them:
      the check itself is checked, not just today's pairs.
   6. The crosswalk gate, the market-data gate and the internal link check pass from
      the tree as committed.
+  7. The market gate's cross-file rule fires on a drifted record count.
+  8. The market pages render, and render their unknowns as unknowns.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -191,6 +193,71 @@ def main():
     out = run(["market/validate_market.py", mtree], expect_rc=1)
     check(drifted in out and "PUBLISH_MAP" in out,
           "market: a record count drifting from PUBLISH_MAP did not fail the gate", out)
+
+    # ---- 8. the market pages actually render ------------------------------
+    # The pages are a deploy-time build product, so a renderer that crashes on
+    # an honest null would break the site with every gate still green. Render
+    # the set and read it back for the three things the data says must show.
+    msite = tempfile.mkdtemp()
+    run(["scripts/build_market_pages.py", msite])
+    pages = {}
+    for name in ("market-dashboard.html", "new-orleans-louisiana.html", "sf-bay-area.html",
+                 "high-potential-belts.html", "jobs-to-housing.html", "core-cities.html",
+                 "louisiana-universities.html"):
+        path = os.path.join(msite, name)
+        if not os.path.exists(path):
+            FAILURES.append("market pages: %s was not written" % name)
+            continue
+        with open(path, encoding="utf-8") as fh:
+            pages[name] = fh.read()
+        check(len(pages[name]) > 8000, "market pages: %s is suspiciously small" % name)
+    # A Python None or nan reaching the page is a missing figure rendered as a
+    # word instead of as an honest blank - the exact bug an unknown invites.
+    for name, html in pages.items():
+        for leak in (">None<", ">nan<", "None,", "nan%"):
+            check(leak not in html,
+                  "market pages: %s leaked a raw %s into the rendered page"
+                  % (name, leak.strip("><,%")))
+    check("net loss" in pages.get("jobs-to-housing.html", ""),
+          "market pages: the negative jobs figure is not drawn as a net loss")
+    check("no basis line in the record" in pages.get("new-orleans-louisiana.html", ""),
+          "market pages: a headcount with no jobsBasis is not marked as such")
+    check("not re-counted" in pages.get("market-dashboard.html", ""),
+          "market pages: an edition with no live-measured count is not marked as such")
+
+    # The live data's four unknown enrolments all sit outside Louisiana, so the
+    # campus page never renders one. Put a null where the page WILL read it and
+    # prove the renderer neither crashes on it nor prints it as a number.
+    usite, umarket = tempfile.mkdtemp(), os.path.join(mtree, "market")
+    cpath = os.path.join(umarket, "campuses.json")
+    with open(cpath, encoding="utf-8") as fh:
+        camp = json.load(fh)
+    ci = {k: i for i, k in enumerate(camp["fields"])}
+    blanked = None
+    for rowc in camp["campuses"]:
+        if rowc[ci["state"]] == "LA":
+            rowc[ci["enrolled"]], rowc[ci["term"]] = None, None
+            blanked = rowc[ci["name"]]
+            break
+    with open(cpath, "w", encoding="utf-8") as fh:
+        json.dump(camp, fh)
+    run(["scripts/build_market_pages.py", usite, umarket])
+    upath = os.path.join(usite, "louisiana-universities.html")
+    if not os.path.exists(upath):
+        FAILURES.append("market pages: an unknown Louisiana enrolment stopped the render")
+    else:
+        with open(upath, encoding="utf-8") as fh:
+            uhtml = fh.read()
+        check(blanked in uhtml,
+              "market pages: a campus with no published enrolment was dropped from the "
+              "page instead of listed as unknown")
+        check("not published" in uhtml and "no published enrolment" in uhtml,
+              "market pages: an unknown enrolment is not said out loud", uhtml[:400])
+        check(">None<" not in uhtml and "None</td>" not in uhtml,
+              "market pages: a null enrolment leaked onto the page as None")
+    shutil.rmtree(usite, ignore_errors=True)
+    shutil.rmtree(msite, ignore_errors=True)
+    shutil.rmtree(mtree, ignore_errors=True)
 
     if FAILURES:
         print("FAIL — %d problem(s):" % len(FAILURES))
