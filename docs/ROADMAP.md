@@ -9,7 +9,7 @@ rule — **measure before asserting** — so every milestone names the check tha
 ## Contents
 
 1. [Versioning scheme](#1-versioning-scheme)
-2. [Where we are — v1.0](#2-where-we-are--v10)
+2. [Where we are — v1.0 released and public](#2-where-we-are--v10-released-and-public-the-distribution-layer-is-shipping)
 3. [v1.0 — Public release](#3-v10--public-release)
 4. [v1.1 — The state layer, wave one](#4-v11--the-state-layer-wave-one)
 5. [v1.2 — The resource graph](#5-v12--the-resource-graph)
@@ -120,14 +120,31 @@ Turn the resource directory from lists into a cross-referenced graph:
   it actually underwrites (DSCR floors, LTV ceilings, minimum loan sizes) and to the curriculum
   courses that teach the underwriting ([C1–C7](../curriculum/courses/05-capital-structure.md)).
 - Every federal program mapped to the state administrators that run it, state by state.
-- A quarterly **link-rot sweep**: every URL in `docs/resources/` and `docs/states/` checked;
+- A quarterly **link-rot sweep**: every URL the repository cites as a source checked;
   dead links fixed or removed, sweep date recorded in the file header.
 
-**Proof:** the sweep script exits zero; each resource file carries its last-verified date.
+**Proof:** the sweep script exits zero over a set that is measured, not assumed — the count
+of URLs it collects from the sourced data files is asserted by `tests/run.py`, so the sweep
+cannot pass by checking nothing.
 
-*Status:* **complete.** The sweep ships as `scripts/check_external_links.py` (classifies
-ok / auth-gated / broken) with `.github/workflows/link-rot.yml` running it quarterly on
-GitHub runners, where egress is open. The lender-deal mapping is the matching matrix in
+*Status:* **complete, after a correction.** The sweep ships as
+`scripts/check_external_links.py` (classifies ok / auth-gated / broken) with
+`.github/workflows/link-rot.yml` running it quarterly on GitHub runners, where egress is
+open.
+
+> **Correction, 2026-09-11.** This milestone previously claimed the sweep checked "every
+> URL in `docs/resources/` and `docs/states/`", proven by the script exiting zero.
+> Measured: those directories contain **zero URLs** between them — 6 and 20 files
+> respectively — because their rows cite agencies and statutes by name rather than by
+> link. The sweep was exiting zero over nothing, which is a vacuous proof and exactly the
+> certainty error this platform exists to catch. The repository's real per-row citations
+> live in the sourced data files, and the sweep now walks those too: **361 URLs** from
+> `market/` and `crosswalk/` (project announcements, campus enrolment sources, permit and
+> population series) against 3 from markdown. Published artifact URLs are deliberately
+> skipped — they are private to their owner, so an anonymous probe cannot tell "gone" from
+> "not yours", and their integrity is established by the sha256 manifest instead.
+> `tests/run.py` asserts the data-file citation count so the coverage cannot go vacuous
+> again. The lender-deal mapping is the matching matrix in
 [`resources/lenders.md` §9](resources/lenders.md#9-the-matching-matrix); the
 program-administrator mapping is
 [`resources/state-administrators.md`](resources/state-administrators.md) (LIHTC
