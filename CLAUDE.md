@@ -48,6 +48,7 @@ validator has no flake mode.
 | Asset classes | `crosswalk/usecodes.json` + `scripts/class_screen.py` + `docs/asset-classes/` |
 | Next data session | `docs/PULL_QUEUE.md` (ordered probes; ingest tools ready) |
 | Desk ↔ app interop contract | `docs/INTEROP.md` (the worksheet JSON shape; the no-laundering rule) |
+| Contract & underwriting anatomy | `docs/CONTRACT_ANATOMY.md` (education; the no-drafting line) |
 | Roadmap / history | `docs/ROADMAP.md` (every milestone names its proof) / `CHANGELOG.md` |
 
 ## Environment gotchas

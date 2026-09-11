@@ -111,9 +111,12 @@ def make_ba(seed, count, wide, tall, campus):
             "panos": {}, "region": region}
 
 # ---- one entry per real spec, in registry order ----------------------------
-COUNTS = {"bay": 90, "nola": 90, "nola-classic": 90, "launi": 60, "below": 100,
-          "income": 50, "match": 50, "sheltercove": 24, "uscorridor": 84,
-          "usnew5": 84, "uswide": 84}
+# a LARGE synthetic database: ~11,500 records across the fleet, so the demo
+# exercises the app at scale (list virtualization caps, map pin caps, the
+# ranking engine) while remaining obviously synthetic end to end
+COUNTS = {"bay": 2500, "nola": 1200, "nola-classic": 1000, "launi": 800,
+          "below": 1500, "income": 600, "match": 600, "sheltercove": 24,
+          "uscorridor": 1200, "usnew5": 900, "uswide": 1200}
 CAMPUS = {"launi", "nola-classic", "nola"}
 order, editions, templates = [], {}, []
 for i, key in enumerate(sorted(BS.SPECS)):
