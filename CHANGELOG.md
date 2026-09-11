@@ -7,6 +7,16 @@ such.
 
 ## [Unreleased]
 
+- **The market pages were generated AND committed** — making them a deploy-time
+  build product removed them from `pages/`, except the deletion was never
+  actually recorded, so seven stale copies stayed in the repository. Nothing
+  broke, which is why nobody noticed: the deploy copies `pages/` first and the
+  generator overwrites afterwards, so the served site was always correct while
+  the committed twins drifted further behind with every later fix. Removed for
+  real, and `tests/run.py` now asserts the generated set and the committed set
+  are disjoint — verified by restoring the duplicates and watching the suite
+  name all seven.
+
 - **The demo could never draw the thing the platform is for** — `predict.js`
   pools its backtest across series and returns null below **eight** of them;
   the synthetic fixture generated **six** ZIPs. Off by two, and the
