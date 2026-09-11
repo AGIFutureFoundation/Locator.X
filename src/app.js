@@ -441,7 +441,41 @@ $('#fitbtn').addEventListener('click', fitToResults);
 function fitToResults(){ const ls=filtered(); if(!ls.length) return; let w=1e9,s=1e9,e=-1e9,n=-1e9; ls.forEach(l=>{ w=Math.min(w,l.lng); e=Math.max(e,l.lng); s=Math.min(s,l.lat); n=Math.max(n,l.lat); }); if(e-w<0.01){ w-=0.01; e+=0.01; } if(n-s<0.01){ s-=0.01; n+=0.01; } map.fitBounds([[w,s],[e,n]],{padding:60, maxZoom:14, duration:600}); }
 
 /* ---------------- filters & list ---------------- */
-function kindClass(l){ const k=(l.kind||'').toLowerCase(); if(/condo|townhouse|pud/.test(k)) return 'condo'; if(/5\+|apartment/.test(k)) return 'apt'; if((l.units||1)>1 || /unit|plex/.test(k)) return 'multi'; return 'sfr'; }
+/* The Type filter's vocabulary, aligned to the screening classes in
+   crosswalk/usecodes.json. It used to stop at four buckets - sfr, multi, condo,
+   apt - which left three of the crosswalk's six classes unreachable: a search
+   for hotels was impossible, and the 4,443 lodging records measured across the
+   shipped editions (market/edition_scale.json) fell into "5+ units" or "2-4
+   units" because a hotel has many units.
+
+   This is a DISPLAY heuristic over each record's own `kind` string, not the
+   crosswalk's measured code mapping. Where the two disagree the crosswalk wins;
+   this exists so a class is reachable in the UI, not to establish what a parcel
+   is. Two ordering decisions are load-bearing, both settled against measured
+   labels rather than guessed:
+
+     * student housing is tested BEFORE lodging. Onondaga County's `Room/dorm`
+       code maps to student_housing in the crosswalk, and the corridor editions
+       render it as "Inn, lodge, rooming or fraternity house - Room/dorm" - a
+       label that opens with two lodging words and is not lodging.
+     * lodging is tested BEFORE the unit-count rules, which is what makes hotels
+       findable at all.
+
+   One label stays genuinely ambiguous: the Bay Area's "Hotel / motel / MH park"
+   (171 records) is a compound the crosswalk cannot resolve, because no Bay Area
+   county is mapped yet. It reads as lodging here so the stock is findable; the
+   first probe in docs/HOTEL_EXPANSION.md is the groupBy that settles it. */
+const KIND_CLASSES = ['sfr','multi','condo','apt','lodging','student','mhp'];
+function kindClass(l){
+  const k=(l.kind||'').toLowerCase();
+  if(/dorm|student|fraternit|sororit|rooming house/.test(k)) return 'student';
+  if(/hotel|motel|\binn\b|lodge|resort|hospitality|tourist cabin/.test(k)) return 'lodging';
+  if(/mobile home|manufactured home|trailer park|\bmh park\b/.test(k)) return 'mhp';
+  if(/condo|townhouse|pud/.test(k)) return 'condo';
+  if(/5\+|apartment/.test(k)) return 'apt';
+  if((l.units||1)>1 || /unit|plex/.test(k)) return 'multi';
+  return 'sfr';
+}
 function filtered(){
   const f=state.filters, q=f.q.trim().toLowerCase();
   const VW=(window.LXView&&window.LXView.active())? window.LXView : null;
@@ -571,24 +605,42 @@ function sourceUrl(src){
 }
 function srcLine(l){ const s=l&&l.src; if(!s) return esc(s||'—'); const u=sourceUrl(s); return u? `<a href="${u}" target="_blank" rel="noopener">${esc(s)}</a>` : esc(s); }
 function toggleStar(id){ state.stars.has(id)?state.stars.delete(id):state.stars.add(id); store('stars',[...state.stars]); refresh(); }
-/* The map toolbar collapses behind a button below 720px.  It is hidden with the
-   `hidden` attribute rather than a class so it is hidden from assistive
-   technology too, and it is re-shown whenever the viewport grows back past the
-   breakpoint so a desktop user never finds their controls missing. */
+/* The map toolbar collapses behind a button at EVERY width, not just on phones.
+   It used to be permanently open on desktop, which put thirteen controls -
+   overlay, lens, basemap, colleges, towers, sectors and their legends - in a
+   slab across the top-left of the map, covering the content they exist to
+   annotate. A map you cannot see is not a better map for having more knobs.
+
+   What did NOT change: every control stays in the DOM whether the panel is
+   open or shut, so deep links, keyboard paths and the modules that write into
+   #towerctl / #sectorctl / the legend spans keep working untouched - the same
+   rule the grouped navigation follows. The panel is hidden with the `hidden`
+   attribute rather than a class, so assistive technology agrees with the eye
+   about whether it is there.
+
+   The choice persists: open it once and it stays open for that browser, because
+   someone working a lens all afternoon should not re-open it on every view
+   change. */
 (function mapToolsToggle(){
   const btn=document.getElementById('maptoggle'), box=document.getElementById('maptools');
   if(!btn||!box) return;
-  const narrow=()=>window.matchMedia('(max-width:720px)').matches;
-  const apply=()=>{ if(!narrow()){ box.hidden=false; btn.setAttribute('aria-expanded','false'); }
-                    else if(!btn.dataset.open) box.hidden=true; };
+  const KEY='lx_maptools_open';
+  let open=false;
+  try{ open = localStorage.getItem(KEY)==='1'; }catch(e){}
+  const paint=()=>{ box.hidden=!open; btn.setAttribute('aria-expanded', String(open));
+                    btn.classList.toggle('on', open); };
   btn.addEventListener('click', ()=>{
-    const open = box.hidden;
-    box.hidden = !open;
-    if(open) btn.dataset.open='1'; else delete btn.dataset.open;
-    btn.setAttribute('aria-expanded', String(open));
+    open=!open;
+    try{ localStorage.setItem(KEY, open?'1':'0'); }catch(e){}
+    paint();
   });
-  window.addEventListener('resize', apply);
-  apply();
+  // Escape shuts it, the way every transient panel on a map should behave.
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape' && open){ open=false;
+      try{ localStorage.setItem(KEY,'0'); }catch(e2){}
+      paint(); btn.focus(); }
+  });
+  paint();
 })();
 
 function refresh(){ dealSync(); dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
