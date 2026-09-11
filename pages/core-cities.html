@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Locator.X — Core Cities</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--paper:#F2EFE9;--card:#FBF9F5;--ink:#17140F;--ink-2:#4A443A;--ink-3:#7C7264;
+--rule:#D5CDBE;--field:#2C6B4E;--flag:#B9531F;--cool:#3E6291;
+--shadow:0 1px 2px rgba(23,20,15,.05),0 10px 26px -16px rgba(23,20,15,.22)}
+@media (prefers-color-scheme:dark){:root{--paper:#14120E;--card:#1D1A15;--ink:#F1ECE1;
+--ink-2:#BDB4A4;--ink-3:#8A8073;--rule:#332E26;--field:#5FA483;--flag:#E0742F;--cool:#7CA2D4;
+--shadow:0 1px 2px rgba(0,0,0,.4),0 10px 26px -16px rgba(0,0,0,.6)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+font:15.5px/1.6 "IBM Plex Sans",system-ui,sans-serif;padding:0 16px}
+.wrap{max-width:980px;margin:0 auto;padding-block:48px 72px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(27px,5vw,40px);margin:0 0 8px;letter-spacing:-.01em}
+h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(19px,2.4vw,24px);margin:38px 0 8px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;
+text-transform:uppercase;color:var(--field);margin:0 0 14px}
+.sub,.note{color:var(--ink-2);max-width:72ch}
+.sub{margin:0 0 6px;font-size:16px}
+.note{font-size:13.5px;margin:0 0 14px}
+.mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--card);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+th{text-align:left;padding:9px 11px;border-bottom:1px solid var(--rule);
+font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+color:var(--ink-3);font-weight:500;white-space:nowrap;background:var(--card)}
+td{padding:8px 11px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th.r,td.r{text-align:right;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.small{font-size:11.5px;color:var(--ink-3)}
+.tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;border:1px solid var(--rule);
+border-radius:5px;padding:1px 7px;color:var(--ink-2);white-space:nowrap}
+.tag.warn{color:var(--flag);border-color:var(--flag)}
+.tag.ok{color:var(--field);border-color:var(--field)}
+.panel{border:1px solid var(--rule);background:var(--card);border-radius:10px;padding:16px 18px;
+box-shadow:var(--shadow);margin:16px 0}
+details{margin:14px 0}
+summary{cursor:pointer;color:var(--ink-2);font-size:13.5px}
+.legal{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);
+color:var(--ink-3);font-size:12.5px;line-height:1.65;max-width:76ch}
+.back{display:inline-block;margin-top:22px;color:var(--field);font-size:14px}
+a{color:var(--field)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<p class="kicker">Locator.X · corridor anchors</p>
+
+<h1>Core cities</h1>
+<p class="sub">The cities anchoring the corridor record: 20 live in the shipped builds,
+4 staged with their endpoints confirmed, and 20 considered and dropped —
+named rather than hidden, because a list that only shows what made it in overstates itself.</p>
+
+<h2>Live in the shipped builds</h2>
+<p class="note">"Records held" is how much of the metro the current catalogue actually holds —
+a short count is either a real market ceiling or a thin source, and each edition's corridor
+panel says which.</p>
+<div class="scroll"><table><thead><tr><th>Core city</th><th>Counties</th>
+<th class="r">Records held</th><th class="r">Projects</th><th class="r">Population</th></tr></thead>
+<tbody><tr><td><b>Albuquerque</b><div class="small">Albuquerque, NM</div></td><td class="small">Bernalillo County, Sandoval County, Valencia County, Torrance County</td><td class="r">50,000</td><td class="r">4</td><td class="r">925,279</td></tr><tr><td><b>Raleigh-Cary</b><div class="small">Raleigh-Cary, NC</div></td><td class="small">Wake County, Johnston County, Franklin County</td><td class="r">38,189</td><td class="r">5</td><td class="r">1,595,720</td></tr><tr><td><b>Phoenix-Mesa-Chandler</b><div class="small">Phoenix-Mesa-Chandler, AZ</div></td><td class="small">Maricopa County, Pinal County</td><td class="r">33,702</td><td class="r">5</td><td class="r">5,228,938</td></tr><tr><td><b>Provo-Orem-Lehi</b><div class="small">Provo-Orem-Lehi, UT</div></td><td class="small">Utah County, Juab County</td><td class="r">31,249</td><td class="r">3</td><td class="r">773,426</td></tr><tr><td><b>Columbus</b><div class="small">Columbus, OH</div></td><td class="small">Licking County, Franklin County, Pickaway County</td><td class="r">30,378</td><td class="r">4</td><td class="r">2,242,028</td></tr><tr><td><b>Lafayette-West Lafayette</b><div class="small">Lafayette-West Lafayette, IN</div></td><td class="small">Tippecanoe County, Benton County, Carroll County</td><td class="r">30,103</td><td class="r">2</td><td class="r">228,468</td></tr><tr><td><b>Indianapolis-Carmel-Greenwood</b><div class="small">Indianapolis-Carmel-Greenwood, IN</div></td><td class="small">Marion County, Boone County, Hamilton County, Hendricks County, Johnson County, Hancock County, Morgan County, Shelby County, Madison County, Brown County, Putnam County</td><td class="r">28,631</td><td class="r">2</td><td class="r">2,205,695</td></tr><tr><td><b>Greensboro-High Point</b><div class="small">Greensboro-High Point, NC</div></td><td class="small">Guilford County, Randolph County, Rockingham County</td><td class="r">28,373</td><td class="r">3</td><td class="r">805,945</td></tr><tr><td><b>Albany-Schenectady-Troy</b><div class="small">Albany-Schenectady-Troy, NY</div></td><td class="small">Albany County, Saratoga County, Rensselaer County, Schenectady County, Schoharie County</td><td class="r">25,000</td><td class="r">3</td><td class="r">915,835</td></tr><tr><td><b>Milwaukee-Waukesha</b><div class="small">Milwaukee-Waukesha, WI + Racine-Mount Pleasant, WI</div></td><td class="small">Milwaukee County, Waukesha County, Ozaukee County, Washington County, Racine County</td><td class="r">25,000</td><td class="r">3</td><td class="r">1,773,929</td></tr><tr><td><b>Shreveport-Bossier City</b><div class="small">Shreveport-Bossier City, LA (MSA)</div></td><td class="small">Caddo Parish, Bossier Parish</td><td class="r">25,000</td><td class="r">1</td><td class="r">356,093</td></tr><tr><td><b>Lake Charles</b><div class="small">Lake Charles, LA (MSA)</div></td><td class="small">Calcasieu Parish</td><td class="r">25,000</td><td class="r">1</td><td class="r">208,466</td></tr><tr><td><b>Hammond</b><div class="small">Hammond, LA (MSA)</div></td><td class="small">Tangipahoa Parish</td><td class="r">24,639</td><td class="r">1</td><td class="r">141,346</td></tr><tr><td><b>Syracuse</b><div class="small">Syracuse, NY</div></td><td class="small">Onondaga County, Madison County, Oswego County</td><td class="r">23,216</td><td class="r">1</td><td class="r">652,273</td></tr><tr><td><b>Youngstown-Warren</b><div class="small">Youngstown-Warren, OH</div></td><td class="small">Mahoning County, Trumbull County</td><td class="r">20,408</td><td class="r">3</td><td class="r">423,678</td></tr><tr><td><b>Lafayette</b><div class="small">Lafayette, LA (MSA)</div></td><td class="small">Lafayette Parish</td><td class="r">19,154</td><td class="r">1</td><td class="r">257,949</td></tr><tr><td><b>Savannah</b><div class="small">Savannah, GA</div></td><td class="small">Chatham County, Bryan County, Effingham County</td><td class="r">18,923</td><td class="r">2</td><td class="r">438,314</td></tr><tr><td><b>Ruston</b><div class="small">Ruston, LA (Micropolitan)</div></td><td class="small">Lincoln Parish</td><td class="r">6,571</td><td class="r">1</td><td class="r">48,360</td></tr><tr><td><b>South Bend-Mishawaka</b><div class="small">South Bend-Mishawaka, IN-MI</div></td><td class="small">St. Joseph County, IN, Cass County, MI</td><td class="r">5,731</td><td class="r">3</td><td class="r">324,538</td></tr><tr><td><b>Reno</b><div class="small">Reno, NV</div></td><td class="small">Washoe County, Storey County</td><td class="r">5,688</td><td class="r">1</td><td class="r">578,734</td></tr></tbody></table></div>
+
+<h2>Staged — endpoints confirmed, build pending</h2>
+<div class="scroll"><table><thead><tr><th>Core city</th><th>Counties</th>
+<th class="r">Records held</th><th class="r">Projects</th><th class="r">Population</th></tr></thead>
+<tbody><tr><td><b>Monroe</b><div class="small">Monroe, LA (MSA)</div></td><td class="small">Ouachita Parish</td><td class="r">—</td><td class="r">2</td><td class="r">158,542</td></tr><tr><td><b>Thibodaux</b><div class="small">Thibodaux, LA (Micropolitan)</div></td><td class="small">Lafourche Parish</td><td class="r">—</td><td class="r">1</td><td class="r">95,505</td></tr><tr><td><b>Natchitoches</b><div class="small">Natchitoches, LA (Micropolitan)</div></td><td class="small">Natchitoches Parish</td><td class="r">—</td><td class="r">1</td><td class="r">36,089</td></tr><tr><td><b>Alexandria</b><div class="small">Alexandria, LA (MSA)</div></td><td class="small">Rapides Parish</td><td class="r">—</td><td class="r">5</td><td class="r">125,877</td></tr></tbody></table></div>
+
+<h2>Considered and dropped</h2>
+<p class="note">Dropped is an honest status, not a judgement on the market — most drops are a
+source that publishes too little to rank.</p>
+<div class="panel"><ul style="margin:0;padding-left:20px;font-size:13px;color:var(--ink-2)"><li><b>Austin-Round Rock-San Marcos, TX</b> — CONFIRMED: fetched layer metadata - &#x27;WCAD Parcels&#x27;, 175 fields, maxRecordCount 2000, Williamson County (the Samsung Taylor site). Excellent value/sqft/year-built coverage. TRAVIS COUNTY is thinner: the best endpoint is h</li><li><b>Richmond, VA</b> — CONFIRMED: fetched layer metadata - &#x27;Tax Parcels and CAMA Data External&#x27;, 95 fields, maxRecordCount 5000, published by Henrico County GIS, no token. Together with Washoe this is the strongest schema found: it is the only</li><li><b>Kansas City, MO-KS</b> — DECISIVE NEGATIVE. Johnson County, Kansas publishes NO free machine-readable parcel or assessment-roll data. Its AIMS open data portal (jocogov-aims.opendata.arcgis.com) was enumerated via its DCAT-US catalogue feed: 40 </li><li><b>College Station-Bryan, TX</b> — NO API. Brazos Central Appraisal District publishes free zipped ESRI shapefiles - certified rolls for 2020-2025 plus monthly updates - e.g. https://brazoscad.org/wp-content/uploads/2026/05/BrazosCADParcels_20260422.zip. </li><li><b>Huntsville, AL</b> — NO CONFIRMED COUNTY PARCEL API. Madison County, Alabama routes public property records through a vendor viewer (isv.kcsgis.com/al.Madison_revenue) with no documented REST endpoint. The City of Huntsville&#x27;s GIS &#x27;Data Depo</li><li><b>Clarksville, TN-KY</b> — CONFIRMED: fetched layer metadata - &#x27;Parcel&#x27; layer 2, ~68 fields, maxRecordCount 2000. Hosted by Austin Peay State University for Clarksville-Montgomery County GIS (CMCGIS), so this is an academic-hosted rather than coun</li><li><b>Charleston-North Charleston, SC</b> — DECISIVE NEGATIVE for the county that matters. Berkeley County SC - where Redwood Materials sits - exposes parcel GEOMETRY ONLY and no assessment attributes. Its ArcGIS REST root (https://gis.berkeleycountysc.gov/arcgis/</li><li><b>Sherman-Denison, TX</b> — REJECTED ON PARCEL DATA. Grayson County&#x27;s public parcel layer was fetched and is attribute-empty. https://maps.co.grayson.tx.us/arcgis/rest/services/Grayson/Grayson_County_Public_Interactive_Map/MapServer/5 (maxRecordCou</li><li><b>Abilene, TX</b> — REJECTED AS UNVERIFIABLE. A plausible endpoint exists - https://gis.abilenetx.com/arcgis/rest/services/AbileneTaylorCountyParcels/MapServer - but every fetch was refused before reaching the service (&#x27;robots.txt fetch fai</li><li><b>Memphis, TN</b> — REJECTED ON PARCEL DATA - AUTHENTICATION REQUIRED. The City of Memphis parcel service returns a hard token error verbatim: {&quot;error&quot;:{&quot;code&quot;:499,&quot;message&quot;:&quot;Token Required&quot;,&quot;details&quot;:[]}}. The Shelby County assessor servic</li><li><b>Boise City, ID</b> — REJECTED ON TWO GROUNDS. (1) NO USE-CODE DESCRIPTION. Ada County&#x27;s parcel layer https://services2.arcgis.com/dgGjZc6xAH5m5JyP/arcgis/rest/services/Parcels/FeatureServer/5 was fetched successfully (32 fields, maxRecordCou</li><li><b>Washington-Arlington-Alexandria, DC-VA-MD-WV (Northern Virginia data-centre corridor)</b> — REJECTED ON PARCEL DATA, AND SECONDARILY ON THESIS. Loudoun County&#x27;s open-data catalogue was enumerated in full via its DCAT feed and contains exactly ONE parcel dataset, &#x27;Loudoun Parcel XY&#x27;, pointing at a LandRecords ma</li><li><b>Elizabethtown-Fort Knox, KY / Louisville, KY</b> — REJECTED ON PARCEL DATA. Kentucky&#x27;s statewide GIS server publishes PVA parcels county by county, and the folder listing at https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services was fetched and contains exactly</li><li><b>Atlanta-Sandy Springs-Roswell, GA (Cartersville / Bartow County cluster)</b> — REJECTED ON PARCEL DATA. Bartow County publishes property records only through the qPublic / Schneider Corporation hosted application (https://qpublic.schneidercorp.com/Application.aspx?App=BartowCountyGA), which is a se</li><li><b>Statewide fallbacks that were tested and are NOT adequate as primary sources</b> — Recorded so they are not re-tested. (1) Parcel Boundaries of Indiana Current, https://gisdata.in.gov/server/rest/services/Hosted/Parcel_Boundaries_of_Indiana_Current/FeatureServer/0 - 33 fields, maxRecordCount 2000, no t</li><li><b>Ouachita Parish (Monroe) Parish, LA — University of Louisiana Monroe - 8,601</b> — No public parcel endpoint carries a land-use description, a property class, a valuation or a unit count. The only two working endpoints are the City of Monroe&#x27;s, and neither supports multifamily identification. Public_Pa</li><li><b>Natchitoches Parish Parish, LA — Northwestern State University - 8,402</b> — The parish assessor has no public REST API. The only machine-readable parcel layer is a Regrid extract republished by the same private ArcGIS Online account that hosts the Caddo copy. Its row count is real (29,443, confi</li><li><b>Lafourche Parish (Thibodaux) Parish, LA — Nicholls State University - 5,893</b> — No current parcel service. The only parcel layer published by Lafourche Parish Government on ArcGIS Online is &#x27;Lafourche_Parcels_Jan2015&#x27; - an eleven-year-old snapshot. The parish&#x27;s own ArcGIS Server (gis.lafourchegov.or</li><li><b>Rapides Parish (Alexandria) Parish, LA — LSU Alexandria and Louisiana Christian University - enrolment not verified in this session</b> — No ArcGIS REST, Socrata or CKAN parcel endpoint exists. The Rapides Parish Assessor runs a proprietary geoPortal viewer (geoportalmaps.com/atlas/rapides/viewer.htm) with no REST service behind it that is publicly documen</li><li><b>Lafayette Parish - the Assessor&#x27;s OWN service (the parish itself is RECOMMENDED at rank 1 via a different endpoint) Parish, LA — University of Louisiana at Lafayette - 19,723</b> — Listed here only so the record is straight: https://webgis.lafayetteassessor.com/arcgis/rest/services/Sidwell/TaxParcelPublic/MapServer/0 could NOT be queried from this session - four separate attempts all failed at the </li></ul></div>
+
+<p class="note" style="margin-top:20px">The cross-measures on these cities — jobs per unit
+permitted, capital per job, permits per 100k — live on
+<a href="jobs-to-housing.html">the jobs-to-housing page</a>, and the per-project evidence on the
+<a href="new-orleans-louisiana.html">Louisiana</a> and <a href="sf-bay-area.html">Bay Area</a> pages.</p>
+
+<p class="legal"><b>Original Locator.X analysis, republished from the shipped editions.</b> Every figure on this page was extracted on 2026-09-11 from the live published editions (see <a href="https://github.com/agifuturefoundation/locator.x/blob/main/docs/PUBLISH_MAP.md">docs/PUBLISH_MAP.md</a>) or from the High-Potential Belts analysis, and carries the source and as-of date those pages publish. An announced job is an intention with a date, never a forecast; a permit is not a delivered unit; an index value is not a price and assessor values are assessments, never prices. Blank cells mean the source publishes no figure — they are never filled in. Nothing here is investment, tax or legal advice.</p>
+<a class="back" href="index.html">&larr; All companion pages</a>
+</div>
+</body>
+</html>
