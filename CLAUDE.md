@@ -47,6 +47,7 @@ validator has no flake mode.
 | Builders | `build_*.py`; shared lib `lxbuild.py`; parameterised `build_state.py` (`--dry-run` verifies pairs against source) |
 | Curriculum source of truth | `curriculum/curriculum.py` + `curriculum-50.csv` |
 | State layer | `docs/states/` (guides, `coverage/` inventories, `ninety-day-path.md`) |
+| Louisiana record friction | `docs/LOUISIANA_DEVELOPMENT_FRICTION.md` (what slows a deal, ranked, each with its probe) |
 | Resources | `docs/resources/` (data sources, lenders, programs, administrators) |
 | Asset classes | `crosswalk/usecodes.json` + `scripts/class_screen.py` + `docs/asset-classes/` |
 | Measured market layer | `market/` (extracted from the shipped editions, never hand-edited) rendered by `scripts/build_market_pages.py` at deploy |
