@@ -165,11 +165,19 @@ async function main() {
 
       // The underwriting sheet, with the stress block that says where the deal
       // stops working rather than only how it looks today.
+      // The view id is 'uw'. This block used to say 'underwrite', which is not a
+      // view at all — showView switched every view off, and the sheet
+      // assertions below then ran against a DOM that was rendered but never
+      // displayed. Same class of mistake as asserting [hidden] instead of
+      // visibility, so this one checks the container is really on screen.
       await page.evaluate(() => {
         const l = window.BA.listings.find(x => (x.units || 1) >= 2) || window.BA.listings[0];
-        LX.showView('underwrite'); LXUW.openSheet(l.id);
+        LX.showView('uw'); LXUW.openSheet(l.id);
       });
       await page.waitForTimeout(1400);
+      if (!(await page.isVisible('#uwsheet .packet'))) {
+        errs.push('the underwriting sheet is not visible after showView(\'uw\')');
+      }
       const sheet = await page.evaluate(() => {
         const box = document.getElementById('uwsheet');
         return {
@@ -252,6 +260,75 @@ async function main() {
     await ctx.close();
   }
   await browser.close();
+
+  /* ---- second pass: the OTHER map renderer -----------------------------
+     This platform ships two map implementations — MapLibre GL, and the
+     CanvasMap fallback for machines with no WebGL — and every run above used
+     the GL one, so the fallback had never been driven by any test. It was
+     broken: CanvasMap implemented thirty methods of the MapLibre shim and not
+     getCanvasContainer, so the sector-fabric overlay threw a TypeError the
+     moment it was switched on and its control silently did nothing.
+     Launching with WebGL disabled is the only way to reach that path. */
+  const noGL = await chromium.launch(Object.assign({}, launch, {
+    args: ['--disable-3d-apis', '--disable-webgl', '--disable-webgl2']
+  }));
+  const fctx = await noGL.newContext({ viewport: { width: 1400, height: 900 } });
+  const fp = await fctx.newPage();
+  const ferrs = [];
+  fp.on('pageerror', e => ferrs.push(String(e).slice(0, 160)));
+  await fp.goto(target, { waitUntil: 'load', timeout: 90000 });
+  await fp.waitForTimeout(2000);
+  await fp.click('#coverenter').catch(() => {});
+  await fp.evaluate(() => LX.showView('mapview'));
+  await fp.waitForTimeout(2500);
+  const fb = await fp.evaluate(() => {
+    const m = window.__lxmap;
+    let sectors = null;
+    try { sectors = window.LXSectors ? LXSectors.toggle(true) : 'absent'; }
+    catch (e) { sectors = 'threw: ' + String(e).slice(0, 90); }
+    return {
+      webgl: (() => { const c = document.createElement('canvas');
+                      return !!(c.getContext('webgl2') || c.getContext('webgl')); })(),
+      isGL: !!(m && m.getStyle),
+      canvases: document.querySelectorAll('#map canvas').length,
+      all: LX.allListings().length, filtered: LX.filtered().length,
+      chips: document.querySelectorAll('#cityrail .citychip').length,
+      sectors: sectors,
+      /* toggle() returning true only means it did not throw. The overlay
+         mounts its own canvas into the map's canvas container, so THAT is the
+         evidence it actually drew — without it, a missing shim method degrades
+         quietly and a weaker assertion passes while the overlay is dead. */
+      sectorCanvas: !!document.getElementById('lxsectorcv')
+    };
+  });
+  const fbErrs = [];
+  if (fb.webgl) {
+    // The browser ignored the flags, so this pass proved nothing. Say so
+    // rather than reporting a pass it did not earn.
+    fbErrs.push('WebGL is still available with --disable-webgl — the fallback renderer was NOT exercised');
+  } else {
+    if (fb.isGL) fbErrs.push('no WebGL, yet the GL renderer was selected anyway');
+    if (!fb.canvases) fbErrs.push('the canvas renderer drew no canvas');
+    if (!(fb.all > 0)) fbErrs.push('the fallback pass loaded no records');
+    if (fb.sectors !== true) fbErrs.push('the sector overlay did not switch on: ' + fb.sectors);
+    if (!fb.sectorCanvas) fbErrs.push('the sector overlay mounted no canvas on the fallback renderer');
+  }
+  if (fb.chips > 1) {
+    await fp.click('#cityrail .citychip:nth-of-type(2)');
+    await fp.waitForTimeout(1200);
+    const narrowed = await fp.evaluate(() => LX.filtered().length);
+    if (!(narrowed > 0 && narrowed < fb.all)) {
+      fbErrs.push('the city rail did not narrow on the fallback renderer: ' + narrowed + ' of ' + fb.all);
+    }
+  }
+  const fok = fbErrs.length === 0 && ferrs.length === 0;
+  if (!fok) failures++;
+  console.log('%s %s  renderer=%s  %d records  sectors=%s%s',
+    fok ? 'ok  ' : 'FAIL', 'no-webgl'.padEnd(13),
+    fb.isGL ? 'maplibre-gl' : 'canvas', fb.all, fb.sectors + (fb.sectorCanvas ? '/drawn' : '/NOT DRAWN'),
+    fok ? '' : '  ERR: ' + (fbErrs[0] || ferrs[0]));
+  await noGL.close();
+
   console.log(failures ? failures + ' EDITION(S) FAILED' : 'FLEET SMOKE CLEAN — every edition ran with zero page errors');
   process.exit(failures ? 1 : 0);
 }

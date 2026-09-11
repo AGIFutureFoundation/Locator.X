@@ -28,11 +28,19 @@ class CanvasMap{
   on(ev, a, b){ if(typeof a==='string'){ (this._ev[ev+':'+a]=this._ev[ev+':'+a]||[]).push(b); } else (this._ev[ev]=this._ev[ev]||[]).push(a); return this; }
   _emit(ev, d, layer){ (this._ev[layer?ev+':'+layer:ev]||[]).forEach(f=>f(d)); }
   addControl(){ return this; } setFeatureState(){} isStyleLoaded(){ return true; } loaded(){ return !!this._loaded; }
+  /* MapLibre's element that holds the canvas, and where an overlay appends
+     itself. It was the one method of the shim nobody had implemented, so
+     every overlay that positions itself over the map — the sector fabric —
+     threw a TypeError the moment this renderer was the active one, and its
+     control silently did nothing. The GL path never hit it, and no test ran
+     this renderer at all. */
+  getCanvasContainer(){ return this.container; }
+  getCanvas(){ return this.canvas; }
   getZoom(){ return this.zoom; } getCenter(){ return {lng:this.center[0], lat:this.center[1]}; }
   _scale(){ return 512*Math.pow(2,this.zoom); }
   project(ll){ const s=this._scale(); const cx=lng2x(this.center[0])*s, cy=lat2y(this.center[1])*s; return {x:this.w/2+(lng2x(ll[0])*s-cx), y:this.h/2+(lat2y(ll[1])*s-cy)}; }
   unproject(p){ const s=this._scale(); const cx=lng2x(this.center[0])*s, cy=lat2y(this.center[1])*s; return [x2lng((p.x-this.w/2+cx)/s), y2lat((p.y-this.h/2+cy)/s)]; }
-  resize(){ const r=this.container.getBoundingClientRect(); this.w=Math.max(1,r.width); this.h=Math.max(1,r.height); const d=devicePixelRatio||1; this.canvas.width=this.w*d; this.canvas.height=this.h*d; this.ctx.setTransform(d,0,0,d,0,0); this.draw(); }
+  resize(){ const r=this.container.getBoundingClientRect(); this.w=Math.max(1,r.width); this.h=Math.max(1,r.height); const d=devicePixelRatio||1; this.canvas.width=this.w*d; this.canvas.height=this.h*d; this.ctx.setTransform(d,0,0,d,0,0); this.draw(); this._emit('resize',{}); }
   jumpTo(o){ if(o.center) this.center=o.center.slice(); if(o.zoom!=null) this.zoom=Math.max(this.minZoom,Math.min(this.maxZoom,o.zoom)); this._clampCenter(); this.draw(); this._emit('zoom',{}); this._emit('move',{}); }
   flyTo(o){ const from={c:this.center.slice(), z:this.zoom}; const pad=o.padding&&o.padding.right? o.padding.right : 0; const toZ=o.zoom!=null? Math.max(this.minZoom,Math.min(this.maxZoom,o.zoom)) : this.zoom; let toC=o.center? o.center.slice() : from.c;
     if(pad){ const s=512*Math.pow(2,toZ); toC=[x2lng(lng2x(toC[0])+pad/2/s), toC[1]]; }
