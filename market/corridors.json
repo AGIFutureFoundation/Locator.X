@@ -1,0 +1,2019 @@
+{
+ "about": "Locator.X corridor record: metro and micropolitan areas carried by the corridor editions, each with announced jobs (company and state announcements), housing units permitted in the trailing twelve months (Census Building Permits Survey monthly sums), and population \u2014 every figure with its own source and as-of date on the row. A missing series is absent, never zero: an area with no published permit series and an area that permitted nothing are different facts. `dropped` names the areas considered and not carried, because a list showing only what made it in overstates itself. Source edition: usnew5 (window.LXCORRIDORS).",
+ "extracted": "Extracted 2026-09-11 from the live published Locator.X editions listed in docs/PUBLISH_MAP.md, by fetching each artifact and decompressing the packed payload the edition ships. Nothing was re-keyed, recomputed or filled in: each row is the edition's own record, and a field the edition leaves absent stays absent here. Re-extract rather than edit.",
+ "source_edition": "usnew5.html \u2014 https://claude.ai/code/artifact/ee4f1a68-d0c6-4a4a-8757-78f248aa596e",
+ "extracted_on": "2026-09-11",
+ "as_of": "2026-09-06",
+ "metros": [
+  {
+   "metro": "Phoenix-Mesa-Chandler, AZ",
+   "state": "AZ",
+   "counties": [
+    "Maricopa County",
+    "Pinal County"
+   ],
+   "rank": 1,
+   "kind": "live",
+   "jobs": 17000,
+   "capital": 292500000000,
+   "pop": 5228938,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/series/PHXPOP",
+   "permits": 35159,
+   "permitsAsOf": "2025-08 to 2026-07",
+   "permitsSrc": "https://fred.stlouisfed.org/data/PHOE004BPPRIV.txt",
+   "permitsNote": "Trailing-12-month sum of monthly private housing units authorized, all structure types (Census Building Permits Survey via FRED, series PHOE004BPPRIV). FRED publishes no metro-level 5+unit series for Phoenix, so no multifamily split is available from this source.",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://gis.mcassessor.maricopa.gov/arcgis/rest/services/Parcels/MapServer/0",
+    "note": "CONFIRMED: fetched the layer metadata; 57 fields, maxRecordCount 1000, supportsAdvancedQueries true, no token required. Maricopa County Assessor is the publisher. No unit-count field, so multifamily unit counts must be inferred from PUC/legal class plus LIVING_SPACE. Arizona IS a sale-price disclosure state and SALE_PRICE is populated. Pinal County (LG Energy Solution site) has NO official county parcel API - the Pinal Assessor distributes ownership data by email request; the only machine-readable mirrors are city-hosted copies, e.g. https://rogue.casagrandeaz.gov/arcgis/rest/services/Pinal_County/Pinal_County_Assessor_Info/FeatureServer/0 and City of Maricopa's https://services7.arcgis.com/MlfUGd2UJYefAS7v/arcgis/rest/services/Pinal_County_Tax_Parcels_viewer/FeatureServer (neither verified for field content)."
+   },
+   "projects": [
+    {
+     "company": "TSMC",
+     "project": "TSMC Arizona fabs 1-6 + 2 advanced packaging facilities + R&D centre",
+     "city": "Phoenix",
+     "lat": 33.7387,
+     "lng": -112.129,
+     "investment": 165000000000,
+     "jobs": 12000,
+     "announced": "2025-03-03",
+     "status": "under construction / partially operating (fab 1 in volume production); coords = approximate north Phoenix site, not city centre",
+     "url": "https://www.azcommerce.com/news-events/news/2025/3/president-trump-tsmc-announce-100-billion-investment-in-arizona/"
+    },
+    {
+     "company": "TSMC",
+     "project": "2026 expansion: four additional 2nm-or-better fabs (brings AZ total to $265B / 10 fabs)",
+     "city": "Phoenix",
+     "lat": 33.7387,
+     "lng": -112.129,
+     "investment": 100000000000,
+     "jobs": null,
+     "announced": "2026-07-16",
+     "status": "announced; no separate direct-jobs figure published. TSMC AZ employed 3,500+ at announcement. Coords = approximate site",
+     "url": "https://www.azcommerce.com/news-events/news/2026/7/tsmc-announcement/"
+    },
+    {
+     "company": "Intel",
+     "project": "Ocotillo campus Fab 52 & Fab 62",
+     "city": "Chandler",
+     "lat": 33.216,
+     "lng": -111.908,
+     "investment": 20000000000,
+     "jobs": 3000,
+     "announced": "2021-09-24",
+     "status": "operating / ramping; 3,000 construction jobs additional. Coords = approximate Ocotillo campus",
+     "url": "https://www.intc.com/news-events/press-releases/detail/1501/intel-breaks-ground-on-two-new-leading-edge-chip-factories"
+    },
+    {
+     "company": "Amkor Technology",
+     "project": "US advanced packaging and test facility",
+     "city": "Peoria",
+     "lat": 33.5806,
+     "lng": -112.2374,
+     "investment": 2000000000,
+     "jobs": 2000,
+     "announced": "2023-11-30",
+     "status": "under construction; coords = Peoria city centre",
+     "url": "https://www.azcommerce.com/news-events/news/2023/11/amkor-announces-us-advanced-packaging-and-test-facility-in-peoria/"
+    },
+    {
+     "company": "LG Energy Solution",
+     "project": "Stand-alone battery manufacturing complex (cylindrical EV + LFP ESS)",
+     "city": "Queen Creek",
+     "lat": 33.2487,
+     "lng": -111.6343,
+     "investment": 5500000000,
+     "jobs": null,
+     "announced": "2023-03-24",
+     "status": "under construction (one phase reported paused); site is in PINAL COUNTY on the Queen Creek / San Tan Valley border, inside the Phoenix MSA. Announcement says 'thousands of jobs' with no number. Coords = Queen Creek town centre",
+     "url": "https://www.azcommerce.com/news-events/news/2023/3/lg-energy-solution-to-invest-55-billion-to-build-battery-manufacturing-complex-in-queen-creek/"
+    }
+   ],
+   "records": 33702,
+   "dataKey": "Phoenix-Mesa-Chandler"
+  },
+  {
+   "metro": "Columbus, OH",
+   "state": "OH",
+   "counties": [
+    "Licking County",
+    "Franklin County",
+    "Pickaway County"
+   ],
+   "rank": 2,
+   "kind": "live",
+   "jobs": 7000,
+   "capital": 23200000000,
+   "pop": 2242028,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/series/COLPOP",
+   "permits": 13145,
+   "permitsAsOf": "2025-08 to 2026-07",
+   "permitsSrc": "https://fred.stlouisfed.org/data/COLU139BPPRIV.txt",
+   "permitsNote": "Trailing-12-month sum of monthly private housing units authorized, all structure types (Census BPS via FRED, COLU139BPPRIV). Low relative to population versus Phoenix or Austin.",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://gis.franklincountyohio.gov/hosting/rest/services/ParcelFeatures/Parcel_Features/FeatureServer/0",
+    "note": "CONFIRMED: fetched layer metadata - 'Tax Parcel' layer, 163 fields, maxRecordCount 3000, no token. Best-in-class CAMA coverage among the metros surveyed. Licking County (the Intel site) is ALSO fully available and equally rich at https://gis.lickingcounty.gov/server/rest/services/Auditor/Parcels/FeatureServer/0 - CONFIRMED, 80+ fields, maxRecordCount 2000, with PID/Parcel, SiteAddress, LUC + Landuse + Class, MarketTotalValue, YearBuilt, LivingAreaSqFt, TaxAcres/GISAcres, EpinCount, and three generations of sale history (T1SaleAmount/T1Date etc). Note the older Licking endpoint apps.lickingcounty.gov/arcgis/rest/services/Auditor/ParcelsFS/FeatureServer is DEAD - use gis.lickingcounty.gov. Ohio is a full sale-price disclosure state."
+   },
+   "projects": [
+    {
+     "company": "Intel",
+     "project": "Ohio One - two leading-edge chip fabs",
+     "city": "New Albany",
+     "lat": 40.09,
+     "lng": -82.75,
+     "investment": 20000000000,
+     "jobs": 3000,
+     "announced": "2022-01-21",
+     "status": "DELAYED - under construction, first fab now 2030 or 2031, second fab 2032; 7,000 construction jobs additional. Coords = approximate Licking County site",
+     "url": "https://www.axios.com/local/columbus/2025/02/28/intel-ohio-one-chip-delayed-chip-factory-fab"
+    },
+    {
+     "company": "Anduril Industries",
+     "project": "Arsenal-1 hyperscale defence manufacturing facility (5M sq ft on 500 acres)",
+     "city": "Rickenbacker / Columbus",
+     "lat": 39.8138,
+     "lng": -82.9278,
+     "investment": 900000000,
+     "jobs": 4000,
+     "announced": "2025-01-16",
+     "status": "under construction / first production; 4,000+ jobs by 2035; largest single job-creation project in Ohio history. Coords = approximate Rickenbacker International Airport area, Pickaway County",
+     "url": "https://columbusregion.com/economy/project-announcements/anduril/"
+    },
+    {
+     "company": "Google",
+     "project": "Central Ohio data centre campuses (New Albany, Lancaster, Columbus)",
+     "city": "New Albany",
+     "lat": 40.0812,
+     "lng": -82.8088,
+     "investment": 2300000000,
+     "jobs": null,
+     "announced": "2024-06-20",
+     "status": "under construction; no jobs figure published. $4.4B previously invested in Ohio since 2019. Coords = New Albany city centre",
+     "url": "https://www.datacenterdynamics.com/en/news/google-to-invest-23bn-in-ohio-data-centers/"
+    },
+    {
+     "company": "LG Energy Solution / Honda JV (L-H Battery Company)",
+     "project": "EV battery cell plant, ~40GWh",
+     "city": "Jeffersonville",
+     "lat": 39.6534,
+     "lng": -83.5641,
+     "investment": 4400000000,
+     "jobs": 2200,
+     "announced": "2023-02-28",
+     "status": "under construction / commissioning. NOT counted in metro totals - Jeffersonville is in Fayette County, ~40 miles SW of Columbus and OUTSIDE the Columbus MSA, though within its labour shed. Coords = Jeffersonville village centre",
+     "url": "https://global.honda/en/newsroom/news/2023/c230301eng.html"
+    }
+   ],
+   "records": 30378,
+   "dataKey": "Columbus"
+  },
+  {
+   "metro": "Savannah, GA",
+   "state": "GA",
+   "counties": [
+    "Chatham County",
+    "Bryan County",
+    "Effingham County"
+   ],
+   "rank": 3,
+   "kind": "live",
+   "jobs": 11500,
+   "capital": 11890000000,
+   "pop": 438314,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/series/SAVPOP",
+   "permits": null,
+   "permitsAsOf": null,
+   "permitsSrc": null,
+   "permitsNote": "Not verified. FRED does not appear to publish a Savannah MSA BPPRIV permit series under the standard ID pattern (SAVA113BPPRIV and SAVA013BPPRIV both return 404), and the Census Building Permits Survey annual metro files at www2.census.gov are blocked to automated fetching from this environment. Retrieve manually from https://www.census.gov/construction/bps/msaannual.html (CBSA 42340).",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://pub.sagis.org/arcgis/rest/services/Pictometry/ParcelDigest/MapServer/0",
+    "note": "CONFIRMED: fetched layer metadata - 'Parcel Digest', 96 fields, maxRecordCount 2000, published by SAGIS (Savannah Area GIS) from the Chatham County Board of Assessors digest. Good value/use/year-built coverage but NO building square footage and NO unit count - a real limitation for multifamily underwriting. IMPORTANT GAP: this covers CHATHAM County only. BRYAN COUNTY - where both Hyundai plants actually sit - publishes NO working machine-readable parcel service: https://bryangis.bryan-county.org/arcgis/rest/services/Parcels/MapServer returns a server error, and the county's public route is the qPublic/Schneider viewer (https://qpublic.schneidercorp.com/Application.aspx?App=BryanCountyGA) which is an HTML application with no API. Effingham County likewise not verified. Georgia is a NON-disclosure state for sale prices in principle, but the Chatham digest exposes Sale_Price because Georgia requires PT-61 real estate transfer declarations, so sale prices ARE present here. Note also SAGIS's OpenData/DPLAT_SAV/MapServer/6 layer - it is plat geometry only (17 fields, no valuation) and is NOT the layer to use."
+   },
+   "projects": [
+    {
+     "company": "Hyundai Motor Group",
+     "project": "Metaplant America (HMGMA) EV assembly plant, 2,996-acre Bryan County Megasite",
+     "city": "Ellabell",
+     "lat": 32.12,
+     "lng": -81.4,
+     "investment": 7590000000,
+     "jobs": 8500,
+     "announced": "2022-05-20",
+     "status": "OPERATING - production began Oct 2024, official opening Mar 2025; ~6,900 additional supplier jobs and $2.5B supplier investment across Georgia. Coords = approximate megasite, Bryan County",
+     "url": "https://georgia.org/hyundai-motor-group-metaplant-america"
+    },
+    {
+     "company": "Hyundai Motor Group + LG Energy Solution (HL-GA Battery Company)",
+     "project": "EV battery cell plant JV supplying the Metaplant",
+     "city": "Ellabell",
+     "lat": 32.12,
+     "lng": -81.4,
+     "investment": 4300000000,
+     "jobs": 3000,
+     "announced": "2023-05-25",
+     "status": "under construction / commissioning (site of the Sept 2025 federal immigration enforcement action). Coords = approximate megasite, Bryan County",
+     "url": "https://www.ossoff.senate.gov/es/?p=19022"
+    }
+   ],
+   "records": 18923,
+   "dataKey": "Savannah"
+  },
+  {
+   "metro": "Syracuse, NY",
+   "state": "NY",
+   "counties": [
+    "Onondaga County",
+    "Madison County",
+    "Oswego County"
+   ],
+   "rank": 4,
+   "kind": "live",
+   "jobs": 9000,
+   "capital": 100000000000,
+   "pop": 652273,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/series/SYRPOP",
+   "permits": null,
+   "permitsAsOf": null,
+   "permitsSrc": null,
+   "permitsNote": "Not verified. No FRED Syracuse MSA BPPRIV series found under the standard ID pattern (SYRA936BPPRIV and SYRA136BPPRIV both 404). Retrieve manually from https://www.census.gov/construction/bps/msaannual.html (CBSA 45060).",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://services6.arcgis.com/EbVsqZ18sv1kVJ3k/arcgis/rest/services/NYS_Tax_Parcels_Public/FeatureServer/1",
+    "note": "CONFIRMED: fetched layer metadata - layer 1 'NYS_Tax_Parcels_Public', ~75 fields, maxRecordCount 1000, published by NYS ITS GIS Program Office, statewide and no token required. Filter to Onondaga with COUNTY_NAME='Onondaga' or COUNTY_FIPS. Richest single endpoint in this study for a full assessment roll. CAUTION: layer 0 of the same FeatureServer is a county FOOTPRINT layer with no parcel attributes - you must use /1. NY is a full sale-price disclosure state, though sale price is not carried in this layer (use the NYS RP-5217 sales files separately)."
+   },
+   "projects": [
+    {
+     "company": "Micron Technology",
+     "project": "Central New York megafab campus (up to four fabs on 1,377 acres, White Pine Commerce Park)",
+     "city": "Clay",
+     "lat": 43.214,
+     "lng": -76.19,
+     "investment": 100000000000,
+     "jobs": 9000,
+     "announced": "2022-10-04",
+     "status": "under construction - groundbreaking 16 Jan 2026 after repeated delay; major construction mobilisation 2026, first fab operational 2030, second potentially late 2033. Up to 50,000 total permanent regional jobs claimed over 30 years plus tens of thousands of construction jobs. Coords = approximate Clay / White Pine Commerce Park site",
+     "url": "https://www.governor.ny.gov/news/promise-progress-governor-hochul-celebrates-groundbreaking-microns-semiconductor-manufacturing"
+    }
+   ],
+   "records": 23216,
+   "dataKey": "Syracuse"
+  },
+  {
+   "metro": "Reno, NV",
+   "state": "NV",
+   "counties": [
+    "Washoe County",
+    "Storey County"
+   ],
+   "rank": 5,
+   "kind": "live",
+   "jobs": 3000,
+   "capital": 3600000000,
+   "pop": 578734,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/series/RENPOP",
+   "permits": 3180,
+   "permitsAsOf": "2025-08 to 2026-07",
+   "permitsSrc": "https://fred.stlouisfed.org/data/RENO932BPPRIV.txt",
+   "permitsNote": "Trailing-12-month sum of monthly private housing units authorized, all structure types (Census BPS via FRED, RENO932BPPRIV). ~5.5 units per 1,000 residents - constrained supply against a very large employment shock.",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://services.arcgis.com/iCGWaR7ZHc5saRIl/arcgis/rest/services/Nightly_OpenData_Update/FeatureServer/1",
+    "note": "CONFIRMED: fetched layer metadata - 'Parcels' layer 1 of Washoe County's Nightly_OpenData_Update FeatureServer, 80 fields, maxRecordCount 2000, updated nightly from the Assessor, no token. This is the ONLY endpoint in the study that carries an explicit UNITS field alongside SQFEET, YEARBLT, LAND_USE and both assessed and appraised value - the single best schema here for multifamily work. An older equivalent also exists at https://wcgisweb.washoecounty.us/arcgis/rest/services/OpenData/OpenData/FeatureServer/0. Nevada IS a sale-price disclosure state (Declaration of Value) and SALEPRICE is populated. LIMITATION: this is WASHOE County only. STOREY County (the Tesla/TRIC site itself) has no public parcel API - the Storey Assessor publishes only PDF parcel maps - but Storey has almost no housing, so for a multifamily app Washoe is the county that matters."
+   },
+   "projects": [
+    {
+     "company": "Tesla",
+     "project": "Gigafactory Nevada expansion - Semi truck plant + 100GWh 4680 cell factory",
+     "city": "Sparks / Tahoe-Reno Industrial Center",
+     "lat": 39.538,
+     "lng": -119.443,
+     "investment": 3600000000,
+     "jobs": 3000,
+     "announced": "2023-01-24",
+     "status": "under construction / ramping; adds to $6.2B previously invested since 2016. Site is in STOREY County at TRIC, workforce housed in Washoe. Coords = approximate Gigafactory Nevada site",
+     "url": "https://insideevs.com/news/633012/tesla-announces-3point6-billion-usd-nevada-investment-for-semi-4680-cell-production/"
+    }
+   ],
+   "records": 5688,
+   "dataKey": "Reno"
+  },
+  {
+   "metro": "Greensboro-High Point, NC",
+   "state": "NC",
+   "counties": [
+    "Guilford County",
+    "Randolph County",
+    "Rockingham County"
+   ],
+   "rank": 1,
+   "kind": "live",
+   "jobs": 21410,
+   "capital": 19100000000,
+   "pop": 805945,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/data/GNSPOP.txt",
+   "permits": 4311,
+   "permitsAsOf": "2025-08 to 2026-07",
+   "permitsSrc": "https://fred.stlouisfed.org/data/GREE637BPPRIV.txt",
+   "permitsNote": "Explicit twelve-month sum of the monthly observations listed on the cited FRED data page (359+663+441+185+162+302+308+338+342+395+295+521). Census Building Permits Survey, all structure types, series GREE637BPPRIV. 4,311 units a year against 805,945 people and 21,410 announced jobs is the thinnest supply-to-announced-demand ratio of any metro in either file.",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://gcgis.guilfordcountync.gov/arcgis/rest/services/GC_Cadastral_Current/GC_Parcels/MapServer/0",
+    "note": "CONFIRMED BY FETCH. Guilford County (Greensboro / High Point / JetZero / Boom) is the single best schema found in this second study and is in the same class as Henrico VA: 139 fields, maxRecordCount 2000, NO TOKEN, and a where=1=1 returnCountOnly query returned {\"count\":223111}. It carries all seven of the fields that matter at once - TOTAL_UNITS, APT_SC_SQRFT, YEAR_BUILT, HEATED_AREA, ACREAGE, TOTAL_PROP_VALUE and TWO independent sale prices (PKG_SALE_PRICE for the whole package and LAND_SALE_PRICE for land) - plus ZONING and a plain-English LAND_CLASS. North Carolina is a disclosure state and the sale-price fields are real. A parallel Parcels_Ownership service exists in the same folder. WEAKNESS: RANDOLPH COUNTY, where the Toyota plant sits, is a much thinner endpoint - https://gis.randolphcountync.gov/arcgis/rest/services/PW/ParcelQuery/FeatureServer/0 (36 fields, maxRecordCount 2000, no token, where=1=1 returned {\"count\":81131}). Randolph gives LOCADDRESS, LAND_VALUE, BLDG_VALUE, TOT_REAL_VALUE, CALC_ACRES and TAX_ACRES, but has NO use code, NO use description, NO year built, NO living area and NO unit count, so Randolph parcels cannot be classified or filtered to multifamily from this endpoint. Randolph also carries related tables ParcelAddresses / ParcelOwners at layers 1 and 2. Rockingham County was not tested."
+   },
+   "projects": [
+    {
+     "company": "JetZero",
+     "project": "Z4 blended-wing-body aircraft manufacturing campus and composite structures R&D centre at Piedmont Triad International Airport",
+     "city": "Greensboro",
+     "lat": 36.0977,
+     "lng": -79.9373,
+     "investment": 4700000000,
+     "jobs": 14560,
+     "announced": "2025-06-12",
+     "status": "under construction - broke ground 2026-06-15 on an 8 million sq ft campus over 600 acres. HIRING HAS BEEN PUSHED BACK: JetZero told NC Commerce it will hire ZERO people in 2027 (original plan was ~1,050 in 2027), restarting in 2028, holding the 3,020-by-end-2029 milestone and extending the full 14,500+ target to 2037, citing delays in NC state budget funding that held up construction incentives (https://www.wral.com/news/nccapitol/jetzero-adjusts-north-carolina-hiring-targets-commerce-incentives-may-2026/). The 14,560 figure is the state incentive-agreement maximum over a 37-year term, NOT a near-term headcount. Coords = PTI airport",
+     "url": "https://www.commerce.nc.gov/news/press-releases/2025/06/12/governor-stein-announces-jetzero-selects-north-carolina-4-billion-airplane-manufacturing-hub"
+    },
+    {
+     "company": "Toyota (Toyota Battery Manufacturing North Carolina)",
+     "project": "Automotive lithium-ion battery plant, Greensboro-Randolph Megasite",
+     "city": "Liberty",
+     "lat": 35.8526,
+     "lng": -79.5714,
+     "investment": 13900000000,
+     "jobs": 5100,
+     "announced": "2023-10-31",
+     "status": "OPERATING - grand opening celebrated 2025-11-12; shipments began 2025. Investment grew from the original 2021 announcement through successive expansions to a cumulative $13.9B / 5,100 jobs. The 2023-10-31 date is the announcement that brought the cumulative total to $13.9B; grand-opening source: https://www.commerce.nc.gov/news/press-releases/2025/11/12/governor-stein-celebrates-grand-opening-toyota-battery-plant-randolph-county . Coords = Liberty NC town centre, approximate; the megasite is a few miles north-east",
+     "url": "https://www.commerce.nc.gov/news/press-releases/2023/10/31/toyota-announces-additional-3000-jobs-8-billion-investment-randolph-county-battery-manufacturing"
+    },
+    {
+     "company": "Boom Supersonic",
+     "project": "Overture Superfactory - supersonic airliner final assembly, Piedmont Triad International Airport",
+     "city": "Greensboro",
+     "lat": 36.0977,
+     "lng": -79.9373,
+     "investment": 500000000,
+     "jobs": 1750,
+     "announced": "2022-01-26",
+     "status": "operating / ramping - Superfactory opened at PTI. Investment and jobs are the state announcement figures, 'more than $500 million' and 'more than 1,750 jobs by 2030'. Coords = PTI airport",
+     "url": "https://www.commerce.nc.gov/news/press-releases/governor-cooper-announces-boom-will-manufacture-supersonic-aircraft-north"
+    }
+   ],
+   "records": 28373,
+   "dataCaveat": "The strongest schema in this edition: plain-English land class, a real zoning description, a published unit count, bedrooms and baths, and two independent sale prices on a disclosure-state roll. The weakness is geographic \u2014 RANDOLPH COUNTY, where the Toyota plant sits, is served by a much thinner endpoint and is not in this build.",
+   "dataKey": "Greensboro-High Point, NC"
+  },
+  {
+   "metro": "Albany-Schenectady-Troy, NY",
+   "state": "NY",
+   "counties": [
+    "Albany County",
+    "Saratoga County",
+    "Rensselaer County",
+    "Schenectady County",
+    "Schoharie County"
+   ],
+   "rank": 2,
+   "kind": "live",
+   "jobs": 2302,
+   "capital": 22361000000,
+   "pop": 915835,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/data/ALBPOP.txt",
+   "permits": null,
+   "permitsAsOf": null,
+   "permitsSrc": "https://fred.stlouisfed.org/categories/30800",
+   "permitsNote": "NULL, NOT ESTIMATED. FRED publishes no metro-level Census BPS permit series for Albany-Schenectady-Troy. The expected identifiers ALBA536BPPRIV and ALBA536BPPRIVSA both return HTTP 404, and the FRED category page for this MSA (30800, 887 series) lists no building-permit series. County-level annual series do exist, e.g. BPPRIV036001 for Albany County, but they are annual and county-scoped and were not summed here rather than present a figure on a different basis from the other metros.",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Tax_Parcels_Public/MapServer/1",
+    "note": "CONFIRMED BY FETCH and it is the richest single endpoint in either study. 78 fields, maxRecordCount 50000 (fifty times most county services), NO TOKEN, statewide coverage, and a where=1=1 returnCountOnly query returned {\"count\":3827530} - every taxable parcel in New York State in one layer. It is the same service already relied on for Syracuse, so Albany costs no new integration work at all. TWO caveats found by testing: (1) filtering on COUNTY_NAME='Saratoga' returned {\"count\":0} and UPPER(COUNTY_NAME) LIKE 'SARATOGA%' also returned 0, so COUNTY_NAME appears unreliable or unpopulated for filtering - use COUNTY_FIPS or the SWIS code instead; (2) USED_AS_DESC is sparsely populated - the first six rows of an unfiltered query were all null, and a WHERE USED_AS_DESC IS NOT NULL query was needed to surface values. PROP_CLASS is the field to classify on. Layer 0 of the same service is a municipal footprint layer, not parcels - use layer 1."
+   },
+   "projects": [
+    {
+     "company": "GlobalFoundries",
+     "project": "Fab 8 expansion plus a new 358,000 sq ft leading-edge semiconductor fab on the Malta campus",
+     "city": "Malta",
+     "lat": 42.9784,
+     "lng": -73.7818,
+     "investment": 11600000000,
+     "jobs": 1500,
+     "announced": "2024-02-19",
+     "status": "announced / early construction - $11.6B over ten years, underpinned by up to $1.5B of CHIPS Act direct funding. Construction was expected to begin in 2025. Coords = Malta NY, approximate campus location",
+     "url": "https://www.governor.ny.gov/news/governor-hochul-celebrates-globalfoundries-116-billion-investment-expand-semiconductor"
+    },
+    {
+     "company": "GlobalFoundries",
+     "project": "New York Advanced Packaging and Photonics Center",
+     "city": "Malta",
+     "lat": 42.9784,
+     "lng": -73.7818,
+     "investment": 761000000,
+     "jobs": 102,
+     "announced": "2025-01-17",
+     "status": "announced - $575M for the advanced packaging and testing centre plus $186M for R&D over 10+ years; 102 new full-time jobs over five years; up to $75M US Commerce direct funding and up to $20M from New York State. Coords = Malta NY",
+     "url": "https://www.governor.ny.gov/news/governor-hochul-announces-globalfoundries-will-establish-first-its-kind-advanced-packaging-and"
+    },
+    {
+     "company": "NY CREATES with IBM, Micron, Applied Materials, Tokyo Electron, ASML and Imec",
+     "project": "Albany NanoTech Complex expansion - NanoFab Reflection and North America's first publicly owned High-NA EUV lithography centre (subsequently designated the NSTC EUV Accelerator)",
+     "city": "Albany",
+     "lat": 42.6803,
+     "lng": -73.837,
+     "investment": 10000000000,
+     "jobs": 700,
+     "announced": "2023-12-11",
+     "status": "under construction / partly operating - the NSTC EUV Accelerator held its grand opening on 2025-07-14. $10B public-private partnership including $1B from New York State; at least 700 new direct jobs plus 500-600 union construction jobs over a two-year build. Coords = Albany NanoTech Complex, Fuller Road",
+     "url": "https://www.governor.ny.gov/news/governor-hochul-announces-10-billion-partnership-bring-next-generation-research-and"
+    }
+   ],
+   "records": 25000,
+   "dataCaveat": "The NYS statewide tax-parcel layer publishes only 38 of New York's 62 counties. SARATOGA AND SCHENECTADY COUNTIES ARE ABSENT \u2014 this metro is Albany and Rensselaer only, roughly its eastern half. Two of the metro's four counties are simply not obtainable from this source.",
+   "dataKey": "Albany-Schenectady-Troy, NY"
+  },
+  {
+   "metro": "South Bend-Mishawaka, IN-MI",
+   "state": "IN",
+   "counties": [
+    "St. Joseph County, IN",
+    "Cass County, MI"
+   ],
+   "rank": 3,
+   "kind": "live",
+   "jobs": 3800,
+   "capital": 29500000000,
+   "pop": 324538,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/data/SBNPOP.txt",
+   "permits": null,
+   "permitsAsOf": null,
+   "permitsSrc": "https://fred.stlouisfed.org/categories/30677",
+   "permitsNote": "NULL, NOT ESTIMATED. FRED publishes no metro-level Census BPS permit series for South Bend-Mishawaka. SOUT718BPPRIV and SOUT718BPPRIVSA both return HTTP 404 and the FRED category page for this MSA (30677, 462 series) lists no building-permit series.",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://gis.southbendin.gov/arcgis/rest/services/LandRecords/Parcels/MapServer/1",
+    "note": "CONFIRMED BY FETCH. Layer 1 is 'LandRecords.DBO.Parcels_County' - the whole of St. Joseph County, not just the city; layer 0 is the City of South Bend subset. 65 fields, maxRecordCount 1000, NO TOKEN, and a where=1=1 returnCountOnly query returned {\"count\":119780}. The decisive feature is PROPTYPE, which is genuinely self-documenting English rather than a code, so multifamily and industrial parcels can be selected with no code manual. Indiana IS a sale-disclosure state and SALESPRICE is present. WEAKNESSES: no year-built field and no unit count, and several numeric quantities (SALESPRICE, Total_Fini, F_AREA, TNETTAX) are typed as strings and will need casting. Cass County MI, the small Michigan half of the MSA, was not tested and holds none of the projects. The Indiana STATEWIDE layer https://gisdata.in.gov/server/rest/services/Hosted/Parcel_Boundaries_of_Indiana_Current/FeatureServer/0 was also fetched (maxRecordCount 2000, no token) but carries only DLGF_PROP_CLASS_CODE and addresses - no values, no year built, no areas - so it is not a substitute."
+   },
+   "projects": [
+    {
+     "company": "Amazon Web Services",
+     "project": "New Carlisle data centre campus",
+     "city": "New Carlisle",
+     "lat": 41.7017,
+     "lng": -86.4386,
+     "investment": 11000000000,
+     "jobs": 1000,
+     "announced": "2024-04-25",
+     "status": "under construction - the largest capital investment in Indiana history when announced; at least 1,000 new jobs, development over a decade. Local reporting in July 2026 put the realised St. Joseph County campus investment above $13.8 billion, so the $11B here is the announced floor. Coords = New Carlisle IN",
+     "url": "https://www.aboutamazon.com/news/aws/aws-indiana-investment-11-billion"
+    },
+    {
+     "company": "Amazon",
+     "project": "Additional northern Indiana data centre campuses - 2.4 GW of new capacity",
+     "city": "New Carlisle",
+     "lat": 41.7017,
+     "lng": -86.4386,
+     "investment": 15000000000,
+     "jobs": 1100,
+     "announced": "2025-11-24",
+     "status": "announced - $15B and 1,100 direct high-skilled jobs, described as an expansion beyond the earlier $11B St. Joseph County commitment. CAUTION: Amazon's announcement says 'northern Indiana' and does not enumerate counties, so some of this capital may land outside St. Joseph County and some may overlap the campus in the row above. Coords = New Carlisle IN, indicative only",
+     "url": "https://www.aboutamazon.com/news/company-news/amazon-15-billion-indiana-data-centers"
+    },
+    {
+     "company": "Samsung SDI (originally the GM-Samsung SDI joint venture)",
+     "project": "EV battery cell plant, 30+ GWh, New Carlisle",
+     "city": "New Carlisle",
+     "lat": 41.7017,
+     "lng": -86.4386,
+     "investment": 3500000000,
+     "jobs": 1700,
+     "announced": "2023-06-15",
+     "status": "OWNERSHIP CHANGED - announced 2023-06-15 as a $3B+ GM/Samsung SDI JV with 1,700 jobs and production from 2026; General Motors exited and sold its stake to Samsung SDI in August 2026, leaving Samsung SDI in full control of the $3.5B plant. Treat the 1,700-job figure as the original JV commitment, not a re-confirmed number under sole Samsung ownership. Coords = New Carlisle IN",
+     "url": "https://www.areadevelopment.com/newsitems/6-15-2023/general-motors-samsung-sdi-st-joseph-county-indiana.shtml"
+    }
+   ],
+   "records": 5731,
+   "dataCaveat": "7,456 parcels is the honest ceiling for the entire county after excluding single-family; there is no larger defensible set. A recorded sale price exists on 58% of rows but THE SALE DATE IS MISSING ON ALL BUT 12 OF 7,456 RECORDS, so those prices have no known vintage. No year built and no unit count anywhere in the schema.",
+   "dataKey": "South Bend-Mishawaka, IN"
+  },
+  {
+   "metro": "Milwaukee-Waukesha, WI + Racine-Mount Pleasant, WI",
+   "state": "WI",
+   "counties": [
+    "Milwaukee County",
+    "Waukesha County",
+    "Ozaukee County",
+    "Washington County",
+    "Racine County"
+   ],
+   "rank": 4,
+   "kind": "live",
+   "jobs": 3000,
+   "capital": 35300000000,
+   "pop": 1773929,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/data/MWKPOP.txt + https://fred.stlouisfed.org/data/RACPOP.txt",
+   "permits": 3126,
+   "permitsAsOf": "2025-08 to 2026-07",
+   "permitsSrc": "https://fred.stlouisfed.org/data/MILW355BPPRIV.txt",
+   "permitsNote": "Explicit twelve-month sum of the monthly observations on the cited FRED data page (233+212+244+147+350+221+181+348+240+278+444+228). Series MILW355BPPRIV covers the Milwaukee-Waukesha MSA ONLY and therefore EXCLUDES Racine County, where the Microsoft campuses sit; the Racine-Mount Pleasant MSA has no equivalent FRED series and its permits are not included in this figure. FRED titles this series 'New Private Housing STRUCTURES Authorized by Building Permits' while the units line reads 'Units'; the same inconsistency appears on the Indianapolis series.",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://dnrmaps.wi.gov/arcgis/rest/services/DW_Map_Dynamic/EN_County_Tax_Parcels_WTM_Ext_Dynamic_L16/MapServer/0",
+    "note": "CONFIRMED BY FETCH. This is the Wisconsin Department of Administration Statewide Parcel Map Database, served through the DNR: 48 fields, maxRecordCount 1000, NO TOKEN, statewide and uniform across all 72 counties. Two county-filtered queries returned data - CONAME='RACINE' gave {\"count\":84282} and a CONAME='OZAUKEE' attribute query returned live rows. THE DECISIVE WEAKNESS, STATED PLAINLY: THERE IS NO USE-CODE DESCRIPTION FIELD. PROPCLASS returns bare numerals and, worse, MULTI-VALUED comma-separated strings - the actual values returned were '4,5', '4,5', '1,4', '1,5', '5' - so a single parcel can carry several classes at once and any classifier must split on commas. The codes are defined in statute (Wis. Stat. 70.32(2)(a), classes 1-7) and in the Wisconsin Property Assessment Manual, so a published code manual DOES exist, but nothing in the payload is self-documenting. Also absent: year built, living area and unit count, and Wisconsin exposes no sale price in this layer. If per-building detail is needed, individual county services (Milwaukee, Waukesha, Racine) would have to be integrated separately; they were not tested."
+   },
+   "projects": [
+    {
+     "company": "Vantage Data Centers with OpenAI and Oracle (Stargate - 'Lighthouse' campus)",
+     "project": "Stargate AI data centre campus, Port Washington",
+     "city": "Port Washington",
+     "lat": 43.3872,
+     "lng": -87.8756,
+     "investment": 15000000000,
+     "jobs": 1000,
+     "announced": "2025-10-22",
+     "status": "under construction - broke ground late 2025, scheduled completion 2028. More than 1,000 long-term jobs plus more than 4,000 skilled construction jobs, majority union under a Wisconsin Building Trades Council agreement. Port Washington is in OZAUKEE COUNTY, inside the Milwaukee-Waukesha MSA. Coords = Port Washington WI",
+     "url": "https://vantage-dc.com/news/openai-oracle-and-vantage-data-centers-announce-stargate-data-center-site-in-wisconsin/"
+    },
+    {
+     "company": "Microsoft",
+     "project": "Mount Pleasant AI datacenter campus - committed phases",
+     "city": "Mount Pleasant",
+     "lat": 42.7089,
+     "lng": -87.8895,
+     "investment": 7000000000,
+     "jobs": 2000,
+     "announced": "2025-09-18",
+     "status": "OPERATING (first datacenter) - built up from $1B announced March 2023, to $3.3B in May 2024, plus a further $4 billion announced 2025-09-18 taking the committed total past $7B. The first datacenter completed construction and became fully operational on 2026-06-23. Racine County Economic Development Corporation reports a current projection of 2,000 direct permanent jobs and 2,300 construction positions. Coords = Mount Pleasant WI",
+     "url": "https://wedc.org/gov-evers-microsoft-officials-announce-new-4-billion-investment-in-mount-pleasant-datacenter/"
+    },
+    {
+     "company": "Microsoft",
+     "project": "Mount Pleasant expansion - 15 further datacenters across two new campuses (Durand Avenue, 791 acres, 9 datacenters; International Drive, 530 acres, 6 datacenters)",
+     "city": "Mount Pleasant",
+     "lat": 42.7089,
+     "lng": -87.8895,
+     "investment": 13300000000,
+     "jobs": null,
+     "announced": "2026-01-20",
+     "status": "approved, not yet built - site plans unanimously approved by the Mount Pleasant village board on 2026-01-26 subject to traffic, lighting and landscaping conditions. Roughly 2 GW of power at full build. NO separate direct-jobs figure was published for this expansion, so the field is null rather than estimated. Coords = Mount Pleasant WI",
+     "url": "https://www.wpr.org/news/mount-pleasant-approves-site-plans-microsoft-data-center-expansion"
+    }
+   ],
+   "records": 25000,
+   "dataCaveat": "Wisconsin's statutory classes put apartment buildings of up to three units in class 1 alongside every single-family home, and buildings of four or more in class 2 (WI DOR Guide for Property Owners PB-060). So 4+ unit multifamily IS reachable here, but DUPLEXES AND TRIPLEXES ARE NOT \u2014 they cannot be separated from single-family by any field this layer publishes. The layer also carries no year built, no building area and no unit count, so an asset can be valued here but not sized. Values are the 2024 assessment roll, roughly 18 months stale.",
+   "dataKey": "Milwaukee-Waukesha + Racine, WI"
+  },
+  {
+   "metro": "Indianapolis-Carmel-Greenwood, IN",
+   "state": "IN",
+   "counties": [
+    "Marion County",
+    "Boone County",
+    "Hamilton County",
+    "Hendricks County",
+    "Johnson County",
+    "Hancock County",
+    "Morgan County",
+    "Shelby County",
+    "Madison County",
+    "Brown County",
+    "Putnam County"
+   ],
+   "rank": 5,
+   "kind": "live",
+   "jobs": 1300,
+   "capital": 13500000000,
+   "pop": 2205695,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/data/INDPOP.txt",
+   "permits": 12831,
+   "permitsAsOf": "2025-08 to 2026-07",
+   "permitsSrc": "https://fred.stlouisfed.org/data/INDI918BPPRIV.txt",
+   "permitsNote": "Explicit twelve-month sum of the monthly observations on the cited FRED data page (963+1046+1358+632+686+1236+683+1449+1305+1235+1062+1176). Series INDI918BPPRIV, all structure types. 12,831 units against 2.21M people is a comparatively WELL-SUPPLIED market - this is the main reason Indianapolis ranks last of the five despite the capital.",
+   "campuses": null,
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://gis.indy.gov/server/rest/services/MapIndy/MapIndyProperty/MapServer/10",
+    "note": "PARTIALLY CONFIRMED - READ THIS BEFORE RELYING ON IT. The layer is real and populated: 50 fields, maxRecordCount 1000, NO TOKEN, and a where=1=1 returnCountOnly query returned {\"count\":347058}, which is the right order of magnitude for Marion County. A dedicated use-code DESCRIPTION field, PROPERTY_SUB_CLASS_DESCRIPTION, is declared in the layer metadata. HOWEVER four separate attempts to pull sample attribute values from it all failed - three read timeouts and one empty result - so unlike Guilford, South Bend and New York I could NOT verify that the description field is actually populated. Treat that as an open risk. A hosted alternative exists at https://data.indy.gov/datasets/IndyGIS::parcels which was not tested. THE BIGGER LIMITATION IS GEOGRAPHIC: this endpoint covers MARION COUNTY ONLY, and BOTH Lilly projects are in BOONE COUNTY, which publishes NO free parcel API at all - its assessor distributes property record cards and sales disclosures as documents (https://boonecounty.in.gov/offices/assessor/property-record-cards/), and note that 'secure.boonecountygis.com', which surfaces in searches for 'Boone County GIS', is Boone County KENTUCKY, not Indiana. The Indiana STATEWIDE layer covers Boone but carries only DLGF_PROP_CLASS_CODE and addresses - no values, no areas, no year built. This is the same asymmetry as Phoenix, where Maricopa is rich and Pinal has nothing. Also relevant to the thesis: Indianapolis's Metropolitan Development Commission has approved a data-centre moratorium in Marion County."
+   },
+   "projects": [
+    {
+     "company": "Eli Lilly and Company",
+     "project": "LEAP Research and Innovation District API manufacturing campus, Lebanon",
+     "city": "Lebanon",
+     "lat": 40.0484,
+     "lng": -86.4692,
+     "investment": 9000000000,
+     "jobs": 900,
+     "announced": "2024-05-24",
+     "status": "under construction - cumulative site investment raised to $9B on 2024-05-24 (from $2.1B announced 2022 and $3.7B after a further $1.6B in April 2023). 900 full-time jobs when fully operational, plus 5,000+ construction jobs. Will make active ingredients for Zepbound and Mounjaro; manufacturing was to begin toward the end of 2026 and scale through 2028. Coords = Lebanon IN, BOONE COUNTY",
+     "url": "https://www.prnewswire.com/news-releases/lilly-increases-manufacturing-investment-to-9-billion-at-newest-indiana-site-to-boost-api-production-for-tirzepatide-and-pipeline-medicines-302155135.html"
+    },
+    {
+     "company": "Eli Lilly and Company",
+     "project": "Lilly Medicine Foundry - advanced manufacturing and clinical-trial drug production, LEAP district",
+     "city": "Lebanon",
+     "lat": 40.0484,
+     "lng": -86.4692,
+     "investment": 4500000000,
+     "jobs": 400,
+     "announced": "2024-10-02",
+     "status": "under construction - 400 full-time engineers, scientists, operations staff and lab technicians; adds roughly 200 acres to the site and was scheduled to open in late 2027. This announcement took Lilly's total commitment at Lebanon past $13 billion. Coords = Lebanon IN, BOONE COUNTY",
+     "url": "https://www.ibj.com/articles/lilly-to-invest-another-4-5b-in-lebanon-site-for-new-medicine-foundry"
+    }
+   ],
+   "records": 28631,
+   "dataCaveat": "Marion County only. BOTH ELI LILLY PROJECTS ARE IN BOONE COUNTY, which publishes no free parcel API, and Indiana operates no statewide parcel service \u2014 so the parcels nearest this metro's largest announced capital are absent from this edition. Two traps were handled: the layer's ESTSQFT field is LOT area rather than building area (so this edition shows no building area for Marion County at all), and multi-polygon parcels emit one row per polygon each repeating the full assessed value (rows are de-duplicated on the state parcel number). The vintage of the assessed values is not stated anywhere in the layer.",
+   "dataKey": "Indianapolis-Carmel-Greenwood, IN"
+  },
+  {
+   "metro": "Lafayette, LA (MSA)",
+   "state": "LA",
+   "counties": [
+    "Lafayette Parish"
+   ],
+   "rank": 1,
+   "kind": "live",
+   "jobs": 196,
+   "capital": 55200000,
+   "pop": 257949,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LALAFA7POP.txt",
+   "permits": 1612,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022055.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure. FRED publishes no metro-level monthly Census BPS series for any of the Louisiana metros in this file (LAFA122BPPRIV returns 404); only annual PARISH-level series exist. This is calendar-2025 total private housing units authorised in Lafayette Parish, FRED series BPPRIV022055. No 5+unit split is published at this level.",
+   "campuses": [
+    {
+     "name": "University of Louisiana at Lafayette",
+     "enrollment": 19723,
+     "term": "Fall 2025",
+     "lat": 30.2141,
+     "lng": -92.0198
+    },
+    {
+     "name": "South Louisiana Community College",
+     "enrollment": 6238,
+     "term": "Fall 2025",
+     "lat": 30.2035,
+     "lng": -92.0455
+    }
+   ],
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://services1.arcgis.com/Brg1qbmzmFn7JtpX/arcgis/rest/services/Parish_Parcels__All_/FeatureServer/0",
+    "note": "CONFIRMED BY QUERY: where=1=1&returnCountOnly=true returns 161,202 features; maxRecordCount 2000; capabilities Query; NO token required. Distinct-value queries on usedesc, zoning_description, zoning_subtype, county and city all returned rows. IMPORTANT PROVENANCE CAVEAT: this service is hosted in the ArcGIS Online organisation Brg1qbmzmFn7JtpX, which is Es2 (es2-inc), the private GIS consultancy that runs assessor GIS for several Louisiana parishes - it is NOT on a lafayetteassessor.com domain. The layer is Regrid/Loveland-schema (ll_* fields) enriched with Lafayette Parish Assessor CAMA fields (lpaomarketarea, hxmarketvalue, accountstatus, citytax/parishtax), and a distinct query on `county` returns exactly two values, 'lafayette' and 'vermilion' - so the layer covers Lafayette Parish AND Vermilion Parish and must be filtered on county='lafayette'. The Lafayette Parish Assessor's own service (https://webgis.lafayetteassessor.com/arcgis/rest/services/Sidwell/TaxParcelPublic/MapServer/0, 117,864 records: AccountNumber, OwnerName, PropertyAddress, AssessedValue, StatedArea) could NOT be queried from this session - every request was blocked at the robots.txt stage - so it is NOT reported as a working endpoint. A third-party LEDA copy (services5.arcgis.com/riEeMHAEYSsj4tFW/.../2023_Parcels_Lafayette_Parish) was queried and rejected: its PrimaryUse field holds 62 opaque codes (RA, RDFM, RSLC, REK, ...) with no published key."
+   },
+   "projects": [
+    {
+     "company": "MMR Group",
+     "project": "New modular-assembly facility producing systems for data centres and semiconductor fabs",
+     "city": "Lafayette",
+     "lat": 30.254,
+     "lng": -92.033,
+     "investment": 55200000,
+     "jobs": 196,
+     "announced": "2025-10-06",
+     "status": "announced / renovations underway; operations expected Q1 2026. 196 direct jobs over 10 years at $85,000 average salary, plus 335 estimated indirect. Coords = approximate, 939 West Pont Des Mouton Rd",
+     "url": "https://www.opportunitylouisiana.gov/news/mmr-group-expands-louisiana-footprint-with-55-2-million-investment-in-lafayette-to-serve-growing-tech-markets"
+    }
+   ],
+   "records": 19154,
+   "dataCaveat": "Selected by ZONING, not by use: this parish's layer carries no occupancy or use classification of any kind, so a record here is a parcel whose district PERMITS the stated use \u2014 a vacant multifamily-zoned lot and a 200-unit complex are indistinguishable. No unit count exists for the parish (null on all 116,693 rows). The service is hosted by a private GIS consultancy rather than on the assessor's own domain, and silently spans Lafayette AND Vermilion parishes; this edition filters to Lafayette.",
+   "dataKey": "Lafayette, LA"
+  },
+  {
+   "metro": "Shreveport-Bossier City, LA (MSA)",
+   "state": "LA",
+   "counties": [
+    "Caddo Parish",
+    "Bossier Parish"
+   ],
+   "rank": 2,
+   "kind": "live",
+   "jobs": 600,
+   "capital": 30000000,
+   "pop": 356093,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LACADD7POP.txt",
+   "permits": 931,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022017.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure - no metro-level monthly Census BPS series exists on FRED for this metro. Sum of calendar-2025 parish annual totals: Caddo 267 (BPPRIV022017) + Bossier 664 (BPPRIV022015, https://fred.stlouisfed.org/data/BPPRIV022015.txt). Extremely thin supply for a 356,000-person, 18,700-student market.",
+   "campuses": [
+    {
+     "name": "LSU Shreveport",
+     "enrollment": 11359,
+     "term": "Fall 2025",
+     "lat": 32.4207,
+     "lng": -93.7434
+    },
+    {
+     "name": "LSU Health Shreveport",
+     "enrollment": 1103,
+     "term": "Fall 2025",
+     "lat": 32.4735,
+     "lng": -93.7391
+    },
+    {
+     "name": "Centenary College of Louisiana",
+     "enrollment": 712,
+     "term": "Fall 2025",
+     "lat": 32.482,
+     "lng": -93.7443
+    },
+    {
+     "name": "Bossier Parish Community College",
+     "enrollment": 5561,
+     "term": "Fall 2025",
+     "lat": 32.5157,
+     "lng": -93.6533
+    }
+   ],
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://services7.arcgis.com/eR5n9maFLflJFdXU/arcgis/rest/services/Caddo_Parcels__2025/FeatureServer/7",
+    "note": "CONFIRMED BY QUERY: where=1=1&returnCountOnly=true returns 139,597 features; maxRecordCount 2000; capabilities Query only; NO token required. Sample query returning usecode/usedesc/numunits/yearbuilt/parval/address returned real rows (e.g. usecode 'RI', parval 119106, address '4531 FINLEY DR'). PROVENANCE CAVEAT: this is a Regrid/Loveland-schema extract (ll_stable_id, ll_uuid, ll_last_refresh fields) republished by a private ArcGIS Online account (owner Michaeljuser58, org eR5n9maFLflJFdXU, apparently a Shreveport-area economic development corporation) - it is NOT the Caddo Parish Assessor's own service and could be withdrawn at any time. FOR BOSSIER PARISH use the Bossier Parish Assessor's own public ArcGIS Server instead: https://bpagis.bossierparish.org/server/rest/services/Parcels/BossierParcels_MarketAssessedLandUseValues_maplex_webmercator/FeatureServer/0 - CONFIRMED 94,101 features, maxRecordCount 1000, no token, fields AssessmentNumber, AssessmentName, PhysicalAddress + StreetNumber/StreetName/City/ZipCode, SubdivisionName, Block, Lot, Acreage, TotalLandMarketValue, TotalMarketValue, AssessedValue, HasLandUseValue. Bossier has NO land-use or property-class field and no unit count, so on the Bossier side multifamily must be identified from the Regrid Caddo layer's counterpart or from Shreveport MPC zoning (https://services3.arcgis.com/cEsSI6IR59h5UGE4/arcgis/rest/services/UDC_BOSSIER_PARCELS__view_with_USES/FeatureServer/0, layer 'BossierParcels_MPCZoning'). The NLCOG-published Caddo Parish Assessor cadastre (https://utility.arcgis.com/usrsvcs/servers/de60c109dfc14c488283d6c2b779dc96/rest/services/Assessor_Data/Caddo_Parish_Parcels/MapServer/0) was queried successfully but carries geometry only - LOWPARCELID, PARCELID, BUILDING, UNIT, STATEDAREA - with no use code, value or unit count."
+   },
+   "projects": [
+    {
+     "company": "SLB (Schlumberger)",
+     "project": "Doubling of Shreveport manufacturing footprint to serve data-centre / hyperscaler digital infrastructure",
+     "city": "Shreveport",
+     "lat": 32.418,
+     "lng": -93.839,
+     "investment": 30000000,
+     "jobs": 600,
+     "announced": "2025-12-09",
+     "status": "announced; construction from January 2026, staffing ramp through 2027. 600 new direct jobs plus 744 estimated indirect. Coords = approximate, 7600 Antoine Blvd (former GM plant site), Caddo Parish",
+     "url": "https://www.opportunitylouisiana.gov/news/slb-doubles-shreveport-footprint-to-support-global-digital-infrastructure-and-data-center-growth"
+    }
+   ],
+   "records": 25000,
+   "dataCaveat": "The metro's two parishes are unequal. CADDO is selected by zoning except on the under-1% of parcels carrying a unit count; its use-description field is null on all 139,597 rows and hotels cannot be isolated at all. Its source is a private republication of a Regrid extract, not the assessor's own service. BOSSIER has the best provenance of any Louisiana source here \u2014 the assessor's own server \u2014 and the thinnest data: no use class, no zoning, no year built, no unit count, no building area, no sale data and no stated roll year, so multifamily cannot be identified there from public data and those records are included on LOCATION ALONE and labelled unclassified rather than guessed. 88,053 of Bossier's 94,101 join rows were recovered before the bridge dropped.",
+   "dataKey": "Shreveport-Bossier City, LA"
+  },
+  {
+   "metro": "Hammond, LA (MSA)",
+   "state": "LA",
+   "counties": [
+    "Tangipahoa Parish"
+   ],
+   "rank": 3,
+   "kind": "live",
+   "jobs": 0,
+   "capital": 35000000,
+   "pop": 141346,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LATANG5POP.txt",
+   "permits": 1163,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022105.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure - no metro-level monthly Census BPS series exists on FRED for Hammond. Calendar-2025 parish annual total, FRED series BPPRIV022105. No 5+unit split published.",
+   "campuses": [
+    {
+     "name": "Southeastern Louisiana University",
+     "enrollment": 15570,
+     "term": "Fall 2025",
+     "lat": 30.5157,
+     "lng": -90.4681
+    }
+   ],
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://tangis.tangipahoa.org/server/rest/services/Cadastral/TaxParcelAssessment_A/MapServer/0",
+    "note": "CONFIRMED BY QUERY: where=1=1&returnCountOnly=true returns 76,236 features on TaxParcelAssessment_A/0 and 1,922 on Apartment_P/0; maxRecordCount 2000 on both; capabilities Map,Query,Data; NO token required. This is the Tangipahoa Parish Assessor's own ArcGIS Server (tangis.tangipahoa.org), not a third-party copy - the strongest provenance in this file. The assessment layer is unusually rich on ownership, sale, subdivision, ward and taxing-district attributes (transfer_date, purchase_price, Verified, subd_name, SUBD_APPROVAL_YEAR, CITY_COUNCIL_DISTRICT, tax_dist) and carries X_CENTROID/Y_CENTROID, but it publishes no valuation, no building characteristics and no land-use class. The service folder also exposes Cadastral/Building_Permits and Cadastral/Planning_Permits (MapServer), which were listed but not queried."
+   },
+   "projects": [
+    {
+     "company": "Graham Packaging",
+     "project": "Modernisation of Hammond packaging plant - advanced production equipment plus workforce upskilling",
+     "city": "Hammond",
+     "lat": 30.5044,
+     "lng": -90.4612,
+     "investment": 35000000,
+     "jobs": 0,
+     "announced": "2024-10-17",
+     "status": "in progress; equipment integration began end-2024, completion expected 2027. NO new direct jobs - the release states more than 100 existing Tangipahoa jobs RETAINED. Coords = Hammond city centre, approximate",
+     "url": "https://www.opportunitylouisiana.gov/news/global-packaging-manufacturer-invests-35-million-to-enhance-operations-and-upskill-workforce-at-hammond-facility"
+    }
+   ],
+   "records": 24639,
+   "dataCaveat": "The Tangipahoa Parish Assessor's own server has the best provenance in the Louisiana set and among the thinnest data: NO valuation of any kind, no use class (the occupancy field is null on all 76,236 rows) and no building characteristics. These parcels are therefore included on PROXIMITY TO SOUTHEASTERN LOUISIANA UNIVERSITY ALONE and labelled unclassified rather than guessed, and no price is shown for them. A dedicated apartment layer adds 1,922 address points, but those resolve to only 158 distinct names and 143 assessment numbers \u2014 an address inventory, not a sized one. Sale figures where present are conveyance considerations the assessor marks UNVERIFIED on every row.",
+   "dataKey": "Hammond, LA"
+  },
+  {
+   "metro": "Ruston, LA (Micropolitan)",
+   "state": "LA",
+   "counties": [
+    "Lincoln Parish"
+   ],
+   "rank": 4,
+   "kind": "live",
+   "jobs": 150,
+   "capital": 370650000,
+   "pop": 48360,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LALINC1POP.txt",
+   "permits": 193,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022061.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure - Ruston is a micropolitan area and FRED publishes no monthly metro BPS series for it. Calendar-2025 parish annual total, FRED series BPPRIV022061. 193 units authorised against 17,155 students is the tightest supply/demand ratio in this file.",
+   "campuses": [
+    {
+     "name": "Louisiana Tech University",
+     "enrollment": 12145,
+     "term": "Fall 2025",
+     "lat": 32.527,
+     "lng": -92.648
+    },
+    {
+     "name": "Grambling State University",
+     "enrollment": 5010,
+     "term": "Fall 2025",
+     "lat": 32.5231,
+     "lng": -92.7147
+    }
+   ],
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://maps.lincolnparish.org/arcgis/rest/services/LA_Lincoln_Assessor/MapServer/5",
+    "note": "CONFIRMED BY QUERY: where=1=1&returnCountOnly=true returns 26,894 features; maxRecordCount 1000; capabilities Map,Query,Data; NO token required. This is the Lincoln Parish GIS District's own public ArcGIS Server. FAILS YOUR USE-CODE TEST AND YOU SHOULD KNOW IT: ParcelType holds 22 opaque two-letter codes and I could not find a published key - the field has domain:null, the layer's renderer is a plain simple fill (no uniqueValue labels to read the codes off), the MapServer /legend for layer 5 returns a single empty label, there is no zoning layer on the server (RustonLandUse turns out to be historical aerial imagery, not land use), the City of Ruston LA publishes no zoning feature service (an ArcGIS Online search for 'Ruston zoning' returns only Ruston, WASHINGTON), and no code manual surfaced in web search. The same two-letter family appears in the Caddo Regrid extract (usecode 'RI'), so it is a Louisiana assessor convention rather than a Lincoln invention, but that does not make it documented. The layer publishes NO unit count, so on your stated rule this parish is a reject; I have kept it at rank 4 because ImpValue + LandValue + TotalValue + TaxArea still let you find large improved residential parcels, because the 17,155-student-to-48,360-resident ratio is the most extreme in Louisiana, and because the alternative fifth candidates (Ouachita, Natchitoches, Lafourche, Rapides) are all strictly worse on data AND on enrolment. Drop it if the rule is absolute. Server directory: https://maps.lincolnparish.org/arcgis/rest/services"
+   },
+   "projects": [
+    {
+     "company": "Radiance Technologies",
+     "project": "40,000 sq ft microchip R&D, design and fabrication facility, partnered with Louisiana Tech University",
+     "city": "Ruston",
+     "lat": 32.5232,
+     "lng": -92.6379,
+     "investment": 370650000,
+     "jobs": 150,
+     "announced": "2025-08-25",
+     "status": "announced; construction expected to begin spring 2026, completion summer 2027. 150 direct jobs at $85,000 average plus 146 estimated indirect. LED is also putting $17M into equipment and training at Louisiana Tech. Coords = Ruston city centre, approximate - exact site not published in the release",
+     "url": "https://www.opportunitylouisiana.gov/news/radiance-technologies-announces-370-million-microchip-facility-in-north-louisiana-to-bolster-and-secure-national-supply-chains"
+    }
+   ],
+   "records": 6571,
+   "dataCaveat": "The parcel layer's ParcelType field holds 22 two-letter codes with NO PUBLISHED KEY anywhere \u2014 null domain, empty legend, no manual \u2014 so it is carried raw and deliberately NOT decoded. Use comes instead from the parish's Ruston land-use layer, WHOSE NEWEST SNAPSHOT IS 2013 and which covers only about half these parcels; the remainder are included on proximity to Louisiana Tech and Grambling State. The parcel layer publishes no geometry at all, so every coordinate here comes from that land-use join, and parcels outside the City of Ruston have no coordinate and are absent. The valuation vintage is not stated anywhere on the layer.",
+   "dataKey": "Ruston, LA"
+  },
+  {
+   "metro": "Lake Charles, LA (MSA)",
+   "state": "LA",
+   "counties": [
+    "Calcasieu Parish"
+   ],
+   "rank": 5,
+   "kind": "live",
+   "jobs": null,
+   "capital": 17500000000,
+   "pop": 208466,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LACALC9POP.txt",
+   "permits": 468,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022019.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure - no metro-level monthly Census BPS series exists on FRED for Lake Charles. Calendar-2025 parish annual total, FRED series BPPRIV022019. Note the collapse from 1,361 units in 2024 to 468 in 2025, against a $17.5B LNG construction programme.",
+   "campuses": [
+    {
+     "name": "McNeese State University",
+     "enrollment": 6556,
+     "term": "Fall 2025",
+     "lat": 30.177,
+     "lng": -93.2145
+    }
+   ],
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://lak-dc-arcgis2.cppj.net/arcgis/rest/services/HubLayers/Parcels/FeatureServer/0",
+    "note": "CONFIRMED BY QUERY: where=1=1&returnCountOnly=true returns 167,983 features - the largest confirmed parcel count in this file; maxRecordCount 2000; NO token required. Published by the Calcasieu Parish Police Jury GIS (owner giscppj) on the parish's own ArcGIS Server. Distinct-value queries on ZONE/Zn_Descr returned 97 combinations. The layer is a parcel-zoning join: it carries owner, physical address, ward, zoning and prior zoning plus an ordinance number and a link field, but NO assessed value, NO year built, NO building area and NO unit count, so multifamily can be located by zoning but not sized. The parish also publishes HubLayers/Zoning_Download, Addresses, Streets and Subdivisions on the same server. The Calcasieu Parish Assessor itself (calcasieuassessor.org) publishes no separate REST API that I could find."
+   },
+   "projects": [
+    {
+     "company": "Woodside Energy",
+     "project": "Louisiana LNG - greenfield 16.5 Mtpa liquefaction and export terminal on the Calcasieu River",
+     "city": "Lake Charles",
+     "lat": 30.0817,
+     "lng": -93.355,
+     "investment": 17500000000,
+     "jobs": null,
+     "announced": "2025-04-28",
+     "status": "final investment decision taken; construction underway, first production targeted 2029. Largest foreign direct investment in Louisiana history. The LED release gives NO direct-jobs number - it says 'thousands of jobs during the construction phase, as well as thousands more once operational' - so jobs is null rather than estimated. Coords = approximate former Driftwood site on the Calcasieu River, Calcasieu Parish, not the McNeese campus",
+     "url": "https://www.opportunitylouisiana.gov/news/historic-investment-woodside-energy-announces-17-5-billion-final-investment-decision-for-lng-facility-in-southwest-louisiana-becomes-largest-foreign-direct-investment-in-state-history"
+    }
+   ],
+   "records": 25000,
+   "dataCaveat": "This source publishes NO assessed value, NO market value, NO sale price, NO year built, NO building area and NO unit count \u2014 multifamily can be located by zoning but never sized or valued, and no price is shown. Worse, the zoning itself is blind where it matters most: 49% of the parish, and 86% of everything within 5 km of McNeese State, reads only that the land is zoned by its local municipality. Those parcels are kept as a separate, clearly labelled campus-proximate band. A City of Lake Charles zoning service was searched for and does not exist.",
+   "dataKey": "Lake Charles, LA"
+  },
+  {
+   "metro": "Raleigh-Cary, NC",
+   "state": "NC",
+   "counties": [
+    "Wake County",
+    "Johnston County",
+    "Franklin County"
+   ],
+   "rank": null,
+   "kind": "live",
+   "records": 38189,
+   "jobs": 5400,
+   "capital": 7465000000,
+   "pop": 1595720,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=RCYPOP",
+   "permits": 18703,
+   "permitsAsOf": "2025-08 to 2026-07",
+   "permitsSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=RALE537BPPRIV",
+   "permitsNote": "Explicit twelve-month sum of the monthly observations on the cited FRED CSV for series RALE537BPPRIV (Census Building Permits Survey, all structure types, MSA level): 2006+1190+1159+868+1490+1583+1158+1743+2416+1582+1970+1538 = 18,703. 18,703 units a year against 1,595,720 people is by far the deepest supply in this batch.",
+   "students": 75392,
+   "campuses": [
+    {
+     "name": "North Carolina State University at Raleigh",
+     "enrollment": 38464,
+     "term": "Fall 2024",
+     "type": "public4",
+     "lat": 35.785111,
+     "lng": -78.674517,
+     "source": "https://nces.ed.gov/collegenavigator/?id=199193",
+     "note": "IPEDS via NCES College Navigator: 28,422 undergraduate + 10,042 graduate."
+    },
+    {
+     "name": "Wake Technical Community College",
+     "enrollment": 24609,
+     "term": "Fall 2024",
+     "type": "community",
+     "lat": 35.650151,
+     "lng": -78.706126,
+     "source": "https://nces.ed.gov/collegenavigator/?id=199856",
+     "note": "All undergraduate. Largest community college in North Carolina; multiple campuses across Wake County, the coordinate is the main (Southern Wake) campus as listed in the federal directory."
+    },
+    {
+     "name": "Johnston Community College",
+     "enrollment": 5371,
+     "term": "2024 (IPEDS year)",
+     "type": "community",
+     "lat": 35.501418,
+     "lng": -78.332293,
+     "source": "https://datausa.io/profile/university/johnston-community-college",
+     "note": "Smithfield, Johnston County - the county where the Novo Nordisk plant sits. 1,780 full-time / 3,591 part-time. College Navigator would not return this record on three attempts (robots/binary errors), so this figure is IPEDS via Data USA rather than read off the federal page directly."
+    },
+    {
+     "name": "Southeastern Baptist Theological Seminary",
+     "enrollment": 3220,
+     "term": "Fall 2024",
+     "type": "private4",
+     "lat": 35.981858,
+     "lng": -78.513755,
+     "source": "https://nces.ed.gov/collegenavigator/?id=199759",
+     "note": "Wake Forest, NC. 957 undergraduate + 2,263 graduate."
+    },
+    {
+     "name": "Meredith College",
+     "enrollment": 1465,
+     "term": "Fall 2024",
+     "type": "private4",
+     "lat": 35.799351,
+     "lng": -78.689995,
+     "source": "https://nces.ed.gov/collegenavigator/?id=198950",
+     "note": "1,206 undergraduate + 259 graduate."
+    },
+    {
+     "name": "Shaw University",
+     "enrollment": 964,
+     "term": "Fall 2024",
+     "type": "private4",
+     "lat": 35.771181,
+     "lng": -78.637693,
+     "source": "https://nces.ed.gov/collegenavigator/?id=199643",
+     "note": "HBCU, downtown Raleigh. 877 undergraduate + 87 graduate. Shaw separately announced 583 NEW students for Fall 2025, a 45% increase in the incoming class (https://www.shawu.edu/shaw-university-marks-historic-enrollment-milestone-and-launch-of-early-college-program/) - that is a new-student number, NOT a total, and no Fall 2025 total was published."
+    },
+    {
+     "name": "William Peace University",
+     "enrollment": 722,
+     "term": "Fall 2024",
+     "type": "private4",
+     "lat": 35.789139,
+     "lng": -78.637697,
+     "source": "https://nces.ed.gov/collegenavigator/?id=199272",
+     "note": "All undergraduate."
+    },
+    {
+     "name": "Louisburg College",
+     "enrollment": 402,
+     "term": "2024 (IPEDS year)",
+     "type": "private4",
+     "lat": 36.105035,
+     "lng": -78.29898,
+     "source": "https://datausa.io/profile/university/louisburg-college",
+     "note": "Two-year private college in Franklin County. CHECKED FOR CLOSURE AND IT IS OPEN: it published a 2025-2026 course catalogue (https://www.louisburg.edu/academics/college-catalog/2025-2026_CollegeCatalog_LouisburgCollege-9-11-25.pdf). At 402 students it is too small to matter for student housing."
+    },
+    {
+     "name": "Saint Augustine's University",
+     "enrollment": 175,
+     "term": "Fall 2024",
+     "type": "private4",
+     "lat": 35.785468,
+     "lng": -78.621301,
+     "source": "https://nces.ed.gov/collegenavigator/?id=199582",
+     "note": "DISTRESSED - THE CLOSURE-CHECK FINDING FOR THIS BATCH. Raleigh HBCU. Enrollment collapsed to 175 in Fall 2024, an over-80% one-year fall. College Navigator still shows SACSCOC accreditation as 'Accredited (01/01/1942 - 05/22/2026)'. In reality it lost its SACSCOC appeal and filed Chapter 11 on 2026-04-28 with $50-100M of liabilities (IRS $14.4M, NC Dept of Revenue $1.7M); it now operates WITHOUT accreditation and is ineligible for federal student aid, and is pivoting to non-degree certificates and apprenticeships with teach-out options for current students (https://www.highereddive.com/news/saint-augustines-university-files-for-bankruptcy-following-accreditation-w/818760/). It has not closed, but it should be modelled as a campus with essentially no residential demand and 100+ acres of potentially distressed land inside Raleigh's beltline."
+    }
+   ],
+   "projects": [
+    {
+     "company": "Novo Nordisk",
+     "project": "Second fill-and-finish manufacturing site, Clayton campus (Johnston County)",
+     "city": "Clayton",
+     "lat": 35.6507,
+     "lng": -78.4564,
+     "investment": 4100000000,
+     "jobs": 1000,
+     "announced": "2024-06-24",
+     "status": "UNDER CONSTRUCTION BUT CLOUDED. EDPNC at announcement: 'Early clearing and foundational work are already underway', with construction 'being gradually finalized between 2027 and 2029'; 1.4M sq ft and ~2,000 construction contractors; average salary $70,000. In October 2025 Reuters/Drug Discovery Trends reported production-line layoffs at the SAME Clayton plant and stated 'It is unclear whether this expansion will move forward' (https://www.drugdiscoverytrends.com/novo-nordisk-lays-off-dozens-of-us-employees-at-nc-plant/). Novo Nordisk separately announced a 9,000-person global restructuring in 2025. Treat the 1,000 jobs as an intention that has NOT been reaffirmed since the layoffs. Coords = Clayton NC town centre, approximate; the campus is east of town",
+     "source": "https://edpnc.com/news/june-2024-novo-nordisk-announcement/"
+    },
+    {
+     "company": "Apple",
+     "project": "Research Triangle Park campus and engineering hub",
+     "city": "Research Triangle Park (Wake County side)",
+     "lat": 35.899,
+     "lng": -78.862,
+     "investment": 1000000000,
+     "jobs": 3000,
+     "announced": "2021-04-26",
+     "status": "NOT STARTED - FIVE YEARS AFTER ANNOUNCEMENT. AppleInsider, 2026-09-01: Apple 'does not appear to have hired one person, nor even broken ground for its proposed campus', with 'no construction activity at all', no active permits and no updated site plans. North Carolina granted an extension in November 2025 resetting the milestones: 126 employees by end-2027 (originally due end-2023), 1,719 by year five, 2,700 by year ten. The 3,000-job figure is the 2021 company promise and is now a ten-year ceiling on a restarted clock. Coords = Research Triangle Park, approximate",
+     "source": "https://appleinsider.com/articles/26/09/01/five-years-on-apple-still-hasnt-started-its-north-carolina-campus"
+    },
+    {
+     "company": "FUJIFILM Diosynth Biotechnologies",
+     "project": "Holly Springs large-scale cell-culture biomanufacturing campus - second expansion",
+     "city": "Holly Springs",
+     "lat": 35.6513,
+     "lng": -78.8336,
+     "investment": 1200000000,
+     "jobs": 680,
+     "announced": "2024-04-11",
+     "status": "OPERATING AND EXPANDING. NC Commerce: '$1.2 billion in the Town of Holly Springs', 'adding 680 jobs', taking the cumulative site commitment to $3.2B (the 2021 announcement was $2B and 'over 700 jobs'). JDIG term is 12 years, so the 680 is a 12-year incentive target, not a near-term headcount. The site itself is built and running. Coords = Holly Springs NC town centre, approximate",
+     "source": "https://www.commerce.nc.gov/news/press-releases/2024/04/11/fujifilm-diosynth-biotechnologies-expands-holly-springs-facility-create-one-largest-end-end-cell"
+    },
+    {
+     "company": "Amgen",
+     "project": "Second Holly Springs plant, adjacent to the CaMP Helix drug-substance facility",
+     "city": "Holly Springs",
+     "lat": 35.6513,
+     "lng": -78.8336,
+     "investment": 1000000000,
+     "jobs": 370,
+     "announced": "2024-12-05",
+     "status": "announced / building out. Wake County: $1 billion, 370 new positions, employment 'projected to reach 725 total by 2032'. Total Amgen site investment now 'over $1.5 billion'. The 370 and the 725 are company-stated targets on an eight-year ramp. Coords = Holly Springs NC town centre, approximate",
+     "source": "https://www.wake.gov/news/amgen-announces-370-jobs-1-billion-expansion-holly-springs-nc-facility"
+    },
+    {
+     "company": "Siemens",
+     "project": "Smart Infrastructure manufacturing for data-centre electrical equipment - new Raleigh plant, new Wendell site and Wendell HQ expansion",
+     "city": "Raleigh and Wendell",
+     "lat": 35.7813,
+     "lng": -78.3697,
+     "investment": 165000000,
+     "jobs": 350,
+     "announced": "2026-03-17",
+     "status": "announced 2026-03-17. Siemens: 'more than $165 million' and '350 new jobs' - but the $165M and the 350 are stated across NORTH AND SOUTH CAROLINA COMBINED, not Wake County alone. The named North Carolina pieces are a 131,000 sq ft Raleigh facility (100 jobs), a 101,000 sq ft Wendell site (50 jobs) and a Wendell headquarters expansion (200+ additional jobs by 2028). Coords = Wendell NC town centre, approximate",
+     "source": "https://news.siemens.com/en-us/siemens-invests-165m-carolinas-supports-data-centers/"
+    }
+   ],
+   "parcel": null,
+   "dataCaveat": null,
+   "dataKey": "Raleigh-Cary, NC"
+  },
+  {
+   "metro": "Lafayette-West Lafayette, IN",
+   "state": "IN",
+   "counties": [
+    "Tippecanoe County",
+    "Benton County",
+    "Carroll County"
+   ],
+   "rank": null,
+   "kind": "live",
+   "records": 30103,
+   "jobs": 1350,
+   "capital": 4158000000,
+   "pop": 228468,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=LWLPOP",
+   "permits": 4037,
+   "permitsAsOf": "calendar 2025",
+   "permitsSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BPPRIV018157",
+   "permitsNote": "THE MSA HAS NO MONTHLY FRED PERMIT SERIES, so this is the sum of the three annual county series for calendar 2025: Tippecanoe BPPRIV018157 = 3,979, Carroll BPPRIV018015 = 52, Benton BPPRIV018007 = 6. Total 4,037. READ THIS WITH CARE: Tippecanoe's 2025 figure is a spike, not a level. The eight prior observations are 2018 1,751 / 2019 1,297 / 2020 1,317 / 2021 1,129 / 2022 1,487 / 2023 2,004 / 2024 1,548 / 2025 3,979 - a 157% jump in one year off an eight-year mean near 1,550. On the 2024 base the metro total would be about 1,580 and jobs-per-permit would be 0.85 rather than 0.334. The honest reading is that Lafayette's builders have ALREADY started responding to SK hynix, and that one year of data cannot tell you whether 3,979 is the new level.",
+   "students": 111720,
+   "campuses": [
+    {
+     "name": "Purdue University - West Lafayette",
+     "enrollment": 54651,
+     "term": "Fall 2025",
+     "type": "public4",
+     "lat": 40.428206,
+     "lng": -86.914435,
+     "source": "https://www.basedinlafayette.com/p/purdues-decade-of-record-enrollment",
+     "note": "University census figures released 16 September 2025: 54,651, 'the second most in Purdue history, down from the 55,119 students who were on the main campus to start fall 2024' - the first year-on-year fall in a decade, and deliberate. IMPORTANT: this headcount INCLUDES online students. The same publication's Fall 2024 report gives 55,119 total and 50,408 excluding online (https://www.basedinlafayette.com/p/purdue-tops-55000-students-up-56), so the physically-present Fall 2025 figure is roughly 50,000, not 54,651. Use ~50,000 for housing demand."
+    },
+    {
+     "name": "Ivy Tech Community College - Lafayette campus",
+     "enrollment": 11481,
+     "term": "2023-24 academic year (annual, not a fall census)",
+     "type": "community",
+     "lat": null,
+     "lng": null,
+     "source": "https://www.ivytech.edu/lafayette/6466.html",
+     "note": "NOT IN THE FEDERAL DIRECTORY AS A SEPARATE INSTITUTION - Ivy Tech Community College is one IPEDS UNITID headquartered in Indianapolis, so a CBSA query on the federal Colleges and Universities layer returns NOTHING for Ivy Tech Lafayette. That is a real 11,000-student hole in any campus list built from IPEDS alone. The 11,481 is the college's own '11,481 Students Enrolled' for the 2023-2024 academic year, which is an annual unduplicated count and is NOT comparable to a fall census figure. Address is 3101 S Creasy Lane, Lafayette IN 47905; I did not verify coordinates for it and have left them null rather than invent them."
+    },
+    {
+     "name": "Purdue University Global",
+     "enrollment": 45588,
+     "term": "2024 (IPEDS year)",
+     "type": "public4",
+     "lat": 40.45655,
+     "lng": -86.928449,
+     "source": "https://datausa.io/profile/university/purdue-university-global",
+     "note": "DO NOT COUNT THIS AS LOCAL HOUSING DEMAND. Purdue Global is an overwhelmingly online institution registered at a West Lafayette address (12,906 full-time against 32,682 part-time). It appears in the federal directory for this CBSA and will silently double the metro's apparent student population if it is not excluded."
+    },
+    {
+     "name": "Saint Elizabeth School of Nursing",
+     "enrollment": null,
+     "term": null,
+     "type": "health",
+     "lat": 40.427401,
+     "lng": -86.88083,
+     "source": "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Colleges_and_Universities_View/FeatureServer/0/query?where=CBSA%3D%2729200%27&outFields=*&f=pjson",
+     "note": "COULD NOT VERIFY. Listed as open in the federal Colleges and Universities directory (UNITID 152497, size category 1) but I could not retrieve an enrollment figure or a current operating confirmation from the institution or from College Navigator in this session. Treat as unverified; it is a hospital-affiliated nursing school and is small in any case."
+    }
+   ],
+   "projects": [
+    {
+     "company": "SK hynix",
+     "project": "Advanced chip packaging (HBM) production facility and R&D centre, Purdue Research Park",
+     "city": "West Lafayette",
+     "lat": 40.4566,
+     "lng": -86.9284,
+     "investment": 4000000000,
+     "jobs": 1000,
+     "announced": "2024-04-03",
+     "status": "UNDER CONSTRUCTION - GROUND BROKEN 2026-08-27. TWO SETS OF NUMBERS, BOTH RECORDED. The state announcement of 2024-04-03 said 'more than $3.87 billion' and 'up to 800 new, high-wage jobs by the end of 2030' on a 430,000 sq ft facility on 90 acres. At the groundbreaking Purdue and the company said 'over $4 billion' and 'approximately 1,000 employees when production begins' (https://www.purdue.edu/newsroom/2026/Q3/sk-hynix-breaks-ground-on-4-billion-advanced-packaging-production-facility-in-purdue-research-park/). Greater Lafayette Commerce, 2026-06-16, states production 'is expected to begin in 2028' and that the project has a $458 million CHIPS and Science Act award (https://www.greaterlafayettecommerce.com/2026/06/16/washington-fly-in/). A zoning suit over the site was still live in July 2026. The investment figure has gone UP and the job figure has gone UP; nothing here has been downsized. Coords = Purdue Research Park, West Lafayette, approximate",
+     "source": "https://www.iedc.in.gov/events/news/details/2024/04/03/gov.-holcomb-announces-generational-multi-billion-dollar-investment-to-make-indiana-leader-in-semiconductor-packaging"
+    },
+    {
+     "company": "Subaru of Indiana Automotive",
+     "project": "Lafayette assembly plant expansion",
+     "city": "Lafayette",
+     "lat": 40.4167,
+     "lng": -86.8753,
+     "investment": 158000000,
+     "jobs": 350,
+     "announced": "2020-02-26",
+     "status": "PRE-DATES THE CORRIDOR AND IS PROBABLY ALREADY REALISED. The 2020-02-26 release states '$158 million' and 'up to 350 new jobs by the end of 2023' on the company's 820-acre Lafayette campus. I did NOT find or fetch any 2025/2026 confirmation of the final headcount, so this row is an old intention with no current status check. It is included because it is part of the metro's announced-jobs stock, but a reader who wants only live announcements should net it out - doing so takes the metro total from 1,350 to 1,000 and jobs-per-permit from 0.334 to 0.248. Coords = Lafayette IN city centre, approximate",
+     "source": "https://www.lafayette.in.gov/DocumentCenter/View/11045/SIA-158m-Expansion-20200226"
+    }
+   ],
+   "parcel": null,
+   "dataCaveat": null,
+   "dataKey": "Lafayette-West Lafayette, IN"
+  },
+  {
+   "metro": "Provo-Orem-Lehi, UT",
+   "state": "UT",
+   "counties": [
+    "Utah County",
+    "Juab County"
+   ],
+   "rank": null,
+   "kind": "live",
+   "records": 31249,
+   "jobs": 800,
+   "capital": 12500000000,
+   "pop": 773426,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=PRVPOP",
+   "permits": 7304,
+   "permitsAsOf": "calendar 2025",
+   "permitsSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BPPRIV049049",
+   "permitsNote": "THE MSA HAS NO MONTHLY FRED PERMIT SERIES. Sum of the two annual county series for calendar 2025: Utah County BPPRIV049049 = 7,202 and Juab County BPPRIV049023 = 102. Total 7,304. Utah County's recent history is 2021 11,040 / 2022 8,165 / 2023 6,036 / 2024 6,321 / 2025 7,202 - a genuinely high-supply market that has already absorbed a boom and is building again.",
+   "students": 90196,
+   "campuses": [
+    {
+     "name": "Utah Valley University",
+     "enrollment": 48670,
+     "term": "Fall 2025",
+     "type": "public4",
+     "lat": 40.281078,
+     "lng": -111.716456,
+     "source": "https://www.uvu.edu/news/2025/fall-2025-enrollment.html",
+     "note": "University release: '48,670 total students for the 2025 fall semester', 'a 3.98% increase over last year's total enrollment'. Largest university in Utah by headcount. IPEDS Fall 2024 was 46,807 (https://nces.ed.gov/collegenavigator/?id=230737), consistent."
+    },
+    {
+     "name": "Brigham Young University",
+     "enrollment": 35873,
+     "term": "Fall 2024",
+     "type": "private4",
+     "lat": 40.250851,
+     "lng": -111.649281,
+     "source": "https://nces.ed.gov/collegenavigator/?id=230038",
+     "note": "IPEDS via NCES College Navigator. I could NOT retrieve an official Fall 2025 figure from BYU in this session (its enrollment-statistics host would not resolve), so this is a year older than the UVU figure. Accredited by NWCCU since 1923, next review 2029."
+    },
+    {
+     "name": "Mountainland Technical College",
+     "enrollment": 3967,
+     "term": "Fall 2024",
+     "type": "community",
+     "lat": 40.419941,
+     "lng": -111.886031,
+     "source": "https://nces.ed.gov/collegenavigator/?id=448248",
+     "note": "All undergraduate. Headquartered in LEHI - the same city as the Texas Instruments fab - and is the technician pipeline for it."
+    },
+    {
+     "name": "Rocky Mountain University of Health Professions",
+     "enrollment": 1686,
+     "term": "Fall 2024",
+     "type": "health",
+     "lat": 40.21033,
+     "lng": -111.655651,
+     "source": "https://nces.ed.gov/collegenavigator/?id=475495",
+     "note": "All graduate. Private for-profit."
+    },
+    {
+     "name": "Provo College",
+     "enrollment": null,
+     "term": null,
+     "type": "private4",
+     "lat": 40.245294,
+     "lng": -111.68431,
+     "source": "https://www.provocollege.edu/",
+     "note": "CHECKED FOR CLOSURE AND IT IS OPEN - it maintains a live site, a Provo campus page and a current catalogue. Enrollment not retrieved; it is in the smallest federal size band."
+    }
+   ],
+   "projects": [
+    {
+     "company": "Texas Instruments",
+     "project": "LFAB2 - 300mm analog/embedded semiconductor wafer fab, connected to the existing LFAB1",
+     "city": "Lehi",
+     "lat": 40.3916,
+     "lng": -111.8508,
+     "investment": 11000000000,
+     "jobs": 800,
+     "announced": "2023-02-15",
+     "status": "UNDER CONSTRUCTION IN 2026. Utah GOEO at announcement: '$11 billion', '800 new, high-tech jobs', described as 'the largest economic investment in Utah history', with a 20-year tax-credit agreement. TI broke ground 2023-11-02 and said 'first production available as early as 2026' plus 'thousands of indirect jobs' (https://investor.ti.com/news-releases/news-release-details/texas-instruments-breaks-ground-new-300-mm-semiconductor-wafer-0). TI's own Lehi page, read in this session, still describes LFAB2 as 'currently under construction' and references a July 2024 - February 2026 construction period (https://www.ti.com/about-ti/manufacturing/lehi.html), so the 'as early as 2026' start has at best only just been met. CAVEAT I COULD NOT CLOSE: search results indicate TI cut its 2026 capital-expenditure outlook (Feb 2026); I did not fetch that filing and so make no claim about whether LFAB2's schedule moved. The 800 is a state-incentive figure over a 20-year term. Coords = Lehi UT city centre, approximate",
+     "source": "https://business.utah.gov/news/texas-instruments-to-build-new-chip-factory-in-lehi-bringing-hundreds-of-jobs-to-the-state/"
+    },
+    {
+     "company": "Meta (Facebook)",
+     "project": "Eagle Mountain data centre campus, Phase 3",
+     "city": "Eagle Mountain",
+     "lat": 40.3141,
+     "lng": -112.0069,
+     "investment": 1500000000,
+     "jobs": null,
+     "announced": "2022-09-30",
+     "status": "OPERATING AND EXPANDED. The Phase 3 announcement of 2022-09-30 added two buildings and about 2 million sq ft, taking the campus from 2.4M sq ft across five buildings to 4.5M sq ft and bringing 'Meta's total capital investment in the Eagle Mountain project to $1.5 billion'. The original facility came into operation in July 2021. NO JOBS FIGURE WAS PUBLISHED in either source fetched, so jobs is null rather than estimated - this is a hyperscale data centre and its permanent headcount is small in any case. Eagle Mountain is in Utah County and therefore inside this MSA. Coords = Eagle Mountain UT city centre, approximate",
+     "source": "https://www.deseret.com/utah/2022/9/30/23380151/facebook-meta-announces-expansion-eagle-mountain-data-center-tax-breaks/"
+    },
+    {
+     "company": "Flagship Companies / Woodbury Corporation (joint venture 'Flagborough')",
+     "project": "Utah City - 700-acre mixed-use redevelopment of the former Geneva Steel site",
+     "city": "Vineyard",
+     "lat": 40.308,
+     "lng": -111.755,
+     "investment": null,
+     "jobs": null,
+     "announced": "2023",
+     "status": "UNDER CONSTRUCTION - INCLUDED BECAUSE IT IS HOUSING SUPPLY, NOT INDUSTRIAL DEMAND. Roughly 700 acres and 'more than 17 million square feet' of planned mixed-use space on Utah Lake. The first 450 residential units were under construction when the name was unveiled in 2023; first residents arrived in 2025; a grocery store, restaurant, playground and residential units are open; 'most of the 700 acres remains construction site or open ground' as of mid-2026. Huntsman Cancer Institute's Phase 1A there is about $400 million with a $75 million matching gift and is anticipated to open in 2028. NO TOTAL PROJECT CAPITAL AND NO TOTAL UNIT COUNT ARE PUBLISHED, so both are null. This is the single largest new multifamily pipeline in the metro and it sits between BYU and UVU - it is a competitor to anything the platform underwrites here, not a demand driver. Coords = Vineyard UT, approximate",
+     "source": "https://provo.com/living/utah-city-explained/"
+    }
+   ],
+   "parcel": null,
+   "dataCaveat": null,
+   "dataKey": "Provo-Orem-Lehi, UT"
+  },
+  {
+   "metro": "Youngstown-Warren, OH",
+   "state": "OH",
+   "counties": [
+    "Mahoning County",
+    "Trumbull County"
+   ],
+   "rank": null,
+   "kind": "live",
+   "records": 20408,
+   "jobs": 1000,
+   "capital": 2675000000,
+   "pop": 423678,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=YNGPOP",
+   "permits": 286,
+   "permitsAsOf": "calendar 2025",
+   "permitsSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BPPRIV039099",
+   "permitsNote": "THE MSA HAS NO MONTHLY FRED PERMIT SERIES. Sum of the two annual county series for calendar 2025: Mahoning BPPRIV039099 = 174 and Trumbull BPPRIV039155 = 112. Total 286. This is not a one-year anomaly - Mahoning's last eight years are 162/135/151/194/156/127/147/174 and Trumbull's are 94/80/105/120/106/98/127/112. A metro of 423,678 people permits fewer than 300 private housing units a year, roughly one unit per 1,480 residents. CAVEAT: the Census Building Permits Survey counts only permit-issuing places that report, so a low county figure can understate activity; but the ten-year flatness and the shrinking population both point to a genuinely dormant homebuilding market rather than a reporting gap.",
+   "students": 14388,
+   "campuses": [
+    {
+     "name": "Youngstown State University",
+     "enrollment": 12240,
+     "term": "Fall 2025",
+     "type": "public4",
+     "lat": 41.104928,
+     "lng": -80.64659,
+     "source": "https://www.vindy.com/news/local-news/2025/09/ysu-enrollment-of-12240-students-highest-since-2018/",
+     "note": "'total student headcount for fall 2025 is 12,240, an increase over last fall's official total headcount of 12,164' - the highest since 2018, and up for a second consecutive year. YSU's own release of 2025-09-17 confirms the direction ('overall student headcount: up 2.1%') but does not state the total. IPEDS Fall 2024 was 12,204 (https://nces.ed.gov/collegenavigator/?id=206695), consistent with the 12,164 official count. Campus is immediately north of downtown Youngstown."
+    },
+    {
+     "name": "Kent State University at Trumbull",
+     "enrollment": 2148,
+     "term": "Fall 2024",
+     "type": "public4",
+     "lat": 41.278748,
+     "lng": -80.836233,
+     "source": "https://nces.ed.gov/collegenavigator/?id=203474",
+     "note": "All undergraduate. Regional campus in Warren, Trumbull County - about ten minutes from Lordstown."
+    }
+   ],
+   "projects": [
+    {
+     "company": "OpenAI / Oracle / SoftBank (Stargate)",
+     "project": "Stargate AI data centre at the former Lordstown Motors / GM Lordstown plant",
+     "city": "Lordstown",
+     "lat": 41.1656,
+     "lng": -80.8484,
+     "investment": null,
+     "jobs": null,
+     "announced": "2025-09-25",
+     "status": "UNDER CONSTRUCTION, AND DELIBERATELY RECORDED WITH NULL CAPITAL AND NULL JOBS. OpenAI's own announcement says only: 'One site is located in Lordstown, Ohio, where SoftBank has broken ground on an advanced data center design which is on track to be operational next year', and that the two SoftBank sites together 'can scale to 1.5 gigawatts over the next 18 months'. The headline figures in that release - 'over 25,000 onsite jobs' and 'over $400 billion in investment over the next three years' - are for ALL FIVE NEW SITES COMBINED plus the wider $500 billion, 10-gigawatt programme. NO PER-SITE CAPITAL AND NO PER-SITE JOB COUNT HAS BEEN PUBLISHED FOR LORDSTOWN, so allocating any share of 25,000 to this metro would be an invention. A trade outlet reports the site is 'projected to create thousands of jobs' with 'several thousand positions' across construction, trades and operations (https://www.ohiotechnews.com/stories/stargate-ohio-expands-official), which is a local characterisation, not a company commitment. Coords = Lordstown OH village centre, approximate",
+     "source": "https://openai.com/index/five-new-stargate-sites/"
+    },
+    {
+     "company": "Foxconn and SoftBank",
+     "project": "Joint manufacture of Stargate data-centre equipment at the 6.2 million sq ft former GM Lordstown plant",
+     "city": "Lordstown",
+     "lat": 41.1656,
+     "lng": -80.8484,
+     "investment": 375000000,
+     "jobs": null,
+     "announced": "2025-08-18",
+     "status": "SITE ACQUIRED; MANUFACTURING NOT YET RUNNING. Foxconn sold the 6.2 million sq ft former GM factory to Crescent Dune LLC, a SoftBank entity, for $375 million, to make 'data center-related equipment for the Stargate project' - 'the first manufacturing site established under the $500 billion Stargate data center project'. NO JOBS FIGURE IS GIVEN IN THIS SOURCE. A widely-circulated 'SoftBank to invest up to $3 billion to overhaul the Lordstown plant' figure exists in local and wire coverage attributed to a Nikkei report; I ATTEMPTED TO FETCH THAT STORY AND WAS REFUSED (HTTP 403), SO THE $3 BILLION IS NOT RECORDED HERE. The $375M above is a property transaction price, not a capital-investment commitment. Coords = Lordstown OH village centre, approximate",
+     "source": "https://www.datacenterdynamics.com/en/news/foxconn-and-softbank-to-manufacture-stargate-data-center-equipment-at-lordstown-ohio-facility/"
+    },
+    {
+     "company": "Ultium Cells (GM and LG Energy Solution)",
+     "project": "Lithium-ion battery cell plant, Lordstown",
+     "city": "Lordstown",
+     "lat": 41.1656,
+     "lng": -80.8484,
+     "investment": 2300000000,
+     "jobs": 1000,
+     "announced": "2019-12",
+     "status": "OPERATING, BUT THIS IS THE DOWNSIZE-AND-RECOVER STORY OF THE BATCH. JobsOhio records the original December 2019 announcement as 'up to $2.3 billion' and '1,000 jobs'. In 2026 the plant laid off 1,334 hourly employees, the company citing 'electric vehicle adoption rates that are slower than the company had originally expected' (https://www.wfmj.com/story/53355222/ultium-cells-cuts-1300-jobs-at-lordstown-plant). It then reversed: on 2026-07-16 the Business Journal reported a phased recall of roughly 1,300 temporarily laid-off hourly workers beginning 2026-07-27 and completing mid-August, with 448 having been on indefinite layoff (https://businessjournaldaily.com/laid-off-workers-set-to-return-to-ultium-cells-lordstown-plant/). Ultium simultaneously redirected its TENNESSEE plant to LFP cells for energy storage, so the pivot away from pure EV demand is company-wide. Net: the jobs came back within the year, but this plant has now demonstrated that its headcount swings by more than its entire announced job count. Coords = Lordstown OH village centre, approximate",
+     "source": "https://www.jobsohio.com/newsroom/ohio-success/ultium-cells"
+    }
+   ],
+   "parcel": null,
+   "dataCaveat": null,
+   "dataKey": "Youngstown-Warren, OH"
+  },
+  {
+   "metro": "Albuquerque, NM",
+   "state": "NM",
+   "counties": [
+    "Bernalillo County",
+    "Sandoval County",
+    "Valencia County",
+    "Torrance County"
+   ],
+   "rank": null,
+   "kind": "live",
+   "records": 50000,
+   "jobs": 1150,
+   "capital": 4330000000,
+   "pop": 925279,
+   "popAsOf": "2025-07-01",
+   "popSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=ABQPOP",
+   "permits": 2706,
+   "permitsAsOf": "2025-08 to 2026-07",
+   "permitsSrc": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=ALBU735BPPRIV",
+   "permitsNote": "Explicit twelve-month sum of the monthly observations on the cited FRED CSV for series ALBU735BPPRIV (Census Building Permits Survey, all structure types, MSA level): 192+161+128+123+355+134+165+596+227+195+191+239 = 2,706. Note two spike months (2026-03 = 596 and 2025-12 = 355) against a typical month near 180: a single large multifamily filing moves this series a lot. 2,706 units against 925,279 people is thin supply for a metro this size.",
+   "students": 43602,
+   "campuses": [
+    {
+     "name": "University of New Mexico - Main Campus",
+     "enrollment": 23124,
+     "term": "Fall 2024",
+     "type": "public4",
+     "lat": 35.083868,
+     "lng": -106.620155,
+     "source": "https://nces.ed.gov/collegenavigator/?id=187985",
+     "note": "IPEDS via NCES College Navigator. The Health Sciences Center is part of this UNITID, not separate."
+    },
+    {
+     "name": "Central New Mexico Community College",
+     "enrollment": 19342,
+     "term": "Fall 2024",
+     "type": "community",
+     "lat": 35.071878,
+     "lng": -106.628861,
+     "source": "https://nces.ed.gov/collegenavigator/?id=187532",
+     "note": "All undergraduate. Multiple campuses across Bernalillo County; coordinate is Main Campus."
+    },
+    {
+     "name": "University of New Mexico - Valencia County Campus",
+     "enrollment": 921,
+     "term": "2024 (IPEDS year)",
+     "type": "community",
+     "lat": 34.728683,
+     "lng": -106.705371,
+     "source": "https://datausa.io/profile/university/university-of-new-mexico-valencia-county-campus",
+     "note": "Los Lunas - the same village as Meta's data centre campus. Separate UNITID (188049) from UNM Main."
+    },
+    {
+     "name": "Southwestern Indian Polytechnic Institute",
+     "enrollment": 215,
+     "term": "Fall 2024",
+     "type": "community",
+     "lat": 35.176084,
+     "lng": -106.664475,
+     "source": "https://nces.ed.gov/collegenavigator/?id=188216",
+     "note": "Federal tribal college, all undergraduate, student body entirely American Indian or Alaska Native."
+    },
+    {
+     "name": "Brookline College - Albuquerque",
+     "enrollment": null,
+     "term": null,
+     "type": "private4",
+     "lat": 35.08781,
+     "lng": -106.68749,
+     "source": "https://www.brooklinecollege.edu/locations/albuquerque/",
+     "note": "CHECKED FOR CLOSURE - the campus page is live and the college publishes a current catalogue, so it appears to be operating. Enrollment not retrieved; smallest federal size band."
+    }
+   ],
+   "projects": [
+    {
+     "company": "Intel",
+     "project": "Fab 9 - 3D advanced semiconductor packaging (Foveros), Rio Rancho",
+     "city": "Rio Rancho",
+     "lat": 35.2328,
+     "lng": -106.663,
+     "investment": 3500000000,
+     "jobs": 700,
+     "announced": "2021-05-03",
+     "status": "OPERATING SINCE 2024-01-24. The 2021 announcement was '$3.5 billion', '700 high-tech jobs' within three years plus 1,000 construction jobs and 3,500 additional jobs supported statewide. At the opening Intel said the investment 'created hundreds of high-tech Intel jobs, more than 3,000 construction jobs and an additional 3,500 jobs across the state' (https://www.intc.com/news-events/press-releases/detail/1670/intel-opens-fab-9-in-new-mexico). NOTE THE WORDING CHANGE: the promise was 700 direct jobs, the delivery language is 'hundreds' - Intel has not restated 700 and has been through company-wide layoffs since. This is the clearest example in the file of a job number that quietly softened without ever being formally revised. Rio Rancho is in Sandoval County, inside this MSA. Coords = Rio Rancho NM city centre, approximate",
+     "source": "https://www.businesswire.com/news/home/20210503005783/en/Intel-to-Invest-3.5-Billion-to-Expand-New-Mexico-Manufacturing-Operations/"
+    },
+    {
+     "company": "Meta",
+     "project": "Los Lunas data centre campus - two additional buildings",
+     "city": "Los Lunas",
+     "lat": 34.8062,
+     "lng": -106.7334,
+     "investment": 800000000,
+     "jobs": null,
+     "announced": "2025-01-17",
+     "status": "UNDER CONSTRUCTION. 'Around $800 million' for two new buildings, approved by the Village of Los Lunas in December 2024 through industrial revenue bonds, with construction 'expected to take around three years'. NO JOBS FIGURE was published in the source fetched, so jobs is null. Los Lunas is in Valencia County, inside this MSA. This is an expansion of a campus Meta has been building since 2016; the $800M is the increment, not the cumulative campus figure, which was not published in a source I fetched. Coords = Los Lunas NM village centre, approximate",
+     "source": "https://www.datacenterdynamics.com/en/news/meta-planning-expansion-of-los-lunas-data-center-campus-in-new-mexico/"
+    },
+    {
+     "company": "AeroVironment",
+     "project": "Albuquerque campus expansion (uncrewed systems and space)",
+     "city": "Albuquerque",
+     "lat": 35.0844,
+     "lng": -106.6504,
+     "investment": 30000000,
+     "jobs": 450,
+     "announced": "2026-03-03",
+     "status": "announced 2026-03-03. $30 million of company investment alongside $5 million from the state and $1 million from the city, for 'about 450 jobs' over the next decade near Kirtland Air Force Base, with a claimed '$670 million in economic impact in the next 10 years'. The 450 is a company/state figure over TEN YEARS. Coords = Albuquerque NM city centre, approximate",
+     "source": "https://www.yahoo.com/news/articles/defense-manufacturer-announces-plans-more-185648395.html"
+    },
+    {
+     "company": "Maxeon Solar Technologies",
+     "project": "3-gigawatt solar cell and panel manufacturing facility, Albuquerque",
+     "city": "Albuquerque",
+     "lat": 35.0844,
+     "lng": -106.6504,
+     "investment": 1000000000,
+     "jobs": 1800,
+     "announced": "2023-08-10",
+     "status": "CANCELLED. THIS ROW IS EXCLUDED FROM total_investment AND total_jobs. Announced 2023-08-10 by the Governor as a billion-dollar project bringing 1,800 jobs (pv magazine puts the figure at $1.9 billion). The timeline slipped through 2024 and 2025; in FEBRUARY 2026 Maxeon 'abandoned the lease on its brownfield site in Albuquerque, New Mexico' and said it would instead contract with third-party manufacturers, and on 2026-04-06 a filing revealed it had 'applied to be placed under judicial management' in Singapore, seeking an arrangement with creditors to survive 'as a going concern'. It 'ultimately did not proceed with construction'. Coords = Albuquerque NM city centre, approximate",
+     "source": "https://pv-magazine-usa.com/2026/04/06/maxeon-filing-reveals-the-company-has-applied-for-restructuring-in-singapore-court/"
+    }
+   ],
+   "parcel": null,
+   "dataCaveat": null,
+   "dataKey": "Albuquerque, NM"
+  },
+  {
+   "metro": "Monroe, LA (MSA)",
+   "state": "LA",
+   "counties": [
+    "Ouachita Parish"
+   ],
+   "rank": 21,
+   "kind": "studied",
+   "jobs": 212,
+   "capital": 93000000,
+   "pop": 158542,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LAOUAC2POP.txt",
+   "permits": 392,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022073.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure. FRED series BPPRIV022073, New Private Housing Structures Authorized by Building Permits for Ouachita Parish, annual. 2025 = 392, up from 345 in 2024 but below the 614 peak in 2021. No 5+unit multifamily split is published at parish level.",
+   "campuses": [
+    {
+     "name": "University of Louisiana at Monroe",
+     "enrollment": 8601,
+     "term": "Fall 2024",
+     "lat": 32.53183,
+     "lng": -92.06581
+    },
+    {
+     "name": "Louisiana Delta Community College",
+     "enrollment": 3463,
+     "term": "Fall 2024",
+     "lat": 32.49582,
+     "lng": -92.03147
+    },
+    {
+     "name": "Unitech Training Academy-West Monroe",
+     "enrollment": 81,
+     "term": "Fall 2024",
+     "lat": 32.51848,
+     "lng": -92.14764
+    }
+   ],
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://services7.arcgis.com/MwglueBMxIOHOjKe/arcgis/rest/services/Developer_Parcels/FeatureServer/1",
+    "verdict": "PARTLY USABLE - the best of the four, and better than the previous study concluded"
+   },
+   "records": 0,
+   "studyNote": "THE BIG ONE IS NOT IN THIS PARISH. Meta's Richland Parish / Hyperion campus (>$50bn, 5 GW, ~1,000 operational jobs, 7,500 peak construction) sits at roughly 32.42, -91.75 near Holly Ridge, about 40 road miles east of Monroe on I-20. Richland Parish's entire population is 19,582 (FRED LARICH3POP, 2025-01-01) and it has no meaningful housing stock, so Monroe-West Monroe is the nearest real housing market to a 7,500-worker construction site. That adjacency, not Ouachita's own project list, is the investment case for Monroe.",
+   "recommended": true,
+   "projects": [
+    {
+     "company": "Faith Technologies Incorporated (FTI)",
+     "project": "New manufacturing facility for electrical components and modular electrical solutions for large-scale infrastructure",
+     "city": "Monroe",
+     "investment": 80500000,
+     "jobs": 200,
+     "announced": "2026-06-09",
+     "status": "announced; construction stated for completion in spring 2027",
+     "url": "https://www.opportunitylouisiana.gov/news/faith-technologies-incorporated-to-power-northeast-louisiana-growth-with-80-5-million-investment",
+     "lat": 32.50255,
+     "lng": -92.11622
+    },
+    {
+     "company": "Mid South Extrusion",
+     "project": "Two polyethylene extrusion lines (second expansion in seven months)",
+     "city": "Monroe",
+     "investment": 12500000,
+     "jobs": 12,
+     "announced": "2025-04-09",
+     "status": "announced; production lines stated to become operational in 2026",
+     "url": "https://www.opportunitylouisiana.gov/news/mid-south-extrusion-announces-second-expansion-in-seven-months-with-12-5-million-investment-in-monroe-manufacturing-facility",
+     "lat": 32.50255,
+     "lng": -92.11622
+    }
+   ]
+  },
+  {
+   "metro": "Thibodaux, LA (Micropolitan)",
+   "state": "LA",
+   "counties": [
+    "Lafourche Parish"
+   ],
+   "rank": 23,
+   "kind": "studied",
+   "jobs": 70,
+   "capital": 29800000,
+   "pop": 95505,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LALAFO5POP.txt",
+   "permits": 344,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022057.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure. FRED series BPPRIV022057, annual parish total. 2025 = 344, against 497 in the 2022 post-Ida rebuild peak. No 5+unit split published.",
+   "campuses": [
+    {
+     "name": "Nicholls State University",
+     "enrollment": 5893,
+     "term": "Fall 2025 (fourteenth class day, 2025-09-05)",
+     "lat": 29.78859,
+     "lng": -90.80351
+    },
+    {
+     "name": "Fletcher Technical Community College",
+     "enrollment": 2663,
+     "term": "Fall 2024",
+     "lat": 29.69154,
+     "lng": -90.81107
+    }
+   ],
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://services7.arcgis.com/4SUeHSEFUQHen9tg/arcgis/rest/services/LafourcheParishParcels2020/FeatureServer/0",
+    "verdict": "PARTLY USABLE - real assessed value and real sale prices, but stale and with NO use code at all"
+   },
+   "records": 0,
+   "studyNote": "VERIFIED, NO CLOSURES OR RENAMES FOUND. Both institutions are active in the federal directory. Combined 8,556 students against a parish population of 95,505.",
+   "recommended": true,
+   "projects": [
+    {
+     "company": "Deere & Company (John Deere)",
+     "project": "Thibodaux plant expansion",
+     "city": "Thibodaux",
+     "investment": 29800000,
+     "jobs": 70,
+     "announced": "2022-10-11",
+     "status": "announced 2022 - OUTSIDE the 2023-2026 window; included only because it is the ONLY sizeable corporate project I could find for Thibodaux/Lafourche Parish at all. Current status not verified.",
+     "url": "https://www.opportunitylouisiana.gov/news/john-deere-thibodaux-plant-expansion-to-create-70-bayou-region-jobs",
+     "lat": 29.79576,
+     "lng": -90.82287
+    }
+   ]
+  },
+  {
+   "metro": "Natchitoches, LA (Micropolitan)",
+   "state": "LA",
+   "counties": [
+    "Natchitoches Parish"
+   ],
+   "rank": 25,
+   "kind": "studied",
+   "jobs": -450,
+   "capital": 0,
+   "pop": 36089,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LANATC9POP.txt",
+   "permits": 26,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022069.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure. FRED series BPPRIV022069, annual parish total. TWENTY-SIX UNITS in all of 2025, down from 40 in 2024 and 116 in 2023. This is the lowest permit count in the entire Louisiana file and it is a collapse, not a dip.",
+   "campuses": [
+    {
+     "name": "Northwestern State University of Louisiana",
+     "enrollment": 8402,
+     "term": "Fall 2025",
+     "lat": 31.74734,
+     "lng": -93.09899
+    }
+   ],
+   "parcel": {
+    "available": true,
+    "kind": "arcgis",
+    "endpoint": "https://services7.arcgis.com/eR5n9maFLflJFdXU/arcgis/rest/services/LA_Natchitoches_Parish_22069_a0198910/FeatureServer/0",
+    "verdict": "NOT USABLE - the endpoint works perfectly and the data inside it is empty"
+   },
+   "records": 0,
+   "studyNote": "VERIFIED, NO CLOSURES OR RENAMES FOUND for NSU itself. Northwestern State is the only degree-granting institution in the parish. THE PARISH'S BIG NEWS IS A CLOSURE ON THE EMPLOYER SIDE, NOT THE CAMPUS SIDE - see projects.",
+   "recommended": false,
+   "projects": [
+    {
+     "company": "International Paper",
+     "project": "Red River Mill, Campti - containerboard mill",
+     "city": "Campti",
+     "investment": null,
+     "jobs": -450,
+     "announced": "2025-02-13",
+     "status": "*** CLOSED *** International Paper announced the permanent closure of the Red River Mill on 2025-02-13, effective by the end of April 2025. LED and the Louisiana Workforce Commission issued a joint dislocated-worker statement on 2025-02-14. This is the largest single employment event in Natchitoches Parish in the window and it is negative.",
+     "url": "https://lailluminator.com/briefs/paper-mill/",
+     "lat": 31.8938,
+     "lng": -93.1069
+    }
+   ]
+  },
+  {
+   "metro": "Alexandria, LA (MSA)",
+   "state": "LA",
+   "counties": [
+    "Rapides Parish"
+   ],
+   "rank": 27,
+   "kind": "studied",
+   "jobs": 365,
+   "capital": 3835300000,
+   "pop": 125877,
+   "popAsOf": "2025-01-01",
+   "popSrc": "https://fred.stlouisfed.org/data/LARAPI5POP.txt",
+   "permits": 241,
+   "permitsAsOf": "2025 (calendar year)",
+   "permitsSrc": "https://fred.stlouisfed.org/data/BPPRIV022079.txt",
+   "permitsNote": "NOT a trailing-12-month metro figure. FRED series BPPRIV022079, annual parish total. 241 units in 2025 against a 125,877 population - a build rate of 1.9 units per 1,000 residents, roughly a third of Lafayette's. No 5+unit split published.",
+   "campuses": [
+    {
+     "name": "Louisiana State University at Alexandria (LSUA)",
+     "enrollment": 7684,
+     "term": "Fall 2025",
+     "lat": 31.17843,
+     "lng": -92.41434
+    },
+    {
+     "name": "Louisiana Christian University",
+     "enrollment": 936,
+     "term": "Fall 2024",
+     "lat": 31.32351,
+     "lng": -92.42583
+    },
+    {
+     "name": "Central Louisiana Technical Community College",
+     "enrollment": 1345,
+     "term": "Fall 2024",
+     "lat": 31.3102,
+     "lng": -92.44613
+    },
+    {
+     "name": "Blue Cliff College-Alexandria",
+     "enrollment": 345,
+     "term": "Fall 2024",
+     "lat": 31.31195,
+     "lng": -92.44536
+    },
+    {
+     "name": "Unitech Training Academy-Alexandria",
+     "enrollment": 86,
+     "term": "Fall 2024",
+     "lat": 31.31195,
+     "lng": -92.44536
+    },
+    {
+     "name": "Pineville Beauty School",
+     "enrollment": 45,
+     "term": "Fall 2024",
+     "lat": 31.3224,
+     "lng": -92.4343
+    }
+   ],
+   "parcel": {
+    "available": false,
+    "kind": null,
+    "endpoint": null,
+    "verdict": "NOT USABLE - there is no parcel roll behind any public endpoint in Rapides Parish"
+   },
+   "records": 0,
+   "studyNote": "ONE RENAME CONFIRMED (Louisiana College -> Louisiana Christian University), NO CLOSURES FOUND. All six institutions above are active in the federal directory with Fall 2024 data. THE HEADLINE ENROLMENT IS MISLEADING: the six sum to 10,441, but 4,649 of those are LSUA online students who live nowhere near Alexandria. Physically present students are roughly 3,035 + 936 + (part of 1,345) + 345 + 86 + 45, i.e. under 6,000 and probably nearer 5,000 - the smallest real campus population of the four cities.",
+   "recommended": false,
+   "projects": [
+    {
+     "company": "Applied Digital",
+     "project": "Delta Forge 1 AI factory campus",
+     "city": "Boyce",
+     "investment": 3600000000,
+     "jobs": 200,
+     "announced": "2026-05-26",
+     "status": "under construction; initial operations stated for mid-2027",
+     "url": "https://www.opportunitylouisiana.gov/news/central-louisiana-secures-3-6-billion-applied-digital-ai-factory-campus",
+     "lat": 31.3849,
+     "lng": -92.6779
+    },
+    {
+     "company": "Ucore Rare Metals (Ucore North America)",
+     "project": "Louisiana Strategic Metals Complex - 80,800 sq ft rare earth separation and oxide plant at England Airpark",
+     "city": "Alexandria",
+     "investment": 75000000,
+     "jobs": 100,
+     "announced": "2023-04-06",
+     "status": "LIVE AND COMMISSIONING - the company states staged commissioning with 2,000 tpa of capacity in 2026, 5,000 tpa in 2027 and up to 7,500 tpa in 2028; August 2026 releases report RapidSX equipment scale-up verification. Under active development and testing rather than full commercial production.",
+     "url": "https://ucore.com/smc/",
+     "lat": 31.3274,
+     "lng": -92.5486
+    },
+    {
+     "company": "Coca-Cola Bottling Company UNITED",
+     "project": "Warehouse and distribution modernisation with next-generation automation",
+     "city": "Alexandria",
+     "investment": 106000000,
+     "jobs": 50,
+     "announced": "2026-08-11",
+     "status": "ANNOUNCED - construction is not expected to begin until February 2027",
+     "url": "https://www.opportunitylouisiana.gov/news/building-on-120-years-in-central-louisiana-coca-cola-united-expands-alexandria-operations",
+     "lat": 31.31195,
+     "lng": -92.44536
+    },
+    {
+     "company": "Plastipak Packaging",
+     "project": "200,000 sq ft expansion adding warehouse space and up to five production lines",
+     "city": "Pineville",
+     "investment": 53800000,
+     "jobs": 15,
+     "announced": "2025-11-18",
+     "status": "announced; expansion stated for completion by Q4 2026",
+     "url": "https://www.opportunitylouisiana.gov/news/plastipak-packaging-announces-53-8-million-expansion-at-central-louisiana-manufacturing-facility",
+     "lat": 31.3224,
+     "lng": -92.4343
+    },
+    {
+     "company": "SunGas Renewables (GTI Energy)",
+     "project": "Beaver Lake Renewable Energy - ~400,000 t/yr green methanol plant",
+     "city": "Pineville",
+     "investment": 1800000000,
+     "jobs": 109,
+     "announced": "2023-07-26",
+     "status": "*** CANCELLED *** SunGas Renewables announced on 2026-06-12 that it has ceased further development of the Beaver Lake Biofuels Project, citing slower-than-expected market adoption of low-carbon methanol, uncertainty over the carbon capture and storage pathway, and lack of clarity on regulatory support and financing. The project had reached 'final stage of development' in May 2025 with C2X, which makes the reversal sharper.",
+     "url": "https://www.kalb.com/2026/06/12/sungas-renewables-ceases-further-development-beaver-lake-biofuels-project/",
+     "lat": 31.3224,
+     "lng": -92.4343
+    }
+   ]
+  }
+ ],
+ "dropped": [
+  {
+   "metro": "Austin-Round Rock-San Marcos, TX",
+   "jobs": 2000,
+   "why": "CONFIRMED: fetched layer metadata - 'WCAD Parcels', 175 fields, maxRecordCount 2000, Williamson County (the Samsung Taylor site). Excellent value/sqft/year-built coverage. TRAVIS COUNTY is thinner: the best endpoint is h",
+   "parcel": true
+  },
+  {
+   "metro": "Richmond, VA",
+   "jobs": 1760,
+   "why": "CONFIRMED: fetched layer metadata - 'Tax Parcels and CAMA Data External', 95 fields, maxRecordCount 5000, published by Henrico County GIS, no token. Together with Washoe this is the strongest schema found: it is the only",
+   "parcel": true
+  },
+  {
+   "metro": "Kansas City, MO-KS",
+   "jobs": 4000,
+   "why": "DECISIVE NEGATIVE. Johnson County, Kansas publishes NO free machine-readable parcel or assessment-roll data. Its AIMS open data portal (jocogov-aims.opendata.arcgis.com) was enumerated via its DCAT-US catalogue feed: 40 ",
+   "parcel": false
+  },
+  {
+   "metro": "College Station-Bryan, TX",
+   "jobs": 1500,
+   "why": "NO API. Brazos Central Appraisal District publishes free zipped ESRI shapefiles - certified rolls for 2020-2025 plus monthly updates - e.g. https://brazoscad.org/wp-content/uploads/2026/05/BrazosCADParcels_20260422.zip. ",
+   "parcel": true
+  },
+  {
+   "metro": "Huntsville, AL",
+   "jobs": 450,
+   "why": "NO CONFIRMED COUNTY PARCEL API. Madison County, Alabama routes public property records through a vendor viewer (isv.kcsgis.com/al.Madison_revenue) with no documented REST endpoint. The City of Huntsville's GIS 'Data Depo",
+   "parcel": false
+  },
+  {
+   "metro": "Clarksville, TN-KY",
+   "jobs": 860,
+   "why": "CONFIRMED: fetched layer metadata - 'Parcel' layer 2, ~68 fields, maxRecordCount 2000. Hosted by Austin Peay State University for Clarksville-Montgomery County GIS (CMCGIS), so this is an academic-hosted rather than coun",
+   "parcel": true
+  },
+  {
+   "metro": "Charleston-North Charleston, SC",
+   "jobs": 1500,
+   "why": "DECISIVE NEGATIVE for the county that matters. Berkeley County SC - where Redwood Materials sits - exposes parcel GEOMETRY ONLY and no assessment attributes. Its ArcGIS REST root (https://gis.berkeleycountysc.gov/arcgis/",
+   "parcel": false
+  },
+  {
+   "metro": "Sherman-Denison, TX",
+   "jobs": null,
+   "why": "REJECTED ON PARCEL DATA. Grayson County's public parcel layer was fetched and is attribute-empty. https://maps.co.grayson.tx.us/arcgis/rest/services/Grayson/Grayson_County_Public_Interactive_Map/MapServer/5 (maxRecordCou",
+   "parcel": false
+  },
+  {
+   "metro": "Abilene, TX",
+   "jobs": null,
+   "why": "REJECTED AS UNVERIFIABLE. A plausible endpoint exists - https://gis.abilenetx.com/arcgis/rest/services/AbileneTaylorCountyParcels/MapServer - but every fetch was refused before reaching the service ('robots.txt fetch fai",
+   "parcel": false
+  },
+  {
+   "metro": "Memphis, TN",
+   "jobs": null,
+   "why": "REJECTED ON PARCEL DATA - AUTHENTICATION REQUIRED. The City of Memphis parcel service returns a hard token error verbatim: {\"error\":{\"code\":499,\"message\":\"Token Required\",\"details\":[]}}. The Shelby County assessor servic",
+   "parcel": false
+  },
+  {
+   "metro": "Boise City, ID",
+   "jobs": null,
+   "why": "REJECTED ON TWO GROUNDS. (1) NO USE-CODE DESCRIPTION. Ada County's parcel layer https://services2.arcgis.com/dgGjZc6xAH5m5JyP/arcgis/rest/services/Parcels/FeatureServer/5 was fetched successfully (32 fields, maxRecordCou",
+   "parcel": false
+  },
+  {
+   "metro": "Washington-Arlington-Alexandria, DC-VA-MD-WV (Northern Virginia data-centre corridor)",
+   "jobs": null,
+   "why": "REJECTED ON PARCEL DATA, AND SECONDARILY ON THESIS. Loudoun County's open-data catalogue was enumerated in full via its DCAT feed and contains exactly ONE parcel dataset, 'Loudoun Parcel XY', pointing at a LandRecords ma",
+   "parcel": false
+  },
+  {
+   "metro": "Elizabethtown-Fort Knox, KY / Louisville, KY",
+   "jobs": null,
+   "why": "REJECTED ON PARCEL DATA. Kentucky's statewide GIS server publishes PVA parcels county by county, and the folder listing at https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services was fetched and contains exactly",
+   "parcel": false
+  },
+  {
+   "metro": "Atlanta-Sandy Springs-Roswell, GA (Cartersville / Bartow County cluster)",
+   "jobs": null,
+   "why": "REJECTED ON PARCEL DATA. Bartow County publishes property records only through the qPublic / Schneider Corporation hosted application (https://qpublic.schneidercorp.com/Application.aspx?App=BartowCountyGA), which is a se",
+   "parcel": false
+  },
+  {
+   "metro": "Statewide fallbacks that were tested and are NOT adequate as primary sources",
+   "jobs": null,
+   "why": "Recorded so they are not re-tested. (1) Parcel Boundaries of Indiana Current, https://gisdata.in.gov/server/rest/services/Hosted/Parcel_Boundaries_of_Indiana_Current/FeatureServer/0 - 33 fields, maxRecordCount 2000, no t",
+   "parcel": false
+  },
+  {
+   "metro": "Ouachita Parish (Monroe) Parish, LA \u2014 University of Louisiana Monroe - 8,601",
+   "jobs": null,
+   "why": "No public parcel endpoint carries a land-use description, a property class, a valuation or a unit count. The only two working endpoints are the City of Monroe's, and neither supports multifamily identification. Public_Pa",
+   "parcel": false
+  },
+  {
+   "metro": "Natchitoches Parish Parish, LA \u2014 Northwestern State University - 8,402",
+   "jobs": null,
+   "why": "The parish assessor has no public REST API. The only machine-readable parcel layer is a Regrid extract republished by the same private ArcGIS Online account that hosts the Caddo copy. Its row count is real (29,443, confi",
+   "parcel": false
+  },
+  {
+   "metro": "Lafourche Parish (Thibodaux) Parish, LA \u2014 Nicholls State University - 5,893",
+   "jobs": null,
+   "why": "No current parcel service. The only parcel layer published by Lafourche Parish Government on ArcGIS Online is 'Lafourche_Parcels_Jan2015' - an eleven-year-old snapshot. The parish's own ArcGIS Server (gis.lafourchegov.or",
+   "parcel": false
+  },
+  {
+   "metro": "Rapides Parish (Alexandria) Parish, LA \u2014 LSU Alexandria and Louisiana Christian University - enrolment not verified in this session",
+   "jobs": null,
+   "why": "No ArcGIS REST, Socrata or CKAN parcel endpoint exists. The Rapides Parish Assessor runs a proprietary geoPortal viewer (geoportalmaps.com/atlas/rapides/viewer.htm) with no REST service behind it that is publicly documen",
+   "parcel": false
+  },
+  {
+   "metro": "Lafayette Parish - the Assessor's OWN service (the parish itself is RECOMMENDED at rank 1 via a different endpoint) Parish, LA \u2014 University of Louisiana at Lafayette - 19,723",
+   "jobs": null,
+   "why": "Listed here only so the record is straight: https://webgis.lafayetteassessor.com/arcgis/rest/services/Sidwell/TaxParcelPublic/MapServer/0 could NOT be queried from this session - four separate attempts all failed at the ",
+   "parcel": false
+  }
+ ],
+ "ranking": "Ranked on (a) verified announced DIRECT jobs, (b) genuine multifamily-rental relevance - job scale relative to metro population and current permit supply, weighted down where the anchor project is badly delayed or the market is already over-supplied - and (c) whether a free machine-readable parcel/assessment endpoint was actually fetched and confirmed. RECOMMENDED FIVE: (1) PHOENIX - 17,000 verified direct jobs across four separate anchors and $292.5B of capital, the deepest and most diversified pipeline of any metro here; Maricopa's Assessor MapServer is confirmed, rich and includes sale price; the only weakness is no unit-count field, and Pinal County (the LG site) has no county API. (2) COLUMBUS - 7,000 verified direct jobs, and uniquely BOTH relevant counties are confirmed with full CAMA schemas (Franklin 163 fields, Licking 80+ with EpinCount and three generations of sale history); permit supply of 13,145 against 2.24M people is thin, which is the multifamily thesis; discounted only because Intel's fab has slipped to 2030-31. (3) SAVANNAH - the strongest jobs-to-population ratio in the study by a wide margin: 11,500 direct jobs against a 438,000-person metro, and unlike Intel or Micron these plants are ALREADY OPERATING, so the demand is real rather than promised; parcel data is good for Chatham but Bryan County - where both plants sit - has no working API, which is the sole reason it is third and not first. (4) SYRACUSE - 9,000 direct Micron jobs into a 652,000-person metro with flat-to-declining population and almost no recent supply is the sharpest housing-shortage setup here, and the NYS statewide parcels service is the single richest endpoint found (PROP_CLASS, FULL_MARKET_VAL, YR_BLT, SQFT_LIVING, ACRES, statewide, no token); discounted for schedule risk - groundbreaking only happened in Jan 2026 and first fab is 2030. (5) RENO - smallest absolute jobs number of the five at 3,000, but it earns its place on supply and data: only 3,180 units permitted in twelve months for 578,000 people, and Washoe County's nightly Assessor feed is the ONLY confirmed endpoint in the entire study carrying an explicit UNITS field alongside SQFEET, YEARBLT, LAND_USE and sale price - it is the best schema available for a multifamily app. AUSTIN is a deliberate exclusion at rank 6: excellent parcel data in Williamson, huge market, but only 2,000 verified announced direct jobs and the most over-supplied multifamily market in the country at 23,056 permits in twelve months. RICHMOND at rank 7 has arguably the best schema of all (Henrico carries NUMBER_UNITS_APARTMENT plus finished sqft plus sale price) but too few announced jobs to justify the thesis.",
+ "caveats": [
+  "Every capital and jobs figure in this file was taken from a source URL that was actually fetched in this session. Where a source stated no number, the field is null rather than estimated. Nothing was inferred, annualised or back-calculated except the permit figures, which are explicit twelve-month sums of monthly Census BPS observations listed on the cited FRED data page.",
+  "Announced jobs are not realised jobs. Intel Ohio has slipped at least five years (production 2030-31 vs an original end-2025), Micron's Clay fab broke ground only in January 2026 for 2030 first output, and LG Energy Solution has reportedly paused part of its Queen Creek build. Phoenix, Savannah and Kansas City are the only metros here whose anchor plants are already producing.",
+  "TSMC job accounting: the 12,000 direct-jobs figure corresponds to the $165B / six-fab programme announced March 2025 and is sourced to TSMC Arizona president Rose Castanares via TrendForce (https://www.trendforce.com/news/2025/05/12/news-tsmcs-165b-arizona-investment-to-create-12000-jobs-once-all-facilities-are-operational/), a secondary source. The July 2026 $100B expansion to $265B and ten fabs published NO incremental jobs number, so Phoenix's 17,000 total is conservative and will understate the eventual figure. TSMC also cites 40,000 construction jobs over four years, excluded from the direct total.",
+  "TEXAS IS A NON-DISCLOSURE STATE. No sale price appears in the Travis, Williamson or Brazos appraisal data and none is legally obtainable from the CADs. Appraised and market values remain public and are present in the Williamson and Travis endpoints. Any Texas comp model must run on appraisal values rather than transactions. By contrast Arizona, Ohio, Nevada, New York, Virginia, Tennessee and Georgia all expose sale prices in the endpoints cited here.",
+  "Metros dropped on parcel-data grounds: KANSAS CITY / JOHNSON COUNTY KS publishes no free parcel data at all - its open-data DCAT catalogue was enumerated and contains 40 datasets with zero parcel or land-record entries; AIMS licenses parcel data commercially. CHARLESTON / BERKELEY COUNTY SC exposes parcel geometry and a TMS number only - nine fields, no address, use code, value, year built, square footage or units. HUNTSVILLE / MADISON COUNTY AL has no confirmed county parcel API; the two candidate services tested were a third-party compilation and a mis-identified Madison County OHIO layer respectively.",
+  "Partial parcel coverage inside otherwise-recommended metros: Savannah's Bryan County (both Hyundai plants) has no working machine-readable parcel service - its ArcGIS host returns a server error and the public route is the qPublic HTML viewer; Reno's Storey County (the Tesla/TRIC site) publishes only PDF parcel maps, though it contains almost no housing; Phoenix's Pinal County (the LG site) distributes assessor data by email request only.",
+  "Chatham County (Savannah) and Travis County (Austin) both lack building square footage; Chatham, Travis, Brazos and Montgomery TN all lack any unit count. Only WASHOE County NV (UNITS) and HENRICO County VA (NUMBER_UNITS_APARTMENT) carry a true unit count. Franklin County OH (NOCARDS) and Licking County OH (EpinCount) carry CAMA-card counts that approximate it.",
+  "Coordinates: actual approximate site locations are given for TSMC north Phoenix, Intel Ocotillo, Intel New Albany, Micron Clay, Samsung Taylor, Tesla Giga Texas, Tesla Giga Nevada, the Hyundai Bryan County megasite, Anduril at Rickenbacker, LEGO at Meadowville and Panasonic De Soto. All others are city or town centres. Each project's status string states which.",
+  "SpaceX 'Terafab' near Bryan-College Station is the least settled entry: the county is contested between sources (Brazos per the August 2026 chamber briefing, Grimes per earlier 2026 reporting), the $16.8B is phase-one only against much larger headline figures circulating in the press, and construction is phased over nine to ten years. Treat it as speculative.",
+  "The LG Energy Solution / Honda plant at Jeffersonville is listed under Columbus but EXCLUDED from Columbus totals because Fayette County is not in the Columbus MSA. Including it would add $4.4B and 2,200 jobs.",
+  "Permit data limitations: FRED publishes no metro-level 5+unit multifamily series for most of these metros, so the permit figures given are ALL structure types combined and cannot be split. Charleston is an exception (CHAR745BPPRIV minus CHAR745BP1FH gives a multifamily proxy). The Census annual metro permit files at www2.census.gov are blocked to automated fetching from this environment, so Savannah, Syracuse, Richmond, Huntsville, Clarksville and College Station permits are left null rather than guessed - retrieve them manually from https://www.census.gov/construction/bps/msaannual.html.",
+  "Population figures are Census Bureau Vintage 2025 metropolitan population estimates (July 1, 2025) accessed via FRED, which redistributes them. Clarksville TN-KY MSA population was not retrieved.",
+  "All ArcGIS endpoints were verified by fetching their ?f=json layer metadata and reading back the real field list, maxRecordCount and layer name - they returned data without a token. Field CONTENT (population, null rates, currency of the roll) was not sampled; verify with a small query before building against any of them. Endpoints confirmed DEAD or wrong during this pass and deliberately excluded: apps.lickingcounty.gov/.../Auditor/ParcelsFS/FeatureServer, bryangis.bryan-county.org/.../Parcels/MapServer, services.arcgis.com/g1fRTDLeMgspWrYp/.../PFZ_BCADParcels/FeatureServer/0.",
+  "Larger projects deliberately out of scope or not investigated, any of which could outrank entries here: Texas Instruments Sherman TX (~$30B, Dallas metro adjacent), Amazon New Carlisle IN (~$11B, South Bend), Microsoft Mount Pleasant WI (Racine/Milwaukee), the Stargate/OpenAI Abilene TX campus, xAI Colossus Memphis, and Micron's Boise ID expansion. Louisiana projects (notably Meta Richland Parish) were excluded per instruction, as were all California metros.",
+  "Every capital and jobs figure in this file was taken from a source URL actually fetched in this session. Where a source published no number the field is null rather than estimated - Microsoft's $13.3B Mount Pleasant expansion has no jobs figure, and permits are null for Albany and South Bend because FRED publishes no metro-level BPS series for either. The only arithmetic performed is the twelve-month permit sums, and the individual monthly observations are written out inside each permits.note so they can be checked against the cited FRED data page.",
+  "ANNOUNCED JOBS ARE NOT REALISED JOBS, and three of these five have already moved. JetZero broke ground in June 2026 but has cut its 2027 hiring to ZERO and pushed its full 14,500 target to 2037, blaming delayed North Carolina state budget funding; its 14,560 figure is a 37-year incentive-agreement ceiling, so Greensboro's 21,410 total is the most front-loaded-looking and least front-loaded-in-reality number in the file. General Motors EXITED the New Carlisle battery joint venture in August 2026, selling its stake to Samsung SDI, so the 1,700-job commitment there was made by a partnership that no longer exists. Microsoft's $13.3B Mount Pleasant expansion is approved site plans, not committed capital. By contrast Toyota's Randolph County plant (5,100 jobs) and Microsoft's first Mount Pleasant datacenter are ALREADY OPERATING, and the Albany NanoTech EUV Accelerator opened in July 2025.",
+  "DOUBLE-COUNTING RISK IN SOUTH BEND. Amazon's $11B St. Joseph County campus (April 2024) and its $15B 'northern Indiana' announcement (November 2025) are counted as separate rows totalling $26B. Amazon describes the second as an expansion beyond the first and does not enumerate counties, so an unknown share may fall outside St. Joseph County or restate capacity already counted. Local reporting in July 2026 separately put realised St. Joseph County investment above $13.8B. Treat $29.5B as an upper bound and $13.8B-plus as the verified floor.",
+  "USE-CODE DESCRIPTION - THE DECISIVE TEST, RESULTS IN PLAIN TERMS. THREE PASS OUTRIGHT: Guilford NC (LAND_CLASS returns literal 'RESIDENTIAL', 'CONDO', 'ASSIST LIV/SKILLCARE', 'GOV OWNED'), St. Joseph IN (PROPTYPE returns '1 Family Dwell - Platted Lot', 'Foundries & Heavy Manufacturing', 'Vacant Land'), and New York State (USED_AS_DESC and BLDG_STYLE_DESC are populated text, and PROP_CLASS has a published ORPTS manual). ONE PASSES ONLY ON A PUBLISHED MANUAL: Wisconsin's PROPCLASS is bare numerals defined in Wis. Stat. 70.32(2)(a) and the Wisconsin Property Assessment Manual, and it returns MULTI-VALUED strings such as '4,5' and '1,4' that must be split before use. ONE IS UNRESOLVED: Marion County IN declares PROPERTY_SUB_CLASS_DESCRIPTION in its layer metadata but four attempts to read actual values failed on read timeouts, so it is asserted by schema and not by observation.",
+  "SALE PRICE BY STATE, for comp modelling. NORTH CAROLINA and INDIANA are disclosure states and both endpoints carry it - Guilford has two independent fields (PKG_SALE_PRICE and LAND_SALE_PRICE, with SALE_PRICE_SOURCE and REVENUE_STAMPS), St. Joseph has SALESPRICE and SALESDATE though typed as strings. NEW YORK's statewide layer carries FULL_MARKET_VAL, TOTAL_AV and LAND_AV but NO transaction price in this layer. WISCONSIN's statewide layer carries ESTFMKVALUE, CNTASSDVALUE, LNDVALUE and IMPVALUE but NO sale price. INDIANAPOLIS/Marion carries assessed values only. TEXAS and IDAHO, both non-disclosure, were rejected partly on this.",
+  "UNIT COUNTS. Only ONE of the five endpoints exposes a multifamily unit count directly: Guilford County's TOTAL_UNITS, alongside APT_SC_SQRFT for apartment and shopping-centre floor area. That puts Guilford in the same tier as Henrico VA and makes Greensboro the only metro in this batch where multifamily inventory can be measured rather than inferred. Everywhere else unit counts must be inferred from use class plus floor area, and Wisconsin and Marion County IN have no floor area for residential at all.",
+  "GEOGRAPHIC ASYMMETRY REPEATS THE PHOENIX PATTERN in two of the five. In INDIANAPOLIS both Lilly projects are in Boone County, which publishes no parcel API of any kind, while the confirmed endpoint covers Marion County only. In GREENSBORO the Toyota plant is in Randolph County, whose endpoint has values but no use code, no year built, no floor area and no units, while the rich endpoint is Guilford. In MILWAUKEE the statewide layer avoids this problem entirely by covering Racine and Ozaukee uniformly, which is the main thing it has going for it.",
+  "A NAMING TRAP WORTH RECORDING: searching for 'Boone County GIS' returns secure.boonecountygis.com, which is BOONE COUNTY, KENTUCKY, not the Boone County, Indiana of the Lilly LEAP district. The Kentucky service is genuinely excellent (108 fields, three generations of sale price, assessed value, zoning, assessment type) and returns data without a token, but it is the wrong state.",
+  "WEBFETCH BEHAVIOUR NOTE, in case these endpoints are re-tested: ArcGIS /query URLs carrying long comma-separated outFields lists were repeatedly refused with HTTP 403 by the fetch proxy, while the same query with one or two outFields succeeded. Where a field-value sample is cited in this file it was obtained with a short outFields list. Counts were obtained with returnCountOnly=true.",
+  "Every parcel endpoint reported as available in this file was queried in this session and returned rows. Row counts came from where=1=1&returnCountOnly=true against the exact endpoint URL given. Field lists came from the layer's own f=pjson metadata. Distinct use/zoning values came from returnDistinctValues queries. No endpoint is reported that I did not successfully query - the Lafayette Parish Assessor's own webgis.lafayetteassessor.com service is listed in the rejected array for exactly that reason, even though the parish itself is recommended via a different, working endpoint.",
+  "Outbound HTTPS in this session was restricted to a fetch-and-summarise proxy, so responses were read as summarised text rather than raw JSON. Counts, field names and distinct values were requested verbatim, but a very long distinct-value list can be truncated by that layer; treat the distinct-value lists as representative rather than exhaustive.",
+  "NO metro-level monthly Census Building Permits Survey series exists on FRED for any of these five Louisiana areas (the metro naming pattern was tested and 404s). Every permits.value in this file is therefore a calendar-2025 ANNUAL PARISH total from the county-level FRED BPS series, not a trailing-12-month metro figure, and each note says so. No 5+unit multifamily split is published at parish level.",
+  "Population values are parish-level Census Population Estimates via FRED, dated 2025-01-01 (the vintage-2025 estimate). For Shreveport-Bossier the value is the sum of Caddo and Bossier only and excludes DeSoto and Webster, which are in the MSA but hold no campus.",
+  "Enrolment figures and terms were supplied by the requester as already verified and were used as given; they were not independently re-sourced in this session. Campus lat/lng are APPROXIMATE main-campus centroids that I did not fetch from a source - use them for map placement only, not for distance analysis.",
+  "Project coordinates are approximate. Where a press release stated no jobs number (Woodside Louisiana LNG) the jobs field is null rather than estimated, and where a release explicitly created zero new jobs (Graham Packaging, Hammond) the field is 0 with the retained-jobs figure in the status text.",
+  "Two of the five recommended parcel endpoints are NOT published by the parish assessor: the Lafayette layer is hosted by Es2 (es2-inc), the assessor's GIS vendor, and the Caddo layer is a Regrid/Loveland extract republished by a private economic-development ArcGIS Online account. Both were open and queryable without a token on 2026-09-04, but neither carries a service-level agreement and either could disappear. The Bossier, Tangipahoa, Lincoln and Calcasieu endpoints are all on official parish domains.",
+  "The two-letter Louisiana assessor class codes (RI, RV, CM, CI, AI, EX, RM ...) appear in BOTH the Lincoln Parish assessor layer and the Caddo Regrid extract, so they are a statewide convention rather than a local one. I could not find a published key for them anywhere and have not guessed at their meanings. If you can obtain that key from the Louisiana Tax Commission or an assessor's office, Lincoln Parish immediately becomes a much stronger candidate and Caddo's usecode field becomes usable alongside its zoning.",
+  "Louisiana is NOT a mandatory sale-price disclosure state in the way Arizona is, but sale price is nevertheless populated in the Lafayette (saleprice/saledate), Caddo (saleprice/saledate) and Tangipahoa (purchase_price/transfer_date, with a Verified flag) layers. It is absent from Bossier, Lincoln and Calcasieu.",
+  "Confirmed but rejected as a data source: https://gissrv1.romlc.net/arcgis/rest/services/WebMaps/LA_Assessors/MapServer, which is indexed on ArcGIS Online as the parcel source for Caddo, Bossier, Tangipahoa, Natchitoches and other parishes, returns error 499 'Token Required' and is unusable without credentials.",
+  "Campus proximity is scored from a published-enrollment table that now carries 118 institutions across every corridor in this catalogue \u2014 1.2 million students \u2014 each with the term its figure refers to and a source URL. Community colleges are weighted down, health-science campuses partially. Where a figure covers more than one campus or includes online enrolment, the row says so; a wrong denominator would silently corrupt a student-housing score. One institution, Purdue University in Indianapolis, carries a null enrolment because no campus-level figure has been published since the 2024 IUPUI split.",
+  "Four project figures in this set are known not to match their announcements and are recorded that way: Apple's $1bn Research Triangle campus, promised in 2021 with 3,000 jobs, has never broken ground and North Carolina reset its milestones in November 2025 to require only 126 people by end-2027; Maxeon's $1bn Albuquerque plant was CANCELLED, its lease abandoned in February 2026; Intel promised 700 jobs at Rio Rancho and described delivery as 'hundreds'; and Novo Nordisk's Clayton expansion was followed by layoffs at that same plant. Counting Apple's 3,000 would move Raleigh from fourth to first on the jobs-per-permit ranking, and counting Maxeon would move Albuquerque from fourth to second. Neither is counted.",
+  "Youngstown-Warren ranks first on announced jobs per permit by a factor of eight, and all three of its projects - Stargate Lordstown, Foxconn/SoftBank and Ultium - sit in TRUMBULL county, whose entire GIS domain was unreachable. The records held for this metro are Mahoning county, where none of the capital is.",
+  "Four Louisiana college markets (Monroe, Thibodaux, Natchitoches, Alexandria) were researched in September 2026 and are carried as STUDIED, not live: they appear in the corridor tables with their verified enrolment, capital and permit figures, but they hold no parcels on the map. Only Monroe has a free machine-readable parcel endpoint whose schema can separate multifamily from single-family against a PUBLISHED zoning key (the City of Monroe Developer_Parcels layer, ZONING_CODE on 25,920 parcels, meanings from the city Zoning layer). Thibodaux has two working 56,000-feature layers with assessed value on 90% of rows but NO use, class or zoning field of any kind, so no property in it could be classified without guessing a use - which this platform does not do. Natchitoches and Alexandria were not recommended. Carrying the finding is the point: it records why they cannot be pulled, so the work is not repeated."
+ ]
+}

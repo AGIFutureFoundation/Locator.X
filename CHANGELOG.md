@@ -7,6 +7,38 @@ such.
 
 ## [Unreleased]
 
+- **The market layer becomes data plus a renderer, and gains a gate** — the
+  seven market pages stop being hand-committed HTML and become a build
+  product, the same status as `demo.html` and `crosswalk.html`. The figures
+  they render now live in `market/` as five sourced data files extracted from
+  the shipped editions (24 corridor areas with 20 dropped and 37 caveats, 73
+  announced projects, 152 campuses, the 464-submarket belts ranking, the 12
+  published editions with their hashes), each carrying its extraction
+  provenance; `scripts/build_market_pages.py` renders all seven at deploy
+  time, so a page can no longer drift from the data it claims to show.
+
+  `market/validate_market.py` gates the data in the crosswalk gate's raising
+  posture, and writing it found three real defects. **A figure's absence means
+  different things in different fields:** `permits` and `pop` come from
+  external published series where absent is not zero, but `jobs` and `records`
+  are counts over sets this platform holds, where `0` ("this catalogue holds
+  nothing here") and negative are real measured values — Natchitoches carries
+  −450 announced jobs from a closure, and the page now draws it as a net loss
+  instead of sorting it silently. **Four campuses publish no enrolment at
+  all:** they were `null` in the source and the renderer would have crashed on
+  the first Louisiana one (`-None`) while quietly swallowing the rest into
+  city totals; they now render "not published", stay counted as campuses, and
+  are excluded from every total with the exclusion stated beside it. **Only 29
+  of 44 announced headcounts carry an explicit `jobsBasis`:** the other 15 now
+  say "no basis line in the record — read the headcount as the announcement's
+  own, unconfirmed" rather than showing a dash that reads as "none".
+
+  The gate's eighth rule is cross-file: every measured record count must
+  appear in `docs/PUBLISH_MAP.md`, so the data and the documented verification
+  cannot drift apart. `tests/run.py` proves that rule fires by drifting a
+  count on a synthetic tree, the same way it proves the stale-pair check.
+  Market gate joins the CI set; all six gates green.
+
 - **The measured market layer joins the public site, mined from the shipped
   editions themselves** — six new market pages and a master dashboard, every
   figure extracted 2026-09-11 from the live published editions and carrying
