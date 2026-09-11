@@ -228,6 +228,9 @@ function bind(){
   S._bound = true;
   map.on('move', function(){ if(S.on){ cancelAnimationFrame(S.raf); S.raf = requestAnimationFrame(draw); } });
   map.on('resize', function(){ if(S.on) draw(); });
+  /* Guarded like the one in canvas(): a renderer whose shim lacks this
+     method must lose the hover tooltip, never throw. */
+  if(!map.getCanvasContainer) return;
   var cvc = map.getCanvasContainer();
   cvc.addEventListener('mousemove', function(e){
     if(!S.on) return;
@@ -378,7 +381,7 @@ function mount(){
       + 'border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:12px;line-height:1.55;'
       + 'max-width:240px;box-shadow:0 4px 14px rgba(0,0,0,.18)';
     var map = window.__lxmap;
-    if(map && map.getCanvasContainer()) map.getCanvasContainer().appendChild(t);
+    if(map && map.getCanvasContainer && map.getCanvasContainer()) map.getCanvasContainer().appendChild(t);
   }
 }
 
