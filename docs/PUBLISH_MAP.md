@@ -78,3 +78,14 @@ Before publishing bay-ledger the live version was compared structurally against 
 trade`, which a later pipeline change renamed to `Tradecraft — the whole library`. Nothing on the
 live page was absent from the new build, so the new build is a strict successor. All 12 editions
 come from the same `body.html` and module pipeline, so that comparison holds for the class.
+
+## The public site — 2026-09-11
+
+With the repository public, `.github/workflows/deploy-pages.yml` deploys the site on every
+push to main: `pages/` verbatim, plus `demo.html` — the complete application shell over
+deterministic SYNTHETIC fixtures, generated at deploy time by
+`scripts/build_fleet_demo.py` and never committed. The demo carries a version selector for
+every shipped edition in `build_state.py`'s registry (the three wave templates listed
+disabled with their refusal reason) and asserts nothing about the real world: every record
+sits on a fictional island near 0°N 0°E and the page says so in a fixed banner. Real
+editions remain build products of the data machine, published per the map above.
