@@ -7,6 +7,24 @@ such.
 
 ## [Unreleased]
 
+- **The demo carries a large database** — the synthetic fleet scales to
+  ~11,500 deterministic records (bay 2,500; below-market 1,500; corridors
+  1,200 each; every edition sized to its character), exercising the app's
+  list caps, pin caps and ranking engine at real volume while remaining
+  obviously synthetic end to end. Page grows only 1.23 → 1.59 MB thanks to
+  the packed pipeline. Fleet smoke rerun at scale: 11/11 editions, zero
+  page errors; the criteria chip filtered 307 of 2,500 live.
+- **Contract & underwriting anatomy** (`docs/CONTRACT_ANATOMY.md`) — the
+  purchase-agreement clause families and the underwriting file taught as
+  education: what each piece is for, which are state-sensitive (pointing at
+  the sourced state guides), every underwriting number mapped to its kind
+  per `docs/INTEROP.md`, and contingencies framed as the legal machinery
+  for resolving unknowns. States its own boundary first: not a contract,
+  not legal advice, and a "contract generator with all state and local
+  laws built in" is refused by design — the platform does not draft
+  binding language or assert statute-level claims without a source and a
+  date. Linked from CLAUDE.md.
+
 - **The whole app is under CI for the first time** — a new `fleet smoke`
   workflow builds the synthetic-fleet demo from source (no data tree) and
   drives every edition in headless Chromium via the committed
