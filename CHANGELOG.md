@@ -7,6 +7,21 @@ such.
 
 ## [Unreleased]
 
+- **The public site carries the whole app** — with the repository public,
+  `deploy-pages` now assembles the comprehensive website: `pages/` (landing +
+  seven companion pages) plus `demo.html`, the complete 84-module application
+  shell over deterministic synthetic fixtures, generated at deploy time by
+  the new `scripts/build_fleet_demo.py` and never committed. The demo carries
+  a version selector for every shipped edition in `build_state.py`'s registry
+  — each on its own fictional-island map — with the three wave templates
+  listed disabled with their real refusal reason, and a fixed banner stating
+  that nothing on the page is a real record. Built with `lxbuild.standalone`
+  (uncompressed, every rationale comment readable — the checkable-tool
+  argument applied to the demo). The landing page gains the app card;
+  `docs/PUBLISH_MAP.md` records the site layout, dated. Verified locally:
+  the generated document loads with zero page errors, 14 selector entries,
+  and the default edition's 90 fixtures.
+
 - **`package.json` now declares everything a build actually needs** — `fflate`
   and `terser` were required by `lxbuild.py` (the gzip loader shell and the
   minifier) but missing from the dependency list, so `npm install` on a clean

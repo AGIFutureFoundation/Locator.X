@@ -1,18 +1,29 @@
 name: deploy pages
 
-# Deploys pages/ — the standalone companion pages, which need no build step and
-# no data — to GitHub Pages. The full editions (map + underwriting + packed
-# data) are build products and are NOT deployed here; see docs/PUBLISH_MAP.md.
+# Deploys the public site to GitHub Pages: pages/ (the standalone companion
+# pages, which need no build step and no data) PLUS demo.html — the complete
+# application shell over deterministic SYNTHETIC fixtures, generated at deploy
+# time by scripts/build_fleet_demo.py and never committed. Real editions (map +
+# underwriting + packed county data) are build products of the data machine and
+# are NOT deployed here; see docs/PUBLISH_MAP.md.
 #
 # Note: a GitHub Pages site is publicly reachable even while the repository is
-# private. pages/ contains only content already published as artifacts
-# (docs/PUBLISH_MAP.md), so nothing new becomes public — but keep that property
-# in mind before adding files to pages/.
+# private. pages/ contains only content already published as artifacts, and the
+# demo carries only generated fixtures that assert nothing about the real world
+# (docs/PUBLISH_MAP.md) — but keep that property in mind before adding files.
 
 on:
   push:
     branches: [main]
-    paths: ["pages/**", ".github/workflows/deploy-pages.yml"]
+    paths:
+      - "pages/**"
+      - "src/**"
+      - "lxbuild.py"
+      - "build_state.py"
+      - "scripts/build_fleet_demo.py"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -32,11 +43,23 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      - name: Assemble the site (pages + generated synthetic-fleet demo)
+        run: |
+          mkdir -p _site
+          cp -r pages/. _site/
+          python3 scripts/build_fleet_demo.py _site/demo.html
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: pages
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
