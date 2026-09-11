@@ -49,21 +49,162 @@ KINDS = [("Single family", 1), ("Condominium", 1), ("Duplex", 2), ("Triplex", 3)
          ("Hotel / motel / MH park", 0), ("Room/dorm", 0),
          ("Mobile home park", 0)]
 
+
+# ---- synthetic geography ---------------------------------------------------
+# The fixture used to draw an island as one rectangle, its parks as two more,
+# and its roads as three straight lines, then scatter property uniformly inside
+# the box. It rendered as coloured confetti on a beige rectangle, which told a
+# viewer nothing about whether the map renderer works and nothing about whether
+# the app reads like a place.
+#
+# This draws an irregular coastline, a street grid clipped to it, districts that
+# follow the grid, a meandering river with a tributary, and a rail line with a
+# spur — then places every property ON A STREET, which is the single thing that
+# makes a parcel map look like a city rather than a scatter plot.
+#
+# It is still entirely invented, and nothing about it is a claim: every island
+# sits near 0°N 0°E, the banner says so, and no coordinate here corresponds to
+# anywhere. What it is now is a fixture that exercises the polygon and polyline
+# paths of the renderer the way real county geometry does.
+
+def _ring(cx, cy, rx, ry, rng, n=72):
+    """A closed, irregular coastline: an ellipse pushed around by three
+    harmonics, so it has bays and headlands instead of corners."""
+    a1, a2, a3 = rng.uniform(.06, .13), rng.uniform(.03, .08), rng.uniform(.02, .05)
+    p1, p2, p3 = rng.uniform(0, 6.28), rng.uniform(0, 6.28), rng.uniform(0, 6.28)
+    pts = []
+    for i in range(n):
+        t = 2 * math.pi * i / n
+        r = 1 + a1 * math.sin(2 * t + p1) + a2 * math.sin(3 * t + p2) + a3 * math.sin(5 * t + p3)
+        pts.append([round(cx + rx * r * math.cos(t), 5), round(cy + ry * r * math.sin(t), 5)])
+    pts.append(pts[0])
+    return [pts]
+
+
+def _inside(pt, ring):
+    x, y = pt
+    v, c = ring[0], False
+    for i in range(len(v) - 1):
+        x1, y1 = v[i]; x2, y2 = v[i + 1]
+        if ((y1 > y) != (y2 > y)) and (x < (x2 - x1) * (y - y1) / ((y2 - y1) or 1e-12) + x1):
+            c = not c
+    return c
+
+
+def _clip(pts, ring):
+    """Split a polyline into the runs that fall on land."""
+    out, run = [], []
+    for p0 in pts:
+        if _inside(p0, ring):
+            run.append(p0)
+        elif len(run) > 1:
+            out.append(run); run = []
+        else:
+            run = []
+    if len(run) > 1:
+        out.append(run)
+    return out
+
+
+def _streets(ring, cx, cy, rx, ry, rng):
+    """A grid, rotated a little off true north the way a real downtown is, plus
+    two diagonals. Returns (features, segments) - segments feed placement."""
+    feats, segs = [], []
+    rot = rng.uniform(-0.35, 0.35)
+    cos_r, sin_r = math.cos(rot), math.sin(rot)
+    def rotate(x, y):
+        dx, dy = x - cx, y - cy
+        return [round(cx + dx * cos_r - dy * sin_r, 5), round(cy + dx * sin_r + dy * cos_r, 5)]
+    for i in range(-7, 8):
+        x = cx + rx * i / 7.0
+        line_pts = [rotate(x, cy + ry * j / 14.0) for j in range(-16, 17)]
+        for run in _clip(line_pts, ring):
+            feats.append(line(run, {"type": "Road"})); segs.append(run)
+    for j in range(-5, 6):
+        y = cy + ry * j / 5.0
+        line_pts = [rotate(cx + rx * i / 14.0, y) for i in range(-16, 17)]
+        for run in _clip(line_pts, ring):
+            kind = "Major Highway" if j in (-2, 2) else "Road"
+            feats.append(line(run, {"type": kind})); segs.append(run)
+    for d in (1, -1):
+        line_pts = [rotate(cx + rx * t / 12.0, cy + d * ry * t / 12.0) for t in range(-13, 14)]
+        for run in _clip(line_pts, ring):
+            feats.append(line(run, {"type": "Major Highway"})); segs.append(run)
+    return feats, segs
+
+
+def _blob(cx, cy, r, rng, n=26, squash=0.7):
+    """A small irregular polygon — a park, a district, a green."""
+    a = rng.uniform(.12, .3); p = rng.uniform(0, 6.28)
+    pts = []
+    for i in range(n):
+        t = 2 * math.pi * i / n
+        rr = r * (1 + a * math.sin(3 * t + p))
+        pts.append([round(cx + rr * math.cos(t), 5), round(cy + rr * squash * math.sin(t), 5)])
+    pts.append(pts[0])
+    return [pts]
+
+
+def _on_street(segs, rng):
+    """A point a few metres off a street centreline — which is where houses are."""
+    run = segs[rng.randrange(len(segs))]
+    i = rng.randrange(max(1, len(run) - 1))
+    (x1, y1), (x2, y2) = run[i], run[min(i + 1, len(run) - 1)]
+    t = rng.random()
+    x, y = x1 + (x2 - x1) * t, y1 + (y2 - y1) * t
+    dx, dy = x2 - x1, y2 - y1
+    L = math.hypot(dx, dy) or 1e-9
+    off = (rng.random() * 2 - 1) * 0.0016
+    return round(x - dy / L * off, 5), round(y + dx / L * off, 5)
+
+def _pick_in_cell(segs, x0, y0, cw, ch, rng):
+    """A street point inside this ZIP cell, or the cell centre-ish if the cell
+    has no street on it (an island edge cell, usually)."""
+    for _ in range(18):
+        x, y = _on_street(segs, rng)
+        if x0 <= x <= x0 + cw and y0 <= y <= y0 + ch:
+            return x, y
+    return (round(x0 + 0.006 + (cw - 0.012) * rng.random(), 5),
+            round(y0 + 0.006 + (ch - 0.012) * rng.random(), 5))
+
+
 def make_ba(seed, count, wide, tall, campus):
     """One edition's fixture: its own island, grid, market and listings."""
     rng = random.Random(seed)
     W, H = 0.24 * wide, 0.16 * tall
     cities = [CITY_POOL[(seed + i * 2) % len(CITY_POOL)] for i in range(3)]
     nbs = [NB_POOL[(seed + i) % len(NB_POOL)] for i in range(3)]
-    island = poly(rect(-0.02, -0.02, W + 0.02, H + 0.02), {"name": "Demo Island %d" % seed})
-    urban = poly(rect(0.02, 0.01, W - 0.02, H - 0.01), {})
-    parks = fc([poly(rect(W * .2, H * .6, W * .32, H * .8), {"name": "Fixture Park"}),
-                poly(rect(W * .65, H * .15, W * .77, H * .32), {"name": "Sample Green"})])
-    rivers = fc([line([[0, H], [W * .4, H * .55], [W * .55, H * .6], [W + .02, H * .1]], {})])
-    rail = fc([line([[0, H * .4], [W * .5, H * .45], [W + .02, H * .5]], {})])
-    roads = fc([line([[0, H * .28], [W + .02, H * .32]], {"type": "Major Highway"}),
-                line([[W * .17, 0], [W * .2, H]], {"type": "Road"}),
-                line([[W * .75, 0], [W * .72, H]], {"type": "Road"})])
+    cx, cy, rx, ry = W / 2, H / 2, W * 0.54, H * 0.54
+    coast = _ring(cx, cy, rx, ry, rng)
+    island = poly(coast, {"name": "Demo Island %d" % seed})
+    urban = poly(_ring(cx, cy, rx * .62, ry * .62, rng, n=40), {})
+    road_feats, segs = _streets(coast, cx, cy, rx * .92, ry * .92, rng)
+    roads = fc(road_feats)
+    parks = fc([poly(_blob(cx - rx * .38, cy + ry * .34, min(rx, ry) * .16, rng),
+                     {"name": "Fixture Park"}),
+                poly(_blob(cx + rx * .42, cy - ry * .3, min(rx, ry) * .13, rng),
+                     {"name": "Sample Green"}),
+                poly(_blob(cx + rx * .05, cy + ry * .52, min(rx, ry) * .1, rng),
+                     {"name": "Harbour Common"})])
+    # A river that meanders and takes a tributary, clipped to the coast.
+    def _meander(x0, y0, x1, y1, amp, k):
+        pts = []
+        for i in range(41):
+            t = i / 40.0
+            x, y = x0 + (x1 - x0) * t, y0 + (y1 - y0) * t
+            pts.append([round(x + amp * math.sin(t * k + seed), 5),
+                        round(y + amp * math.cos(t * k * 1.3 + seed), 5)])
+        return pts
+    riv = _clip(_meander(cx - rx, cy + ry * .5, cx + rx, cy - ry * .45,
+                         min(rx, ry) * .12, 5.5), coast)
+    trib = _clip(_meander(cx - rx * .1, cy - ry, cx + rx * .2, cy + ry * .1,
+                          min(rx, ry) * .07, 4.0), coast)
+    rivers = fc([line(r, {}) for r in riv + trib])
+    rail_main = _clip(_meander(cx - rx, cy - ry * .2, cx + rx, cy + ry * .25,
+                               min(rx, ry) * .05, 3.0), coast)
+    rail_spur = _clip(_meander(cx + rx * .1, cy, cx + rx * .35, cy + ry * .7,
+                               min(rx, ry) * .03, 2.0), coast)
+    rail = fc([line(r, {}) for r in rail_main + rail_spur])
     # The index bundle covers NZIP ZIPs; property sits in a subset of them. Two
     # reasons, and the first one is a bug this fixture used to hide.
     #
@@ -82,16 +223,21 @@ def make_ba(seed, count, wide, tall, campus):
     NZIP, COLS = 24, 6
     ROWS = NZIP // COLS
     zids = ["%05d" % (seed * 100 + i + 11) for i in range(NZIP)]
-    pzids = zids[::2]                     # property lands in half of them
+    # Property lands in half the ZIPs, chosen by a seeded shuffle rather than by
+    # taking every other one: on a six-wide grid "every other" is alternating
+    # COLUMNS, which drew the whole catalogue as three vertical stripes down the
+    # island. A scatter looks like a market; a stripe looks like a bug, because
+    # it was one.
+    pzids = sorted(random.Random(seed * 31 + 7).sample(zids, len(zids) // 2))
     cell_w, cell_h = (W - 0.04) / COLS, (H - 0.02) / ROWS
     cells = {z: (0.02 + (i % COLS) * cell_w, 0.01 + (i // COLS) * cell_h)
              for i, z in enumerate(zids)}
     citymap = {z: cities[i % 3] for i, z in enumerate(zids)}
     zipfc = fc([poly(rect(x, y, x + cell_w, y + cell_h), {"zip": z, "city": citymap[z]})
                 for z, (x, y) in cells.items()])
-    nbsf = fc([poly(rect(0.03, H * .62, W * .3, H * .95), {"name": nbs[0]}),
-               poly(rect(W * .4, 0.02, W * .62, H * .35), {"name": nbs[1]}),
-               poly(rect(W * .7, H * .62, W * .95, H * .95), {"name": nbs[2]})])
+    nbsf = fc([poly(_blob(cx + rx * dxi, cy + ry * dyi, min(rx, ry) * .26, rng, n=30),
+                    {"name": nbs[i]})
+               for i, (dxi, dyi) in enumerate([(-.42, .3), (.12, -.4), (.46, .28)])])
     months = ['%d-%02d' % (2023 + (8 + m) // 12, (8 + m) % 12 + 1) for m in range(36)]
     # Each ZIP gets its own wobble. A set of perfectly smooth curves would let the
     # log-linear fit land almost exactly, and the honest consequence of that is a
@@ -129,8 +275,10 @@ def make_ba(seed, count, wide, tall, campus):
             "addr": "%d %s" % (10 + i * 7, STREETS[i % len(STREETS)]),
             "city": citymap[z], "county": "Demo", "zip": z,
             "nb": nbs[i % 3] if i % 5 == 0 else None,
-            "lat": round(y0 + 0.006 + (cell_h - 0.012) * rng.random(), 5),
-            "lng": round(x0 + 0.006 + (cell_w - 0.012) * rng.random(), 5),
+            # on a street, and inside the ZIP cell it claims: a parcel map reads
+            # as a place because buildings line roads, not because there are more
+            # of them. Fall back to the cell if this ZIP has no street in it.
+            **dict(zip(("lng", "lat"), _pick_in_cell(segs, x0, y0, cell_w, cell_h, rng))),
             "price": price, "units": units,
             "beds": None if units > 4 else max(1, units + i % 3),
             "sqft": int((900 if units == 1 else 700 * units) * (0.8 + 0.5 * rng.random())),

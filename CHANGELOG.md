@@ -7,6 +7,31 @@ such.
 
 ## [Unreleased]
 
+- **The demo map became a place** — the fixture drew its island as one
+  rectangle, its parks as two more and its roads as three straight lines, then
+  scattered property uniformly inside the box. It rendered as confetti on a
+  beige rectangle, which told a viewer nothing about whether the renderer works
+  and nothing about whether the app reads like a city. It now generates an
+  irregular coastline from three harmonics, a street grid rotated off true
+  north with diagonals, districts and parks as irregular polygons, a meandering
+  river with a tributary and a rail line with a spur — every polyline clipped to
+  the coast — and places **every property on a street**, which is the single
+  thing that makes a parcel map look like a place rather than a scatter plot.
+  27 road features, 73 coastline points, all still invented and all still on a
+  fictional island near 0°N 0°E.
+
+  One artifact found and fixed on the way: property ZIPs were chosen as "every
+  other ZIP", which on a six-wide grid is alternating *columns* — so the whole
+  catalogue drew as three vertical stripes down the island. A seeded sample
+  scatters them. A stripe looks like a bug because it was one.
+
+- **Two more articles** — the submarket ranking (why drift is the component
+  most rankings leave out, and why the coverage statement is printed before the
+  first row) and announced jobs per housing unit permitted (the four specific
+  ways that ratio lies, and the corridor area where it goes legitimately
+  negative). Five articles, 7,567 words, every figure resolving from the
+  measured data at build time.
+
 - **Articles, with every figure generated rather than typed** — a new
   `content/blog/` plus `scripts/build_blog.py` renders long-form articles in
   the house style at deploy time. The design rule is that an article states a
