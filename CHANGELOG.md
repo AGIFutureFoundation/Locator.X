@@ -7,6 +7,24 @@ such.
 
 ## [Unreleased]
 
+- **The front door is generated, and leads with coverage** — the landing page
+  was a static card grid that described the platform in adjectives while every
+  figure a visitor would want lived a click away. It is now built by
+  `scripts/build_landing.py` from the same committed data the market pages and
+  the articles read: **749,765 parcel records measured**, 12 editions, 464
+  submarkets ranked, 48 use codes, 24 corridor areas, 4,443 lodging records —
+  each one moving when the measurement moves, with nobody having to remember to
+  edit a paragraph.
+
+  Beside the headline sits a tile map of the 51 jurisdictions with the twelve
+  the index bundle actually covers filled and the thirty-nine absent drawn
+  hollow, captioned *absent means not measured, never scored low*. Every inner
+  page states its coverage before its conclusions; the front page had been the
+  one place that did not. Cards are grouped by what a visitor came to do —
+  start here, the measured record, learn the trade — rather than listed flat,
+  and `pages/index.html` leaves the repository so it cannot drift from the data
+  it now reports (the generated-vs-committed guard covers it).
+
 - **The synthetic fixture was never deterministic** — it says "deterministic"
   in its own docstring and three builds of identical code produced three
   different files. The cause was `set(citymap.values())`: iteration order over
