@@ -89,3 +89,24 @@ every shipped edition in `build_state.py`'s registry (the three wave templates l
 disabled with their refusal reason) and asserts nothing about the real world: every record
 sits on a fictional island near 0°N 0°E and the page says so in a fixed banner. Real
 editions remain build products of the data machine, published per the map above.
+
+## The editions channel — 2026-09-11
+
+Real editions go live through a dedicated companion repository so the source
+repo keeps its never-commit-built-editions rule:
+
+1. On the data machine: `bash scripts/publish_editions.sh` — builds every
+   filled spec (`build_state.py --all`), writes an integrity manifest
+   (`editions.json`: file, title, bytes, sha256, build date, source commit),
+   and force-pushes the set to `AGIFutureFoundation/Locator.X-editions`
+   (public; create once with `gh repo create`). Publishing an EMPTY set is
+   refused out loud — it would take live editions down silently.
+2. On deploy: `scripts/build_editions_index.py` clones the companion repo,
+   verifies every file against its manifest hash (a mismatch is refused and
+   named on the page, never served), stages the verified editions under
+   `/editions/`, and generates the index listing exactly what is live. With
+   nothing published it renders an honest empty state, so the landing link
+   always resolves and never overstates.
+3. The site deploy triggers on the source repo, so after publishing editions
+   run `gh workflow run 'deploy pages' -R AGIFutureFoundation/Locator.X` (or
+   push anything) to pick them up.

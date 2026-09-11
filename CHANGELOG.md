@@ -7,6 +7,20 @@ such.
 
 ## [Unreleased]
 
+- **The editions channel: one command from data machine to live site** —
+  `scripts/publish_editions.sh` (run where the data tree lives) builds every
+  filled edition and publishes the HTML plus an integrity manifest to the
+  public companion repo `Locator.X-editions`; `scripts/build_editions_index.py`
+  (run by deploy-pages) clones it, verifies every file against its sha256
+  before it may appear, stages the verified editions under `/editions/`, and
+  generates the index of exactly what is live. Refusals are loud twice over:
+  publishing an empty set is refused (it would silently take editions down),
+  and a hash mismatch is named on the page rather than served. With nothing
+  published yet the page renders an honest empty state, so the new landing
+  card always resolves. All three paths verified locally: empty state,
+  verified staging, and a deliberately corrupted file refused by name.
+  Channel documented in docs/PUBLISH_MAP.md.
+
 - **The real record layer joins the public site** — a new
   `scripts/build_crosswalk_page.py` renders `crosswalk/usecodes.json` into
   `crosswalk.html` at deploy time: all 8 jurisdictions, 48 code mappings
