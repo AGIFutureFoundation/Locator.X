@@ -7,6 +7,22 @@ such.
 
 ## [Unreleased]
 
+- **Optimized demo build** — `scripts/build_fleet_demo.py` now composes the
+  public demo with the same compression machinery every shipped edition uses
+  (`lxbuild.pack`: gzip + base64 + a synchronous script-element loader),
+  applied to all three heavy payloads: the terser-minified shell, the
+  minified eleven-edition fixture data, and MapLibre itself; only fflate,
+  the decompressor, ships raw. Measured, not estimated: the file falls
+  3.17 MB → 1.23 MB (−61%) and the gzip-transport wire size 0.91 MB →
+  0.81 MB (−11%) against the previous build reconstructed from HEAD for a
+  fair comparison. A `--fragment` flag emits the same page without the
+  document skeleton for hosts that supply their own. The earlier
+  uncompressed choice traded page weight for readable comments; with the
+  repository public the readable source is one click away, so the visitor's
+  download wins. Verified under headless Chromium: three editions on the
+  document variant and one on the fragment, zero page errors, 14 selector
+  entries each.
+
 - **The public site carries the whole app** — with the repository public,
   `deploy-pages` now assembles the comprehensive website: `pages/` (landing +
   seven companion pages) plus `demo.html`, the complete 84-module application

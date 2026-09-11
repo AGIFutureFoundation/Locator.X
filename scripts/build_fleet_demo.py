@@ -205,11 +205,39 @@ for a, b in [
 B.REFDATA = []
 stubs = 'window.LXCORP=[];window.LXCAMPUS=[];window.LXCORRIDORS=null;window.LXREO=null;'
 if len(sys.argv) < 2:
-    raise SystemExit('usage: python3 scripts/build_fleet_demo.py <output.html>')
+    raise SystemExit('usage: python3 scripts/build_fleet_demo.py <output.html> [--fragment]')
 out = sys.argv[1]
-# standalone(): the complete, uncompressed, readable document — this app argues
-# a tool should be checkable, and the public demo is the natural place to keep
-# every rationale comment intact. No terser, no packing, no document surgery.
-open(out, 'w').write(B.standalone(head, body, data_js, app, [stubs]))
+
+# ---- the optimized composition ---------------------------------------------
+# Same machinery every compressed edition uses (lxbuild.pack: gzip + base64 +
+# a loader that re-inserts the source as a real synchronous script element),
+# applied to all three heavy payloads:
+#   shell      terser-minified then packed  (~1.1 MB of source -> ~0.4 MB)
+#   fleet data minified then packed         (eleven editions' fixtures)
+#   maplibre   packed as-is (its dist is already minified)
+# fflate itself must ship raw — it is the decompressor — and execution order
+# guarantees each global exists before the next script needs it. An earlier
+# revision shipped this page uncompressed so its comments stayed readable;
+# with the repository public, the readable source is one click away, and the
+# page a visitor downloads should be as small as the build system can make it.
+mlcss = B.read('node_modules/maplibre-gl/dist/maplibre-gl.css')
+ml = B.read('node_modules/maplibre-gl/dist/maplibre-gl.js')
+ff = B.read('node_modules/fflate/umd/index.js')
+shell = B.pack(B.minify(app))
+data_packed = B.pack(B.minify(data_js))
+ml_packed = B.pack(ml)
+head_doc = head.replace('<style>', '<style>\n' + mlcss + '\nbody{margin:0}\n', 1)
+scripts = ('\n<script>' + ff + '</script>\n<script>' + ml_packed + '</script>\n'
+           '<script>' + data_packed + '</script>\n<script>' + stubs + '</script>\n'
+           '<script>' + shell + '</script>\n')
+if '--fragment' in sys.argv:
+    # head-fragment form (no document skeleton) for hosts that supply their own
+    open(out, 'w').write(head.replace('<style>', '<style>\n' + mlcss + '\n', 1)
+                         + body + scripts)
+else:
+    open(out, 'w').write(
+        '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+        + head_doc + '</head><body>' + body + scripts + '</body></html>')
 print('editions: %d shipped + %d templates; wrote %s  %.2f MB'
       % (len(order), len(templates), out, os.path.getsize(out) / 1048576))
