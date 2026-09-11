@@ -165,11 +165,19 @@ async function main() {
 
       // The underwriting sheet, with the stress block that says where the deal
       // stops working rather than only how it looks today.
+      // The view id is 'uw'. This block used to say 'underwrite', which is not a
+      // view at all — showView switched every view off, and the sheet
+      // assertions below then ran against a DOM that was rendered but never
+      // displayed. Same class of mistake as asserting [hidden] instead of
+      // visibility, so this one checks the container is really on screen.
       await page.evaluate(() => {
         const l = window.BA.listings.find(x => (x.units || 1) >= 2) || window.BA.listings[0];
-        LX.showView('underwrite'); LXUW.openSheet(l.id);
+        LX.showView('uw'); LXUW.openSheet(l.id);
       });
       await page.waitForTimeout(1400);
+      if (!(await page.isVisible('#uwsheet .packet'))) {
+        errs.push('the underwriting sheet is not visible after showView(\'uw\')');
+      }
       const sheet = await page.evaluate(() => {
         const box = document.getElementById('uwsheet');
         return {
