@@ -7,6 +7,24 @@ such.
 
 ## [Unreleased]
 
+- **The whole app is under CI for the first time** — a new `fleet smoke`
+  workflow builds the synthetic-fleet demo from source (no data tree) and
+  drives every edition in headless Chromium via the committed
+  `tests/fleet_smoke.js`: each of the eleven editions must load with zero
+  page errors, its own title and fixture count, and the full version
+  selector; the first edition also exercises the Locator-X-criteria chip as
+  a real control. The smoke reads the fleet from the page itself rather
+  than hardcoding it, runs on pushes and PRs that touch the shell, and
+  complements — never replaces — the five validate gates and the data
+  machine's real-edition sweep. Verified locally before commit: 11/11
+  editions clean against the optimized build.
+- **`docs/INTEROP.md`** — the worksheet JSON contract as a stable, citable
+  interface: the exact shape, the four kinds of place a number can live,
+  additive-only versioning, the conformance rules every consumer follows,
+  and the no-laundering rule with its load-bearing example (the app's
+  export ships `insurance: null` because an estimate is not a quote).
+  Linked from CLAUDE.md's where-things-live table.
+
 - **Optimized demo build** — `scripts/build_fleet_demo.py` now composes the
   public demo with the same compression machinery every shipped edition uses
   (`lxbuild.pack`: gzip + base64 + a synchronous script-element loader),
