@@ -82,3 +82,79 @@ The end-to-end behavior is locked by the headless-Chromium smokes recorded in
 export carrying unknowns survives both paths with the unknowns named, both
 surfaces reject non-worksheet files, and the app's export completes to DSCR
 0.89 the moment the missing quote is typed.
+
+---
+
+# The geospatial interchange — taking a screened set out
+
+The worksheet contract above moves one analysis between underwriting surfaces.
+This one moves a **set** out of the platform entirely: into QGIS, into ArcGIS,
+into a Mapbox tileset, into anyone else's map. Implementation:
+[`src/geoexport.js`](../src/geoexport.js), reachable from the **GeoJSON** and
+**CSV** buttons above the result list, which export whatever is currently
+filtered.
+
+## The shape
+
+Plain [RFC 7946](https://datatracker.ietf.org/doc/html/rfc7946) GeoJSON —
+`FeatureCollection` of `Point` features in WGS 84, longitude first — with one
+foreign member, `lx`, carrying the header. RFC 7946 permits foreign members, so
+a consumer that ignores `lx` still reads a valid file.
+
+```json
+{ "type": "FeatureCollection",
+  "lx": { "format": "Locator.X geospatial interchange", "version": 1,
+          "generated": "2026-09-11T22:40:12.000Z", "edition": "Locator X New Orleans Atlas",
+          "records": 1204, "dropped_without_geometry": 3,
+          "estimated_prices": 87, "approximate_coordinates": 12,
+          "reso_alias": { "addr": "UnparsedAddress", "apn": "ParcelNumber" },
+          "disclaimer": "Education, not advice; not a valuation and not a listing feed. …" },
+  "features": [ { "type": "Feature", "id": "nola-0001",
+      "geometry": { "type": "Point", "coordinates": [-90.0715, 29.9511] },
+      "properties": { "addr": "…", "price": 210000, "price_date": "2024-06-11",
+        "lx:price_basis": "post-sale assessed value from the county roll — …",
+        "lx:geometry_basis": "parcel location as published by the record",
+        "lx:source": "Orleans Parish Assessor",
+        "lx:derived_cap_pct": 6.41, "lx:derived_dscr": 1.12 } } ] }
+```
+
+## The two fields that exist because of the no-laundering rule
+
+A record that leaves the app loses the interface that qualified it. Two
+qualifications are load-bearing and therefore travel on **every feature**:
+
+| Field | Why it cannot be dropped |
+|---|---|
+| `lx:price_basis` | A price here is normally the **post-sale assessed value** from a county roll. Where a county publishes no assessed values it is a **ZIP-level index estimate**, which is not a price at all, and an imported row is neither. Emitting all three as `price` would launder the weakest into the strongest — the same failure the worksheet's blank insurance field exists to prevent. |
+| `lx:geometry_basis` | Most coordinates are the parcel. Some are the **ZIP centroid**, because the record carried no parcel geometry. Shipping a centroid as a point is how a fabricated coordinate enters somebody else's dataset, and once there it is indistinguishable from a surveyed one. |
+
+Derived numbers are namespaced `lx:derived_` and the header says what they are:
+arithmetic over this app's assumptions, not measurements and not a valuation.
+
+`records` counts the rows asked for; `features` counts the ones that could be
+features. Rows with no coordinate are dropped, and
+`dropped_without_geometry` publishes how many — a consumer reading only
+`features` is entitled to know what it is not seeing.
+
+## The RESO alias block, and what it does not claim
+
+`lx.reso_alias` maps fourteen of our field names to their RESO Data Dictionary
+equivalents, as a convenience for a consumer joining this to an MLS-shaped
+schema. It is **asserted, not verified**: the build container has no egress to
+reso.org (probed 2026-09-11), so the names could not be checked against the
+published dictionary or pinned to a version. It is therefore a mapping to
+check, never a conformance claim — which is why the aliases sit in a separate
+block rather than becoming the property names. Fields with no confident
+equivalent are **absent rather than guessed**.
+
+## Conformance — what a consumer must do
+
+1. Read `lx:price_basis` before treating `price` as a price. A row whose basis
+   says "NOT a price" is an index level.
+2. Read `lx:geometry_basis` before treating a coordinate as a parcel location.
+3. Treat `null` as unknown, never as zero — the same rule as the worksheet.
+4. Carry `lx.disclaimer` wherever the data goes.
+
+Locked by `tests/fleet_smoke.js`, which exports an estimated-price row, a
+ZIP-centroid row and a row with no coordinate, and fails if any of the three
+loses its label or its count.

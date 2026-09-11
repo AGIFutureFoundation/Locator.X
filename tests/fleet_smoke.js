@@ -187,6 +187,60 @@ async function main() {
       if (!sheet.stress) errs.push('the stress block did not render');
       if (!sheet.rows) errs.push('the stress table did not render the combined case');
       if (/,\s*CA\s/.test(sheet.loi)) errs.push('the letter of intent still hardcodes a state: ' + sheet.loi.slice(0, 120));
+      // The interchange export. The assertions are the two facts that vanish
+      // the moment a record leaves the app: whether a price is an assessed
+      // value or an index estimate, and whether a point is the parcel or a ZIP
+      // centroid. The fixture happens to contain neither case, so the variants
+      // are constructed here — otherwise this would assert nothing.
+      const geo = await page.evaluate(() => {
+        const base = LX.filtered()[0];
+        if (!base) return null;
+        const rows = [
+          base,
+          Object.assign({}, base, {id: 't-est', est: true}),
+          Object.assign({}, base, {id: 't-apx', approx: true}),
+          Object.assign({}, base, {id: 't-nog', lng: null, lat: null})
+        ];
+        const fc = LXGEO.featureCollection(rows, {derived: true});
+        const csv = LXGEO.csv(rows, {derived: true});
+        return {
+          type: fc.type, features: fc.features.length, records: fc.lx.records,
+          dropped: fc.lx.dropped_without_geometry,
+          est: fc.lx.estimated_prices, approx: fc.lx.approximate_coordinates,
+          bases: fc.features.map(f => f.properties['lx:price_basis']),
+          geoms: fc.features.map(f => f.properties['lx:geometry_basis']),
+          coords: fc.features[0].geometry.coordinates,
+          csvCols: csv.split('\n')[0].split(','),
+          csvRows: csv.split('\n').length
+        };
+      });
+      if (geo) {
+        if (geo.type !== 'FeatureCollection') errs.push('export is not a FeatureCollection');
+        if (geo.features !== 3 || geo.dropped !== 1) {
+          errs.push('a record with no coordinate was not dropped and counted: '
+            + geo.features + ' features, ' + geo.dropped + ' dropped of ' + geo.records);
+        }
+        if (geo.est !== 1 || geo.approx !== 1) {
+          errs.push('the export header lost a provenance count: ' + geo.est
+            + ' estimated, ' + geo.approx + ' approximate');
+        }
+        if (!/NOT a price/.test(geo.bases[1] || '')) {
+          errs.push('an index-estimate price exported without saying it is not a price');
+        }
+        if (!/NOT the parcel/.test(geo.geoms[2] || '')) {
+          errs.push('a ZIP-centroid coordinate exported as if it were the parcel');
+        }
+        if (!(Array.isArray(geo.coords) && geo.coords.length === 2)) {
+          errs.push('feature geometry is not a two-element position');
+        }
+        // CSV and GeoJSON must describe the same columns, or the two exports
+        // can disagree about what a field means.
+        for (const need of ['lx:price_basis', 'lx:geometry_basis', 'lng', 'lat']) {
+          if (geo.csvCols.indexOf(need) < 0) errs.push('CSV export is missing ' + need);
+        }
+        if (geo.csvRows !== 5) errs.push('CSV rows: ' + geo.csvRows + ', expected 5 (header + 4)');
+      }
+
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
     }

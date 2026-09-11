@@ -721,6 +721,10 @@ function refresh(){ dealSync(); dealsShown = DEALS_PAGE; lensInvalidate(); rende
 ['q','fcounty','fcity','fkind','fsrc','fmin','fmax'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ const f=state.filters; f.q=$('#q').value; f.county=$('#fcounty').value; f.city=$('#fcity').value; f.kind=$('#fkind').value; f.src=$('#fsrc').value; f.min=$('#fmin').value; f.max=$('#fmax').value; if(id==='fcounty') fillCities(); refresh(); renderCityRail(); }));
 $$('#chips .chip').forEach(c=>c.addEventListener('click', ()=>{ const on=c.getAttribute('aria-pressed')!=='true'; c.setAttribute('aria-pressed', on); state.filters.chips[c.dataset.f]=on; refresh(); }));
 $('#sort').addEventListener('change', e=>{ state.sort=e.target.value; renderList(); });
+/* The filtered set as an interchange file. Handlers live here rather than in
+   geoexport.js so the module stays a pure function of its arguments and can be
+   tested without the DOM. */
+['expgeo','expcsv'].forEach((id,i)=>{ const b=$('#'+id); if(b) b.addEventListener('click', ()=>{ if(!window.LXGEO) return; i? LXGEO.exportCSV() : LXGEO.exportGeoJSON(); }); });
 function fillCities(){ const sel=$('#fcity'); const cur=sel.value; const cs=[...new Set(allListings().filter(l=>!state.filters.county||l.county===state.filters.county).map(l=>l.city))].sort(); sel.innerHTML='<option value="">All cities</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); sel.value=cs.includes(cur)?cur:''; state.filters.city=sel.value; }
 function fillCounties(){ const cs=[...new Set(allListings().map(l=>l.county).filter(Boolean))].sort(); $('#fcounty').innerHTML='<option value="">All counties</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); fillCities(); renderCityRail(); }
 

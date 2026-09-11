@@ -1123,4 +1123,12 @@ nav.tabs button[aria-selected="true"]{
 @media (max-width:700px){.pkclauses,.pkclauses tr,.pkclauses td{display:block;width:auto}
   .pkclauses th{display:none}.pkclauses td{border-bottom:none;padding-bottom:2px}
   .pkclauses tr{border-bottom:1px solid var(--line);padding-bottom:6px;display:block}}
+
+/* ---- interchange export (src/geoexport.js) ---- */
+.exportpair{display:inline-flex;gap:4px;margin:0 auto 0 10px}
+.exportbtn{font:inherit;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--tile);color:var(--muted);border:1px solid var(--line);border-radius:6px;
+  padding:2px 7px;cursor:pointer;transition:color .15s,border-color .15s}
+.exportbtn:hover{color:var(--ink);border-color:var(--ink)}
+@media (prefers-reduced-motion: reduce){.exportbtn{transition:none!important}}
 </style>
