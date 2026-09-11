@@ -1,0 +1,53 @@
+{
+ "about": "What the shipped editions actually cost and actually hold, measured by driving each published artifact in headless Chromium on 2026-09-11. Two questions are answered here and nothing else: how an edition scales with its record count (page bytes, load time, JS heap), and how much lodging stock its record layer already carries. Load time and heap are single-run figures from one container under one browser build - they establish an order of magnitude and a slope, not a benchmark suite, and the `method` field says so. The lodging counts are exact: a count of records whose own `kind` field names a lodging use, not a heuristic over free text.",
+ "measured_on": "2026-09-11",
+ "method": {
+  "browser": "headless Chromium (Playwright chromium_headless_shell-1194), --max-old-space-size=4096",
+  "source": "the published artifact for each edition, fetched and title-verified the same day (docs/PUBLISH_MAP.md)",
+  "load_ms": "wall time from navigation start until window.BA.listings is a non-empty array; one run per edition, single container, no warm cache",
+  "heap_mb": "performance.memory.usedJSHeapSize immediately after the record store is ready",
+  "lodging": "count of listings whose `kind` field matches hotel|motel|inn|lodge|resort|hospitality. An earlier pass that also matched the `src` field over-counted uscorridor by more than tenfold (31,117 against 2,955) and was discarded - source strings are not use classes.",
+  "not_measured": "interaction latency under a real pointer, mobile-device memory ceilings, and time-to-interactive as a user would perceive it. Those need a device lab, not a container."
+ },
+ "editions": [
+  {
+   "key": "nola", "records": 87578, "bytes": 5869488,
+   "load_ms": 19751, "heap_mb": 347.1, "scan_ms": 10.6, "sort_ms": 19.0,
+   "lodging": {"total": 322, "with_value": 322, "with_units": 322,
+    "kinds": [["Hotel / lodging", 322]],
+    "cities": [["New Orleans", 321], ["Jefferson Parish", 1]]}
+  },
+  {
+   "key": "nola-classic", "records": 125803, "bytes": 5119635,
+   "load_ms": 16693, "heap_mb": 414.8, "scan_ms": 5.5, "sort_ms": 21.5,
+   "lodging": {"total": 122, "with_value": null, "with_units": null,
+    "kinds": [], "cities": []}
+  },
+  {
+   "key": "bay", "records": 182124, "bytes": 11464490,
+   "load_ms": 17966, "heap_mb": 595.1, "scan_ms": 15.7, "sort_ms": 172.2,
+   "lodging": {"total": 1044, "with_value": 1043, "with_units": 1044,
+    "kinds": [["Hotel", 602], ["Hotel / motel / MH park", 171], ["Motel", 134],
+              ["SRO / residential hotel", 121], ["SRO hotel", 16]],
+    "cities": [["San Francisco", 633], ["Oakland", 89], ["Concord", 28],
+               ["Hayward", 22], ["Fremont", 21], ["Livermore", 20]]}
+  },
+  {
+   "key": "uscorridor", "records": 354260, "bytes": 16023544,
+   "load_ms": 26138, "heap_mb": 1020.4, "scan_ms": 28.9, "sort_ms": 157.0,
+   "lodging": {"total": 2955, "with_value": 2955, "with_units": 2955,
+    "kinds": [["Hotel", 749], ["Resort", 494], ["Motel", 410],
+              ["Inn, lodge, rooming or fraternity house — Room/dorm", 217],
+              ["Motels", 159], ["Com Hotels", 151]],
+    "cities": [["Phoenix", 557], ["Paradise Valley", 460], ["Syracuse", 318],
+               ["Indianapolis", 231], ["Mesa", 159], ["City Of Columbus", 129]]}
+  }
+ ],
+ "findings": {
+  "bytes_per_record": 54.0,
+  "heap_kb_per_record": 3.0,
+  "ceiling": "JS heap, not page weight. The largest shipped edition already holds 1.02 GB of heap at 354,260 records; page bytes at the same point are only 16 MB. Adding records costs roughly 54 bytes on the wire and 3 KB in memory, so memory runs out about fifty times sooner than bandwidth does.",
+  "per_50k": {"added_bytes_mb": 2.57, "added_heap_mb": 150, "added_load_ms": 2500},
+  "load_is_not_linear_in_this_sample": "87,578 records loaded slower than 125,803 (19.8 s against 16.7 s), so single-run load time carries at least a few seconds of noise. The heap figures are monotonic in record count and are the ones to plan against."
+ }
+}
