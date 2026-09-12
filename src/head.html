@@ -1142,4 +1142,12 @@ nav.tabs button[aria-selected="true"]{
   align-self:center;margin-right:2px;white-space:nowrap}
 .railnote{font-size:10.5px;color:var(--muted);align-self:center;margin-left:4px;white-space:nowrap}
 @media (max-width:700px){.railnote{white-space:normal}}
+
+/* ---- scope note (src/app.js renderScopeNote) ----
+   Shown only when the view's scope and the map's filter disagree. */
+/* Hidden by DEFAULT. The note is shown only when renderScopeNote() has run and
+   found the two scopes actually differ - so before that first run, an empty
+   element cannot draw its own left border across the page. */
+.scopenote{display:none;font-size:12.5px;line-height:1.55;color:var(--muted);margin:6px 0 0;
+  max-width:74ch;border-left:3px solid var(--line);padding-left:10px}
 </style>

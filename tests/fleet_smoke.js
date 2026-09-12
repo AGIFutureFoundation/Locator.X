@@ -204,6 +204,54 @@ async function main() {
         }
       }
 
+      // The Dashboard and the Deals table score the WHOLE edition while the map
+      // shows the filtered set, and both leaded with "Every property on the
+      // map" — false whenever a filter was on. The copy is corrected and the
+      // difference is now stated out loud. Assert the BEHAVIOUR: silent with no
+      // filter, visible and naming both counts with one.
+      const sc = await page.evaluate(async () => {
+        const seen = () => { const e = document.querySelector('#dashscope');
+          return !!e && getComputedStyle(e).display !== 'none' && e.offsetParent !== null; };
+        LX.showView('dash');
+        await new Promise(r => setTimeout(r, 1800));
+        const quiet = seen();
+        const lede = (document.getElementById('dash').innerText || '');
+        LX.showView('mapview');
+        await new Promise(r => setTimeout(r, 900));
+        const chip = document.querySelector('#cityrail .citychip:nth-of-type(2)');
+        if (!chip) return {skip: true, quiet, lede};
+        chip.click();
+        await new Promise(r => setTimeout(r, 1200));
+        LX.showView('dash');
+        await new Promise(r => setTimeout(r, 1800));
+        const el = document.querySelector('#dashscope');
+        const out = {skip: false, quiet, lede, loud: seen(),
+                     text: (el && el.textContent || '').trim(),
+                     filtered: LX.filtered().length, all: LX.allListings().length};
+        document.querySelector('#cityrail .citychip').click();
+        await new Promise(r => setTimeout(r, 700));
+        LX.showView('mapview');
+        await new Promise(r => setTimeout(r, 600));
+        return out;
+      });
+      if (sc) {
+        if (/Every property on the map/.test(sc.lede)) {
+          errs.push('a view still claims it scores "every property on the map" while '
+            + 'it scores the whole edition');
+        }
+        if (sc.quiet) errs.push('the scope note shows with no map filter applied');
+        if (!sc.skip) {
+          if (!sc.loud) {
+            errs.push('the scope note stayed hidden while the map was filtered to '
+              + sc.filtered + ' of ' + sc.all);
+          }
+          if (sc.loud && !(sc.text.indexOf(sc.all.toLocaleString()) >= 0
+                        && sc.text.indexOf(sc.filtered.toLocaleString()) >= 0)) {
+            errs.push('the scope note does not name both counts: ' + sc.text.slice(0, 90));
+          }
+        }
+      }
+
       // The search box is debounced, and that is load-bearing rather than
       // cosmetic: one filter pass costs 332 ms on the largest shipped edition's
       // record count (354,260 measured), so an undebounced field spent ~3.2
