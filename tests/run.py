@@ -286,6 +286,12 @@ def main():
     # ---- 10. the lodging expansion plan is derived, not drifting -----------
     run(["scripts/hotel_candidates.py", "--check"])
 
+    # ---- 10b. corridor pull readiness is derived from the probe record ------
+    # "Add properties to the corridors" is 24 different jobs and the difference
+    # is already measured in market/corridors.json. The page that sorts them
+    # must never be hand-edited away from those verdicts.
+    run(["scripts/corridor_readiness.py", "--check"])
+
     # ---- 12. the closing packet is derived, and states nothing on its own ---
     run(["scripts/build_packet.py", "--check"])
     packet = json.load(open(os.path.join(ROOT, "content/closing_packet.json"),

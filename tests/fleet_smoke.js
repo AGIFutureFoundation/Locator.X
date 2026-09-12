@@ -128,6 +128,67 @@ async function main() {
         if (back !== all) errs.push('clearing the city rail did not restore the list: ' + back + ' of ' + all);
       }
 
+      // The district rail. Districts come from the record's own nb/anb, and on
+      // this fixture four in five records carry neither, so the assertions are
+      // the coverage story rather than the happy path.
+      //
+      // The expectation is derived from the DATA, never from the markup. An
+      // earlier version asked the chips whether a no-district bucket existed and
+      // only then checked it — so when the bucket's marker regressed, the test
+      // skipped its own most important assertion and passed. If the edition has
+      // unnamed records, a bucket MUST exist and MUST select exactly them.
+      const dExpect = await page.evaluate(() => ({
+        unnamed: LX.allListings().filter(l => !(l.nb || l.anb)).length,
+        named: new Set(LX.allListings().map(l => l.nb || l.anb).filter(Boolean)).size
+      }));
+      const dchips = await page.$$eval('#districtrail .citychip', n => n.length);
+      if (dExpect.named >= 2) {
+        if (!dchips) errs.push('district rail rendered nothing though the edition names '
+          + dExpect.named + ' districts');
+        const total = await page.evaluate(() => LX.filtered().length);
+        await page.click('#districtrail .citychip:nth-of-type(2)');
+        await page.waitForTimeout(900);
+        const one = await page.evaluate(() => LX.filtered().length);
+        if (!(one > 0 && one < total)) {
+          errs.push('selecting a district did not narrow the list: ' + total + ' -> ' + one);
+        }
+
+        if (dExpect.unnamed > 0) {
+          // The bucket is where the bug was: the sentinel contains a NUL, which
+          // does not survive a round-trip through an HTML attribute, so writing
+          // it into data-district made the bucket select nothing at all.
+          const marked = await page.$$eval('#districtrail .citychip',
+            n => n.filter(c => c.dataset.none).length);
+          if (marked !== 1) {
+            errs.push('expected exactly one no-district bucket for ' + dExpect.unnamed
+              + ' unnamed records, found ' + marked);
+          }
+          await page.evaluate(() => {
+            const cs = document.querySelectorAll('#districtrail .citychip');
+            cs[cs.length - 1].click();
+          });
+          await page.waitForTimeout(900);
+          const r = await page.evaluate(() => ({
+            n: LX.filtered().length,
+            allUnnamed: LX.filtered().every(l => !(l.nb || l.anb))
+          }));
+          if (r.n !== dExpect.unnamed) {
+            errs.push('the no-district bucket selected ' + r.n + ', expected '
+              + dExpect.unnamed + ' — the sentinel did not round-trip');
+          }
+          if (!(r.n > 0 && r.allUnnamed)) {
+            errs.push('the no-district bucket did not select exactly the records with no district');
+          }
+        }
+
+        await page.evaluate(() => { document.querySelector('#districtrail .citychip').click(); });
+        await page.waitForTimeout(700);
+        const dback = await page.evaluate(() => LX.filtered().length);
+        if (dback !== total) {
+          errs.push('clearing the district rail did not restore the list: ' + dback + ' of ' + total);
+        }
+      }
+
       // The closing packet: the transaction checklist, assembled from the
       // record. It replaced twelve hardcoded San Francisco strings that shipped
       // in every edition, so the assertions are the two things that were wrong:

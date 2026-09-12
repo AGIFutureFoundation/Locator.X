@@ -158,6 +158,13 @@ def make_ba(seed, count, wide, tall, campus):
         zs = [z for z in zids if citymap[z] == c]
         cities_m[c] = {"v": [round(sum(zips_m[z]["v"][m] for z in zs) / len(zs)) for m in range(36)],
                        "r": [round(sum(zips_m[z]["r"][m] for z in zs) / len(zs)) for m in range(36)]}
+    # Sorted, so the band assignment is identical on every build — the fixture
+    # determinism guard in tests/run.py compares decompressed payloads.
+    _ys = sorted({cells[z][1] for z in pzids})
+    def nb_band(z):
+        i = _ys.index(cells[z][1])
+        return nbs[min(len(nbs) - 1, i * len(nbs) // max(1, len(_ys)))]
+
     listings = []
     for i in range(count):
         z = pzids[i % len(pzids)]; x0, y0 = cells[z]
@@ -169,7 +176,15 @@ def make_ba(seed, count, wide, tall, campus):
             "id": "demo-%d-%03d" % (seed, i + 1),
             "addr": "%d %s" % (10 + i * 7, STREETS[i % len(STREETS)]),
             "city": citymap[z], "county": "Demo", "zip": z,
-            "nb": nbs[i % 3] if i % 5 == 0 else None,
+            # A neighborhood is a PLACE, so it comes from where the parcel is,
+            # not from its position in the loop. This used to be nbs[i % 3],
+            # which scattered every neighborhood across the whole island and
+            # made a district's extent the whole map — so the district rail's
+            # map framing could not be demonstrated or tested on the fixture.
+            # Three contiguous bands by cell latitude; still only one record in
+            # five carries one, because a roll that names a neighborhood for
+            # every parcel is not the roll anybody actually gets.
+            "nb": nb_band(z) if i % 5 == 0 else None,
             # on a street, and inside the ZIP cell it claims: a parcel map reads
             # as a place because buildings line roads, not because there are more
             # of them. Fall back to the cell if this ZIP has no street in it.

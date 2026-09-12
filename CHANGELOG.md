@@ -7,6 +7,41 @@ such.
 
 ## [Unreleased]
 
+- **Districts are a navigation axis, and the rail states its own coverage** — the
+  map could be browsed by city but not by district, though every record already
+  carries one (`nb`, falling back to the assessor's `anb` — the precedence the
+  list and drawer already used). The district rail groups the records by it,
+  reframes the map on the district's measured extent, and — the part that
+  matters — offers **the records that carry no district as their own selectable
+  bucket**, with a coverage line saying how many that is. On the fixture: *3
+  named · 2,000 of 2,500 records carry no district.* A rail that quietly showed
+  only the named ones would present a fifth of the catalog as though it were all
+  of it. No boundary is invented: a district's extent is the bounding box of the
+  records that declare it, never a drawn polygon.
+
+- **The fixture's neighborhoods were not places** — they were assigned
+  `nbs[i % 3]`, by position in the loop, so every neighborhood was scattered
+  across the whole island and a district's extent was the entire map. The
+  district framing could not be demonstrated or tested. They are now three
+  contiguous bands by cell latitude, and each district spans 20–50% of the
+  island rather than 100%. Still only one record in five carries one, because a
+  roll that names a neighborhood for every parcel is not the roll anybody gets.
+
+- **Corridor pull readiness, generated from the probe record** — "add properties
+  to the corridors" is 24 different jobs, and the difference was already
+  measured in `market/corridors.json` and buried in prose. `scripts/corridor_readiness.py`
+  reads each metro's `parcel` block and writes
+  [`docs/CORRIDOR_PULL_READINESS.md`](docs/CORRIDOR_PULL_READINESS.md): **15 of
+  24 corridors can gain properties from a session that starts today**, 5 were
+  never probed, and 4 carry recorded verdicts (one endpoint answers perfectly
+  with a roll that cannot carry a screen; one has no roll at all). Five of the
+  confirmed corridors recorded an actual `returnCountOnly` result, totalling
+  **571,912 parcels** — and every one of them is in Louisiana, which puts the
+  largest confirmed block of pullable parcels in the same state as the New
+  Orleans editions, sharing one use-code vocabulary. It classifies from the
+  prober's own explicit verdict and refuses to assign one where the note records
+  none.
+
 - **The second map renderer was broken, and no test had ever run it** — the
   platform ships two map implementations, MapLibre GL and a CanvasMap fallback
   for machines with no WebGL, and every test run used the GL one. `CanvasMap`

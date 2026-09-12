@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""corridor_readiness — which corridors can actually gain properties, and which cannot.
+
+"Add more properties to the corridors" is not one job; it is 24 jobs in four
+very different states, and the difference is already measured and committed in
+`market/corridors.json`. Each metro there carries a `parcel` block naming the
+endpoint that was probed and what came back. This script reads those blocks and
+writes the ordered answer, so a pull session starts from the verdicts rather
+than re-probing 24 endpoints to rediscover them.
+
+It CLASSIFIES, it does not judge. The tier comes from the explicit marker the
+prober wrote into the note (CONFIRMED / PARTLY USABLE / NOT USABLE / …). A note
+with no marker is reported as "probed, verdict not recorded" rather than being
+quietly sorted into a tier it did not earn, and a metro with no `parcel` block
+at all is reported as never probed — which is a different thing from blocked.
+
+Outputs (generated, never hand-edited — CLAUDE.md):
+  docs/CORRIDOR_PULL_READINESS.md
+
+Usage:
+  python3 scripts/corridor_readiness.py            regenerate
+  python3 scripts/corridor_readiness.py --check    fail if stale
+"""
+import json
+import os
+import re
+import sys
+
+R = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
+SRC = R + 'market/corridors.json'
+OUT = R + 'docs/CORRIDOR_PULL_READINESS.md'
+
+# Ordered: the first marker found in the note wins, so the more specific
+# "PARTIALLY CONFIRMED" is tested before "CONFIRMED".
+MARKERS = [
+    ('NOT USABLE', 'not-usable'),
+    ('PARTLY USABLE', 'partly-usable'),
+    ('PARTIALLY CONFIRMED', 'partly-confirmed'),
+    ('CONFIRMED', 'confirmed'),
+]
+TIERS = [
+    ('confirmed', 'Ready to pull',
+     'The endpoint was fetched or counted and returned a parcel roll. A pull '
+     'session can add properties here today.'),
+    ('partly-confirmed', 'Ready, with a caveat recorded',
+     'The endpoint answered, but the prober wrote a warning to read first.'),
+    ('partly-usable', 'Usable in part',
+     'Real fields came back, but not the whole record a screen needs.'),
+    ('not-usable', 'Endpoint works, roll does not',
+     'The service answers and the data behind it cannot carry a screen. This '
+     'is a finding, not a failure.'),
+    ('no-roll', 'No public parcel roll',
+     'Probed and there is nothing behind any public endpoint.'),
+    ('unrecorded', 'Probed, verdict not recorded',
+     'A parcel block exists but its note carries no explicit verdict, so this '
+     'script will not assign one.'),
+    ('never-probed', 'Never probed',
+     'No parcel block at all. Not blocked — simply not yet looked at, which is '
+     'where the cheapest wins usually are.'),
+]
+
+
+def classify(m):
+    p = m.get('parcel')
+    if not p:
+        return 'never-probed', None, None
+    note = p.get('note') or p.get('verdict') or ''
+    if p.get('available') is False:
+        return 'no-roll', p, note
+    for marker, tier in MARKERS:
+        if marker in note:
+            return tier, p, note
+    return 'unrecorded', p, note
+
+
+def first_sentence(note, limit=200):
+    if not note:
+        return ''
+    t = ' '.join(note.split())
+    # Drop the shouted verdict prefix; the tier column already says it. The
+    # prefix runs past the marker itself ("CONFIRMED BY FETCH", "NOT USABLE -
+    # READ THIS BEFORE RELYING ON IT"), so strip the whole leading run of
+    # all-caps words rather than only the matched marker, or the sentence starts
+    # mid-phrase.
+    t = re.sub(r'^(?:[A-Z][A-Z-]*(?![a-z])[ .:,;\-]*)+', '', t).lstrip(' .:,;-')
+    if t:
+        t = t[0].upper() + t[1:]
+    m = re.search(r'(?<=[.!?])\s', t)
+    out = t[:m.start() + 1] if m else t
+    out = out.rstrip()
+    return (out[:limit].rstrip() + '\u2026') if len(out) > limit else out
+
+
+def parcel_count(note):
+    """The parcel count the prober recorded, when they recorded one.
+
+    Several notes state the exact answer to "how many properties could this
+    corridor add" \u2014 a returnCountOnly query result. Reading it out into its own
+    column is the difference between a page about endpoints and a page about
+    properties. Only a count explicitly tied to features/parcels is taken;
+    maxRecordCount is a page size, not a total, and field counts are not either.
+    """
+    if not note:
+        return None
+    t = ' '.join(note.split())
+    best = None
+    for m in re.finditer(r'([\d][\d,]{3,})\s+(?:features|parcels|records)\b', t, re.I):
+        n = int(m.group(1).replace(',', ''))
+        if best is None or n > best:
+            best = n
+    return best
+
+
+def render(data):
+    metros = data['metros']
+    rows = [(m,) + classify(m) for m in metros]
+    by = {}
+    for row in rows:
+        by.setdefault(row[1], []).append(row)
+
+    L = []
+    A = L.append
+    A('# Corridor pull readiness — where new properties can actually come from')
+    A('')
+    A('<!-- GENERATED by scripts/corridor_readiness.py from market/corridors.json.')
+    A('     Do not edit: run the script. tests/run.py fails the build if it is stale. -->')
+    A('')
+    A('"Add more properties to the corridors" is 24 different jobs. This page is the')
+    A('ordered answer, read out of the `parcel` block each metro already carries in')
+    A('[`market/corridors.json`](../market/corridors.json) — the endpoint that was probed')
+    A('and what came back. Nothing here is a new claim; the verdicts are the prober\'s own.')
+    A('')
+    A('The development container reaches none of these hosts — every route is')
+    A('policy-blocked, re-probed and dated in')
+    A('[`states/coverage/README.md`](states/coverage/README.md#egress-routes-dated) — so the')
+    A('pull runs over the desktop browser pane per [`PULL_RECIPE.md`](PULL_RECIPE.md).')
+    A('This page decides where that session spends its time.')
+    A('')
+    A('## The count')
+    A('')
+    A('| Tier | Corridors |')
+    A('|---|---|')
+    for tier, label, _ in TIERS:
+        n = len(by.get(tier, []))
+        if n:
+            A('| %s | **%d** |' % (label, n))
+    A('| **Total** | **%d** |' % len(metros))
+    A('')
+    ready = len(by.get('confirmed', [])) + len(by.get('partly-confirmed', []))
+    A('**%d of %d corridors can gain properties from a session that starts today.**'
+      % (ready, len(metros)))
+    A('The %d never probed are the cheapest place to grow that number, because a single'
+      % len(by.get('never-probed', [])))
+    A('endpoint check either adds a corridor or records an honest blocker.')
+    A('')
+    counted = [(m['metro'], parcel_count(n)) for m, t, _p, n in rows
+               if t in ('confirmed', 'partly-confirmed') and parcel_count(n)]
+    if counted:
+        total = sum(n for _k, n in counted)
+        A('Of those, **%d corridors recorded an actual parcel count** when probed, and they'
+          % len(counted))
+        A('total **{:,} parcels**. That is the measured size of what a pull session could'.format(total))
+        A('add from the endpoints already confirmed \u2014 not an estimate, and not a promise')
+        A('that every parcel clears a screen; it is the count the services themselves')
+        A('returned. The rest answered without stating a total.')
+        states = sorted({m.get('state') for m, t, _p, n in rows
+                         if t in ('confirmed', 'partly-confirmed') and parcel_count(n)
+                         and m.get('state')})
+        if len(states) == 1:
+            A('')
+            A('Every one of those counted corridors is in **%s**, which puts the largest'
+              % states[0])
+            A('confirmed block of pullable parcels in the same state as the New Orleans')
+            A('editions \u2014 one jurisdiction\u2019s use-code vocabulary to map, reused across all')
+            A('of them. That is the cheapest path from a confirmed endpoint to a screened')
+            A('property this file offers.')
+        A('')
+    for tier, label, blurb in TIERS:
+        group = by.get(tier)
+        if not group:
+            continue
+        A('## %s (%d)' % (label, len(group)))
+        A('')
+        A(blurb)
+        A('')
+        if tier == 'never-probed':
+            A('| Corridor | State | Counties |')
+            A('|---|---|---|')
+            for m, _t, _p, _n in sorted(group, key=lambda r: r[0]['metro']):
+                A('| %s | %s | %s |' % (m['metro'], m.get('state') or '—',
+                                        ', '.join(m.get('counties') or []) or '—'))
+            A('')
+            continue
+        A('| Corridor | State | What the probe found |')
+        A('|---|---|---|')
+        for m, _t, p, note in sorted(group, key=lambda r: r[0]['metro']):
+            A('| %s | %s | %s |' % (m['metro'], m.get('state') or '—',
+                                    first_sentence(note) or '—'))
+        A('')
+    A('## What this page does not say')
+    A('')
+    A('It does not say how many parcels any endpoint holds — only the notes that')
+    A('recorded a count say that, and they say it in their own words. It does not rank')
+    A('corridors by how attractive they are; that is what the belt ranking and the')
+    A('corridor scores are for. And a "ready" verdict is a verdict about the *endpoint*,')
+    A('not about the use-class vocabulary behind it: a pulled roll still has to clear')
+    A('[`crosswalk/validate_usecodes.py`](../crosswalk/validate_usecodes.py) before any')
+    A('property it carries can be screened by class.')
+    A('')
+    return '\n'.join(L)
+
+
+def main():
+    check = '--check' in sys.argv
+    data = json.load(open(SRC, encoding='utf-8'))
+    text = render(data)
+    cur = open(OUT, encoding='utf-8').read() if os.path.exists(OUT) else None
+    if check:
+        if cur != text:
+            raise SystemExit(
+                'CORRIDOR READINESS IS STALE — %s no longer matches '
+                'market/corridors.json.\nRun: python3 scripts/corridor_readiness.py'
+                % os.path.relpath(OUT, R))
+    else:
+        with open(OUT, 'w', encoding='utf-8') as f:
+            f.write(text)
+    counts = {}
+    for m in data['metros']:
+        t = classify(m)[0]
+        counts[t] = counts.get(t, 0) + 1
+    ready = counts.get('confirmed', 0) + counts.get('partly-confirmed', 0)
+    print('corridor readiness: %d of %d ready to pull, %d never probed — %s'
+          % (ready, len(data['metros']), counts.get('never-probed', 0),
+             'current' if check else 'written'))
+
+
+if __name__ == '__main__':
+    main()
