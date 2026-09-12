@@ -13,6 +13,10 @@ been pulled, the row cites where that pull is documented
 "pulled" means rows came back and their quirks are recorded; "shipped" means the feed is
 packed into a built edition and survived the fleet sweep.
 
+**The sum of every row below is in [`ROLLUP.md`](ROLLUP.md)** — generated from these
+files, never hand-written. Each file states its own coverage honestly; the roll-up
+states the total, which is the one number none of them could give.
+
 ## Status vocabulary
 
 | Status | Meaning | What it takes to advance |
