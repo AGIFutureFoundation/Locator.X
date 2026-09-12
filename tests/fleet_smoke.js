@@ -128,6 +128,61 @@ async function main() {
         if (back !== all) errs.push('clearing the city rail did not restore the list: ' + back + ' of ' + all);
       }
 
+      // The property-tower field. Every tower is one property and carries its
+      // record id, and the layer had NEVER RENDERED in any edition: it asked for
+      // a data expression on fill-extrusion-opacity, which MapLibre does not
+      // support, so it answered on the map's error channel and refused the
+      // layer. addLayer returned, paint() returned true, toggle() reported
+      // success and the button flipped — a completely silent failure.
+      //
+      // So this asserts the layer is really in the style and its features
+      // really carry ids, and it watches the map's own error channel, which is
+      // where that class of failure speaks and where nothing was listening.
+      const tw = await page.evaluate(async () => {
+        const m = window.__lxmap;
+        if (!m || !m.getStyle || !window.LXTowers) return null;
+        const mapErrors = [];
+        m.on('error', e => mapErrors.push(String((e && e.error && e.error.message) || e).slice(0, 200)));
+        try { LXTowers.mount(); } catch (e) {}
+        const toggled = LXTowers.toggle(true);
+        await new Promise(r => setTimeout(r, 1500));
+        const ids = m.getStyle().layers.map(l => l.id).filter(id => id.indexOf('lxptower') === 0);
+        let feats = [];
+        try { feats = m.querySourceFeatures('lxptowers'); } catch (e) {}
+        const withId = feats.filter(f => f.properties && f.properties.id);
+        // the chain a click runs: feature id -> LX.select -> drawer
+        let opened = false;
+        if (withId.length) {
+          LX.select(withId[0].properties.id, false);
+          await new Promise(r => setTimeout(r, 500));
+          opened = !!document.querySelector('#drawer.open');
+        }
+        LXTowers.toggle(false);
+        await new Promise(r => setTimeout(r, 400));
+        const after = m.getStyle().layers.map(l => l.id).filter(id => id.indexOf('lxptower') === 0);
+        return {toggled, layers: ids, features: feats.length, withId: withId.length,
+                opened, layersAfterOff: after.length, mapErrors};
+      });
+      if (tw) {
+        if (tw.toggled !== true) errs.push('property towers did not switch on: ' + tw.toggled);
+        if (!tw.layers.length) {
+          errs.push('the property-tower layer is not in the style — it was refused, '
+            + 'not drawn: ' + (tw.mapErrors[0] || 'no map error captured'));
+        }
+        if (tw.mapErrors.length) {
+          errs.push('the map rejected a tower layer: ' + tw.mapErrors[0]);
+        }
+        if (!(tw.withId > 0)) {
+          errs.push('tower features carry no record id, so a click cannot open a property');
+        }
+        if (tw.withId > 0 && !tw.opened) {
+          errs.push('selecting a tower\'s record did not open the drawer');
+        }
+        if (tw.layersAfterOff !== 0) {
+          errs.push('switching towers off left ' + tw.layersAfterOff + ' layer(s) behind');
+        }
+      }
+
       // The search box is debounced, and that is load-bearing rather than
       // cosmetic: one filter pass costs 332 ms on the largest shipped edition's
       // record count (354,260 measured), so an undebounced field spent ~3.2

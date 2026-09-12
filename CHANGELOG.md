@@ -7,6 +7,32 @@ such.
 
 ## [Unreleased]
 
+- **The property-tower field has never rendered, in any edition** — the layer
+  asked for a data expression on `fill-extrusion-opacity` to draw the emphasised
+  top decile solid and the rest faint. MapLibre does not support data
+  expressions on that property: it answered *"layers.lxptower.paint.fill-extrusion-opacity:
+  data expressions not supported"* on the map's own error channel and **refused
+  the layer**. Not an exception and not a page error — `addLayer` returned,
+  `paint()` returned true, `toggle()` reported success, the button flipped to
+  "hide towers" and the legend drew. The source was added and the layer never
+  existed. Nothing in the repository was listening to the channel where that
+  failure speaks.
+
+  The emphasis is preserved exactly by splitting on the same flag with a
+  `filter` — which *is* supported — and giving each of the two layers a static
+  opacity.
+
+- **A tower is one property, and now opens it** — every tower has carried its
+  record id in the feature since the layer was written, and clicking one did
+  nothing, so the tallest and most interesting marks on the map were the only
+  ones you could not open. They now answer a click the way the dot layer always
+  has, with the cursor change so the mark looks clickable before you try it.
+
+  Locked by a fleet-smoke assertion that watches the map's **error channel**,
+  checks the layers are really in the style, that features carry ids, that
+  selecting one opens the drawer, and that switching off removes both layers.
+  Restoring the data-driven opacity fails it by name.
+
 - **Typing in the search box cost three seconds of blocked main thread** — one
   filter pass costs **332 ms** at the largest shipped edition's measured record
   count (uscorridor, 354,260), and the field re-rendered on every character, so
