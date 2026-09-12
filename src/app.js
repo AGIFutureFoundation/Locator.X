@@ -826,7 +826,32 @@ function toggleStar(id){ state.stars.has(id)?state.stars.delete(id):state.stars.
   paint();
 })();
 
-function refresh(){ dealSync(); dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
+/* The Dashboard and the Deals table score the WHOLE edition; the map shows the
+   filtered set. Both are deliberate - they are portfolio views with their own
+   filters - but both leaded with "Every property on the map", which was simply
+   false whenever a map filter was on: the map read 1,042 of 2,500 while the
+   Dashboard scored all 2,500 and said the two were the same set.
+
+   The copy now says what each view actually scores, and this states the
+   relationship out loud whenever the two differ, rather than leaving a silent
+   discrepancy between two screens. Saying which set you are looking at is the
+   same rule the coverage lines follow everywhere else. */
+function renderScopeNote(){
+  const all = allListings().length, shown = filtered().length;
+  const same = shown >= all;
+  const msg = same
+    ? ''
+    : 'Scoring all ' + fmtN(all) + ' records in this edition. The map is filtered to '
+      + fmtN(shown) + ' right now — this view deliberately scores the whole catalog, '
+      + 'so the two counts differ.';
+  ['#dashscope', '#dealscope'].forEach(sel => {
+    const el = $(sel); if(!el) return;
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  });
+}
+
+function refresh(){ renderScopeNote(); dealSync(); dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
 /* The text fields fire on every character, and one pass costs 332 ms on the
    largest shipped edition's record count (354,260) - so typing a five-letter
    street name blocked the main thread for most of two seconds re-rendering

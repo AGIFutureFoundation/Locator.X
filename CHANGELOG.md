@@ -7,6 +7,26 @@ such.
 
 ## [Unreleased]
 
+- **Two views claimed to score "every property on the map" and did not** — the
+  Dashboard and the Deals table both score the *whole edition*; the map shows the
+  filtered set. With a filter on, the map read **1,042 of 2,500** while the
+  Dashboard scored all **2,500** and its own lede asserted the two were the same
+  set. That is not a silent discrepancy between screens, it is a false sentence
+  in the interface, on a platform whose first rule is measure before asserting.
+
+  The copy now says what each view actually scores, and a live scope note states
+  the relationship whenever the two differ — *"Scoring all 2,500 records in this
+  edition. The map is filtered to 1,042 right now — this view deliberately
+  scores the whole catalog, so the two counts differ."* Silent when the scopes
+  agree.
+
+  Nothing about what either view computes has changed. They are portfolio views
+  with their own filters and that is deliberate; the defect was describing them
+  as something else. Both halves are guarded and proven: restoring the old copy
+  fails with *"a view still claims it scores every property on the map"*, and
+  removing the note fails with *"the scope note stayed hidden while the map was
+  filtered"*.
+
 - **The map's error channel is now watched on every edition** — it is where a
   whole class of failure speaks that neither a thrown exception nor a `pageerror`
   ever sees, and it is how the property-tower layer went unrendered in every
