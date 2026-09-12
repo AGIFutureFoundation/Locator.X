@@ -7,6 +7,23 @@ such.
 
 ## [Unreleased]
 
+- **The map's error channel is now watched on every edition** — it is where a
+  whole class of failure speaks that neither a thrown exception nor a `pageerror`
+  ever sees, and it is how the property-tower layer went unrendered in every
+  edition while every signal the tests looked at said it worked. Nothing was
+  listening. `tests/fleet_smoke.js` now hooks `map.on('error')` as soon as the
+  map exists and fails the edition on anything it says.
+
+  A sweep of all 29 views with every overlay switched on found **zero** further
+  rejections — the towers were the only one. That negative is worth as much as
+  the fix, and it is a real negative rather than a vacuous one: reinstating the
+  data-driven opacity makes the same sweep report four errors naming both
+  layers.
+
+  Both guards proven independently — the tower-specific one by restoring the bad
+  opacity, the generic channel watch by adding an unrelated invalid layer, which
+  fails editions the tower assertion never touches.
+
 - **The property-tower field has never rendered, in any edition** — the layer
   asked for a data expression on `fill-extrusion-opacity` to draw the emphasised
   top decile solid and the rest faint. MapLibre does not support data

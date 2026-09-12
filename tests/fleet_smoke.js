@@ -50,6 +50,27 @@ async function main() {
     page.on('pageerror', e => errs.push(String(e).slice(0, 160)));
     await page.addInitScript(k => { try { localStorage.setItem('lx_fleet_edition', k); } catch (e) {} }, key);
     await page.goto(target, { waitUntil: 'load', timeout: 90000 });
+    /* The map has its own error channel, and it is where a whole class of
+       failure speaks that neither pageerror nor an exception ever sees. The
+       property-tower layer asked for a data expression MapLibre does not
+       support on fill-extrusion-opacity; MapLibre said so HERE and refused the
+       layer, while addLayer returned, paint() returned true and the button
+       flipped. The field had never rendered in any edition and every signal the
+       tests looked at said it worked. Nothing was listening to this channel. */
+    await page.evaluate(() => {
+      window.__mapErrors = [];
+      const attach = () => {
+        const m = window.__lxmap;
+        if (m && m.on && !m.__errHooked) {
+          m.__errHooked = true;
+          m.on('error', e => window.__mapErrors.push(
+            String((e && e.error && e.error.message) || e).slice(0, 220)));
+          return true;
+        }
+        return false;
+      };
+      if (!attach()) { const iv = setInterval(() => { if (attach()) clearInterval(iv); }, 100); }
+    });
     await page.waitForTimeout(1500);
     const info = await page.evaluate(() => ({
       title: document.title,
@@ -404,6 +425,11 @@ async function main() {
 
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
+    }
+    const mapErrs = await page.evaluate(() => [...new Set(window.__mapErrors || [])]);
+    if (mapErrs.length) {
+      errs.push('the map rejected something on its error channel: ' + mapErrs[0]
+        + (mapErrs.length > 1 ? ' (+' + (mapErrs.length - 1) + ' more)' : ''));
     }
     const ok = errs.length === 0 && info.n > 0 && info.options === expectedOptions
       && info.title.indexOf(fleet.labels[key]) === 0;
