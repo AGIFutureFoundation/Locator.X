@@ -7,6 +7,23 @@ such.
 
 ## [Unreleased]
 
+- **One view shipped into every edition and opened in none** — each spec lists
+  the tabs its edition hides, and nothing stopped a view from being hidden by
+  *all* of them. One was: the house-hack finder is inlined into all eleven
+  editions (10,424 bytes of source, 8,488 minified) and cannot be opened in any
+  of them. The only editions whose specs would show it are the three refusing
+  templates, which never load. Every spec author made a sensible local decision;
+  the emergent result — surface that ships and cannot be reached — was nobody's
+  decision and was invisible to everything.
+
+  It is now a **declaration** (`build_state.UNREACHABLE_VIEWS`) rather than an
+  accident, and `tests/run.py` fails **both ways**: a view hidden everywhere that
+  is not declared, and a view declared that some edition has started showing
+  again. The second half matters as much as the first, or the table quietly rots
+  into a lie. Declaring it is not endorsing it — whether to drop the module from
+  `lxbuild.MODULES` or give an edition a reason to show it is an open question
+  for the platform owner, and the declaration says so.
+
 - **The record layer, summed for the first time** — eleven state files in
   `docs/states/coverage/` answer the seven LOCATOR gates for their counties, one
   row per gate, each carrying a status from the fixed vocabulary the directory's

@@ -156,6 +156,45 @@ def main():
               "lockstep: %s title differs from spec %r" % (bfile, skey),
               "builder: %s vs spec title %r" % (titles, spec["title"]))
 
+    # ---- 4c. no view ships into every edition and opens in none ------------
+    # Each spec hides the tabs that edition does not want. Nothing stopped a
+    # view from being hidden by ALL of them, and one was: the house-hack finder
+    # is inlined into all eleven editions and cannot be opened in any. Every
+    # spec author made a local decision; the emergent result was nobody's.
+    #
+    # The check runs BOTH ways. An undeclared view hidden everywhere fails, and
+    # so does a declared view that some edition has started showing again —
+    # otherwise the declaration table rots into a lie nobody notices.
+    body_html = open(os.path.join(ROOT, "src/body.html"), encoding="utf-8").read()
+    all_views = set(re.findall(r'data-view="([a-z0-9]+)"', body_html))
+    shipped_specs = {k: v for k, v in build_state.SPECS.items()
+                     if not k.endswith("-template")}
+    check(len(shipped_specs) == 11,
+          "reachability: expected 11 shipped specs, found %d" % len(shipped_specs))
+    hidden_everywhere = {v for v in all_views
+                         if all(v in sp["hide_tabs"] for sp in shipped_specs.values())}
+    declared = set(build_state.UNREACHABLE_VIEWS)
+    undeclared = sorted(hidden_everywhere - declared)
+    check(not undeclared,
+          "reachability: %s ship%s in every edition and open%s in none, undeclared"
+          % (", ".join(undeclared), "s" if len(undeclared) == 1 else "",
+             "s" if len(undeclared) == 1 else ""),
+          "Either give an edition a reason to show it, drop it from "
+          "lxbuild.MODULES, or declare it in build_state.UNREACHABLE_VIEWS "
+          "with the reason.")
+    stale = sorted(declared - hidden_everywhere)
+    check(not stale,
+          "reachability: %s declared unreachable but some edition now shows it"
+          % ", ".join(stale),
+          "Remove it from build_state.UNREACHABLE_VIEWS — a stale declaration "
+          "is worse than none.")
+    for v, why in build_state.UNREACHABLE_VIEWS.items():
+        check(v in all_views,
+              "reachability: %r is declared unreachable but is not a view in "
+              "src/body.html at all" % v)
+        check(len(why or "") > 40,
+              "reachability: %r is declared without a real reason" % v)
+
     # ---- 5. check_pairs: fleet parity, and the failure mode itself ---------
     out = run(["scripts/check_pairs.py"])
     check("all match current source" in out, "pairs: fleet parity check failed", out)
