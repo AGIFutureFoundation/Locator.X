@@ -58,6 +58,33 @@ import lxbuild as B
 # switch and restores that. Deliberately unchanged everywhere: the academy
 # biography (factual history) and the mapping-review dataset table (facts
 # about the datasets that review actually used).
+# ---------------------------------------------------------------------------
+# Views that ship in every edition and are reachable in none.
+#
+# Each shipped spec lists the tabs it hides. Nothing prevented a view from being
+# hidden by ALL of them, and one was: the house-hack finder is inlined into all
+# eleven editions (10,424 bytes of source, 8,488 minified, inside the packed
+# payload) and cannot be opened in any of them. Every spec author made a local
+# decision; the emergent result — surface that ships and cannot be reached — was
+# nobody's decision and was invisible.
+#
+# It is now a declaration rather than an accident. tests/run.py fails BOTH ways:
+# a view hidden everywhere that is not declared here, and a view declared here
+# that some edition has started showing again. The second half matters as much
+# as the first, or this table quietly rots into a lie.
+#
+# Declaring one is not endorsing it. These are open questions for the platform
+# owner: drop the module from MODULES, or give some edition a reason to show it.
+UNREACHABLE_VIEWS = {
+    'hacks': (
+        'The house-hack finder. Every shipped spec hides it, so it is inlined '
+        'into all eleven editions and openable in none. Only the three refusing '
+        'templates would show it, and they never load. Open question: drop it '
+        'from lxbuild.MODULES, or let one edition show it.'
+    ),
+}
+
+
 SPECS = {
     'nola': dict(
         output='atlas_nola.html',
