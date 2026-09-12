@@ -1131,4 +1131,15 @@ nav.tabs button[aria-selected="true"]{
   padding:2px 7px;cursor:pointer;transition:color .15s,border-color .15s}
 .exportbtn:hover{color:var(--ink);border-color:var(--ink)}
 @media (prefers-reduced-motion: reduce){.exportbtn{transition:none!important}}
+
+/* ---- district rail (src/app.js renderDistrictRail) ----
+   Same chip vocabulary as the city rail, one step quieter, plus the coverage
+   line: a rail that shows only the records carrying a district would report a
+   fraction of the catalog as if it were all of it. */
+.districtrail{margin-top:4px}
+.districtrail .citychip{font-size:11px}
+.raillabel{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  align-self:center;margin-right:2px;white-space:nowrap}
+.railnote{font-size:10.5px;color:var(--muted);align-self:center;margin-left:4px;white-space:nowrap}
+@media (max-width:700px){.railnote{white-space:normal}}
 </style>

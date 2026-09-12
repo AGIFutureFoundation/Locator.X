@@ -60,7 +60,7 @@ const state = {
   overrides: store('overrides')||{},
   imported: store('imported')||[],
   rentMarkets: store('rentMarkets')||{},
-  filters: {q:'', county:'', city:'', kind:'', src:'', min:'', max:'', chips:{}},
+  filters: {q:'', county:'', city:'', district:'', kind:'', src:'', min:'', max:'', chips:{}},
   sort:'cap', sel:null, layer:'none', lens:'fit', basemap:'vector', token: store('mapboxToken')||''
 };
 function saveAssump(){ dealBump(); store('assump', state.assump); }
@@ -475,6 +475,84 @@ $('#fitbtn').addEventListener('click', fitToResults);
    Selecting a city drives the same filter the dropdown does — there is one
    definition of "city selected", not two — and then frames the map on that
    city's own extent rather than on the edition's. */
+/* ---------------- districts ----------------
+   The record's own district: `nb` (a neighborhood-boundary join) falling back to
+   `anb` (the assessor's own neighborhood code) - the same precedence the result
+   list and the drawer already use, so the three cannot disagree.
+
+   Most records have NEITHER, and that is the point of the coverage line. On the
+   synthetic fixture four in five carry no neighborhood, and on a real assessor
+   roll the share varies by jurisdiction. A rail that quietly showed only the
+   named ones would present a fraction of the catalog as though it were all of
+   it - the exact move this platform refuses everywhere else. So the unnamed
+   records are counted, offered as their own selectable bucket, and named in the
+   coverage line. Unknown is an answer.
+
+   No geometry is invented here: a district's extent is the bounding box of the
+   records that declare it, never a drawn boundary. */
+const NO_DISTRICT = '\u0000none';
+function districtOf(l){ return (l && (l.nb || l.anb)) || null; }
+
+function districtStats(){
+  const by = new Map(); let unnamed = 0;
+  allListings().forEach(l => {
+    const d = districtOf(l);
+    if(!d){ unnamed++; return; }
+    let r = by.get(d);
+    if(!r){ r = {district:d, n:0, w:1e9, s:1e9, e:-1e9, nn:-1e9}; by.set(d, r); }
+    r.n++;
+    if(typeof l.lng === 'number'){ r.w = Math.min(r.w, l.lng); r.e = Math.max(r.e, l.lng); }
+    if(typeof l.lat === 'number'){ r.s = Math.min(r.s, l.lat); r.nn = Math.max(r.nn, l.lat); }
+  });
+  return {list:[...by.values()].sort((a,b) => b.n - a.n), unnamed:unnamed};
+}
+
+function focusDistrict(d){
+  state.filters.district = d || '';
+  refresh(); renderDistrictRail();
+  if(!mapReady) return;
+  if(!d || d === NO_DISTRICT){ fitToResults(); return; }
+  const r = districtStats().list.find(x => x.district === d);
+  if(!r || r.w > r.e) return;
+  let w = r.w, s2 = r.s, e = r.e, n = r.nn;
+  if(e - w < 0.004){ w -= 0.004; e += 0.004; }
+  if(n - s2 < 0.004){ s2 -= 0.004; n += 0.004; }
+  map.fitBounds([[w,s2],[e,n]], {padding:56, maxZoom:15.5, duration:650});
+}
+
+function renderDistrictRail(){
+  const host = $('#districtrail'); if(!host) return;
+  const st = districtStats(); const cs = st.list;
+  // One district is not a choice, and an edition whose records name none is not
+  // a rail - the same rule the city rail follows.
+  if(cs.length < 2){ host.innerHTML = ''; host.style.display = 'none'; return; }
+  host.style.display = '';
+  const cur = state.filters.district;
+  const named = cs.reduce((a, c) => a + c.n, 0);
+  const total = named + st.unnamed;
+  /* The sentinel never reaches the DOM. It contains a NUL so it cannot collide
+     with a real neighborhood name, and a NUL does not survive a round-trip
+     through an HTML attribute — written into data-district it came back as
+     something else and the bucket selected nothing at all. The bucket is marked
+     with its own flag instead, and the handler maps that flag to the sentinel. */
+  const chip = (val, label, n) => '<button class="citychip' + (cur === val ? ' on' : '')
+    + '" ' + (val === NO_DISTRICT ? 'data-none="1"' : 'data-district="' + esc(val) + '"')
+    + ' title="' + esc(label + ' \u2014 ' + fmtN(n)
+    + ' records in this edition') + '">' + esc(label) + ' <i>' + fmtN(n) + '</i></button>';
+  host.innerHTML = '<span class="raillabel">Districts</span>'
+    + chip('', 'All', total)
+    + cs.map(c => chip(c.district, c.district, c.n)).join('')
+    + (st.unnamed ? chip(NO_DISTRICT, 'No district on the record', st.unnamed) : '')
+    + '<span class="railnote">' + fmtN(cs.length) + ' named \u00b7 '
+    + (st.unnamed
+        ? fmtN(st.unnamed) + ' of ' + fmtN(total) + ' records carry no district'
+        : 'every record carries one')
+    + '</span>';
+  $$('#districtrail .citychip').forEach(b =>
+    b.addEventListener('click', () =>
+      focusDistrict(b.dataset.none ? NO_DISTRICT : b.dataset.district)));
+}
+
 function cityStats(){
   const by = new Map();
   allListings().forEach(l => {
@@ -493,7 +571,7 @@ function focusCity(city){
   state.filters.city = city || '';
   const sel = $('#fcity'); if(sel) sel.value = state.filters.city;
   refresh();
-  renderCityRail();
+  renderCityRail(); renderDistrictRail();
   if(!mapReady) return;
   if(!city){ fitToResults(); return; }
   const r = cityStats().find(x => x.city === city);
@@ -587,6 +665,8 @@ function filtered(){
     if(PIN && !PIN.has(l.id)) return false;
     if(VW && !VW.pass(l)) return false;
     if(f.county && l.county!==f.county) return false; if(f.city && l.city!==f.city) return false;
+    if(f.district){ const dn=districtOf(l);
+      if(f.district===NO_DISTRICT){ if(dn) return false; } else if(dn!==f.district) return false; }
     if(f.kind && kindClass(l)!==f.kind) return false; if(f.src && (f.src==='imp')!==(l.src==='imp')) return false;
     const P=price(l); if(f.min && P<+f.min) return false; if(f.max && P>+f.max) return false;
     if(q && !(`${l.addr} ${l.city} ${l.zip} ${l.nb||''} ${l.anb||''} ${l.kind}`.toLowerCase().includes(q))) return false;
@@ -727,7 +807,7 @@ function toggleStar(id){ state.stars.has(id)?state.stars.delete(id):state.stars.
 })();
 
 function refresh(){ dealSync(); dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
-['q','fcounty','fcity','fkind','fsrc','fmin','fmax'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ const f=state.filters; f.q=$('#q').value; f.county=$('#fcounty').value; f.city=$('#fcity').value; f.kind=$('#fkind').value; f.src=$('#fsrc').value; f.min=$('#fmin').value; f.max=$('#fmax').value; if(id==='fcounty') fillCities(); refresh(); renderCityRail(); }));
+['q','fcounty','fcity','fkind','fsrc','fmin','fmax'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ const f=state.filters; f.q=$('#q').value; f.county=$('#fcounty').value; f.city=$('#fcity').value; f.kind=$('#fkind').value; f.src=$('#fsrc').value; f.min=$('#fmin').value; f.max=$('#fmax').value; if(id==='fcounty') fillCities(); refresh(); renderCityRail(); renderDistrictRail(); }));
 $$('#chips .chip').forEach(c=>c.addEventListener('click', ()=>{ const on=c.getAttribute('aria-pressed')!=='true'; c.setAttribute('aria-pressed', on); state.filters.chips[c.dataset.f]=on; refresh(); }));
 $('#sort').addEventListener('change', e=>{ state.sort=e.target.value; renderList(); });
 /* The filtered set as an interchange file. Handlers live here rather than in
@@ -735,7 +815,7 @@ $('#sort').addEventListener('change', e=>{ state.sort=e.target.value; renderList
    tested without the DOM. */
 ['expgeo','expcsv'].forEach((id,i)=>{ const b=$('#'+id); if(b) b.addEventListener('click', ()=>{ if(!window.LXGEO) return; i? LXGEO.exportCSV() : LXGEO.exportGeoJSON(); }); });
 function fillCities(){ const sel=$('#fcity'); const cur=sel.value; const cs=[...new Set(allListings().filter(l=>!state.filters.county||l.county===state.filters.county).map(l=>l.city))].sort(); sel.innerHTML='<option value="">All cities</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); sel.value=cs.includes(cur)?cur:''; state.filters.city=sel.value; }
-function fillCounties(){ const cs=[...new Set(allListings().map(l=>l.county).filter(Boolean))].sort(); $('#fcounty').innerHTML='<option value="">All counties</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); fillCities(); renderCityRail(); }
+function fillCounties(){ const cs=[...new Set(allListings().map(l=>l.county).filter(Boolean))].sort(); $('#fcounty').innerHTML='<option value="">All counties</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); fillCities(); renderCityRail(); renderDistrictRail(); }
 
 /* ---------------- selection & drawer ---------------- */
 function select(id, fly){ state.sel=id; const l=allListings().find(x=>x.id===id); if(!l) return; showView('mapview'); if(fly) map.flyTo({center:[l.lng,l.lat], zoom:Math.max(map.getZoom(),13.2), duration:700, padding:{right: window.innerWidth>900? 420 : 0}}); refresh(); const c=$(`.card[data-id="${id}"]`); if(c) c.scrollIntoView({block:'nearest'}); }
