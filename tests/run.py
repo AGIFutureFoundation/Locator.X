@@ -292,6 +292,13 @@ def main():
     # must never be hand-edited away from those verdicts.
     run(["scripts/corridor_readiness.py", "--check"])
 
+    # ---- 10c. the coverage roll-up is derived, and the vocabulary is closed --
+    # Eleven state files hold ninety gate rows; the sum was stated nowhere. The
+    # roll-up states it, and refuses to bucket a status outside the five terms
+    # the directory's own README defines - an invented status is exactly the
+    # drift that directory exists to prevent.
+    run(["scripts/coverage_rollup.py", "--check"])
+
     # ---- 12. the closing packet is derived, and states nothing on its own ---
     run(["scripts/build_packet.py", "--check"])
     packet = json.load(open(os.path.join(ROOT, "content/closing_packet.json"),

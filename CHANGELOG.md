@@ -7,6 +7,28 @@ such.
 
 ## [Unreleased]
 
+- **The record layer, summed for the first time** — eleven state files in
+  `docs/states/coverage/` answer the seven LOCATOR gates for their counties, one
+  row per gate, each carrying a status from the fixed vocabulary the directory's
+  own README defines. Ninety of those rows exist and **the total was stated
+  nowhere**: each file was honest about itself and no one could see the sum.
+  `scripts/coverage_rollup.py` reads every row and writes
+  [`ROLLUP.md`](docs/states/coverage/ROLLUP.md).
+
+  What it shows is worth knowing. **8 of 90 rows are in a built edition.**
+  Another **50 have been pulled but not packed** — the rows came back, their
+  quirks are documented, and they are still not in front of a user. That backlog
+  is larger than everything still unprobed (26 `named`), and it is the biggest
+  piece of finished work sitting behind the shipping step. Five states are 100%
+  pulled and 0% shipped: North Carolina (10 rows), Indiana (9), New Mexico (7),
+  Arizona (4), Utah (4).
+
+  The script's one judgement is refusing to make one: a status that does not
+  begin with one of the five vocabulary terms stops the build rather than being
+  bucketed by guess, because an invented status is exactly the drift that
+  directory exists to prevent. Proven by putting `mostly done` into a state file
+  and watching it refuse by name.
+
 - **Districts are a navigation axis, and the rail states its own coverage** — the
   map could be browsed by city but not by district, though every record already
   carries one (`nb`, falling back to the assessor's `anb` — the precedence the
