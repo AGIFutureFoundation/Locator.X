@@ -14,6 +14,9 @@
 'use strict';
 const $=(s,el=document)=>el.querySelector(s);
 const L=()=>window.LX, D=()=>window.LXDash;
+/* [layer id, the `top` flag it draws, its static opacity]. Two layers because
+   fill-extrusion-opacity cannot be data-driven; see paint(). */
+const TOWER_LAYERS = [['lxptower', 1, 0.92], ['lxptower_dim', 0, 0.42]];
 const num=v=>(typeof v==='number'&&isFinite(v))?v:null;
 
 /* ---------- what a tower can measure ----------
@@ -121,12 +124,43 @@ function paint(){
   if(!data||!data.features.length) return false;
   if(map.getSource('lxptowers')) map.getSource('lxptowers').setData(data);
   else map.addSource('lxptowers',{type:'geojson',data});
-  if(!map.getLayer('lxptower')){
-    map.addLayer({id:'lxptower', type:'fill-extrusion', source:'lxptowers',
+  /* TWO layers, not one, and the reason is a MapLibre rule rather than a design
+     choice: `fill-extrusion-opacity` does not accept data expressions. This
+     layer asked for one - ['case', ['==',['get','top'],1], 0.92, 0.42] - to draw
+     the emphasised top decile solid and the rest faint.
+
+     MapLibre answered "layers.lxptower.paint.fill-extrusion-opacity: data
+     expressions not supported" on the map's own error channel and REFUSED THE
+     LAYER. Not an exception, not a page error: addLayer returned, paint()
+     returned true, toggle() reported success, the button flipped to "hide
+     towers" and the legend drew. The source was added and the layer never
+     existed, so the property-tower field has never rendered in any edition.
+
+     The emphasis is preserved exactly by splitting on the same flag with a
+     `filter` - which IS supported - and giving each layer a static opacity. */
+  TOWER_LAYERS.forEach(([id, want, opacity]) => {
+    if(map.getLayer(id)) return;
+    map.addLayer({id:id, type:'fill-extrusion', source:'lxptowers',
+      filter:['==',['get','top'], want],
       paint:{'fill-extrusion-color':['get','tc'],'fill-extrusion-height':['get','th'],
              'fill-extrusion-base':0,
-             'fill-extrusion-opacity':['case',['==',['get','top'],1],0.92,0.42]}});
-  }
+             'fill-extrusion-opacity':opacity}});
+    /* Every tower IS one property and has carried its record id in the feature
+       since this layer was written, and clicking one did nothing - so the
+       tallest, most interesting marks on the map were the only ones you could
+       not open. The dot layer has answered a click since the beginning
+       (src/app.js 'pts'); this is the same two lines, plus the cursor change so
+       the mark looks clickable before you try it. */
+    try{
+      map.on('click', id, e => {
+        const f = e.features && e.features[0];
+        const X = L();
+        if(f && f.properties && f.properties.id && X && X.select) X.select(f.properties.id, false);
+      });
+      map.on('mouseenter', id, () => { try{ map.getCanvas().style.cursor='pointer'; }catch(err){} });
+      map.on('mouseleave', id, () => { try{ map.getCanvas().style.cursor=''; }catch(err){} });
+    }catch(err){ /* a renderer without layer-scoped events keeps a static layer */ }
+  });
   legend();
   return true;
 }
@@ -160,7 +194,7 @@ function toggle(on, metric){
   try{
     if(!on){
       S.on=false;
-      if(map.getLayer('lxptower')) map.removeLayer('lxptower');
+      TOWER_LAYERS.forEach(([id]) => { if(map.getLayer(id)) map.removeLayer(id); });
       if(map.getPitch&&map.getPitch()>5) map.easeTo({pitch:0,duration:600});
       legend(); return true;
     }
