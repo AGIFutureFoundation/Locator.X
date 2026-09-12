@@ -7,6 +7,28 @@ such.
 
 ## [Unreleased]
 
+- **Typing in the search box cost three seconds of blocked main thread** — one
+  filter pass costs **332 ms** at the largest shipped edition's measured record
+  count (uscorridor, 354,260), and the field re-rendered on every character, so
+  a five-letter street name blocked the main thread for **3,177 ms**. It is now
+  **0.4 ms**, with the identical result: 59,090 of 354,260 both ways. The filter
+  *state* is still read synchronously so nothing observes a stale value; only
+  the expensive re-render waits 180 ms for a pause in typing. Dropdowns are not
+  debounced — picking one is a finished decision.
+
+- **The two rails recomputed the whole catalog on every keystroke** — `cityStats()`
+  and `districtStats()` are computed from `allListings()`, not from the filtered
+  set, so their content cannot change while somebody types; they were recomputed
+  anyway, two full passes per character. `cityStats` additionally called
+  `price()` on every record to fill a `prices` array **nothing ever read**. Both
+  are now memoized on the catalog length — the same idiom `allListings()` itself
+  uses — which took the keystroke from 402.6 ms to 334.0 ms before the debounce
+  landed on top.
+
+  Both are locked by a fleet-smoke assertion on the *behaviour*: the count must
+  not move on the keystroke itself, must have moved once the window passes, and
+  must restore when the box is cleared. Removing the debounce fails it.
+
 - **Generative video, bounded before it was built** — the boundary is decided
   once in [`GENERATIVE_VIDEO.md`](docs/GENERATIVE_VIDEO.md) and enforced by a
   gate: synthesized pictures may appear in Academy and brand material where

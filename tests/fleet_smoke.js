@@ -128,6 +128,43 @@ async function main() {
         if (back !== all) errs.push('clearing the city rail did not restore the list: ' + back + ' of ' + all);
       }
 
+      // The search box is debounced, and that is load-bearing rather than
+      // cosmetic: one filter pass costs 332 ms on the largest shipped edition's
+      // record count (354,260 measured), so an undebounced field spent ~3.2
+      // seconds of blocked main thread on a five-letter word. Assert the
+      // BEHAVIOUR — the count must not move on the keystroke itself, and must
+      // have moved once the window passes — not that a constant exists.
+      const dq = await page.evaluate(async () => {
+        const q = document.getElementById('q');
+        const countOf = () => (document.getElementById('count').textContent || '').trim();
+        q.value = ''; q.dispatchEvent(new Event('input', {bubbles: true}));
+        await new Promise(r => setTimeout(r, 500));
+        const before = countOf();
+        const term = (window.BA.listings[0].addr || '').split(' ').pop().slice(0, 4);
+        q.value = term;
+        q.dispatchEvent(new Event('input', {bubbles: true}));
+        const immediate = countOf();          // read synchronously: no await
+        await new Promise(r => setTimeout(r, 600));
+        const settled = countOf();
+        q.value = ''; q.dispatchEvent(new Event('input', {bubbles: true}));
+        await new Promise(r => setTimeout(r, 600));
+        return {term, before, immediate, settled, restored: countOf()};
+      });
+      if (dq.term && dq.term.length >= 3) {
+        if (dq.immediate !== dq.before) {
+          errs.push('the search box is not debounced — the count moved on the keystroke itself ('
+            + dq.before + ' -> ' + dq.immediate + ')');
+        }
+        if (dq.settled === dq.before) {
+          errs.push('the debounced search never applied: still ' + dq.settled
+            + ' after the window for "' + dq.term + '"');
+        }
+        if (dq.restored !== dq.before) {
+          errs.push('clearing the search box did not restore the list: '
+            + dq.restored + ' of ' + dq.before);
+        }
+      }
+
       // The district rail. Districts come from the record's own nb/anb, and on
       // this fixture four in five records carry neither, so the assertions are
       // the coverage story rather than the happy path.
