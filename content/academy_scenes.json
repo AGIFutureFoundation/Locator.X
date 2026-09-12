@@ -1,0 +1,47 @@
+{
+  "library": "Locator.X Academy title sequences",
+  "version": 1,
+  "reviewed": "2026-09-12",
+  "model": "visko-orbis-stable",
+  "what_this_is": "Prompt paragraphs for generative title sequences behind Academy course material. Each scene is one continuous take, written to the model's own steering rules: a full paragraph naming setting, subject, light, motion and camera, and an evolution that re-establishes the same world verbatim before changing one thing, so the mid-run morph reads as cinematography rather than a cut.",
+  "the_line": "Nothing here depicts a real place, a real building, a real person or a real property. Generative video never attaches to a parcel record on this platform: a synthesized picture of a real address is a stronger claim than a fabricated number, not a weaker one, and this platform refuses the number. These scenes are abstract architecture, light and landscape for the Academy and the brand. scripts/build_scenes.py enforces that boundary and tests/run.py fails the build if a scene names a real place.",
+  "credential": "None is stored in this repository. Running these against the model needs a Reactor JWT the platform owner supplies at runtime; the library is text and is useful, reviewable and diffable without one.",
+
+  "scenes": [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "pillar": "Foundations & the Locator.X doctrine",
+      "initial": "A vast empty hall of pale limestone at dawn, its floor a single unbroken plane polished to a soft sheen, tall rectangular openings along one wall letting in long bars of cold blue morning light that stretch across the stone. Fine dust drifts slowly through the light. Nothing is furnished and nobody is present. The camera drifts forward at walking pace down the centre of the hall, steady and low. Architectural, photorealistic, cool and quiet — continuous slow forward motion, no cuts, a single unbroken take.",
+      "evolution": "The same vast limestone hall, the same tall openings, the same slow forward drift down the centre at walking pace. The light is turning: the cold blue morning warms through amber into a deep gold that floods the floor and throws the openings into long soft rectangles, and the drifting dust catches fire in the beams. Architectural, photorealistic — continuous slow forward motion, no cuts, a single unbroken take."
+    },
+    {
+      "id": "numbers",
+      "title": "The numbers",
+      "pillar": "The numbers",
+      "initial": "An enormous dark reading room lined floor to ceiling with plain wooden drawers, thousands of identical brass handles receding into shadow in every direction, lit only by a row of low green lamps down a long central table. No people, no papers, no writing visible. The camera tracks slowly sideways along the table, the drawers sliding past in the dark. Photorealistic, hushed, deep shadow and small warm pools of light — continuous slow lateral motion, no cuts, a single unbroken take.",
+      "evolution": "The same dark reading room of wooden drawers and brass handles, the same low green lamps, the same slow sideways track along the central table. The room is filling with a pale mist that pools around the table legs and softens the far drawers into grey, until only the nearest handles still catch the lamplight. Photorealistic, hushed — continuous slow lateral motion, no cuts, a single unbroken take."
+    },
+    {
+      "id": "asset",
+      "title": "The asset",
+      "pillar": "The asset",
+      "initial": "A single unadorned concrete structure standing alone on a flat plain of dry grass under a huge overcast sky, its surfaces raw and board-marked, its openings dark and empty. Wind moves across the grass in long visible waves. No signage, no vehicles, no people. The camera orbits the structure slowly at a low angle, keeping it centred. Photorealistic, grey and windswept, brutalist — continuous slow orbital motion, no cuts, a single unbroken take.",
+      "evolution": "The same lone concrete structure on the same flat plain of dry grass, the same slow low orbit holding it centred. Rain is arriving — the overcast darkens to slate, the grass flattens and silvers, and water begins to sheet down the board-marked concrete until every surface is black and reflective. Photorealistic, brutalist — continuous slow orbital motion, no cuts, a single unbroken take."
+    },
+    {
+      "id": "capital",
+      "title": "Capital & structure",
+      "pillar": "Capital & structure",
+      "initial": "The underside of an immense bridge seen from directly beneath, a repeating lattice of pale steel members marching away into haze, each joint riveted and exact, the water far below flat and colourless. No traffic, no sound of it, nobody in frame. The camera rises slowly straight up toward the lattice, the geometry opening outward around it. Photorealistic, pale and geometric, enormous scale — continuous slow upward motion, no cuts, a single unbroken take.",
+      "evolution": "The same immense steel lattice seen from directly beneath, the same slow rise straight up into the geometry. Fog is rolling in off the flat water below and climbing through the members, swallowing the far span first until only the nearest joints remain sharp and the rest is a soft grey repetition. Photorealistic, pale and geometric — continuous slow upward motion, no cuts, a single unbroken take."
+    },
+    {
+      "id": "evidence",
+      "title": "Evidence & judgment",
+      "pillar": "Evidence, data & judgment",
+      "initial": "A wide shallow pool of perfectly still black water filling an empty courtyard of dark stone, reflecting a clear pre-dawn sky so exactly that the horizon line is hard to find. Plain walls on every side, no doors, no windows, nothing written anywhere. The camera glides low and level just above the water surface toward the far wall. Photorealistic, minimal, near-monochrome — continuous slow forward glide, no cuts, a single unbroken take.",
+      "evolution": "The same still black pool in the same empty courtyard of dark stone, the same low level glide just above the surface. A single slow ripple has begun to travel outward across the water, breaking the reflected sky into moving fragments and then letting it knit back together behind the wave. Photorealistic, minimal, near-monochrome — continuous slow forward glide, no cuts, a single unbroken take."
+    }
+  ]
+}

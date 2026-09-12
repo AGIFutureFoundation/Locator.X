@@ -7,6 +7,32 @@ such.
 
 ## [Unreleased]
 
+- **Generative video, bounded before it was built** — the boundary is decided
+  once in [`GENERATIVE_VIDEO.md`](docs/GENERATIVE_VIDEO.md) and enforced by a
+  gate: synthesized pictures may appear in Academy and brand material where
+  nothing is depicted as a real place, and **never** attach to a parcel, a
+  property, an address, a real building or a named real city, county, parish or
+  state. The reason is that a synthesized picture of a real address is a
+  *stronger* claim than a fabricated number, not a weaker one — more persuasive,
+  harder to caveat, and it survives being screenshotted away from every
+  disclaimer attached to it.
+
+  The existing **Render video reel** is unaffected and is the model of what a
+  property-facing video is allowed to be here: canvas-drawn from the case's own
+  measured numbers, depicting no place at all.
+
+  `content/academy_scenes.json` holds five title-sequence scene pairs, rendered
+  by `scripts/build_scenes.py`, which refuses to build if a prompt names a real
+  place (vocabulary built from the repository's own state table, county and
+  parish names and shipped city list, so it grows as coverage does), reads like
+  an address, mentions a record, is a tagline rather than a paragraph, asks for
+  more than one shot, or fails to re-establish its world before morphing. Each
+  rule was proven by writing a scene that breaks it.
+
+  Nothing connects to a model: no credential is stored and no edition gains a
+  runtime dependency. The library is text, which is reviewable and gated without
+  a network.
+
 - **One view shipped into every edition and opened in none** — each spec lists
   the tabs its edition hides, and nothing stopped a view from being hidden by
   *all* of them. One was: the house-hack finder is inlined into all eleven

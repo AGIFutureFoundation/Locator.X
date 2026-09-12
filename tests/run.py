@@ -338,6 +338,29 @@ def main():
     # drift that directory exists to prevent.
     run(["scripts/coverage_rollup.py", "--check"])
 
+    # ---- 10d. generative video stays inside its boundary --------------------
+    # The Academy scene library is the one place this platform generates
+    # pictures rather than reporting them. The generator refuses any prompt that
+    # names a real place, reads like an address, is a tagline rather than a
+    # paragraph, asks for more than one shot, or fails to re-establish its world
+    # before morphing. A synthesized picture of a real address is a stronger
+    # claim than a fabricated number, and this platform refuses the number.
+    run(["scripts/build_scenes.py", "--check"])
+    scenes = json.load(open(os.path.join(ROOT, "content/academy_scenes.json"),
+                            encoding="utf-8"))
+    # Scan the PROMPTS, not the document. The library's own policy sentence
+    # says generative video never attaches to a parcel record, and a blanket
+    # scan of the file flagged that sentence — the gate was reading the rule as
+    # a violation of itself.
+    prompts = " ".join(sc.get("initial", "") + " " + sc.get("evolution", "")
+                       for sc in scenes["scenes"]).lower()
+    for word in ("parcel", "listing", "property record", "assessed", "for sale"):
+        check(word not in prompts,
+              "a scene prompt mentions %r — generative video never depicts a "
+              "record on this platform" % word)
+    check("the_line" in scenes and "never" in scenes["the_line"].lower(),
+          "scene library does not state the boundary it operates under")
+
     # ---- 12. the closing packet is derived, and states nothing on its own ---
     run(["scripts/build_packet.py", "--check"])
     packet = json.load(open(os.path.join(ROOT, "content/closing_packet.json"),

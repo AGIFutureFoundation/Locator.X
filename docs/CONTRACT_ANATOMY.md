@@ -79,6 +79,10 @@ platform refuses in its worksheets.
   the *record-layer* facts that contracts touch: instruments, foreclosure
   regime, disclosure status, tax sale mechanics — navigation of the public
   record, never drafting advice.
+- Generative video is bounded the same way and for the same reason: nothing
+  synthesized is ever attached to a parcel, a property or a named real place
+  ([`GENERATIVE_VIDEO.md`](GENERATIVE_VIDEO.md)). A synthesized picture of a
+  real address is a stronger claim than a fabricated number, not a weaker one.
 - The line: this platform does not generate binding contract language and
   does not assert statute-level claims without a source and a date. A
   "contract generator with all state and local laws built in" would violate
