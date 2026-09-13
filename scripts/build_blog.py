@@ -16,6 +16,7 @@ figures no longer match the file they came from.
 Usage: python3 scripts/build_blog.py <site_dir>
        python3 scripts/build_blog.py --check      verify figures against data
 """
+import collections
 import html
 import json
 import os
@@ -41,6 +42,21 @@ def load(rel):
 # The figures an article is allowed to state, each resolved from committed data.
 # An article writes {{fig:name}} and gets the number; nothing is typed twice.
 # --------------------------------------------------------------------------
+def _cov():
+    """The coverage gate rows, read by the roll-up's own parser.
+
+    An article that talks about coverage must not type the counts: they change
+    every time a state file gains a row. This imports the same reader
+    scripts/coverage_rollup.py uses to generate docs/states/coverage/ROLLUP.md,
+    so the article, the roll-up and the state files cannot disagree."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        '_cov', os.path.join(HERE, 'coverage_rollup.py'))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod, mod.read_rows()
+
+
 def figures():
     S = load('market/edition_scale.json')
     B = load('market/belts.json')
@@ -53,6 +69,19 @@ def figures():
     lodge_juris = [j for j in X['jurisdictions']
                    if any(c.get('class') == 'lodging' for c in j['codes'])]
     f = S['findings']
+    covmod, cov = _cov()
+    ncov = lambda term: str(sum(1 for r in cov if r['status'] == term))
+    gcount = collections.Counter()
+    for r in cov:
+        for letter in covmod.gate_letters(r['gate']):
+            gcount[letter] += 1
+    gname = dict(covmod.GATES)
+    granked = gcount.most_common()
+    corr_jobs = sum(m.get('jobs') or 0 for m in C['metros'])
+    corr_cap = sum(m.get('capital') or 0 for m in C['metros'])
+    corr_parcel = [m for m in C['metros'] if (m.get('parcel') or {}).get('available')]
+    corr_recs = sum(m.get('records') or 0 for m in C['metros'])
+    uc = by['uscorridor']
     return {
         'bytes_per_record': '%.0f' % f['bytes_per_record'],
         'heap_kb_per_record': '%.0f' % f['heap_kb_per_record'],
@@ -84,6 +113,41 @@ def figures():
         'lodging_juris': str(len(lodge_juris)),
         'holdout_months': str(B['method']['holdout_months']),
         'belts_min_points': str(B['method']['min_points']),
+        # --- the belts method, stated in the article exactly as the file has it
+        'belts_metro_cap': str(B['method']['metro_cap']),
+        'belts_counties': str(B['coverage']['counties']),
+        'belts_skipped_thin': '{:,}'.format(B['coverage']['skipped']['thin series']),
+        'belts_top2_share': '%d%%' % round(B['coverage']['concentration_top2_metros'] * 100),
+        # --- the scale measurements
+        'scale_editions': str(len(S['editions'])),
+        'scale_measured_on': S['measured_on'],
+        'total_records': '{:,}'.format(sum(e['records'] for e in S['editions'])),
+        'corridor_heap_mb': '{:,.0f}'.format(uc['heap_mb']),
+        'corridor_load_s': '%.1f' % (uc['load_ms'] / 1000.0),
+        'corridor_scan_ms': '%.0f' % uc['scan_ms'],
+        'corridor_sort_ms': '%.0f' % uc['sort_ms'],
+        'heap_vs_wire': '%.0f' % (f['heap_kb_per_record'] * 1024 / f['bytes_per_record']),
+        'nola_load_s': '%.1f' % (by['nola']['load_ms'] / 1000.0),
+        'atlas_load_s': '%.1f' % (by['nola-classic']['load_ms'] / 1000.0),
+        # --- the corridor file
+        'corridor_jobs': '{:,}'.format(corr_jobs),
+        'corridor_capital_b': '%.0f' % (corr_cap / 1e9),
+        'corridor_parcel_confirmed': str(len(corr_parcel)),
+        'corridor_metro_records': '{:,}'.format(corr_recs),
+        'corridor_dropped_parcel': str(sum(1 for d in C.get('dropped', []) if d.get('parcel'))),
+        # --- the coverage gate rows, from the state files themselves
+        'gate_rows': str(len(cov)),
+        'gate_files': str(len(set(r['file'] for r in cov))),
+        'gate_juris': str(len(set(r['jurisdiction'] for r in cov))),
+        'gate_shipped': ncov('shipped'),
+        'gate_pulled': ncov('pulled'),
+        'gate_named': ncov('named'),
+        'gate_blocked': ncov('blocked'),
+        'gate_norecord': ncov('no public record'),
+        'gate_deepest': gname[granked[0][0]].lower(),
+        'gate_deepest_rows': str(granked[0][1]),
+        'gate_thinnest': gname[granked[-1][0]].lower(),
+        'gate_thinnest_rows': str(granked[-1][1]),
     }
 
 
@@ -437,8 +501,11 @@ def main():
                 if m.group(1) not in CHARTS:
                     raise SystemExit('build_blog: %s asks for unknown chart "%s"'
                                      % (meta['slug'], m.group(1)))
-        print('  · %d articles · %d words · every figure and chart resolves from '
-              'committed data' % (len(arts), sum(a[2] for a in arts)))
+        lens = sorted(a[2] for a in arts)
+        print('  · %d articles · %s words · shortest %s, longest %s · every figure '
+              'and chart resolves from committed data'
+              % (len(arts), '{:,}'.format(sum(lens)), '{:,}'.format(lens[0]),
+                 '{:,}'.format(lens[-1])))
         profile(None, check=True)
         return
 
