@@ -158,3 +158,81 @@ equivalent are **absent rather than guessed**.
 Locked by `tests/fleet_smoke.js`, which exports an estimated-price row, a
 ZIP-centroid row and a row with no coordinate, and fails if any of the three
 loses its label or its count.
+
+---
+
+# The shareable view — one link, no server
+
+The two contracts above move *numbers* between surfaces. This one moves a
+**view**: which screen, which filters, which property is open — the thing a
+colleague actually means when they say "look at this". Implementation:
+[`src/permalink.js`](../src/permalink.js), and the **Link** button beside the
+GeoJSON and CSV exports.
+
+## Where the state lives, and why there
+
+In the **URL fragment**, which is the one part of a URL a browser never sends to
+a server. That is the whole reason it is the right place: an edition is a single
+file with no backend, and a sharing feature that needed one would trade away the
+property the platform exists to have. A link travels in the email; nothing is
+uploaded, and there is nowhere for it to be logged.
+
+```
+locator-x-new-orleans.html#v=deals&city=Mid-City&q=canal&chips=star&sort=cf&sel=nola-0001
+```
+
+| Key | Meaning |
+|---|---|
+| `v` | the active screen, omitted when it is the one the file opens on |
+| `county` `city` `district` `kind` `src` `q` `min` `max` | the filter bar, exactly as set; `district=none` is the no-district bucket |
+| `chips` | the pressed filter chips, comma-separated |
+| `sort` | the result ordering, omitted when it is the default |
+| `sel` | the open property's record id |
+
+Keys are omitted when empty, so an untouched page carries **no fragment at all**
+and a plain URL stays plain. Writes use `replaceState`: a filter keystroke is
+not a navigation, and forty history entries for one search makes the back button
+useless.
+
+## The rule: a link that half-works must say so
+
+A link built in one edition and opened in another asks for things that are not
+there — a record id from a different catalogue, a city the edition does not
+cover, a screen it does not build. The tempting behaviour is to apply what fits
+and drop the rest, and it produces the worst possible outcome: the reader is
+shown the **whole unfiltered catalogue**, which looks exactly like a link that
+worked.
+
+So every key that cannot be applied is **named to the reader and left
+unapplied**:
+
+> This link asked for 3 things this edition cannot show: city "Nowheresville" —
+> not in this edition; sel "not-a-real-id" — this edition does not carry that
+> record; v "nosuchview" — no such screen in this edition.
+
+The report is also readable as data at `LXLINK.lastReport` (`{applied, ignored}`,
+each ignored entry carrying its key, value and reason). This is the
+no-laundering rule of the worksheet contract, one screen further out: state must
+not migrate from *sent* to *shown* without the difference being visible.
+
+## Conformance — what a restore must do
+
+1. **Drive the real controls**, never write filter state behind them: the
+   field's own handler rebuilds the dependent city list, re-renders the rails
+   and re-runs the filter. A restore that skipped it would leave the interface
+   showing one thing while the filter did another.
+2. **Check before applying.** A select value that is not in this edition's
+   options, a record id not in the store, a view id that is not a view — each is
+   reported, not attempted.
+3. **Report unknown keys** rather than ignoring them, so a link from a later
+   version degrades loudly.
+4. **Restore is idempotent and reload-proof.** It is asserted by reloading the
+   page at the link, not by calling it against an already-booted app — a restore
+   that only works in place is not a link.
+
+The end-to-end behaviour is locked in `tests/fleet_smoke.js`: a link made in the
+app is reloaded from scratch and must restore the same filtered count, the same
+screen and the same open property with nothing reported; and a link naming three
+absent things must report all three, apply none, and put the sentence in front
+of the reader.
+

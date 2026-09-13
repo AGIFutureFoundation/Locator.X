@@ -15,7 +15,7 @@ This repository holds the **source**. The built editions and the ~4 GB of public
 not committed; see [`data/README.md`](data/README.md) for why and how to rebuild them.
 
 ```
-src/                 84 modules — the app, the Academy, the underwriting and evidence layers
+src/                 85 modules — the app, the Academy, the underwriting and evidence layers
 curriculum/          the curriculum as data, the validator that keeps it honest, and the
                      course catalog separated by pillar (curriculum/courses/)
 build*.py            33 builders — data modules, then one per edition
