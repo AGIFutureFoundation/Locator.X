@@ -1,7 +1,7 @@
 /* fleet_smoke — the whole application, driven, with no data tree.
  *
  * Loads the synthetic-fleet demo (scripts/build_fleet_demo.py output: the
- * complete 84-module shell over generated fixtures) in headless Chromium and
+ * complete 85-module shell over generated fixtures) in headless Chromium and
  * drives EVERY edition the page carries: load it, read its title and record
  * count, open the map, and on the first edition exercise the real controls:
  * the "Meets the Locator X criteria" chip, every screening class in the Type
@@ -349,6 +349,101 @@ async function main() {
           errs.push('clearing the district rail did not restore the list: ' + dback + ' of ' + total);
         }
       }
+
+      // The shareable view. An edition is one file with no server, so a link in
+      // the URL fragment is the only way two people can look at the same thing
+      // in it — and the failure that matters is not "the link does not work",
+      // it is "the link half-works silently": a record id from another edition
+      // that simply does not open, leaving the reader looking at the whole
+      // catalogue believing it is what they were sent.
+      //
+      // So this asserts both halves, and the second one by RELOADING the page
+      // at the link rather than by calling restore() in place — a restore that
+      // only works against an already-booted app is not a link.
+      const linkMade = await page.evaluate(async () => {
+        // clear whatever the district assertions left behind
+        LX.focusDistrict('');
+        const city = [...new Set(LX.allListings().map(l => l.city))].filter(Boolean)[0];
+        const set = (id, v) => { const el = document.getElementById(id); el.value = v;
+          el.dispatchEvent(new Event('input', { bubbles: true })); };
+        set('fcity', city);
+        await new Promise(r => setTimeout(r, 500));
+        const first = LX.filtered()[0];
+        if (first) LX.select(first.id, false);
+        LX.showView('deals');
+        await new Promise(r => setTimeout(r, 400));
+        return { hash: location.hash, city: city, sel: first ? first.id : null,
+                 filtered: LX.filtered().length };
+      });
+      if (!/city=/.test(linkMade.hash) || !/v=deals/.test(linkMade.hash)) {
+        errs.push('the view did not reach the URL: ' + (linkMade.hash || '(empty)'));
+      }
+      if (!(linkMade.filtered > 0)) {
+        errs.push('the link fixture filtered to nothing, so the round trip proves nothing');
+      }
+      {
+        const p2 = await ctx.newPage();
+        p2.on('pageerror', e => errs.push('link reload: ' + String(e).slice(0, 160)));
+        await p2.goto(target + linkMade.hash, { waitUntil: 'load', timeout: 90000 });
+        await p2.waitForTimeout(3000);
+        const back = await p2.evaluate(() => ({
+          city: LX.state.filters.city, sel: LX.state.sel,
+          filtered: LX.filtered().length,
+          view: (document.querySelector('.view.active') || {}).id,
+          drawer: !!document.querySelector('#drawer.open'),
+          ignored: (LXLINK.lastReport || {}).ignored || []
+        }));
+        if (back.city !== linkMade.city) {
+          errs.push('the link did not restore the city filter: ' + back.city + ' vs ' + linkMade.city);
+        }
+        if (back.filtered !== linkMade.filtered) {
+          errs.push('the link restored a different set: ' + back.filtered + ' vs ' + linkMade.filtered);
+        }
+        if (back.view !== 'deals') errs.push('the link did not restore the screen: ' + back.view);
+        if (linkMade.sel && (back.sel !== linkMade.sel || !back.drawer)) {
+          errs.push('the link did not reopen the property it named: sel=' + back.sel
+            + ' drawer=' + back.drawer);
+        }
+        if (back.ignored.length) {
+          errs.push('a link this edition produced could not be read back: '
+            + JSON.stringify(back.ignored));
+        }
+        await p2.close();
+      }
+      {
+        // The half-works case, which is the one worth a test: three keys this
+        // edition cannot honour. Every one must be named to the reader and NONE
+        // of them applied — a link that quietly drops its filter is worse than
+        // one that fails.
+        const p3 = await ctx.newPage();
+        p3.on('pageerror', e => errs.push('link report: ' + String(e).slice(0, 160)));
+        await p3.goto(target + '#sel=not-a-real-id&city=Nowheresville&v=nosuchview',
+          { waitUntil: 'load', timeout: 90000 });
+        await p3.waitForTimeout(2500);
+        const bad = await p3.evaluate(() => ({
+          report: LXLINK.lastReport, sel: LX.state.sel, city: LX.state.filters.city,
+          toastOn: document.getElementById('toast').classList.contains('on'),
+          toast: document.getElementById('toast').textContent
+        }));
+        const keys = ((bad.report || {}).ignored || []).map(x => x.key).sort().join(',');
+        if (keys !== 'city,sel,v') {
+          errs.push('a link asking for three absent things reported: ' + keys);
+        }
+        if (bad.sel || bad.city) {
+          errs.push('a link applied something this edition does not carry: sel=' + bad.sel
+            + ' city=' + bad.city);
+        }
+        if (!bad.toastOn || !/cannot show/.test(bad.toast || '')) {
+          errs.push('the reader was never told the link half-worked: ' + (bad.toast || '(silent)'));
+        }
+        await p3.close();
+      }
+      await page.evaluate(() => {
+        const set = (id, v) => { const el = document.getElementById(id); el.value = v;
+          el.dispatchEvent(new Event('input', { bubbles: true })); };
+        set('fcity', ''); LX.closeDrawer(); LX.showView('mapview');
+      });
+      await page.waitForTimeout(700);
 
       // The closing packet: the transaction checklist, assembled from the
       // record. It replaced twelve hardcoded San Francisco strings that shipped

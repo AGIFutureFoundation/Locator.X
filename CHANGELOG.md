@@ -7,6 +7,45 @@ such.
 
 ## [Unreleased]
 
+- **A view you can send to someone** — an edition is one file with no server
+  behind it, which is the product and which meant, until now, that two people
+  holding the same file had no way to look at the same *thing* in it. There was
+  no shareable state anywhere in the app: no fragment, no query, nothing. A
+  colleague got "open the New Orleans one, filter to Mid-City, search Canal,
+  it's the fourth one down".
+
+  `src/permalink.js` puts the view in the URL fragment — screen, filters, chips,
+  sort, the open property — and restores it on load. The fragment is the one
+  part of a URL browsers never send to a server, so the no-server /
+  no-accounts / no-tracking property is intact: a shared link travels in the
+  email, not through us, and there is nowhere for it to be logged. A **Link**
+  button sits with the GeoJSON and CSV exports; an untouched page keeps a clean
+  URL, and a filter keystroke uses `replaceState` rather than filling the back
+  button with forty entries.
+
+  **The rule it exists to keep is the interesting half.** A link built in one
+  edition and opened in another asks for records, cities and screens that are
+  not there, and the tempting behaviour — apply what fits, drop the rest — hands
+  the reader the whole unfiltered catalogue looking exactly like what they were
+  sent. Every key that cannot be applied is named to the reader instead, in one
+  sentence, and none of them is applied: *"This link asked for 3 things this
+  edition cannot show: city "Nowheresville" — not in this edition; sel
+  "not-a-real-id" — this edition does not carry that record; …"*. Same rule as
+  the worksheet contract's refusal to launder a number, one screen further out
+  ([`docs/INTEROP.md`](docs/INTEROP.md)).
+
+  It costs **2.5 KB of built page** — the fleet demo goes 1,884,059 → 1,886,607
+  bytes, 0.135% — measured by building the same demo twice with the module in
+  and out of `lxbuild.MODULES`, not estimated from the source file.
+
+  Both halves are guarded in `tests/fleet_smoke.js` and both guards were proven
+  by breaking what they protect: the round trip is asserted by **reloading the
+  page at the link** rather than calling restore in place (dropping `city` from
+  the encoder fails with *"the view did not reach the URL"*), and the
+  half-works case asserts all three absent keys are reported, none applied, and
+  the reader actually told (silencing the unknown-record report fails with
+  *"a link asking for three absent things reported: city,v"*).
+
 - **Two views claimed to score "every property on the map" and did not** — the
   Dashboard and the Deals table both score the *whole edition*; the map shows the
   filtered set. With a filter on, the map read **1,042 of 2,500** while the

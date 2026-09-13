@@ -100,7 +100,7 @@ applied-courses catalog, the cohort review, the Louisiana developer deck and the
 There is no bundler, no framework and no build server.
 
 ```
-src/ (84 modules) ──┐
+src/ (85 modules) ──┐
 curriculum/ ────────┤──▶ lxbuild.py ──▶ one self-contained HTML file per edition
 data modules ───────┘      (module registry, minify, gzip + base64 pack)
 ```
@@ -167,7 +167,7 @@ is lossy.
 ## 9. Repository map
 
 ```
-src/                 84 modules — app, Academy, underwriting, evidence layers
+src/                 85 modules — app, Academy, underwriting, evidence layers
 curriculum/          curriculum-as-data, validator, per-pillar course catalogs (courses/)
 build*.py            33 builders — data modules, then one per edition
 lxbuild.py           shared build library (module registry, minify, pack)

@@ -1,6 +1,6 @@
 """build_fleet_demo — the public site's live app: every edition, synthetic data.
 
-Builds ONE self-contained page carrying the complete application shell (all 84
+Builds ONE self-contained page carrying the complete application shell (all 85
 modules) with a version selector for every shipped edition in build_state.SPECS
 — each over its OWN deterministic synthetic fixture with its own fictional-
 island map — and the three wave templates listed disabled with their real
