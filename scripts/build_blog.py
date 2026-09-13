@@ -63,6 +63,7 @@ def figures():
     C = load('market/corridors.json')
     E = load('market/editions.json')
     X = load('crosswalk/usecodes.json')
+    K = load('content/closing_packet.json')
     by = {e['key']: e for e in S['editions']}
     lodging = sum(e['lodging']['total'] for e in S['editions'])
     measured = [e for e in E['editions'] if 'records_measured' in e]
@@ -82,6 +83,7 @@ def figures():
     corr_parcel = [m for m in C['metros'] if (m.get('parcel') or {}).get('available')]
     corr_recs = sum(m.get('records') or 0 for m in C['metros'])
     uc = by['uscorridor']
+    xcodes = [c for j in X['jurisdictions'] for c in j['codes']]
     return {
         'bytes_per_record': '%.0f' % f['bytes_per_record'],
         'heap_kb_per_record': '%.0f' % f['heap_kb_per_record'],
@@ -148,6 +150,28 @@ def figures():
         'gate_deepest_rows': str(granked[0][1]),
         'gate_thinnest': gname[granked[-1][0]].lower(),
         'gate_thinnest_rows': str(granked[-1][1]),
+        # --- the use-code crosswalk
+        'crosswalk_classes': str(len(X['classes'])),
+        'crosswalk_verified': str(sum(1 for c in xcodes if c.get('verified'))),
+        'crosswalk_unverified': str(sum(1 for c in xcodes if not c.get('verified'))),
+        'crosswalk_measured': '{:,}'.format(
+            sum(c.get('measured_count') or 0 for c in xcodes)),
+        'crosswalk_caveats': str(sum(len(j.get('caveats') or [])
+                                     for j in X['jurisdictions'])),
+        'crosswalk_value_fields': str(sum(1 for j in X['jurisdictions']
+                                          if j.get('value_field'))),
+        # --- the closing-file packet (content/closing_packet.json)
+        'packet_clauses': str(len(K['clauses'])),
+        'packet_documents': str(len(K['documents'])),
+        'packet_contingencies': str(len(K['contingencies'])),
+        'packet_state_sensitive': str(sum(1 for c in K['clauses']
+                                          if c.get('state_sensitive'))),
+        'packet_questions': str(sum(1 for c in K['clauses'] if c.get('ask_counsel'))),
+        'packet_docs_document': str(sum(1 for d in K['documents']
+                                        if d.get('kind') == 'document')),
+        'packet_docs_record': str(sum(1 for d in K['documents']
+                                      if d.get('kind') == 'public record')),
+        'packet_reviewed': K['reviewed'],
     }
 
 
