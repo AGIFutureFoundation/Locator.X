@@ -57,6 +57,29 @@ def _cov():
     return mod, mod.read_rows()
 
 
+def _curriculum():
+    """The curriculum module, loaded from source.
+
+    An article about the Academy must not state its own count of courses: the
+    curriculum is the source of truth and gen_courses.py already derives
+    everything else from it. Same rule as the coverage roll-up above.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        '_cur', os.path.join(ROOT, 'curriculum', 'curriculum.py'))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _la_frictions():
+    """The ranked frictions in docs/LOUISIANA_DEVELOPMENT_FRICTION.md, counted
+    from the document's own numbered headings rather than typed."""
+    path = os.path.join(ROOT, 'docs', 'LOUISIANA_DEVELOPMENT_FRICTION.md')
+    with open(path, encoding='utf-8') as f:
+        return len(re.findall(r'(?m)^## \d+\. ', f.read()))
+
+
 def figures():
     S = load('market/edition_scale.json')
     B = load('market/belts.json')
@@ -84,6 +107,8 @@ def figures():
     corr_recs = sum(m.get('records') or 0 for m in C['metros'])
     uc = by['uscorridor']
     xcodes = [c for j in X['jurisdictions'] for c in j['codes']]
+    cur = _curriculum()
+    projects = [p for m in C['metros'] for p in (m.get('projects') or [])]
     return {
         'bytes_per_record': '%.0f' % f['bytes_per_record'],
         'heap_kb_per_record': '%.0f' % f['heap_kb_per_record'],
@@ -172,6 +197,29 @@ def figures():
         'packet_docs_record': str(sum(1 for d in K['documents']
                                       if d.get('kind') == 'public record')),
         'packet_reviewed': K['reviewed'],
+        # --- the Academy, from curriculum/curriculum.py itself
+        'course_items': str(len(cur.C)),
+        'course_courses': str(sum(1 for c in cur.C if c[2] == 'course')),
+        'course_guides': str(sum(1 for c in cur.C if c[2] == 'guide')),
+        'course_pillars': str(len(cur.PILLARS)),
+        'course_levels': str(len(cur.LEVELS)),
+        'course_doctrine': str(len(cur.DOCTRINE)),
+        'course_live': str(sum(1 for c in cur.C if cur.status_of(c[0]) == 'live')),
+        'course_pathways': str(len(cur.PATHWAYS)),
+        'course_with_prereq': str(sum(1 for c in cur.C if c[7])),
+        'course_frameworks': str(len(cur.FRAMEWORKS)),
+        # --- the corridor file, a little deeper
+        'corridor_live': str(sum(1 for m in C['metros'] if m.get('kind') == 'live')),
+        'corridor_projects': str(len(projects)),
+        'corridor_projects_nojobs': str(sum(1 for p in projects if p.get('jobs') is None)),
+        'corridor_permits_total': '{:,}'.format(
+            sum(m.get('permits') or 0 for m in C['metros'])),
+        'corridor_as_of': C['as_of'],
+        'corridor_no_permits': str(sum(1 for m in C['metros'] if not m.get('permits'))),
+        'corridor_jobs_null': str(sum(1 for m in C['metros'] if m.get('jobs') is None)),
+        'corridor_studied': str(sum(1 for m in C['metros'] if m.get('kind') != 'live')),
+        # --- the Louisiana friction page
+        'la_frictions': str(_la_frictions()),
     }
 
 
