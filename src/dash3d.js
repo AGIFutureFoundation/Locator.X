@@ -26,9 +26,14 @@ function edges(){
 }
 
 /* ---------- the cube ---------- */
+/* The cube draws the first CUBE_CAP of the ranked candidates, not all of them -
+   a spinning canvas of ten thousand spheres is neither readable nor fast. That
+   cap used to be silent while the heading said "every candidate", which is the
+   one thing it could not be; it is stated next to the cube now. */
+const CUBE_CAP=900;
 function buildPts(rows){
   const X=L();
-  const src=rows.slice(0,900);
+  const src=rows.slice(0,CUBE_CAP);
   const pts=[];
   for(const r of src){
     const l=r.l, a=r.a;
@@ -151,10 +156,18 @@ const METRICS=[
  ['fcast','12-month forecast', l=>{ try{ const z=window.LXScout&&LXScout.zipFC(l.zip); return (z&&z.v&&z.v.g12!=null)? z.v.g12*10 : null; }catch(e){ return null; } }, 700, v=>v>=25?window.LXPal.tok('--good'):v>=0?window.LXPal.tok('--warn'):window.LXPal.tok('--bad')]
 ];
 let towerOn=false, towerMetric='bmkt';
+/* This layer lives ON THE MAP, and every other thing on that map - the pins, the
+   dots, the property towers, the sector aggregation - draws the FILTERED set. This
+   one read the whole edition, so filtering the map to one city left the ZIP towers
+   standing over the rest of the state, and nothing on screen said which set they
+   described. It reads the same set as the map now, and the legend says how many
+   records that was. */
 function towerData(metricId){
   const X=L(); const M=METRICS.find(m=>m[0]===metricId)||METRICS[0];
   const by={};
-  X.allListings().forEach(l=>{ if(!l.zip) return; (by[l.zip]=by[l.zip]||[]).push(l); });
+  let rows; try{ rows = X.filtered ? X.filtered() : X.allListings(); }
+  catch(e){ rows = X.allListings(); }
+  rows.forEach(l=>{ if(!l.zip) return; (by[l.zip]=by[l.zip]||[]).push(l); });
   const H={}, C={}, N={};
   Object.keys(by).forEach(z=>{
     const v=by[z], s=[];
@@ -163,7 +176,8 @@ function towerData(metricId){
     s.sort((a,b)=>a-b); const med=s[Math.floor(s.length/2)];
     H[z]=Math.max(30, med*M[3]); C[z]=M[4](med); N[z]=v.length;
   });
-  return {H,C,N,name:M[1]};
+  return {H,C,N,name:M[1], records:rows.length, zips:Object.keys(H).length,
+          whole:(function(){ try{ return rows.length >= X.allListings().length; }catch(e){ return true; } })()};
 }
 function zipTowers(on, metricId){
   const X=L(); const map=window.__lxmap;
@@ -171,10 +185,19 @@ function zipTowers(on, metricId){
   if(metricId) towerMetric=metricId;
   try{
     if(!on){ towerOn=false; if(map.getLayer('ziptower')) map.removeLayer('ziptower'); if(map.getPitch&&map.getPitch()>5) map.easeTo({pitch:0,duration:600}); paintLegend(); return true; }
-    const {H,C,N,name}=towerData(towerMetric);
+    const td=towerData(towerMetric); const {H,C,N,name}=td;
     if(!Object.keys(H).length) return false;
-    const data=JSON.parse(JSON.stringify(X.BA.geo.zips));
-    data.features=data.features.filter(f=>H[f.properties.zip]!=null).map(f=>{ f.properties=Object.assign({},f.properties,{th:H[f.properties.zip], tc:C[f.properties.zip], tn:N[f.properties.zip]}); return f; });
+    /* New feature objects over the SAME geometry objects: the old deep clone of
+       the whole ZIP collection ran on every toggle, and this layer now rebuilds
+       whenever the filter moves. */
+    const src=X.BA.geo.zips;
+    const data={type:'FeatureCollection', features:[]};
+    for(let i=0;i<src.features.length;i++){
+      const f=src.features[i], z=f.properties && f.properties.zip;
+      if(H[z]==null) continue;
+      data.features.push({type:'Feature', geometry:f.geometry,
+        properties:Object.assign({}, f.properties, {th:H[z], tc:C[z], tn:N[z]})});
+    }
     if(!data.features.length) return false;
     if(map.getSource('ziptowers')) map.getSource('ziptowers').setData(data); else map.addSource('ziptowers',{type:'geojson',data});
     if(!map.getLayer('ziptower')){
@@ -185,14 +208,33 @@ function zipTowers(on, metricId){
     try{ if(map.setMaxPitch) map.setMaxPitch(75); }catch(e){}
     map.easeTo({pitch:55, duration:900});
     setTimeout(()=>{ try{ if(map.getPitch()<20) map.setPitch(55); }catch(e){} }, 1100);
-    paintLegend(name);
+    paintLegend(name, td);
     return true;
   }catch(e){ return false; }
 }
-function paintLegend(name){
+function paintLegend(name, td){
   const el=$('#towerlegend'); if(!el) return;
-  el.innerHTML = towerOn? '<span style="font-size:11px;color:var(--muted)">3D towers: <b>'+(name||'')+'</b> — height is the ZIP median, color is its band</span>' : '';
+  if(!towerOn){ el.innerHTML=''; return; }
+  const X=L(); const scope = td
+    ? ' \u00b7 ' + X.fmtN(td.zips) + ' ZIPs from ' + X.fmtN(td.records) + ' record'
+      + (td.records===1?'':'s') + (td.whole ? ' in this edition' : ' matching the current map filter')
+    : '';
+  el.innerHTML = '<span style="font-size:11px;color:var(--muted)">3D towers: <b>'+(name||'')
+    + '</b> — height is the ZIP median, color is its band' + scope + '</span>';
 }
+/* The map's filter changes under a layer that is already drawn, so the layer has
+   to be rebuilt with it - otherwise the towers silently describe the set the user
+   had a moment ago. Called from LX.refresh(); a no-op when the towers are off. */
+function refreshTowers(){
+  if(!towerOn) return false;
+  try{
+    const map=window.__lxmap;
+    if(map && map.getLayer && map.getLayer('ziptower')) map.removeLayer('ziptower');
+    towerOn=false;
+    return zipTowers(true, towerMetric);
+  }catch(e){ return false; }
+}
+
 function mountControl(){
   const host=$('#towerctl'); if(!host||host.dataset.built) return;
   host.dataset.built='1';
@@ -215,8 +257,8 @@ function render(rows){
     host.innerHTML=`
     <div class="chart" data-panel data-panel-title="3D opportunity cube — live">
       <div class="eyebrow">Live 3D · dashboard</div>
-      <h3>The opportunity cube — every candidate in three dimensions at once</h3>
-      <p class="chartnote">Each sphere is a property. Left-to-right is <b>cap rate</b>, vertical is the <b>below-market index</b>, depth is <b>monthly cash flow</b>; size is unit count and color is its Locator X score tier. The deals worth your week sit high, right and toward you. Drag to spin it, scroll to zoom, click a sphere to open its full assessment.</p>
+      <h3>The opportunity cube — the ranked candidates in three dimensions at once</h3>
+      <p class="chartnote">Each sphere is a property. Left-to-right is <b>cap rate</b>, vertical is the <b>below-market index</b>, depth is <b>monthly cash flow</b>; size is unit count and color is its Locator X score tier. The deals worth your week sit high, right and toward you. Drag to spin it, scroll to zoom, click a sphere to open its full assessment. <span id="cubescope"></span></p>
       <canvas id="bmcube" width="980" height="470" style="width:100%;height:auto;display:block;cursor:grab;touch-action:none"></canvas>
       <div class="toolbar" style="margin-top:6px"><button class="btn" id="bmauto">⏸ pause spin</button><button class="btn" id="bmreset">reset view</button><button class="btn" id="bmtowers">🏙 3D ZIP towers on the map</button></div>
     </div>
@@ -249,8 +291,15 @@ function render(rows){
       else if(!ok){ L().toast('Open the Map tab once so the map finishes loading, then try again.'); } };
   }
   buildPts(rows); buildSky(rows); drawSky();
+  const sc=$('#cubescope');
+  if(sc){ const X=L(); const total=(rows && rows.total) || (rows ? rows.length : 0);
+    const drawn=Math.min(rows?rows.length:0, CUBE_CAP);
+    sc.textContent = drawn < total
+      ? 'Drawing the top ' + X.fmtN(drawn) + ' of ' + X.fmtN(total)
+        + ' candidates that clear the threshold — the ranking is complete, the cube is a window on its head.'
+      : ''; }
   if(!V.raf) tick();
 }
-window.LX3D={render, zipTowers, drawCube, mountControl, METRICS};
+window.LX3D={render, zipTowers, refreshTowers, drawCube, mountControl, METRICS};
 if(document.readyState!=='loading') setTimeout(mountControl,900); else document.addEventListener('DOMContentLoaded',()=>setTimeout(mountControl,900));
 })();

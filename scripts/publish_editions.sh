@@ -24,6 +24,17 @@ if [ "${SKIP_BUILD:-}" != "1" ]; then
   python3 build_state.py --all
 fi
 
+# The integrity check this file's own map insists on: file size is not it, the
+# record count is. A short build looks exactly like a good one, so the sweep runs
+# between building and publishing and this script stops if it fails. SKIP_SWEEP=1
+# is for a deliberate republish of files you have already swept.
+if [ "${SKIP_SWEEP:-}" != "1" ]; then
+  node tests/edition_sweep.js || {
+    echo "publish_editions: the edition sweep failed — nothing published." >&2
+    exit 1
+  }
+fi
+
 REPO_URL="${EDITIONS_REPO:-https://github.com/AGIFutureFoundation/Locator.X-editions.git}"
 STAGE="$(mktemp -d)"
 python3 - "$STAGE" <<'PYEOF'

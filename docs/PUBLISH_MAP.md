@@ -31,6 +31,15 @@ Companion pages (not editions):
 
 ## Record counts — the check that matters before republishing
 
+**This check is mechanical now.** `node tests/edition_sweep.js` drives every built
+edition in headless Chromium on the data machine and fails on a title that does not
+match the table below, a record count that does not match the documented figure, a
+page or map error, or a city label naming a place the edition's own records do not
+carry. `scripts/publish_editions.sh` runs it between building and publishing and
+stops if it fails, so a short build cannot reach an artifact URL. With no data tree
+(any clean checkout, CI included) `--parse-only` verifies this document still parses.
+
+
 File size is NOT the integrity check; the record count is. Verified 2026-09-09:
 
 | Edition | Records | Matches the documented figure |
