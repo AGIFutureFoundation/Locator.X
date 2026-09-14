@@ -7,6 +7,24 @@ such.
 
 ## [Unreleased]
 
+- **The gate between "built with real data" and "republished"** —
+  `tests/edition_sweep.js`. `docs/PUBLISH_MAP.md` has said for weeks that file size
+  is not the integrity check and the record count is; that check was performed by
+  hand. It runs now: every built edition is driven in headless Chromium on the data
+  machine and checked against the map — its `<title>`, its record count against the
+  documented figure, zero page errors, zero map-error-channel rejections, and the
+  footprint rule (every city label names a city the edition's own records carry and
+  sits inside them; no campus pin outside the record footprint). A short build looks
+  exactly like a good one, so `scripts/publish_editions.sh` now runs the sweep
+  between building and publishing and refuses to publish if it fails.
+
+  With no data tree — any clean checkout, CI included — `--parse-only` verifies the
+  document it is driven by still parses, and `tests/run.py` fails if
+  `docs/PUBLISH_MAP.md` stops naming all twelve editions or loses a documented
+  record count. Proven by breaking it: unlinking one row and blurring one count
+  fails with *"docs/PUBLISH_MAP.md now parses to 11 editions — it listed 12"* and
+  *"only 2 edition(s) carry a documented record count"*.
+
 - **Every map carried another region's cities** — measured on 2026-09-14 across
   all eleven editions: each one drew **67 place labels of which zero named a city
   that edition's own records carry**, plus **23 Bay Area university pins**. A New

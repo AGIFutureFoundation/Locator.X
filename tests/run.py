@@ -452,6 +452,34 @@ def main():
     # article asks for a figure or a chart the data cannot answer.
     run(["scripts/build_blog.py", "--check"])
 
+    # ---- 11c. the published-edition map still parses ----------------------
+    # tests/edition_sweep.js is the gate between "built with real data" and
+    # "republished": it checks each built edition's title and RECORD COUNT against
+    # docs/PUBLISH_MAP.md, because file size is not the integrity check and a short
+    # build looks exactly like a good one. The sweep itself needs the data tree, so
+    # what runs here is its --parse-only mode: the document it is driven by must
+    # keep parsing, and must keep naming every edition and every documented count.
+    node = shutil.which("node")
+    if not node:
+        FAILURES.append("node is not on PATH, so the edition-sweep parse check "
+                        "could not run — it is the only thing guarding the "
+                        "published-edition map from becoming unparseable")
+    else:
+        r = subprocess.run([node, "tests/edition_sweep.js", "--parse-only"],
+                           capture_output=True, text=True, cwd=ROOT)
+        out = r.stdout + r.stderr
+        check(r.returncode == 0, "edition_sweep --parse-only failed", out[-1500:])
+        m = re.search(r"edition_sweep: (\d+) editions .*?, (\d+) carrying", out)
+        check(bool(m), "edition_sweep --parse-only printed no summary line", out[-800:])
+        if m:
+            check(int(m.group(1)) >= 12,
+                  "docs/PUBLISH_MAP.md now parses to %s editions — it listed 12; a row "
+                  "that stops parsing is an edition that stops being checked before "
+                  "republish" % m.group(1))
+            check(int(m.group(2)) >= 4,
+                  "only %s edition(s) carry a documented record count — the count is "
+                  "THE integrity check before a republish" % m.group(2))
+
     # ---- 11. no generated page is ALSO committed under pages/ --------------
     # The market pages became a deploy-time build product, and a committed copy
     # survived the change anyway: it was never actually recorded as deleted, so
