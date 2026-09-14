@@ -7,6 +7,26 @@ such.
 
 ## [Unreleased]
 
+- **The product tour, recorded from the running application** —
+  `scripts/record_walkthrough.js` drives the built app in headless Chromium and
+  records seven chapters: the single-file edition, navigating by the record, a
+  property drawer, underwriting and the closing file, the interchange formats and
+  the shareable view, the three map layers, and the Academy with the coverage
+  table. Captions are written into the page as an overlay, so the explanation and
+  the thing being explained are the same recording.
+
+  Nothing in it is a mockup, a re-creation or a generated image of a place —
+  [`docs/GENERATIVE_VIDEO.md`](docs/GENERATIVE_VIDEO.md) draws that line and
+  product footage belongs on this side of it. Each chapter records in its own
+  browser context (Playwright finalises a video when a context closes) and opens
+  the edition at a shareable-view URL rather than clicking its way back to a
+  state, which is `src/permalink.js` earning its keep.
+
+  One real bug found while writing it: setting `scrollTop` on a view element does
+  nothing — every view scrolls through its own `.page` child and the drawer
+  through `.dbody` — so the first cut held three chapters of a static screen. The
+  recorder now animates the real scroll containers.
+
 - **The gate between "built with real data" and "republished"** —
   `tests/edition_sweep.js`. `docs/PUBLISH_MAP.md` has said for weeks that file size
   is not the integrity check and the record count is; that check was performed by
