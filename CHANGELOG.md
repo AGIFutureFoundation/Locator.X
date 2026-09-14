@@ -7,6 +7,64 @@ such.
 
 ## [Unreleased]
 
+- **Every map carried another region's cities** — measured on 2026-09-14 across
+  all eleven editions: each one drew **67 place labels of which zero named a city
+  that edition's own records carry**, plus **23 Bay Area university pins**. A New
+  Orleans map labelled San Francisco, Oakland and San Jose; the US-corridor map
+  pinned Stanford and UC Berkeley. The coordinates were correct and the places
+  are real — they were simply on the wrong map, with nothing tying any of them to
+  the records in front of the user.
+
+  The cause was a 64-entry hardcoded Bay Area city list in `src/app.js` that no
+  builder regionalised, and a campus fallback list chosen by guessing the region
+  from the counties of the first 500 records.
+
+  **Labels now come from the records.** One per city the edition actually holds,
+  at the centroid of that city's own records, ranked by how many records carry
+  the name — a record count, never a claim about which city matters. The label is
+  also a control: clicking it focuses that city, the same action its rail chip
+  performs. The city rail says how many cities exist and, when the 250-label cap
+  bites, that the map labels the largest.
+
+  **And a footprint rule, because this will happen again.** The edition's records
+  define a padded bounding box, and no pin from any hardcoded list is drawn
+  outside it. The Bay Area campus pins vanish from every edition that is not the
+  Bay Area; the editions' own sourced POIs survive (the Baton Rouge fixture keeps
+  its university). Measured after: 0 stray pins, and every city label naming a
+  city in its own edition.
+
+  Guarded on **every** edition rather than the first, because the defect was on
+  every edition, and all four guards proven by breaking what they protect:
+  appending one Bay Area label fails with *"1 city label(s) name a place not in
+  this edition: San Francisco"*; moving a label off its records fails with *"3
+  city label(s) sit outside their own records"*; removing the footprint filter
+  fails with *"23 campus pin(s) outside this edition's record footprint: Stanford
+  University, UC Berkeley, San Francisco State"*.
+
+- **The 3D ZIP-tower layer ignored the map's filter** — every other thing on that
+  map (pins, dots, property towers, the sector aggregation) draws the filtered
+  set; this one read the whole edition, so filtering to one city left towers
+  standing over records the filter had removed, with nothing on screen saying
+  which set they described. It reads the same set as the map now, rebuilds when
+  the filter moves, and its legend states the scope: *"12 ZIPs from 2,500 records
+  in this edition"* against *"5 ZIPs from 1,042 records matching the current map
+  filter"*. Building the source no longer deep-clones the whole ZIP collection,
+  which matters now that it rebuilds on filter changes rather than only on toggle.
+
+- **"Every candidate in three dimensions at once" drew the first 900** — the
+  opportunity cube's heading claimed everything while `buildPts` sliced to 900 of
+  a ranked set that reaches 1,981 in the demo fixture alone. The heading no longer
+  says every, and the cube states what it is drawing: *"Drawing the top 900 of
+  1,981 candidates that clear the threshold — the ranking is complete, the cube is
+  a window on its head."*
+
+- **The fleet smoke prints every error, not the first** — `errs[0]` hid two real
+  failures behind a louder one while proving the guards above. Both the per-edition
+  and the no-WebGL runs now print the whole list.
+
+  Cost of all of it: **186 bytes** of built page (1,886,607 → 1,886,793 on the
+  fleet demo), measured by building before and after.
+
 - **A view you can send to someone** — an edition is one file with no server
   behind it, which is the product and which meant, until now, that two people
   holding the same file had no way to look at the same *thing* in it. There was

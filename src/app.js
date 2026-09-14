@@ -277,7 +277,12 @@ function showView(v){ const _t=document.getElementById(v);
  $$('nav.tabs button').forEach(b=>b.setAttribute('aria-selected', b.dataset.view===v)); try{ window.LXNav && LXNav.sync(v); }catch(e){} $$('.view').forEach(s=>s.classList.toggle('active', s.id===v)); if(v==='mapview' && map) setTimeout(()=>map.resize(),30); if(v==='home' && window.LXHome) LXHome.render(); if(v==='deals') renderDeals(); if(v==='market') renderMarket(); if(v==='guide') renderGuideLive(); if(v==='dash' && window.LXDash) window.LXDash.render(); if(v==='dash' && window.LXView) window.LXView.render(); if(v==='dash' && window.LXMotion) window.LXMotion.render(); if(v==='research' && window.LXResearch) window.LXResearch.show(); if(v==='uw' && window.LXUW) window.LXUW.render(); if(v==='uw' && window.LXConv) LXConv.render(); if(v==='hacks' && window.LXHH) window.LXHH.render(); if(v==='academy' && window.LXAcad) window.LXAcad.render(); if(v==='academy' && window.LXTS) LXTS.render(); if(v==='academy' && window.LXTC) LXTC.render(); if(v==='scout' && window.LXScout) window.LXScout.render(); if(v==='scout' && window.LXSig) LXSig.render(); if(v==='scout' && window.LXVis) LXVis.scoutPulse(); if(v==='scout' && window.LXRAG) LXRAG.render(); if(v==='program' && window.LXProg) LXProg.render(); if(v==='below' && window.LXBM) LXBM.render(); if(v==='patterns' && window.LXPat) LXPat.render(); if(v==='recon' && window.LXRecon) LXRecon.render(); if(v==='corridors' && window.LXCorridor) LXCorridor.render(); if(v==='evidence' && window.LXEvid) LXEvid.render(); if(v==='comps' && window.LXComps) LXComps.render(); if(v==='compliance' && window.LXCompliance) LXCompliance.render(); if(v==='corridorfield' && window.LXCorridorField) LXCorridorField.render(); if(v==='predict' && window.LXPredict) LXPredict.render(); if(v==='sources' && window.LXSources) LXSources.render(); if(v==='standard' && window.LXStdViz) LXStdViz.render(); if(v==='packages' && window.LXPkg) LXPkg.render(); if(v==='packages' && window.LXTiers) LXTiers.render(); if(v==='academy' && window.LXGrad) window.LXGrad.render(); if(v==='network' && window.LXNet) LXNet.render(); if(v==='reo' && window.LXReo) LXReo.render(); if(v==='scout' && window.LXCorp) LXCorp.render(); if(v==='scout' && window.LXCampus) LXCampus.render(); if(window.LXPanels) setTimeout(()=>LXPanels.scan(v), 260); if(v==='twin' && window.LXTwin) window.LXTwin.render(); linkSync(); }
 
 /* ---------------- map ---------------- */
-const CITIES = [['San Francisco',37.7749,-122.4194,1],['Oakland',37.8044,-122.2712,1],['San Jose',37.3382,-121.8863,1],['Berkeley',37.8716,-122.2727,2],['Fremont',37.5485,-121.9886,2],['Hayward',37.6688,-122.0808,2],['Palo Alto',37.4419,-122.143,2],['San Mateo',37.5630,-122.3255,2],['Redwood City',37.4852,-122.2364,2],['Daly City',37.6879,-122.4702,3],['South San Francisco',37.6547,-122.4077,3],['Walnut Creek',37.9101,-122.0652,2],['Concord',37.978,-122.0311,2],['Richmond',37.9358,-122.3477,2],['Vallejo',38.1041,-122.2566,2],['Napa',38.2975,-122.2869,2],['Santa Rosa',38.4405,-122.7144,1],['Petaluma',38.2324,-122.6367,3],['San Rafael',37.9735,-122.5311,2],['Sausalito',37.859,-122.4853,3],['Novato',38.1074,-122.5697,3],['Fairfield',38.2494,-122.04,2],['Antioch',38.0049,-121.8058,2],['Pleasanton',37.6624,-121.8747,2],['Livermore',37.6819,-121.768,2],['Dublin',37.7022,-121.9358,3],['San Leandro',37.7249,-122.1561,3],['Alameda',37.7652,-122.2416,3],['Union City',37.5934,-122.0439,3],['Newark',37.5297,-122.0402,3],['Milpitas',37.4323,-121.8996,3],['Santa Clara',37.3541,-121.9552,2],['Sunnyvale',37.3688,-122.0363,2],['Mountain View',37.3861,-122.0839,2],['Cupertino',37.323,-122.0322,3],['Los Gatos',37.2358,-121.9624,3],['Santa Cruz',36.9741,-122.0308,2],['Gilroy',37.0058,-121.5683,3],['Morgan Hill',37.1305,-121.6544,3],['Half Moon Bay',37.4636,-122.4286,3],['Pacifica',37.6138,-122.4869,3],['Castro Valley',37.6941,-122.0864,3],['Piedmont',37.8244,-122.2316,4],['Albany',37.8869,-122.2978,4],['Emeryville',37.8313,-122.2852,4],['El Cerrito',37.9158,-122.3108,4],['Orinda',37.8771,-122.1797,4],['Lafayette',37.8858,-122.118,4],['Danville',37.8216,-121.9999,3],['San Ramon',37.7799,-121.978,3],['Martinez',38.0194,-122.1341,3],['Benicia',38.0494,-122.1586,3],['Brentwood',37.9319,-121.6958,3],['Pittsburg',38.028,-121.8847,3],['Vacaville',38.3566,-121.9877,2],['Belmont',37.5202,-122.2758,4],['Burlingame',37.5841,-122.3661,4],['Menlo Park',37.4530,-122.1817,3],['Los Altos',37.3852,-122.1141,4],['Saratoga',37.2638,-122.023,4],['Campbell',37.2872,-121.95,4],['Sonoma',38.2919,-122.4580,3],['Mill Valley',37.906,-122.545,4],['Tiburon',37.8735,-122.4566,4]];
+/* The 64-entry hardcoded Bay Area city list that used to live here is gone.
+   It was drawn on EVERY edition's map: measured 2026-09-14 across all eleven,
+   each one rendered 64 labels of which ZERO named a city in that edition's own
+   records, at coordinates thousands of kilometres outside its footprint. A New
+   Orleans map carried San Francisco, Oakland and San Jose. Labels now come from
+   the records themselves - see addCityLabels() below. */
 let map, markers={}, cityMarkers=[], nbMarkers=[], rasterOn=false, mapReady=false;
 /* ---------- map lenses: multiple ways to color & size every point ---------- */
 let _rowsById=null;
@@ -344,16 +349,26 @@ function initMap(){
   const COLLEGES_BAY=[['Stanford University',37.4275,-122.1697],['UC Berkeley',37.8719,-122.2585],['San Francisco State',37.7241,-122.4799],['University of San Francisco',37.7766,-122.4506],['UCSF Parnassus',37.7631,-122.4586],['San Jose State',37.3352,-121.8811],['Santa Clara University',37.3496,-121.9390],['City College of SF',37.7254,-122.4525],['De Anza College',37.3194,-122.0450],['Foothill College',37.3614,-122.1268],['Cal State East Bay',37.6577,-122.0566],['Laney College',37.7975,-122.2668],['Chabot College',37.6432,-122.1097],['Mills College',37.7811,-122.1837],['Menlo College',37.4483,-122.1839],['College of San Mateo',37.5344,-122.3350],['Skyline College',37.6295,-122.4681],['Canada College',37.4478,-122.2851],['Ohlone College',37.5304,-121.9126],['Mission College',37.3903,-121.9846],['West Valley College',37.2637,-122.0106],['Evergreen Valley College',37.3020,-121.7683],['Berkeley City College',37.8697,-122.2681]];
 const COLLEGES_NOLA=[['Xavier University of Louisiana',29.9647,-90.1039],['Tulane University',29.9404,-90.1229],['Loyola University New Orleans',29.9346,-90.1225],['University of New Orleans',30.0277,-90.0679],['Dillard University',30.0217,-90.0491],['Southern University at New Orleans',30.0327,-90.0567],['Delgado Community College',29.9906,-90.1032]];
 let collegeMarkers=[]; window.__collegesOn=true;
-function collegesFor(){ const cs=new Set(allListings().slice(0,500).map(l=>l.county)); if(cs.has('Orleans')) return COLLEGES_NOLA; if(cs.has('Humboldt')) return []; return COLLEGES_BAY; }
+/* The legacy campus pin lists are hardcoded coordinates, and the region guess
+     below reads only the first 500 records, so it is wrong for any edition whose
+     counties it does not recognise - which is how 23 Bay Area universities came
+     to be drawn on the Louisiana and national maps. The footprint rule decides
+     now: a pin that the edition's own records cannot place is not drawn. */
+  function collegesFor(){ const cs=new Set(allListings().slice(0,500).map(l=>l.county));
+    const list = cs.has('Orleans') ? COLLEGES_NOLA : (cs.has('Humboldt') ? [] : COLLEGES_BAY);
+    const keep = list.filter(c => inFootprint(c[1], c[2]));
+    if(keep.length < list.length){ try{ console.warn('map: ' + (list.length - keep.length)
+      + ' hardcoded campus pin(s) dropped - outside this edition\'s record footprint'); }catch(e){} }
+    return keep; }
 function addColleges(){ var _cm=0; try{ if(window.LXCampus) _cm=LXCampus.addMarkers(map, Marker)||0; }catch(e){}
   var _cd=0; try{ if(window.LXCampus) _cd=LXCampus.highlightMarkers(map, Marker)||0; }catch(e){}
   try{ if(window.LXCorp) LXCorp.addMarkers(map, Marker); }catch(e){}
   /* the campus layer carries published enrollment and covers both regions; the
      legacy pin list only runs where it found nothing to mount. */
   if(_cm>0){ const cb0=$('#collbtn'); if(_cd>0) cb0 && cb0.setAttribute('title','Toggle college markers & highlighted student-housing candidates'); if(cb0) cb0.addEventListener('click', ()=>{ window.__collegesOn=!window.__collegesOn; if(window.LXCampus){ LXCampus.toggle(window.__collegesOn); LXCampus.toggleDeals(window.__collegesOn); } cb0.setAttribute('aria-pressed', window.__collegesOn); }); return; }
- collegesFor().forEach(c=>{ const el=document.createElement('div'); el.style.cssText='font-size:20px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55));cursor:default'; el.textContent='🎓'; el.title=c[0]; const lb=document.createElement('div'); lb.style.cssText='position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;color:#1d3557;background:rgba(255,255,255,.85);padding:0 4px;border-radius:4px;white-space:nowrap;pointer-events:none'; lb.textContent=c[0]; el.appendChild(lb); const m=new Marker({element:el}).setLngLat([c[2],c[1]]).addTo(map); collegeMarkers.push(m); });
+ collegesFor().forEach(c=>{ const el=document.createElement('div'); el.className='campuspin'; el.style.cssText='font-size:20px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55));cursor:default'; el.textContent='🎓'; el.title=c[0]; el.dataset.lat=c[1]; el.dataset.lng=c[2]; const lb=document.createElement('div'); lb.style.cssText='position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;color:#1d3557;background:rgba(255,255,255,.85);padding:0 4px;border-radius:4px;white-space:nowrap;pointer-events:none'; lb.textContent=c[0]; el.appendChild(lb); const m=new Marker({element:el}).setLngLat([c[2],c[1]]).addTo(map); collegeMarkers.push(m); });
   const cb=$('#collbtn'); if(cb) cb.addEventListener('click', ()=>{ window.__collegesOn=!window.__collegesOn; collegeMarkers.forEach(m=>{ m.getElement().style.display=window.__collegesOn?'':'none'; }); cb.setAttribute('aria-pressed', window.__collegesOn); }); }
-window.__lxmap=map; map.on('load', ()=>{ mapReady=true; if(BA.region&&BA.region.pois) BA.region.pois.forEach(p=>{ const el=document.createElement('div'); el.style.cssText='font-size:18px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))'; el.textContent='🎓'; el.title=p.name; new Marker({element:el}).setLngLat([p.lng,p.lat]).addTo(map); }); addColleges(); addCityLabels(); addNbLabels(); renderMarkers(); zoomClass(); });
+window.__lxmap=map; map.on('load', ()=>{ mapReady=true; if(BA.region&&BA.region.pois) BA.region.pois.filter(p=>inFootprint(p.lat,p.lng)).forEach(p=>{ const el=document.createElement('div'); el.className='campuspin'; el.style.cssText='font-size:18px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))'; el.textContent='🎓'; el.title=p.name; el.dataset.lat=p.lat; el.dataset.lng=p.lng; new Marker({element:el}).setLngLat([p.lng,p.lat]).addTo(map); }); addColleges(); addCityLabels(); addNbLabels(); renderMarkers(); zoomClass(); });
   map.on('zoom', zoomClass);
   map.on('error', e=>{ if(e && e.sourceId==='raster'){ $('#mapnotice').textContent='Live tiles could not load. Pages hosted on claude.ai block outside tile servers — open the downloaded file (or host it) to use Mapbox / OpenStreetMap tiles. Falling back to the built-in map.'; $('#mapnotice').classList.add('on'); setBasemap('vector', true); } });
   let hovered=null; const tip=document.createElement('div'); tip.className='pill'; tip.style.cssText='position:absolute;pointer-events:none;display:none;z-index:3;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12px;box-shadow:var(--shadow)'; $('#mapwrap').appendChild(tip);
@@ -361,9 +376,68 @@ window.__lxmap=map; map.on('load', ()=>{ mapReady=true; if(BA.region&&BA.region.
   map.on('mouseleave','zipfill', ()=>{ if(hovered!==null) map.setFeatureState({source:'zips',id:hovered},{hover:false}); hovered=null; tip.style.display='none'; });
   map.on('click','zipfill', e=>{ if(state.layer==='none') return; const p=e.features[0].properties; showView('market'); $('#mq').value=p.zip; renderMarket(p.zip); });
 }
+/* THE FOOTPRINT RULE: nothing gets a marker on this map that the edition's own
+   records cannot place. The box is the records' own extent, padded, and every
+   pin from a hardcoded list is checked against it before it is drawn.
+
+   It exists because of what was measured here on 2026-09-14: 23 Bay Area
+   university pins and 64 Bay Area city labels were rendering on all eleven
+   editions, including the Louisiana and national ones - real places, correct
+   coordinates, on entirely the wrong map. A pin nobody can tie to the records
+   in front of them is a sample, not a finding. */
+let _footprint, _footprintN = -1;
+function editionFootprint(){
+  const ls = allListings();
+  if(_footprint !== undefined && _footprintN === ls.length) return _footprint;
+  _footprintN = ls.length;
+  let w = 1e9, s2 = 1e9, e = -1e9, n = -1e9, seen = 0;
+  for(let i = 0; i < ls.length; i++){
+    const l = ls[i];
+    if(typeof l.lng !== 'number' || typeof l.lat !== 'number') continue;
+    seen++;
+    if(l.lng < w) w = l.lng; if(l.lng > e) e = l.lng;
+    if(l.lat < s2) s2 = l.lat; if(l.lat > n) n = l.lat;
+  }
+  if(!seen) return _footprint = null;          // no coordinates: no claim either way
+  const pad = Math.max(0.35, (e - w) * 0.12, (n - s2) * 0.12);
+  return _footprint = {w: w - pad, s: s2 - pad, e: e + pad, n: n + pad};
+}
+function inFootprint(lat, lng){
+  const f = editionFootprint();
+  if(!f) return true;
+  return lng >= f.w && lng <= f.e && lat >= f.s && lat <= f.n;
+}
+
 function zoomClass(){ const z=map.getZoom(); $('#map').classList.toggle('zoomed-out', z<10.6); cityMarkers.forEach(m=>{ const el=m.getElement(); const rank=+el.dataset.rank; el.classList.toggle('hid', (rank===2&&z<8.6)||(rank===3&&z<10)||(rank===4&&z<11.2)||(rank===1&&z>12.4)); }); nbMarkers.forEach(m=>m.getElement().classList.toggle('hid', z<12)); }
 function addNbLabels(){ const feats=[].concat(BA.geo.nbsf.features, BA.geo.nboak.features, BA.geo.nbala.features); feats.forEach(f=>{ let xs=0,ys=0,n=0; const walk=c=>{ if(typeof c[0]==='number'){ xs+=c[0]; ys+=c[1]; n++; } else c.forEach(walk); }; walk(f.geometry.coordinates); if(!n) return; const el=document.createElement('div'); el.className='citylbl nb hid'; el.textContent=f.properties.name; const m=new Marker({element:el, anchor:'center'}).setLngLat([xs/n, ys/n]).addTo(map); nbMarkers.push(m); }); }
-function addCityLabels(){ CITIES.forEach(([name,lat,lng,rank])=>{ const el=document.createElement('div'); el.className='citylbl'+(rank===1?' big':''); el.dataset.rank=rank; el.textContent=name; const m=new Marker({element:el, anchor:'center'}).setLngLat([lng,lat]).addTo(map); cityMarkers.push(m); }); }
+const CITY_LABEL_CAP = 250;
+/* One label per city THIS EDITION HOLDS, at the centroid of that city's own
+   records, ranked by how many records carry the name. The rank drives nothing
+   but the zoom at which the label appears (zoomClass) - it is a record count,
+   never a claim about which city matters. Clicking a label focuses that city,
+   the same action the city rail's chip performs. */
+function addCityLabels(){
+  cityMarkers.forEach(m => { try{ m.remove(); }catch(e){} });
+  cityMarkers = [];
+  const cs = cityStats().filter(c => isFinite(c.cx) && isFinite(c.cy) && inFootprint(c.cy, c.cx));
+  const n = cs.length;
+  cs.slice(0, CITY_LABEL_CAP).forEach((c, i) => {
+    const rank = i < Math.max(1, Math.round(n * 0.08)) ? 1
+               : i < Math.round(n * 0.30) ? 2
+               : i < Math.round(n * 0.60) ? 3 : 4;
+    const el = document.createElement('div');
+    el.className = 'citylbl' + (rank === 1 ? ' big' : '');
+    el.dataset.rank = rank; el.dataset.city = c.city; el.dataset.n = c.n;
+    /* the coordinate it was drawn at, so a test can check the placement against
+       the records without reaching into the map's marker objects */
+    el.dataset.lng = c.cx; el.dataset.lat = c.cy;
+    el.title = c.city + ' \u2014 ' + fmtN(c.n) + ' records in this edition';
+    el.textContent = c.city;
+    el.addEventListener('click', ev => { ev.stopPropagation(); focusCity(c.city); });
+    cityMarkers.push(new Marker({element: el, anchor: 'center'}).setLngLat([c.cx, c.cy]).addTo(map));
+  });
+  return cs.length;
+}
 const PIN_CAP=250;
 function renderMarkers(){
   const fl=filtered(); const usePills=fl.length<=PIN_CAP; const vis=new Set((usePills?fl:fl.filter(l=>l.id===state.sel)).map(l=>l.id));
@@ -578,13 +652,19 @@ function cityStats(){
     const l = ls[i];
     if(!l.city) continue;
     let r = by.get(l.city);
-    if(!r){ r = {city:l.city, n:0, w:1e9, s:1e9, e:-1e9, nn:-1e9}; by.set(l.city, r); }
+    if(!r){ r = {city:l.city, n:0, w:1e9, s:1e9, e:-1e9, nn:-1e9, sx:0, sy:0, gn:0}; by.set(l.city, r); }
     r.n++;
     if(typeof l.lng === 'number'){ if(l.lng < r.w) r.w = l.lng; if(l.lng > r.e) r.e = l.lng; }
     if(typeof l.lat === 'number'){ if(l.lat < r.s) r.s = l.lat; if(l.lat > r.nn) r.nn = l.lat; }
+    /* The centroid of the records that actually say they are in this city - the
+       only coordinate for a place name this platform is entitled to draw. It is
+       not the city's civic centre and does not claim to be. */
+    if(typeof l.lng === 'number' && typeof l.lat === 'number'){ r.sx += l.lng; r.sy += l.lat; r.gn++; }
   }
   _cityCacheN = ls.length;
-  return _cityCache = [...by.values()].sort((a,b) => b.n - a.n);
+  const out = [...by.values()].sort((a,b) => b.n - a.n);
+  out.forEach(r => { if(r.gn){ r.cx = r.sx / r.gn; r.cy = r.sy / r.gn; } });
+  return _cityCache = out;
 }
 
 function focusCity(city){
@@ -615,6 +695,14 @@ function renderCityRail(){
     + cs.map(c => '<button class="citychip' + (cur === c.city ? ' on' : '') + '" data-city="'
         + esc(c.city) + '" title="' + esc(c.city + ' — ' + fmtN(c.n) + ' records in this edition')
         + '">' + esc(c.city) + ' <i>' + fmtN(c.n) + '</i></button>').join('');
+  /* The map draws one label per city, capped; the rail lists every city either
+     way, so when the cap bites it is said here rather than left as a silent
+     difference between two surfaces showing the same thing. */
+  host.insertAdjacentHTML('beforeend', '<span class="railnote">' + fmtN(cs.length)
+    + ' cities in this edition'
+    + (cs.length > CITY_LABEL_CAP
+        ? ' \u00b7 the map labels the ' + fmtN(CITY_LABEL_CAP) + ' largest' : '')
+    + '</span>');
   $$('#cityrail .citychip').forEach(b =>
     b.addEventListener('click', () => focusCity(b.dataset.city)));
 }
@@ -851,7 +939,7 @@ function renderScopeNote(){
   });
 }
 
-function refresh(){ renderScopeNote(); linkSync(); dealSync(); dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
+function refresh(){ renderScopeNote(); linkSync(); dealSync(); /* map layers owned by other modules follow the same filter as the pins */ try{ if(window.LX3D && LX3D.refreshTowers) LX3D.refreshTowers(); }catch(e){} dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
 /* The view, written into the URL fragment by src/permalink.js. Called from
    refresh() and from showView() because between them they cover every way the
    filters, the selection or the screen can change. Guarded: an edition built
@@ -880,7 +968,7 @@ $('#sort').addEventListener('change', e=>{ state.sort=e.target.value; renderList
    tested without the DOM. */
 ['expgeo','expcsv'].forEach((id,i)=>{ const b=$('#'+id); if(b) b.addEventListener('click', ()=>{ if(!window.LXGEO) return; i? LXGEO.exportCSV() : LXGEO.exportGeoJSON(); }); });
 function fillCities(){ const sel=$('#fcity'); const cur=sel.value; const cs=[...new Set(allListings().filter(l=>!state.filters.county||l.county===state.filters.county).map(l=>l.city))].sort(); sel.innerHTML='<option value="">All cities</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); sel.value=cs.includes(cur)?cur:''; state.filters.city=sel.value; }
-function fillCounties(){ const cs=[...new Set(allListings().map(l=>l.county).filter(Boolean))].sort(); $('#fcounty').innerHTML='<option value="">All counties</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); fillCities(); renderCityRail(); renderDistrictRail(); }
+function fillCounties(){ const cs=[...new Set(allListings().map(l=>l.county).filter(Boolean))].sort(); $('#fcounty').innerHTML='<option value="">All counties</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join(''); fillCities(); renderCityRail(); renderDistrictRail(); /* imported records can introduce a city this edition had never heard of, and the    map's labels come from the records now, so they are rebuilt with them. */ if(mapReady) try{ addCityLabels(); zoomClass(); }catch(e){} }
 
 /* ---------------- selection & drawer ---------------- */
 function select(id, fly){ state.sel=id; const l=allListings().find(x=>x.id===id); if(!l) return; showView('mapview'); if(fly) map.flyTo({center:[l.lng,l.lat], zoom:Math.max(map.getZoom(),13.2), duration:700, padding:{right: window.innerWidth>900? 420 : 0}}); refresh(); const c=$(`.card[data-id="${id}"]`); if(c) c.scrollIntoView({block:'nearest'}); }
@@ -1281,7 +1369,7 @@ $$('#toc a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); con
 
 function updateZipsSource(){ if(USE_GL && mapReady && map.getSource && map.getSource('zips')) map.getSource('zips').setData(BA.geo.zips); else if(map && map.draw) map.draw(); }
 /* ---------------- public API for dashboard/research ---------------- */
-window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine, EDITION_STATE, focusCity, focusDistrict, renderCityRail, renderDistrictRail, districtOf, NO_DISTRICT};
+window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine, EDITION_STATE, focusCity, focusDistrict, renderCityRail, renderDistrictRail, districtOf, NO_DISTRICT, editionFootprint, inFootprint, cityStats, CITY_LABEL_CAP};
 /* ---------------- boot ---------------- */
 fillCounties(); renderList(); initMap(); renderRentMarkets(); setTimeout(()=>{ try{ if(window.LXScout&&LXScout.autoStart) LXScout.autoStart(); }catch(e){} }, 800); setTimeout(()=>{ if(window.LXDash) window.LXDash.render(); },0); $('#impcount').textContent = state.imported.length? `${state.imported.length} imported in this browser` : '';
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !tour.open && state.sel) closeDrawer(); });

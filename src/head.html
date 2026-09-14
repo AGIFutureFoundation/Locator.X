@@ -238,6 +238,10 @@ main{position:relative;min-height:0}
 .pin:hover .pill{transform:scale(1.08)}
 .zoomed-out .pin .pill{display:none} .zoomed-out .pin .dot{display:block}
 .citylbl{font:600 11px var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);text-shadow:0 0 3px var(--map-land),0 0 6px var(--map-land);pointer-events:none;white-space:nowrap}
+/* A city label is drawn from this edition's own records, so it is also a
+   control: clicking one focuses that city, exactly as its rail chip does. */
+.citylbl[data-city]{pointer-events:auto;cursor:pointer}
+.citylbl[data-city]:hover{color:var(--ink);text-decoration:underline}
 .citylbl.big{font-size:13px;color:var(--ink)}
 .citylbl.hid{display:none}
 .citylbl.nb{font-size:10px;font-weight:500;letter-spacing:.02em;text-transform:none;color:var(--muted);opacity:.9;z-index:0}

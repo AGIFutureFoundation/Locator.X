@@ -80,6 +80,63 @@ async function main() {
     await page.click('#coverenter').catch(() => {});
     await page.evaluate(() => LX.showView('mapview'));
     await page.waitForTimeout(1800);
+    /* THE FOOTPRINT RULE, checked on EVERY edition because the bug was on every
+       edition: 64 Bay Area city labels and 23 Bay Area university pins were being
+       drawn on all eleven maps - correct coordinates for real places, on entirely
+       the wrong map, with nothing tying any of them to the records in front of the
+       user. Measured before the fix: 67 labels per edition, ZERO of which named a
+       city the edition's own records carry.
+
+       So: every city label must name a city in THIS edition and sit inside that
+       city's own record bounding box, and every campus pin must fall inside the
+       edition's record footprint. */
+    const geo = await page.evaluate(() => {
+      const cities = {};
+      LX.allListings().forEach(l => {
+        if (!l.city || typeof l.lat !== 'number' || typeof l.lng !== 'number') return;
+        const c = cities[l.city] || (cities[l.city] =
+          { n: 0, w: 1e9, s: 1e9, e: -1e9, nn: -1e9 });
+        c.n++;
+        if (l.lng < c.w) c.w = l.lng; if (l.lng > c.e) c.e = l.lng;
+        if (l.lat < c.s) c.s = l.lat; if (l.lat > c.nn) c.nn = l.lat;
+      });
+      const labels = [...document.querySelectorAll('.citylbl[data-city]')]
+        .map(e => ({ city: e.dataset.city, lng: +e.dataset.lng, lat: +e.dataset.lat }));
+      const pins = [...document.querySelectorAll('.campuspin')]
+        .map(e => ({ title: e.title, lat: +e.dataset.lat, lng: +e.dataset.lng }));
+      return { cities, labels, pins, foot: LX.editionFootprint(), cap: LX.CITY_LABEL_CAP };
+    });
+    {
+      const names = Object.keys(geo.cities);
+      const want = Math.min(names.length, geo.cap);
+      if (geo.labels.length !== want) {
+        errs.push('city labels: ' + geo.labels.length + ' drawn, expected ' + want
+          + ' (this edition names ' + names.length + ' cities)');
+      }
+      const strangers = geo.labels.filter(l => !geo.cities[l.city]);
+      if (strangers.length) {
+        errs.push(strangers.length + ' city label(s) name a place not in this edition: '
+          + strangers.slice(0, 3).map(l => l.city).join(', '));
+      }
+      const misplaced = geo.labels.filter(l => {
+        const c = geo.cities[l.city]; if (!c) return false;
+        const eps = 1e-9;
+        return !(l.lng >= c.w - eps && l.lng <= c.e + eps
+              && l.lat >= c.s - eps && l.lat <= c.nn + eps);
+      });
+      if (misplaced.length) {
+        errs.push(misplaced.length + ' city label(s) sit outside their own records: '
+          + misplaced.slice(0, 3).map(l => l.city).join(', '));
+      }
+      const f = geo.foot;
+      const stray = f ? geo.pins.filter(p => !(Number.isFinite(p.lat) && Number.isFinite(p.lng)
+        && p.lng >= f.w && p.lng <= f.e && p.lat >= f.s && p.lat <= f.n)) : [];
+      if (stray.length) {
+        errs.push(stray.length + ' campus pin(s) outside this edition\'s record footprint: '
+          + stray.slice(0, 3).map(p => p.title || '(unnamed)').join(', '));
+      }
+    }
+
     let chipNote = '';
     if (i === 0) {
       await page.click('#chips .chip[data-f="bb"]');
@@ -350,6 +407,47 @@ async function main() {
         }
       }
 
+      // A city label is drawn from the records, so it is also a control: clicking
+      // one focuses that city exactly as its rail chip does. And the ZIP-tower
+      // layer lives on the map, so the map's filter governs it — it used to read
+      // the whole edition, leaving towers standing over records the filter had
+      // removed with nothing on screen saying so.
+      const mapScope = await page.evaluate(async () => {
+        const out = {};
+        const lbl = document.querySelector('.citylbl[data-city]');
+        out.label = lbl ? lbl.dataset.city : null;
+        if (lbl) { lbl.click(); await new Promise(r => setTimeout(r, 900)); }
+        out.afterClick = LX.state.filters.city;
+        out.filtered = LX.filtered().length;
+        out.all = LX.allListings().length;
+        // towers with the label's filter still on, then with no filter
+        out.onFiltered = LX3D.zipTowers(true, 'bmkt');
+        await new Promise(r => setTimeout(r, 1200));
+        out.legendFiltered = (document.getElementById('towerlegend') || {}).textContent || '';
+        const el = document.getElementById('fcity');
+        el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true }));
+        await new Promise(r => setTimeout(r, 1500));
+        out.legendAll = (document.getElementById('towerlegend') || {}).textContent || '';
+        LX3D.zipTowers(false);
+        await new Promise(r => setTimeout(r, 400));
+        return out;
+      });
+      if (mapScope.label && mapScope.afterClick !== mapScope.label) {
+        errs.push('clicking the ' + mapScope.label + ' label did not focus that city: '
+          + (mapScope.afterClick || '(none)'));
+      }
+      if (mapScope.onFiltered !== true) {
+        errs.push('the ZIP-tower layer would not build: ' + mapScope.onFiltered);
+      }
+      if (!/matching the current map filter/.test(mapScope.legendFiltered)) {
+        errs.push('the ZIP towers did not say they were drawn from the filtered set: '
+          + (mapScope.legendFiltered || '(silent)'));
+      }
+      if (!/in this edition/.test(mapScope.legendAll)) {
+        errs.push('the ZIP towers did not follow the filter being cleared: '
+          + (mapScope.legendAll || '(silent)'));
+      }
+
       // The shareable view. An edition is one file with no server, so a link in
       // the URL fragment is the only way two people can look at the same thing
       // in it — and the failure that matters is not "the link does not work",
@@ -578,7 +676,10 @@ async function main() {
       && info.title.indexOf(fleet.labels[key]) === 0;
     if (!ok) failures++;
     console.log('%s %s  %d records  "%s"%s%s', ok ? 'ok  ' : 'FAIL', key.padEnd(13),
-      info.n, info.title, chipNote, errs.length ? '  ERR: ' + errs[0] : '');
+      /* every error, not the first: a loud one masks the quiet ones, and this
+         run has already been debugged twice by finding what errs[0] hid. */
+      info.n, info.title, chipNote,
+      errs.length ? errs.map(e => '\n     ERR: ' + e).join('') : '');
     await ctx.close();
   }
   await browser.close();
@@ -648,7 +749,7 @@ async function main() {
   console.log('%s %s  renderer=%s  %d records  sectors=%s%s',
     fok ? 'ok  ' : 'FAIL', 'no-webgl'.padEnd(13),
     fb.isGL ? 'maplibre-gl' : 'canvas', fb.all, fb.sectors + (fb.sectorCanvas ? '/drawn' : '/NOT DRAWN'),
-    fok ? '' : '  ERR: ' + (fbErrs[0] || ferrs[0]));
+    fok ? '' : (fbErrs.concat(ferrs).map(e => '\n     ERR: ' + e).join('')));
   await noGL.close();
 
   console.log(failures ? failures + ' EDITION(S) FAILED' : 'FLEET SMOKE CLEAN — every edition ran with zero page errors');
