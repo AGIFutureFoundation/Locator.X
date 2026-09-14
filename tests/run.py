@@ -452,6 +452,13 @@ def main():
     # article asks for a figure or a chart the data cannot answer.
     run(["scripts/build_blog.py", "--check"])
 
+    # ---- 11b2. the walkthrough packer still carries its copy --------------
+    # scripts/pack_walkthrough.py builds the single-file tour, and the part a
+    # human actually reads - the chapter captions and the ready-to-post text -
+    # lives in that file rather than in the footage. An empty caption ships a
+    # silent chapter, so the copy is checked even though the video is not here.
+    run(["scripts/pack_walkthrough.py", "--check"])
+
     # ---- 11c. the published-edition map still parses ----------------------
     # tests/edition_sweep.js is the gate between "built with real data" and
     # "republished": it checks each built edition's title and RECORD COUNT against
