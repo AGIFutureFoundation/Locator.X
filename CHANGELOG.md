@@ -7,6 +7,24 @@ such.
 
 ## [Unreleased]
 
+- **The walkthrough as one downloadable file** — `scripts/pack_walkthrough.py`
+  packs the recorded chapters and their poster frame into a single self-contained
+  HTML document with the video inside it: no player embed, no CDN, no hosting.
+  Open it from a disk with the network off and it plays. That is the same
+  property every edition has, applied to the thing that explains the editions,
+  which is what makes it postable, DM-able and archivable without depending on a
+  video host still existing next year.
+
+  The file carries share cards (`og:` / `twitter:`), a chapter rail, per-chapter
+  copy, and three ready-to-paste captions whose every figure is measured and
+  published in this repository. `--only` cuts a shorter version for a feed: seven
+  chapters pack to 26.2 MB, a three-chapter cut to 12.5 MB.
+
+  Built files are never committed (the same rule the editions follow); the packer
+  is. `--check` verifies the copy a human actually reads — a chapter caption or a
+  post that ships empty is a silent chapter — and `tests/run.py` runs it, since
+  the footage itself cannot be in CI.
+
 - **The product tour, recorded from the running application** —
   `scripts/record_walkthrough.js` drives the built app in headless Chromium and
   records seven chapters: the single-file edition, navigating by the record, a
