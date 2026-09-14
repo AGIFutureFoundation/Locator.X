@@ -7,6 +7,30 @@ such.
 
 ## [Unreleased]
 
+- **Five promotional films, rendered from the real app** —
+  `scripts/make_promos.js` captures a still from the running application per
+  film, draws the frames on a canvas, and records them through MediaRecorder off
+  `canvas.captureStream()` — the technique `src/uwexport.js` already uses for a
+  case's video reel. 1080×1080, 14 seconds, silent, one defensible claim each:
+  one file / no server; an assessment is not a price; no quote, no ratio; every
+  parcel, a tower; coverage with its holes labelled. Every figure that counts up
+  on screen is measured and published in this repository.
+
+  **The codec, measured rather than assumed.** Chromium's MediaRecorder has no
+  H.264 encoder in this environment, and its bare `video/mp4` writes VP9 into an
+  MP4 that Chromium itself then refuses to read back — `duration` null,
+  `videoWidth` 0. So the browser writes WebM, which is what MediaRecorder is
+  good at, and ffmpeg makes the H.264 MP4 every upload pipeline wants
+  (`-profile:v high -pix_fmt yuv420p -movflags +faststart -r 30`). The fixed
+  frame rate is not cosmetic: the canvas stream followed `requestAnimationFrame`,
+  so one run produced clips at 30, 59.94 and 60 fps.
+
+  Nothing in a film is generated or re-created. Each screen is a still of the
+  application, the fixture note stays on every frame, and
+  [`docs/GENERATIVE_VIDEO.md`](docs/GENERATIVE_VIDEO.md) is why: a promotional
+  film about a records platform is exactly where an invented screen would do the
+  most damage.
+
 - **The walkthrough as one downloadable file** — `scripts/pack_walkthrough.py`
   packs the recorded chapters and their poster frame into a single self-contained
   HTML document with the video inside it: no player embed, no CDN, no hosting.
