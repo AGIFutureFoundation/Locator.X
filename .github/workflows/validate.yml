@@ -47,5 +47,7 @@ jobs:
         run: python3 scripts/validate_company.py
       - name: Investor deck states no unmeasured figure
         run: python3 scripts/build_deck.py --check
+      - name: Criteria feasibility — no market ceiling overstated
+        run: python3 scripts/standard_feasibility.py --check
       - name: Doctrine smoke tests
         run: python3 tests/run.py
