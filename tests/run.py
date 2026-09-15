@@ -491,6 +491,16 @@ def main():
     # management plan and a rule number, neither of which can be measured.
     run(["scripts/build_deck.py", "--check"])
 
+    # ---- 11b6. the feasibility map cannot overstate a market ---------------
+    # scripts/standard_feasibility.py reports how many of the Investment
+    # Standard's requirements a market's public record can answer AT ALL. Its
+    # one dangerous failure is silently OVERSTATING a ceiling, which is what
+    # happens if src/standards.js gains a requirement the field map does not
+    # know about: an unmapped requirement counts as answerable. The script fails
+    # the build in that case rather than quietly reporting a better market than
+    # exists.
+    run(["scripts/standard_feasibility.py", "--check"])
+
     # ---- 11c. the published-edition map still parses ----------------------
     # tests/edition_sweep.js is the gate between "built with real data" and
     # "republished": it checks each built edition's title and RECORD COUNT against

@@ -41,6 +41,13 @@ income evidence and permits. That is a `no public record` row, not a to-do.
 | L/A | Parcels, values | Jefferson Parish Assessor / GIS | **blocked** (geoportal.jeffparish.net: container egress CONNECT refused, probed 2026-09-09; route is the desktop browser pane per [`PULL_RECIPE.md`](../../PULL_RECIPE.md)) |
 | All | Lafayette, St. Tammany, Caddo (campus ring for `launi`) | Parish assessors (actDataScout pattern covers several) | named |
 
+*Egress re-probed 2026-09-15:* eight New Orleans-area record hosts — `gis.nola.gov`,
+`services.arcgis.com`, `nolagis.maps.arcgis.com`, `qpublic.schneidercorp.com`,
+`www.jpassessor.com`, `assessorpublicsearch.nola.gov`, `opendata.nola.gov` and
+`data.nola.gov` — every one returned `000`. Six days on from the probe below, nothing has
+opened. The ranked expansion plan is [`PULL_NOLA.md`](../../PULL_NOLA.md), which measures
+what each pull is worth before spending a session on it.
+
 *Egress note (2026-09-09):* data.nola.gov, ebrgis.opendata.arcgis.com, services.arcgis.com,
 geoportal.jeffparish.net, latax.state.la.us and qpublic.schneidercorp.com were all probed
 from the container and refused at CONNECT — the whole class of GIS/open-data hosts is
@@ -57,8 +64,21 @@ browser-pane route.
 
 ## What would move the grade most
 
-1. A Jefferson Parish probe pull (largest parish by population; completes the metro).
-2. The Tax Commission bulk roll — one feed that would lift every rural parish from
+Measured by `scripts/standard_feasibility.py --plan`, which computes how many of the
+Investment Standard's fifteen requirements each pull unlocks, against how many records it
+lifts. The ordering is not the intuitive one:
+
+1. **The Orleans rent feed.** It takes Orleans from **6 to 13 of 15** answerable
+   requirements across **213,381 records already shipped**. It is a new *field* on existing
+   records rather than new records, and nothing else in this state comes close.
+2. **A Jefferson Parish parcel pull** (largest parish by population; completes the metro).
+   The records land at 3 of 15 until Jefferson gets a rent feed of its own — breadth is
+   worth less here than the missing field is.
+3. The Tax Commission bulk roll — one feed that would lift every rural parish from
    `named` to `pulled`.
-3. The RTA/historic district polygons — turns the state guide's "deal-maker" claim into a
+4. The RTA/historic district polygons — turns the state guide's "deal-maker" claim into a
    mappable layer the feasibility gate can consume.
+
+**Two requirements — `sale` and `fresh` — are permanently unanswerable here.** No session
+moves them. Orleans tops out at 13 of 15 and the app states the residue per property
+rather than rounding it away.
