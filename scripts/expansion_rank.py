@@ -52,6 +52,35 @@ import standard_feasibility as SF  # the requirement list and the NEEDS map
 
 COV = os.path.join(ROOT, 'docs', 'states', 'coverage')
 BELTS = os.path.join(ROOT, 'market', 'belts.json')
+XWALK = os.path.join(ROOT, 'crosswalk', 'usecodes.json')
+
+# Which crosswalk jurisdictions sit in which coverage file. The crosswalk is a
+# SECOND, INDEPENDENT record of whether a value field exists - it declares the
+# field top_screen.py is allowed to rank on, measured against a live layer. When
+# the inventory and the crosswalk disagree about a market, one of them is wrong,
+# and saying which is worth more than either on its own.
+XWALK_OF = {
+    'utah': ['utah_co_ut'], 'ohio': ['ohio_dte'], 'new-york': ['onondaga_ny'],
+    'north-carolina': ['wake_nc', 'guilford_nc'], 'new-mexico': ['bernalillo_nm'],
+    'arizona': ['maricopa_az'], 'florida': ['florida_dor'],
+}
+
+
+def crosswalk_values():
+    """Per coverage file: does ANY of its crosswalk jurisdictions declare a
+    value field? Returns None where the crosswalk covers the state at all."""
+    js = {j['id']: j for j in json.load(open(XWALK, encoding='utf-8'))['jurisdictions']}
+    stray = [i for ids in XWALK_OF.values() for i in ids if i not in js]
+    if stray:
+        die('XWALK_OF names crosswalk jurisdiction(s) %s that crosswalk/usecodes.json '
+            'does not define. A mapping to a jurisdiction that no longer exists would '
+            'silently stop cross-checking that state.' % ', '.join(stray))
+    out = {}
+    for state, ids in XWALK_OF.items():
+        declared = [i for i in ids if js[i].get('value_field')]
+        out[state] = {'ids': ids, 'declared': declared,
+                      'fields': {i: js[i].get('value_field') for i in ids}}
+    return out
 
 # Which record field a coverage row supplies, by keyword on its question text.
 #
@@ -201,6 +230,30 @@ ABBR = {'arizona': 'AZ', 'california': 'CA', 'florida': 'FL', 'indiana': 'IN',
 NAME = {v: k.replace('-', ' ').title() for k, v in ABBR.items()}
 
 
+def thin_rows(cand):
+    """Markets with no value row, each cross-checked against the crosswalk.
+
+    Shared by the console report and the generated document so the two cannot
+    tell different stories about the same market - the drift this repository
+    keeps finding wherever one fact is computed twice."""
+    xw = crosswalk_values()
+    out = []
+    for _a, _b, _c2, code, c, _e in cand:
+        if 'price' in c['fields']:
+            continue
+        state = next((k for k, v in ABBR.items() if v == code), None)
+        x = xw.get(state)
+        if x is None:
+            kind = 'unknown — the crosswalk does not cover this state'
+        elif x['declared']:
+            jid = x['declared'][0]
+            kind = 'DOCUMENTATION gap — %s declares `%s`' % (jid, x['fields'][jid])
+        else:
+            kind = 'REAL gap — %s declares no value field either' % ', '.join(x['ids'])
+        out.append((NAME.get(code, code), c, kind))
+    return out
+
+
 def report_data():
     cov, total, unclassified = by_state()
     dem = demand()
@@ -239,20 +292,19 @@ def report():
              best, total))
 
     # A market that gains only one requirement from a rent feed is missing
-    # something more basic. Almost always that is a VALUE row the inventory
-    # never had written down - a documentation gap, not a data gap, and the
-    # cheapest thing on this page to fix.
-    thin = [(NAME.get(code, code), c) for _a, _b, _c2, code, c, _e in cand
-            if 'price' not in c['fields']]
+    # something more basic - almost always a VALUE row. Whether that is a
+    # documentation gap or a real one is not a guess: thin_rows() asks the
+    # crosswalk, which recorded the same fact independently.
+    thin = thin_rows(cand)
     if thin:
-        print('\n  Inventory gaps — no VALUE row written down, so the model cannot credit')
-        print('  one. Likely a documentation gap rather than a missing feed; each is one')
-        print('  row in the coverage file and worth more than any new territory:')
-        for name, c in thin:
-            print('    %-16s ceiling %d, and only +%d from a rent feed'
-                  % (name, c['ceiling'], c['withrent'] - c['ceiling']))
+        print('\n  Markets a rent feed barely helps, because no VALUE row is recorded.')
+        print('  Cross-checked against crosswalk/usecodes.json, which independently')
+        print('  declares the field top_screen.py may rank on:')
+        for name, c, kind in thin:
+            print('    %-16s ceiling %d, +%d from rent  \u00b7  %s'
+                  % (name, c['ceiling'], c['withrent'] - c['ceiling'], kind))
 
-    print('\n  Greenfield — measured submarket demand, no coverage inventory:')
+    print('\n  Greenfield \u2014 measured submarket demand, no coverage inventory:')
     if not green:
         print('    none')
     for code, a in green[:12]:
@@ -314,19 +366,25 @@ def write(path):
     L.append('\n*Ceiling* is what the market reaches if every `named` and `blocked` row were '
              'pulled. A low ceiling is permanent; a large gap is only work.\n')
 
-    thin = [(NAME.get(code, code), c) for _a, _b, _c2, code, c, _e in cand
-            if 'price' not in c['fields']]
+    thin = thin_rows(cand)
     if thin:
-        L.append('## Cheapest work on this page: four missing inventory rows\n')
-        L.append('These markets gain almost nothing from a rent feed because the inventory '
-                 'records **no value row at all** — which is a documentation gap, not a '
-                 'missing feed. Each is one row in a coverage file, and each is worth more '
-                 'than any new territory:\n')
-        L.append('| Market | Ceiling | Gain from a rent feed |')
-        L.append('|---|---:|---:|')
-        for name, c in thin:
-            L.append('| %s | %d | +%d |' % (name, c['ceiling'], c['withrent'] - c['ceiling']))
-        L.append('')
+        L.append('## Markets a rent feed barely helps\n')
+        L.append('These gain almost nothing from a rent feed because no **value row** is '
+                 'recorded for them. The obvious reading is that the inventory simply never '
+                 'wrote the row down — so each is cross-checked against '
+                 '`crosswalk/usecodes.json`, which independently declares the field '
+                 '`top_screen.py` is allowed to rank on, measured against a live layer. '
+                 'Where both records are silent, the gap is real and needs a data session, '
+                 'not an edit:\n')
+        L.append('| Market | Ceiling | Gain from a rent feed | Cross-check |')
+        L.append('|---|---:|---:|---|')
+        for name, c, kind in thin:
+            L.append('| %s | %d | +%d | %s |'
+                     % (name, c['ceiling'], c['withrent'] - c['ceiling'], kind))
+        L.append('\n`scripts/crosscheck_sources.py` fails the build when the two records '
+                 'disagree in the dangerous direction — an inventory promising a value the '
+                 'ranking engine cannot rank on, which makes a market read as expandable '
+                 'and screen into nothing.\n')
 
     L.append('## Greenfield — demand measured, no inventory written\n')
     if green:

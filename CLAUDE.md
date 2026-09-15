@@ -14,14 +14,15 @@ python3 scripts/validate_landscape.py # competitor claims keep their sources; mo
 python3 scripts/validate_company.py   # branded names name real modules; no securities-adjacent language
 python3 scripts/build_deck.py --check  # the investor deck states no figure it did not measure
 python3 scripts/standard_feasibility.py --check  # no market's criteria ceiling is overstated
+python3 scripts/crosscheck_sources.py           # inventory and crosswalk agree on what is valued
 python3 scripts/expansion_rank.py --check       # then: docs/EXPANSION.md must regenerate clean
 python3 scripts/build_social.py --check         # public posts: measured figures, no markdown, under limit
 python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/
 python3 tests/run.py                  # doctrine smoke tests (PII strip, sample floor, ...)
 ```
 
-CI (`.github/workflows/validate.yml`) runs exactly these — twelve gates now, and the last
-six also run inside `tests/run.py` so a clean local run cannot miss them. A red check is
+CI (`.github/workflows/validate.yml`) runs exactly these — thirteen gates now, and the last
+seven also run inside `tests/run.py` so a clean local run cannot miss them. A red check is
 real — the validator has no flake mode.
 
 ## The rules that are never bent

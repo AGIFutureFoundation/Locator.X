@@ -36,16 +36,18 @@ No amount of new territory raises any ceiling above 7 until that feed exists. Wi
 
 *Ceiling* is what the market reaches if every `named` and `blocked` row were pulled. A low ceiling is permanent; a large gap is only work.
 
-## Cheapest work on this page: four missing inventory rows
+## Markets a rent feed barely helps
 
-These markets gain almost nothing from a rent feed because the inventory records **no value row at all** — which is a documentation gap, not a missing feed. Each is one row in a coverage file, and each is worth more than any new territory:
+These gain almost nothing from a rent feed because no **value row** is recorded for them. The obvious reading is that the inventory simply never wrote the row down — so each is cross-checked against `crosswalk/usecodes.json`, which independently declares the field `top_screen.py` is allowed to rank on, measured against a live layer. Where both records are silent, the gap is real and needs a data session, not an edit:
 
-| Market | Ceiling | Gain from a rent feed |
-|---|---:|---:|
-| Utah | 6 | +1 |
-| Ohio | 6 | +1 |
-| Indiana | 6 | +1 |
-| New York | 3 | +1 |
+| Market | Ceiling | Gain from a rent feed | Cross-check |
+|---|---:|---:|---|
+| Utah | 6 | +1 | REAL gap — utah_co_ut declares no value field either |
+| Ohio | 6 | +1 | REAL gap — ohio_dte declares no value field either |
+| Indiana | 6 | +1 | unknown — the crosswalk does not cover this state |
+| New York | 3 | +1 | REAL gap — onondaga_ny declares no value field either |
+
+`scripts/crosscheck_sources.py` fails the build when the two records disagree in the dangerous direction — an inventory promising a value the ranking engine cannot rank on, which makes a market read as expandable and screen into nothing.
 
 ## Greenfield — demand measured, no inventory written
 

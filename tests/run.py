@@ -517,6 +517,12 @@ def main():
     # are generated, never edited, so the check is the same one gen_courses.py
     # gets - regenerate and diff. A hand-edited expansion ranking is a strategy
     # document that has quietly stopped matching the inventory it claims to read.
+    # The coverage inventory and the crosswalk record the same fact twice, for
+    # two different readers. Nothing checked they agreed until an expansion
+    # report guessed "probably a documentation gap" and the crosswalk said
+    # otherwise for three of four markets. A guess that survives one round
+    # becomes a plan in the next.
+    run(["scripts/crosscheck_sources.py"])
     run(["scripts/expansion_rank.py", "--check"])
     before = open(os.path.join(ROOT, "docs", "EXPANSION.md"), encoding="utf-8").read()
     run(["scripts/expansion_rank.py", "--write", os.path.join(ROOT, "docs", "EXPANSION.md")])

@@ -49,6 +49,8 @@ jobs:
         run: python3 scripts/build_deck.py --check
       - name: Criteria feasibility — no market ceiling overstated
         run: python3 scripts/standard_feasibility.py --check
+      - name: Coverage inventory and crosswalk agree
+        run: python3 scripts/crosscheck_sources.py
       - name: Expansion ranking regenerates clean
         run: python3 scripts/expansion_rank.py --check
       - name: Social copy states no unmeasured figure
