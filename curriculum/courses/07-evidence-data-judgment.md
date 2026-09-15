@@ -1,6 +1,6 @@
 # Evidence, data & judgment
 
-> Pillar 07 of 8 · **5 items** (5 courses, 0 guides) · **20 modules** · all 5 live
+> Pillar 07 of 8 · **6 items** (6 courses, 0 guides) · **26 modules** · all 6 live
 
 The pillar that keeps the platform honest. Framing before querying, keys and joins, medians and the sample-size floor, refusing to extrapolate, and drawing a number so it cannot mislead. Every rule here is enforced somewhere in the product.
 
@@ -15,6 +15,7 @@ Source of truth: [`curriculum/curriculum-50.csv`](../curriculum-50.csv) and [`cu
 | **V3** | 3 | Medians, skew and the sample-size floor | course | 4 | V1 |
 | **V4** | 4 | Fitting, holding out and refusing to extrapolate | course | 4 | V3 |
 | **V5** | 4 | Drawing a number so it cannot mislead | course | 4 | V3 |
+| **V6** | 4 | Screening a market that cannot answer you | course | 6 | V1, F5 |
 
 ## Prerequisite flow
 
@@ -25,11 +26,14 @@ graph LR
   V3["V3 · Medians, skew and the sample-size floor"]
   V4["V4 · Fitting, holding out and refusing to extrapolate"]
   V5["V5 · Drawing a number so it cannot mislead"]
+  V6["V6 · Screening a market that cannot answer you"]
   F5([F5]) -.-> V1
   V1 --> V2
   V1 --> V3
   V3 --> V4
   V3 --> V5
+  V1 --> V6
+  F5([F5]) -.-> V6
 ```
 
 Dashed nodes are prerequisites from other pillars: **F5** (Reading Locator.X: score, evidence grade, coverage, Foundations & the Locator.X doctrine).
@@ -105,3 +109,15 @@ Dashed nodes are prerequisites from other pillars: **F5** (Reading Locator.X: sc
 **Where it lands in the product:** Evidence & analysis e7; the validated palette.
 
 **Backing tracks:** `evidence`
+
+### V6 — Screening a market that cannot answer you
+
+*Course · 6 modules · status: live*
+
+**The promise.** Underwrite where the record is silent, without turning silence into a pass or a fail.
+
+**Take first:** **V1** (Framing the question before you touch the data), **F5** (Reading Locator.X: score, evidence grade, coverage).
+
+**Where it lands in the product:** Screening a market that cannot answer you nd1-nd6.
+
+**Backing tracks:** `nondisc`

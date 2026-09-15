@@ -424,6 +424,16 @@ C = [
   "Density without hiding data"],
  "Evidence & analysis e7; the validated palette",[4],["V3"],"live"),
 
+("V6","Screening a market that cannot answer you","course",
+ "Underwrite where the record is silent, without turning silence into a pass or a fail.",
+ ["Unknown is an answer, and it is neither of the other two",
+  "An assessment is not a price, and the distance is not small",
+  "What a non-disclosure market withholds, and what it does not",
+  "A deal is as sound as its weakest fact, not its average",
+  "A comparable is a recorded sale with a date, or it is not one",
+  "Deciding when the number you wanted does not exist"],
+ "Screening a market that cannot answer you nd1-nd6",[2,4],["V1","F5"],"live"),
+
 # ---------------- M — MARKET, PRACTICE & THE LONG GAME (3) ----------
 ("M1","Markets, jobs and where the money is going","course",
  "From an announcement to a rent, and how long that actually takes.",
@@ -478,7 +488,7 @@ LEVELS = [
  (4,"Principal","Lead other people's capital, and defend your judgment",
   "Partnerships, full development, and the evidence discipline that survives diligence.",
   "You can raise and structure equity, carry a development through all six gates, and defend every number you publish including what you could not check.",
-  ["E6","E8","N5","A7","C5","C6","C7","D6","D7","V4","V5","M2","M3"]),
+  ["E6","E8","N5","A7","C5","C6","C7","D6","D7","V4","V5","V6","M2","M3"]),
 ]
 
 # ---------------------------------------------------------------- FRAMEWORKS
@@ -540,6 +550,7 @@ BACKS = {
  'D1':['invdev','deliver'], 'D2':['zone'], 'D3':['zone'], 'D4':['invdev'],
  'D5':['build','deliver'], 'D6':['deliver'], 'D7':['lab'],
  'V1':['evidence'], 'V2':['evidence'], 'V3':['evidence'], 'V4':['evidence'],
+ 'V6':['nondisc'],
  'V5':['evidence'],
  'M1':['mkt'], 'M2':['wider'], 'M3':['tax'],
 }
