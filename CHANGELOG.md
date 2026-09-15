@@ -7,6 +7,27 @@ such.
 
 ## [Unreleased]
 
+- **Five system films, over live footage** — `scripts/make_system_films.js`.
+  Where the short promos carry one claim over one still, these run 38 seconds
+  each with **the application running inside the frame** while the mechanism is
+  named beat by beat: the record layer, the map's three layers, underwriting and
+  the closing file, the interchange formats and the shareable view, and coverage
+  with the gates.
+
+  Two passes. The first drives the built edition and records a clean clip — no
+  overlay, because the overlay belongs to the film and not to the app. The second
+  plays that clip into a canvas through a data URI (so the canvas stays
+  untainted and `captureStream` works), draws the brand frame and the beats over
+  it, and records the canvas. Nothing is generated: every frame of footage is the
+  running app, the fixture note never leaves the screen, and each closing figure
+  is measured and published here.
+
+  Two composition defects found by looking at the output rather than trusting the
+  arithmetic: the film spec carried the Playwright `clip()` function, which cannot
+  cross into the page (only the drawn fields are passed now), and the first cut
+  drew the closing figure **on top of** the refusal line — the two now play in
+  sequence, which is why the films are 38 seconds rather than 34.
+
 - **A logo, and a cover image, from sources rather than exports** — `brand/`
   holds the mark, both lockups and the cover page; `scripts/build_brand.js`
   renders the PNGs from them. The PNGs are not committed, so a logo cannot drift
