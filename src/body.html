@@ -7,10 +7,18 @@
       </linearGradient></defs>
       <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#lxgmark)" opacity=".14"/>
       <rect x="4" y="4" width="112" height="112" rx="28" fill="none" stroke="url(#lxgmark)" stroke-width="2.5"/>
-      <g stroke="url(#lxgmark)" stroke-width="13" stroke-linecap="round">
+      <!-- The hole around the locator dot is a knockout, not a disc painted in
+           var(--bg): the mark sits on the cover card, not on the page ground, so
+           the painted version was the wrong colour wherever those two differ —
+           and wrong everywhere outside the app, where var(--bg) does not exist.
+           brand/locator-x-mark.svg is the same geometry, standalone. -->
+      <mask id="lxgmarkhole">
+        <rect x="0" y="0" width="120" height="120" fill="#fff"/>
+        <circle cx="60" cy="60" r="8" fill="#000"/>
+      </mask>
+      <g mask="url(#lxgmarkhole)" stroke="url(#lxgmark)" stroke-width="13" stroke-linecap="round">
         <path d="M32 32 L88 88"/><path d="M88 32 L32 88"/>
       </g>
-      <circle cx="60" cy="60" r="8" fill="var(--bg)"/>
       <circle cx="60" cy="60" r="4.5" fill="url(#lxgmark)"/>
     </svg>
     <div class="coverbrand">Locator<span class="x">.X</span></div>

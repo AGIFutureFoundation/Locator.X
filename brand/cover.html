@@ -1,0 +1,91 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Locator.X — cover</title>
+<style>
+  /* The cover image, authored as a page so the type is real type. Rasterised by
+     scripts/build_brand.js; the PNGs are build products and are not committed,
+     the same rule the editions follow. */
+  :root{
+    --ink:#F4F1EA; --ink-2:#B9B1A2; --ink-3:#8A8073;
+    --ground:#100E0A; --ground-2:#171410;
+    --field:#37B871; --field-deep:#1E6B3E; --flag:#E0742F;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{background:var(--ground)}
+  .sheet{position:relative;width:1600px;height:900px;overflow:hidden;
+    background:radial-gradient(120% 90% at 18% 8%, #1A1712 0%, var(--ground) 62%);
+    color:var(--ink);font-family:"Liberation Sans","DejaVu Sans",system-ui,sans-serif;
+    display:flex;flex-direction:column;justify-content:space-between;padding:88px 96px}
+  .sheet.og{width:1200px;height:630px;padding:62px 68px}
+  .grid{position:absolute;inset:0;opacity:.5;
+    background-image:linear-gradient(rgba(244,241,234,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(244,241,234,.05) 1px, transparent 1px);
+    background-size:64px 64px}
+  .glow{position:absolute;width:760px;height:760px;right:-180px;bottom:-280px;border-radius:50%;
+    background:radial-gradient(circle, rgba(55,184,113,.18) 0%, rgba(55,184,113,0) 65%)}
+  .top{position:relative;display:flex;align-items:center;gap:26px}
+  .mark{width:112px;height:112px}
+  .sheet.og .mark{width:84px;height:84px}
+  .word{font-family:Charter,"Bitstream Charter","Liberation Serif",Georgia,serif;
+    font-size:64px;font-weight:700;letter-spacing:-1.6px;line-height:1}
+  .sheet.og .word{font-size:50px}
+  .word i{font-style:normal;color:var(--field)}
+  .sub{font-family:"DejaVu Sans Mono",monospace;font-size:14px;letter-spacing:4.2px;
+    color:var(--ink-3);margin-top:10px}
+  .sheet.og .sub{font-size:12px;letter-spacing:3.4px}
+  .mid{position:relative;max-width:1080px}
+  .sheet.og .mid{max-width:820px}
+  h1{font-family:Charter,"Bitstream Charter","Liberation Serif",Georgia,serif;
+    font-size:92px;line-height:1.02;font-weight:700;letter-spacing:-2.4px}
+  .sheet.og h1{font-size:66px;letter-spacing:-1.6px}
+  h1 em{font-style:normal;color:var(--field)}
+  .lede{margin-top:26px;font-size:26px;line-height:1.5;color:var(--ink-2);max-width:900px}
+  .sheet.og .lede{font-size:20px;margin-top:18px;max-width:700px}
+  .facts{position:relative;display:flex;gap:64px;align-items:flex-end}
+  .fact b{display:block;font-size:40px;font-weight:700;letter-spacing:-.8px;
+    font-variant-numeric:tabular-nums}
+  .sheet.og .fact b{font-size:30px}
+  .fact span{display:block;margin-top:6px;font-family:"DejaVu Sans Mono",monospace;
+    font-size:12.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-3)}
+  .sheet.og .fact span{font-size:11px;letter-spacing:1.8px}
+  .rule{position:relative;height:3px;margin-bottom:26px;
+    background:linear-gradient(90deg, var(--field) 0%, var(--field-deep) 34%, rgba(55,184,113,0) 100%)}
+</style>
+<div class="sheet" id="sheet">
+  <div class="grid"></div><div class="glow"></div>
+  <div class="top">
+    <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#37B871"/><stop offset="1" stop-color="#1E6B3E"/>
+        </linearGradient>
+        <mask id="h"><rect width="120" height="120" fill="#fff"/>
+          <circle cx="60" cy="60" r="8" fill="#000"/></mask>
+      </defs>
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#g)" opacity=".16"/>
+      <rect x="4" y="4" width="112" height="112" rx="28" fill="none" stroke="url(#g)" stroke-width="2.5"/>
+      <g mask="url(#h)"><g stroke="url(#g)" stroke-width="13" stroke-linecap="round">
+        <path d="M32 32 L88 88"/><path d="M88 32 L32 88"/></g></g>
+      <circle cx="60" cy="60" r="4.5" fill="url(#g)"/>
+    </svg>
+    <div>
+      <div class="word">Locator<i>.X</i></div>
+      <div class="sub">PUBLIC-RECORD REAL ESTATE</div>
+    </div>
+  </div>
+  <div class="mid">
+    <h1>Every figure carries<br>where it <em>came from</em>.</h1>
+    <p class="lede">County records, read honestly: an assessment is never called a price,
+      a missing quote makes a missing ratio, and the coverage table is published with its
+      holes labelled.</p>
+  </div>
+  <div>
+    <div class="rule"></div>
+    <div class="facts">
+      <div class="fact"><b>749,765</b><span>parcel records shipped</span></div>
+      <div class="fact"><b>354,260</b><span>in one self-contained file</span></div>
+      <div class="fact"><b>90</b><span>coverage rows, holes labelled</span></div>
+      <div class="fact"><b>0</b><span>fabricated rows, ever</span></div>
+    </div>
+  </div>
+</div>

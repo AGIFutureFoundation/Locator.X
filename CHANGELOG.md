@@ -7,6 +7,24 @@ such.
 
 ## [Unreleased]
 
+- **A logo, and a cover image, from sources rather than exports** — `brand/`
+  holds the mark, both lockups and the cover page; `scripts/build_brand.js`
+  renders the PNGs from them. The PNGs are not committed, so a logo cannot drift
+  from the file it is a picture of.
+
+  The mark is the app's own: an X over a dot — the X marks the spot and the dot
+  at the crossing is the record. One real defect fixed on the way: the surround
+  of that dot was a disc painted `var(--bg)`, which is the page ground rather
+  than the card the mark sits on, and which does not exist at all outside the
+  app. It is a knockout now, in `src/body.html` as well as in the standalone
+  file, so the mark composites over any ground.
+
+  [`brand/README.md`](brand/README.md) carries clear space, minimum size, the
+  colour pair and the wordmark spelling — plus the one prohibition this platform
+  needs more than most: the mark never goes on a photograph of a building, because
+  a logo over a stock skyline implies exactly the thing
+  [`docs/GENERATIVE_VIDEO.md`](docs/GENERATIVE_VIDEO.md) refuses.
+
 - **The view that shipped into eleven editions and opened in none is open** —
   and the reason it was hidden turned out to be a defect rather than a decision.
   The house-hack finder required `l.hh`, a flag only `build_data.py` (the Bay
