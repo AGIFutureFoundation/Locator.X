@@ -15,12 +15,13 @@ python3 scripts/validate_company.py   # branded names name real modules; no secu
 python3 scripts/build_deck.py --check  # the investor deck states no figure it did not measure
 python3 scripts/standard_feasibility.py --check  # no market's criteria ceiling is overstated
 python3 scripts/expansion_rank.py --check       # then: docs/EXPANSION.md must regenerate clean
+python3 scripts/build_social.py --check         # public posts: measured figures, no markdown, under limit
 python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/
 python3 tests/run.py                  # doctrine smoke tests (PII strip, sample floor, ...)
 ```
 
-CI (`.github/workflows/validate.yml`) runs exactly these — eleven gates now, and the last
-five also run inside `tests/run.py` so a clean local run cannot miss them. A red check is
+CI (`.github/workflows/validate.yml`) runs exactly these — twelve gates now, and the last
+six also run inside `tests/run.py` so a clean local run cannot miss them. A red check is
 real — the validator has no flake mode.
 
 ## The rules that are never bent
@@ -83,6 +84,7 @@ real — the validator has no flake mode.
 | Contract & underwriting anatomy | `docs/CONTRACT_ANATOMY.md` (education; the no-drafting line) |
 | Company layer | `docs/company/` — positioning, pricing, portfolio strategy, funding boundary, agents; the **two-part ask** (`THE_ASK.md`) and the real-estate bundle (`PORTFOLIO_BASKET.md`); **and the capital layer**: entity register, mission rights, instruments, cap table, use of proceeds, risk register, investor reporting. Gated by `scripts/validate_company.py` |
 | Market intelligence | `docs/market/` — the competitor register, the measured gap, the premium roadmap; gated by `scripts/validate_landscape.py` |
+| Social copy | `content/social/*.md` — placeholders only, rendered by `scripts/build_social.py`; linted for solicitation like everything under `content/`, which matters most here because a post is public |
 | Investor deck | `content/investor/DECK.md` — placeholders only, rendered by `scripts/build_deck.py`; every figure measured at build time by `scripts/deck_figures.py`. Pitch film: `scripts/make_investor_video.js` |
 | Roadmap / history | `docs/ROADMAP.md` (every milestone names its proof) / `CHANGELOG.md` |
 

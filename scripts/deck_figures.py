@@ -137,6 +137,17 @@ def figures():
     f['agents'] = len(arows)
     f['agents_shipping'] = sum(1 for l in arows if '**ships**' in l)
 
+    # ---- how far the record layer reaches on SALE PRICES ----
+    # A public claim about sale-price coverage has to be a measured claim about
+    # OUR inventory, never an assertion about what a state publishes - several
+    # of the states without a sale row may publish one we have not written down.
+    sys.path.insert(0, HERE)
+    import expansion_rank as _ER
+    cov, _total, _unk = _ER.by_state()
+    f['states_inventoried'] = len(cov)
+    f['states_with_sale'] = sum(1 for c in cov.values() if 'sale' in c['fields'])
+    f['states_without_sale'] = f['states_inventoried'] - f['states_with_sale']
+
     return f
 
 

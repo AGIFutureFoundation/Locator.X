@@ -491,6 +491,16 @@ def main():
     # management plan and a rule number, neither of which can be measured.
     run(["scripts/build_deck.py", "--check"])
 
+    # ---- 11b8. social copy states no figure it did not measure -------------
+    # Same rule as the deck, for a sharper reason: a number in a public post
+    # cannot be corrected in anybody else's feed. build_social.py also refuses
+    # markdown emphasis, which LinkedIn renders as literal asterisks on the one
+    # word meant to carry weight, and a post over the platform's character
+    # limit, which the feed truncates mid-sentence - usually on the qualifier.
+    # The securities lint in validate_company.py covers content/ too, so a
+    # solicitation in a PUBLIC post fails the build twice over.
+    run(["scripts/build_social.py", "--check"])
+
     # ---- 11b6. the feasibility map cannot overstate a market ---------------
     # scripts/standard_feasibility.py reports how many of the Investment
     # Standard's requirements a market's public record can answer AT ALL. Its
