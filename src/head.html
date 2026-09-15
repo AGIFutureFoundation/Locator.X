@@ -450,6 +450,47 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line2);border-
 .chart,.tile,.sheet{min-width:0;max-width:100%}
 img,canvas,svg{max-width:100%}
 
+
+/* ---- strategy switchboard ---------------------------------------------
+   Every column is the same width whatever its state. A blocked column that
+   shrank, greyed out or dropped from the row would read as an oversight; it is
+   usually the most important thing on the screen. */
+.sbbar{display:flex;align-items:center;gap:10px;margin:14px 0 6px}
+.sbbar .sel{min-width:min(460px,70vw)}
+.sbsubject{font-size:13px;color:var(--ink2);margin:2px 0 6px}
+.sbnote{font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.55}
+.sbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px;align-items:start}
+.sbcol{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+.sbcol h3{margin:0 0 8px;font-size:15px}
+.sbstate{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px;color:var(--muted)}
+.sbblocked .sbstate{color:var(--warn)}
+.sbna{opacity:.85}
+.sbwhy{font-size:12.5px;color:var(--ink2);line-height:1.6;margin:0}
+.sbhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 0 10px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.sbhead .sblab{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.sbhead .sbval{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.sbhead.good .sbval{color:var(--good)}
+.sbhead.bad .sbval{color:var(--bad)}
+.sbrows{width:100%;border-collapse:collapse;font-size:12.5px}
+.sbrows th{text-align:left;font-weight:500;color:var(--ink2);padding:3px 8px 3px 0;vertical-align:top}
+.sbrows td{text-align:right;font-variant-numeric:tabular-nums;padding:3px 0;white-space:nowrap}
+.sbrows .unk{color:var(--warn);font-style:italic;cursor:help;border-bottom:1px dotted var(--warn)}
+.sbband{font-size:11.5px;color:var(--muted);margin:10px 0 0;padding-top:8px;border-top:1px solid var(--line)}
+.sbgrade-A{border-left:3px solid var(--good)}
+.sbgrade-B{border-left:3px solid var(--accent)}
+.sbgrade-C{border-left:3px solid var(--warn)}
+.sbgrade-D{border-left:3px solid var(--bad)}
+.sbbasis{margin-top:8px}
+.sbbasis summary{font-size:11.5px;color:var(--muted);cursor:pointer}
+.sbbasis ul{margin:8px 0 0;padding-left:16px;font-size:12px;line-height:1.55;color:var(--ink2)}
+.sbbasis li{margin-bottom:7px}
+.sbkind{font-style:normal;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:var(--panel2)}
+.sbkind-record{color:var(--good)}
+.sbkind-published{color:var(--accent)}
+.sbkind-model{color:var(--warn)}
+.sbkind-assumption{color:var(--bad)}
+.sbkind-lever{color:var(--ink2)}
+.sblevers{font-size:11.5px;color:var(--muted);line-height:1.55;margin:4px 0 6px;padding-top:7px;border-top:1px dashed var(--line)}
 </style>
 
 <style>

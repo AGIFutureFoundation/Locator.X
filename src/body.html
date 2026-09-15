@@ -69,6 +69,7 @@
     <button role="tab" data-view="recon" data-group="property">3D &amp; records</button>
     <button role="tab" data-view="twin" data-group="property">Twin</button>
     <button role="tab" data-view="hacks" data-group="property">House hacks</button>
+    <button role="tab" data-view="switchboard" data-group="property">Strategy switchboard</button>
     <button role="tab" data-view="program" data-group="property">Program</button>
     <button role="tab" data-view="academy" data-group="learn">Academy</button>
     <button role="tab" data-view="guide" data-group="learn">Investor guide</button>
@@ -313,6 +314,21 @@
   <h2 class="h2">The list</h2>
   <div class="tablewrap"><table class="grid" id="hhtable"><thead></thead><tbody></tbody></table></div>
   <p class="src"><b>These are ceilings, not eligibility.</b> FHA sets a loan limit per county, between a national floor and the high-cost ceiling; this screen holds only the 2025 ceiling — 1 unit $1,209,750 · 2 units $1,548,975 · 3 units $1,872,225 · 4 units $2,326,875 — so a building marked <i>within ceiling</i> may still be over your county's limit. Verify the limit for the county the property is in before relying on it. FHA requires you to occupy a unit for one year; 3–4 unit purchases must pass the self-sufficiency test (75% of gross rent ≥ full payment). Rents are ZIP-level index estimates — verify with real comps. Buildings with tenants in place come with their leases and, in SF, Oakland and Berkeley, with rent control; underwrite the rents that exist, not the ones you want.</p>
+</div></div></section>
+
+<!-- ================= STRATEGY SWITCHBOARD ================= -->
+<section id="switchboard" class="view"><div class="page"><div class="inner wide">
+  <p class="eyebrow">Strategy switchboard · one property, every play</p>
+  <h1>Which play is this building actually for?</h1>
+  <p class="lede">A hold, a flip, a BRRRR, a house hack and a conversion are five different questions about the same address, and they need five different things from the public record. This screen asks all five at once and shows what each answer rests on — because a flip needs recorded comparable sales, a hold needs a rent figure, and a conversion needs neither because it is modelled from end to end. Columns that cannot be evaluated say which input is missing. Columns that do not apply say what about the building rules them out.</p>
+  <div class="sbbar">
+    <label class="eyebrow" for="sbpick">Property</label>
+    <select id="sbpick" class="sel"></select>
+  </div>
+  <p class="sbsubject" id="sbsubject"></p>
+  <p class="sbnote" id="sbnote"></p>
+  <div class="sbgrid" id="sbgrid"></div>
+  <p class="src">Education, not advice, and not a valuation. Every column is graded by its <b>weakest</b> input rather than its average, because a deal is exactly as trustworthy as the softest number in it. Where two columns rest on different kinds of input they are shown side by side but deliberately not ranked: the building is the same, the numbers are not equivalent. Verify every figure against its document before relying on it.</p>
 </div></div></section>
 
 <!-- ================= UNDERWRITE ================= -->

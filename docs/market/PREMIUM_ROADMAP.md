@@ -36,22 +36,31 @@ absence named. That is what the roadmap buys, in this order.
 These need nothing this container cannot reach. They are the highest ratio of investor
 value to blocker in the whole plan.
 
-### 1.1 The strategy switchboard
+### 1.1 The strategy switchboard — **shipped**
 
 One property, every strategy, side by side: buy-and-hold, flip, BRRRR, house hack,
-conversion. Today `src/underwrite.js` (552), `src/conv.js` (88), `src/dev.js` (158) and
-`src/hacks.js` (137) each answer one and none of them answer together.
+conversion. `src/underwrite.js` (552), `src/conv.js` (88), `src/dev.js` (158) and
+`src/hacks.js` (137) each answered one and none of them answered together;
+`src/switchboard.js` (430) asks all five through those modules' own public interfaces
+and re-derives none of them — the underwriting desk's own sheet, the house-hack
+finder's own math, the conversion lab's own model, and comps.js's own account of why
+it came back empty. Each column is graded on the **facts** it rests on; the levers a
+user sets (down payment, rehab preset, holding period) are listed but excluded, because
+a first cut that counted them graded every column D on every property in every edition,
+and a grade that cannot move is decoration.
 
 - **Why** — the single best-supported request in the research, and the one gap that needs
   no new data. The register's underwriting tools (DealCheck, BiggerPockets) model one
   strategy per run.
-- **Proof** — a fleet-smoke assertion that the switchboard renders ≥3 strategies for the
-  same record in every edition where the inputs exist, and **renders a named refusal**,
-  not a blank or a zero, where they do not.
-- **Blocker** — none.
+- **Proof** — `tests/fleet_smoke.js` opens the switchboard in all 11 editions and asserts
+  five columns render, every column carries one of the three states, no computed column
+  is missing its grade band or its basis list, and — the assertion that matters — a
+  non-computed column carries a named reason rather than a blank or a zero.
+- **Blocker** — none. **Shipped.**
 - **Cost of being wrong** — a comparison table implies the strategies are equally
   supported by the record. They are not: a flip needs comps, a BRRRR needs a rent model.
-  Each column must carry its own evidence grade or the table lies by alignment.
+  Each column carries its own evidence grade, and where two columns rest on different
+  kinds of input the screen says so and refuses to rank them.
 
 ### 1.2 The coverage panel — what this edition cannot answer
 
