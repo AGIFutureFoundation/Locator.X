@@ -12,12 +12,13 @@ python3 crosswalk/validate_usecodes.py
 python3 market/validate_market.py    # sourced market data; cross-checks PUBLISH_MAP
 python3 scripts/validate_landscape.py # competitor claims keep their sources; module counts re-counted
 python3 scripts/validate_company.py   # branded names name real modules; no securities-adjacent language
+python3 scripts/build_deck.py --check  # the investor deck states no figure it did not measure
 python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/
 python3 tests/run.py                  # doctrine smoke tests (PII strip, sample floor, ...)
 ```
 
-CI (`.github/workflows/validate.yml`) runs exactly these — eight gates now, and the last
-two also run inside `tests/run.py` so a clean local run cannot miss them. A red check is
+CI (`.github/workflows/validate.yml`) runs exactly these — nine gates now, and the last
+three also run inside `tests/run.py` so a clean local run cannot miss them. A red check is
 real — the validator has no flake mode.
 
 ## The rules that are never bent
@@ -75,6 +76,7 @@ real — the validator has no flake mode.
 | Contract & underwriting anatomy | `docs/CONTRACT_ANATOMY.md` (education; the no-drafting line) |
 | Company layer (AGI Corp) | `docs/company/` — positioning, pricing, portfolio strategy, funding boundary, agents; **and the capital layer**: entity register, mission rights, instruments, cap table, use of proceeds, risk register, investor reporting. Gated by `scripts/validate_company.py` |
 | Market intelligence | `docs/market/` — the competitor register, the measured gap, the premium roadmap; gated by `scripts/validate_landscape.py` |
+| Investor deck | `content/investor/DECK.md` — placeholders only, rendered by `scripts/build_deck.py`; every figure measured at build time by `scripts/deck_figures.py`. Pitch film: `scripts/make_investor_video.js` |
 | Roadmap / history | `docs/ROADMAP.md` (every milestone names its proof) / `CHANGELOG.md` |
 
 ## Environment gotchas

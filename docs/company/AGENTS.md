@@ -33,8 +33,8 @@ mechanically across this repository and applies to agent output without exceptio
 | **Development** | Renovation and development scope options; tracks budgets, schedules, permits, contractors, contingencies and project risks; compares projected versus actual | May not represent a modelled cost as a quote | `src/dev.js` (158) feasibility, `src/rebuild.js` (335) construction cost, `src/conv.js` (88) conversion models — all labelled as models | **partial** — scope and cost modelling ship; **schedule, contractor, permit and risk tracking do not** |
 | **Portfolio Learning** | Compares underwritten assumptions to actual outcomes across rent, occupancy, capex, rehab, expenses, financing and exit; recommends calibration | May not report a calibration below the sample floor | `src/predict.js` (587) holds the backtest mechanism this needs | **not built** — Phase 3 of [`../market/PREMIUM_ROADMAP.md`](../market/PREMIUM_ROADMAP.md); nothing feeds it operating results |
 
-**One of six ships outright, four are partial, one is absent.** Three of the partials
-are blocked on the same missing thing: there is no multi-user state, no task or approval
+**Two of six ship outright, three are partial, one is absent.** All three partials are
+blocked on the same missing thing: there is no multi-user state, no task or approval
 workflow, and no audit trail across users. That is one build, and it unblocks the
 Diligence Room, the Acquisitions agent and gate condition 8 in
 [`PORTFOLIO_STRATEGY.md`](PORTFOLIO_STRATEGY.md) together.

@@ -38,6 +38,7 @@ capital pool is separated, its rights defined, and its risks disclosed plainly.
 | [`CAPITAL_STRUCTURE.md`](CAPITAL_STRUCTURE.md) | The entity register — for each entity, what an investor owns, what proceeds fund, and **what they do not automatically own** | **boundary** — the last column may never be empty |
 | [`MISSION_RIGHTS.md`](MISSION_RIGHTS.md) | The PBC's narrow reserved matters, and the longer list it may **not** approve | **boundary**, plus six governing documents that do not exist yet |
 | [`INSTRUMENTS.md`](INSTRUMENTS.md) | Financing instruments by stage, and the planned programmes | **plan** — planning ranges, never an offer |
+| [`SAFE_TERMS.md`](SAFE_TERMS.md) | The pre-seed SAFE in detail: which form, which terms to refuse, offering mechanics, and the Series A readiness checklist | **recommendation** — counsel drafts and approves every instrument |
 | [`CAP_TABLE.md`](CAP_TABLE.md) | Pre-seed planning ranges, expensive mistakes, terms a priced round expects | **management target**, explicitly illustrative |
 | [`USE_OF_PROCEEDS.md`](USE_OF_PROCEEDS.md) | The schedule every raise carries, and budget guardrails | **management target** — ranges verified able to sum to 100% |
 | [`RISK_REGISTER.md`](RISK_REGISTER.md) | 24 risks, each with its mechanism, mitigation and a named owner | **honest disclosure** — no row claims a risk is eliminated |
