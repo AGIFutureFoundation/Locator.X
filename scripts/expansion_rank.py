@@ -63,7 +63,60 @@ XWALK_OF = {
     'utah': ['utah_co_ut'], 'ohio': ['ohio_dte'], 'new-york': ['onondaga_ny'],
     'north-carolina': ['wake_nc', 'guilford_nc'], 'new-mexico': ['bernalillo_nm'],
     'arizona': ['maricopa_az'], 'florida': ['florida_dor'],
+    # Indiana's own coverage file states it: "Uses the same DTE-style
+    # 401/402/403/410/411/419 numbering as Ohio (crosswalk ohio_dte row applies,
+    # same caveats)". The mapping is documented, not inferred.
+    'indiana': ['ohio_dte'],
 }
+
+# NEGATION. The verdict column carries the measured detail, and a keyword scan
+# over it is actively dangerous: Indiana's building-attributes row reads "no
+# building area, no year built and no sale price at all ... the only completeness
+# fields are acreage and assessed values". Four field words appear; three are
+# denials. Crediting them would present a non-disclosure county as a
+# sale-publishing market - the worst possible direction to be wrong in.
+#
+# So the verdict is read CLAUSE BY CLAUSE, and a clause carrying a negation
+# contributes nothing. An explicit denial is also worth keeping: it is a
+# field-level "no public record", stated by whoever did the pull.
+NEG = re.compile(r'\b(no|not|never|without|absent|missing|lacks?|none)\b', re.I)
+CLAUSE = re.compile(r'[.;]|\band\b|,')
+
+
+# A verdict may only credit a VALUE when it names the column. This is not
+# pedantry: crosswalk/usecodes.json declares the `value_field` that
+# top_screen.py is allowed to rank on, and a market whose inventory says "value
+# evidence exists" without naming the field is a market nothing can rank.
+#
+# Utah's roll-vintage row says "date any value evidence accordingly" and
+# Indiana's says "the only completeness fields are acreage and assessed values".
+# Both report that values exist. Neither names a column, and neither crosswalk
+# entry declares one - so the platform cannot rank either, and crediting them
+# put the inventory in contradiction with the crosswalk. A value you cannot name
+# is a value you cannot rank.
+FIELD_TOKEN = re.compile(r'`[A-Za-z_][A-Za-z0-9_]{2,}`')
+NAMED_ONLY = {'price'}
+
+
+
+
+def verdict_fields(text):
+    """Positive field evidence in a verdict, and the fields it explicitly denies."""
+    pos, neg = set(), set()
+    for clause in CLAUSE.split(text or ''):
+        low = clause.lower()
+        hit = []
+        for pat, fs in VERDICT_CLASSIFY:
+            if re.search(pat, low):
+                hit.extend(fs)
+        if not hit:
+            continue
+        if NEG.search(low):
+            neg.update(hit)
+            continue
+        named = bool(FIELD_TOKEN.search(clause))
+        pos.update(f for f in hit if named or f not in NAMED_ONLY)
+    return pos, neg
 
 
 def crosswalk_values():
@@ -109,6 +162,17 @@ CLASSIFY = [
 ]
 # Rows that legitimately supply nothing the Standard tests. Naming them keeps
 # them out of the unclassified count, which is the number that matters.
+# "Values" means money in a gate LABEL and means enum cardinality in PROSE.
+# Utah's use-class verdict reads "`PROP_TYPE_DESCR` carries 37 values" - a count
+# of distinct codes, in a clause that also names a field, which satisfied both
+# the keyword and the named-column rule and credited the state with a price.
+# The verdict therefore uses a stricter price pattern than the question does.
+VERDICT_CLASSIFY = [
+    (pat if 'price' not in fs
+     else r'assessed|just value|market value|apprais|millage|valuation|total value',
+     fs) for pat, fs in CLASSIFY
+]
+
 NOT_A_FIELD = re.compile(
     r'owner of record|owner fields|foreclosure|docket|deed|lien|permit|violation|'
     r'code enforcement|tax-sale|tax sale|adjudicat|mortgage|executory|insurance|'
@@ -171,6 +235,19 @@ def by_state():
             s['unk'] += 1
             unclassified.append((r['state'], r['q'][:70]))
             continue
+        # The verdict column carries measured detail the question column does
+        # not. Read it with negation handling, and let an explicit denial
+        # override a positive found elsewhere in the same row.
+        #
+        # The exclusion list applies to the VERDICT TOO. Skipping that let the
+        # rent-regulation bug back in through a side door: California's
+        # regulation row was excluded by its question and then re-credited with
+        # `rent` because its verdict mentions "Oakland rent boards". A rent board
+        # is not a rent figure, and the ceiling went 7 -> 14 on the strength of
+        # it - the same overstatement, the same market, a second time.
+        vpos, vneg = ((set(), set()) if NOT_A_FIELD.search(r['q'])
+                      else verdict_fields(r.get('source', '')))
+        fs = sorted((set(fs) | vpos) - vneg)
         if not fs:
             continue
         if STATUS_PERMANENT.search(r['status']):
@@ -228,6 +305,30 @@ ABBR = {'arizona': 'AZ', 'california': 'CA', 'florida': 'FL', 'indiana': 'IN',
         'louisiana': 'LA', 'nebraska': 'NE', 'new-mexico': 'NM', 'new-york': 'NY',
         'north-carolina': 'NC', 'ohio': 'OH', 'utah': 'UT'}
 NAME = {v: k.replace('-', ' ').title() for k, v in ABBR.items()}
+
+
+def unnamed_values():
+    """Rows that report a value and never name the column.
+
+    The most actionable line in this whole report: the pull measured a value,
+    the inventory wrote it down in prose, and nobody recorded WHICH COLUMN. The
+    ranking engine needs a name. Recovering it is a documentation task against
+    an existing pull, not a new data session - but it is not a task anyone can
+    do from the words alone, which is why it is listed rather than guessed."""
+    out = []
+    for r in rows():
+        if NOT_A_FIELD.search(r['q']):
+            continue
+        src = r.get('source', '')
+        for clause in CLAUSE.split(src):
+            low = clause.lower()
+            if NEG.search(low):
+                continue
+            if any(re.search(p, low) for p, fs in VERDICT_CLASSIFY if 'price' in fs):
+                if not FIELD_TOKEN.search(clause):
+                    out.append((r['state'], r['q'], clause.strip()[:72]))
+                break
+    return out
 
 
 def thin_rows(cand):
@@ -303,6 +404,15 @@ def report():
         for name, c, kind in thin:
             print('    %-16s ceiling %d, +%d from rent  \u00b7  %s'
                   % (name, c['ceiling'], c['withrent'] - c['ceiling'], kind))
+
+    un = unnamed_values()
+    if un:
+        print('\n  Values reported in prose, with no column named. The pull measured '
+              'them;\n  nobody recorded WHICH FIELD, so nothing can rank them. A '
+              'documentation task\n  against an existing pull \u2014 not a new session, '
+              'and not something to guess:')
+        for state, q, clause in un:
+            print('    %-14s %-24s \u201c%s\u201d' % (state, q[:24], clause))
 
     print('\n  Greenfield \u2014 measured submarket demand, no coverage inventory:')
     if not green:
@@ -386,6 +496,23 @@ def write(path):
                  'ranking engine cannot rank on, which makes a market read as expandable '
                  'and screen into nothing.\n')
 
+    un = unnamed_values()
+    if un:
+        L.append('## Values reported in prose, with no column named\n')
+        L.append('The most recoverable line on this page. In each of these rows the pull '
+                 'measured a value and the inventory wrote it down in words — and nobody '
+                 'recorded **which field**. `crosswalk/usecodes.json` declares the column '
+                 '`top_screen.py` is allowed to rank on, so a value nobody named is a '
+                 'value nothing can rank.\n')
+        L.append('This is a documentation task against an existing pull, not a new data '
+                 'session. It is also not something to guess: the column name has to come '
+                 'from the pull, not from the prose.\n')
+        L.append('| State | Row | What the inventory says |')
+        L.append('|---|---|---|')
+        for state, q, clause in un:
+            L.append('| %s | %s | "%s" |' % (state, q, clause))
+        L.append('')
+
     L.append('## Greenfield — demand measured, no inventory written\n')
     if green:
         L.append('| State | Ranked submarkets | Best score |')
@@ -425,6 +552,44 @@ def main():
         cov, total, unclassified = by_state()
         if not cov:
             die('no state parsed from the coverage inventory')
+
+        # TWO TRAPS THIS CLASSIFIER FELL INTO, PINNED SO NEITHER RETURNS.
+        #
+        # 1. Negation. Indiana's building-attributes row denies a sale price in
+        #    the same sentence that reports assessed values. Crediting the
+        #    denial would present a non-disclosure county as a sale-publishing
+        #    market.
+        ind = [r for r in rows() if r['state'] == 'indiana'
+               and r['q'] == 'Building attributes']
+        if ind:
+            pos, neg = verdict_fields(ind[0]['source'])
+            if 'sale' in pos or 'sale' not in neg:
+                die('the verdict reader credited a DENIED sale field on Indiana\'s '
+                    'building-attributes row, whose text reads "no sale price at all". '
+                    'A keyword scan that ignores negation turns a non-disclosure county '
+                    'into a disclosure market.')
+            # Indiana reports assessed values in PROSE and names no column, so
+            # it must NOT be credited - the crosswalk declares no rankable field
+            # either, and crediting it put the two records in contradiction.
+            # The finding is surfaced instead, by unnamed_values() below.
+            if 'price' in pos:
+                die('Indiana was credited with a value field from prose alone. Its row '
+                    'reports assessed values without naming a column, and ohio_dte '
+                    'declares none - so nothing can rank it, and crediting it puts the '
+                    'inventory in contradiction with the crosswalk.')
+        # 2. The exclusion list must apply to the verdict as well as the
+        #    question, or an excluded row re-credits itself through its own
+        #    detail. California's rent-REGULATION row mentions "rent boards".
+        ca = [r for r in rows() if r['state'] == 'california'
+              and 'Rent-regulation' in r['q']]
+        if ca:
+            if not NOT_A_FIELD.search(ca[0]['q']):
+                die('California\'s rent-regulation row is no longer excluded by question. '
+                    'A regulation flag is not an income figure.')
+            if 'rent' in cov['california']['fields']:
+                die('California is credited with a rent field. Its only rent-shaped row is '
+                    'a REGULATION flag, and crediting it once moved the ceiling from 7 to '
+                    '14 — an edition that could not answer a single cash-flow question.')
         for name, c in cov.items():
             if c['ceiling'] > total:
                 die('%s reports a ceiling of %d above the standard\'s %d requirements'

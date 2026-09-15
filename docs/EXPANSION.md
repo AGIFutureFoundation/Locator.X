@@ -27,10 +27,10 @@ No amount of new territory raises any ceiling above 7 until that feed exists. Wi
 | **Utah** | 6 | 6 | 0 | **7** | 4 | — |
 | **Ohio** | 6 | 6 | 0 | **7** | 18 | — |
 | **North Carolina** | 6 | 6 | 0 | **13** | 12 | — |
-| **Indiana** | 6 | 6 | 0 | **7** | 28 | — |
 | **Arizona** | 6 | 6 | 0 | **13** | 11 | — |
 | **New Mexico** | 5 | 5 | 0 | **12** | 5 | — |
 | **Louisiana** | 5 | 5 | 0 | **12** | 20 | `sale`, `saledate` |
+| **Indiana** | 5 | 5 | 0 | **6** | 28 | — |
 | **Nebraska** | 3 | 5 | 2 | **12** | 0 | `rent` |
 | **New York** | 3 | 3 | 0 | **4** | 6 | — |
 
@@ -44,10 +44,23 @@ These gain almost nothing from a rent feed because no **value row** is recorded 
 |---|---:|---:|---|
 | Utah | 6 | +1 | REAL gap — utah_co_ut declares no value field either |
 | Ohio | 6 | +1 | REAL gap — ohio_dte declares no value field either |
-| Indiana | 6 | +1 | unknown — the crosswalk does not cover this state |
+| Indiana | 5 | +1 | REAL gap — ohio_dte declares no value field either |
 | New York | 3 | +1 | REAL gap — onondaga_ny declares no value field either |
 
 `scripts/crosscheck_sources.py` fails the build when the two records disagree in the dangerous direction — an inventory promising a value the ranking engine cannot rank on, which makes a market read as expandable and screen into nothing.
+
+## Values reported in prose, with no column named
+
+The most recoverable line on this page. In each of these rows the pull measured a value and the inventory wrote it down in words — and nobody recorded **which field**. `crosswalk/usecodes.json` declares the column `top_screen.py` is allowed to rank on, so a value nobody named is a value nothing can rank.
+
+This is a documentation task against an existing pull, not a new data session. It is also not something to guess: the column name has to come from the pull, not from the prose.
+
+| State | Row | What the inventory says |
+|---|---|---|
+| florida | Millage by authority | "DOR millage tables per county/authority" |
+| indiana | Building attributes | "assessed values" |
+| louisiana | Assessed values, millage | "Assessor roll + parish millage" |
+| nebraska | Statewide standardized valuations | "Nebraska's state valuation lookup (property assessment division)" |
 
 ## Greenfield — demand measured, no inventory written
 
