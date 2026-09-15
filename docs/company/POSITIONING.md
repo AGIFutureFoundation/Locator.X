@@ -3,9 +3,12 @@
 **Positioning, as set by the platform owner:** *Locator.X by AGI Corp turns fragmented
 property signals into verified, financeable, and actionable real-estate investments.*
 
-Locator.X is AGI Corp's proprietary system for discovering, verifying, underwriting,
-acquiring, developing, operating, optimising and selectively disposing of real-estate
-assets. It is not positioned as a general-purpose SaaS product.
+**Locator.X, Inc. is a separate company**, founded by AGI Corp, which holds founder equity;
+the seed round in [`THE_ASK.md`](THE_ASK.md) sells the rest. It is the system for
+discovering, verifying, underwriting, acquiring, developing, operating, optimising and
+selectively disposing of real-estate assets — used by AGI Property Holdings' Portfolio
+Basket under a written, arm's-length services agreement, and licensed to others. It is not
+positioned as a general-purpose SaaS product.
 
 This page exists because a brand name is a promise, and a promise is a claim. Each of
 the eight branded data products below is set against **what is in this repository

@@ -35,6 +35,8 @@ capital pool is separated, its rights defined, and its risks disclosed plainly.
 
 | Document | What it settles | The kind of claim it makes |
 |---|---|---|
+| [`THE_ASK.md`](THE_ASK.md) | **The two-part ask** — Part A, the Locator.X, Inc. seed; Part B, the property bundle — with earmarks and the firewall between them | **plan** — targets and earmarks, never an offer |
+| [`PORTFOLIO_BASKET.md`](PORTFOLIO_BASKET.md) | The real-estate bundle: thesis, the sponsor conflict and its controls, and what the platform does and does not contribute | **plan** |
 | [`CAPITAL_STRUCTURE.md`](CAPITAL_STRUCTURE.md) | The entity register — for each entity, what an investor owns, what proceeds fund, and **what they do not automatically own** | **boundary** — the last column may never be empty |
 | [`MISSION_RIGHTS.md`](MISSION_RIGHTS.md) | The PBC's narrow reserved matters, and the longer list it may **not** approve | **boundary**, plus six governing documents that do not exist yet |
 | [`INSTRUMENTS.md`](INSTRUMENTS.md) | Financing instruments by stage, and the planned programmes | **plan** — planning ranges, never an offer |

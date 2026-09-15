@@ -5,11 +5,11 @@
 
 # PAGE 1 — What this is
 
-## Locator.X by AGI Corp
+## Locator.X, Inc.
 
-**Locator.X by AGI Corp turns fragmented property signals into verified, financeable, and actionable real-estate investments.**
+**Locator.X turns fragmented property signals into verified, financeable, and actionable real-estate investments.**
 
-AGI Corp is a technology-enabled real-estate development, acquisition and portfolio-owning company. Locator.X is its proprietary platform for discovering, verifying, underwriting, acquiring, developing, operating and selectively disposing of real-estate assets — and which it also licenses.
+Locator.X, Inc. is a separate company. **AGI Corp is its founder** and holds founder equity; this seed round sells the rest. Alongside it, and legally apart from it, AGI Property Holdings sponsors a real-estate bundle that runs on the platform — the second part of the ask on page three.
 
 ### The problem every investor tool shares
 
@@ -50,12 +50,15 @@ A deck that lists only what works is a deck that gets discovered. This is the fu
 - Academy: {{curriculum_items}} curriculum items, {{tracks}} tracks, {{lessons}} lessons
 - {{articles}} long-form technical articles, {{article_words}} words, every figure resolved from measured data
 
-### Not shipping, stated plainly
+### Not shipping — and this is what Part A buys
 
 - **{{products_notbuilt}}** of {{products}} branded data products are **not built**; {{products_partial}} more are partial
 - **{{agents_shipping}}** of {{agents}} agents ship outright; the rest are partial or absent
-- All partial agents are blocked on one build: multi-user state, approval workflow, audit trail
-- Real editions require a records session we cannot run from a sandboxed environment
+- All partial agents are blocked on one build: multi-user state, approval workflow, audit trail — the second earmark
+- **{{coverage_shipped}}** of {{coverage_rows}} coverage rows are shipped; advancing the rest is the first earmark, the largest line in the round
+- Real editions require records sessions a sandboxed environment cannot run
+
+Every earmark on page three maps to a line in this list. The round is priced against a backlog we publish, not a vision we describe.
 
 ### The scale ceiling, measured
 
@@ -69,42 +72,69 @@ Adding records costs **{{bytes_per_record}}** bytes on the wire and **{{heap_kb_
 
 ---
 
-# PAGE 3 — The round
+# PAGE 3 — The two-part ask
 
-## What is being discussed
+## Two parts. Two entities. Two cheques.
 
 <!--plan-->
-| | |
-|---|---|
-| **Issuer** | AGI Corp — the exact legal entity, named on every instrument |
-| **Instrument** | Post-money SAFE, valuation cap only — one standard form, unmodified |
-| **Planning range** | $1.5M–$2.5M (a management plan, not an offer) |
-| **Stage** | Pre-seed |
-| **Exemption** | Regulation D, Rule 506(b) — accredited investors, no general solicitation |
-| **Pro rata** | Side letter above a minimum cheque, not written into the instrument |
+| | **Part A — the company** | **Part B — the bundle** |
+|---|---|---|
+| **Issuer** | Locator.X, Inc. | Locator.X Portfolio Basket I, LLC |
+| **Target** | $4.0M seed | $6.0M property capital |
+| **Security** | Preferred equity, or post-money SAFE, valuation cap only | Membership interests per the Basket operating agreement |
+| **Returns from** | Software enterprise value: subscriptions, platform fees, a documented promote | The Basket's own assets: rent, operations, refinance, sale |
+| **Exemption** | Reg D, Rule 506(b) — accredited, no general solicitation | Reg D, Rule 506(b) — accredited, no general solicitation |
+| **Sponsor** | AGI Corp, founder | AGI Property Holdings, LLC |
 <!--/plan-->
 
-### Use of proceeds
+### The firewall, before the earmarks
 
-Core AI and shared IP; platform foundations for Cognition.X, Robotics.X and Locator.X; product team; security; customer pilots. Ring-fenced to the approved budget of the named issuer, with a board-approved Use of Proceeds Schedule attached to any financing.
+**Part A conveys rights in Locator.X, Inc. and nothing else** — no ownership of, and no claim on, any property, any SPV, or any Basket distribution. Platform fees and the documented promote are revenue of a software company, not a property interest.
 
-We use one instrument form, unmodified, for every pre-seed cheque. No cap-and-discount stacking, no MFN layered on a cap, no bespoke side rights inside the instrument. The SAFE stack is modelled on a fully diluted basis — including the option-pool increase a Series A will require — **before** each new instrument is signed, not after the last one.
+**Part B conveys the economics of the Basket and nothing else** — no equity in Locator.X, Inc., AGI Corp or any group entity, and no claim on platform revenue.
 
-### What this does NOT convey
+**No cross-collateralisation.** Separate entities, bank accounts and books. The tie between them is a written, arm's-length services agreement with a fee schedule fixed in advance — contractual and disclosed, never shared ownership. **One cheque does not buy both.**
 
-An interest in AGI Corp conveys rights in **AGI Corp only**. It does not convey ownership of any portfolio property, any asset-level SPV, or any other entity in the group — unless legal documents separately and explicitly establish that right.
+### Part A earmarks — every line closes a gap this deck already showed you
 
-Property capital enters a named SPV for a named asset. Operating capital never buys buildings. One cheque does not buy the group, and we would rather say so on this page than have it discovered in diligence.
+<!--plan-->
+| Earmark | Share | Closes |
+|---|---|---|
+| Record-layer expansion | 26%–34% | The coverage rows not yet shipped — the largest gap on the board |
+| Collaboration layer | 14%–20% | Unblocks the partial agents **and** investment-committee approval |
+| The two unbuilt products | 12%–18% | Portfolio Pulse and the Risk Ledger — named, specified, absent |
+| Data licences | 8%–12% | Rent and transaction data where the public record does not reach |
+| Security, accessibility, compliance | 6%–10% | SOC-readiness, penetration testing, WCAG 2.2 AA |
+| Go-to-market | 8%–12% | Design partners and paid pilots |
+| G&A, legal and reserve | 8%–12% | The governing documents that do not yet exist, and runway |
+<!--/plan-->
 
-### Why the discipline is the investment case
+### Part B earmarks
 
-Every competitor sells volume: more records, more lists, more contacts. Competing there means competing with incumbent data licences and losing.
+<!--plan-->
+| Earmark | Share |
+|---|---|
+| Acquisition equity | 58%–66% |
+| Renovation and capex | 15%–21% |
+| Closing, legal, appraisal, inspection | 4%–7% |
+| Reserves, funded at close | 8%–12% |
+| Formation and administration | 2%–4% |
+| Contingency | 1%–3% |
+<!--/plan-->
 
-The defensible position is the one that is **expensive to fake**: a platform that says *we do not know* — and can prove it said so, in code, in CI, on every page. A product that has never had that mechanism cannot retrofit it, because the honesty is not a feature bolted on at the end; it is the architecture.
+**Operating capital never buys buildings. Property capital never funds engineering.** If the Basket needs money, the Basket raises it.
+
+### The conflict, named rather than buried
+
+The platform that recommends an acquisition earns a fee when the Basket completes it. Controls: the fee schedule is fixed in advance and disclosed; **no platform fee on a deal the investment committee rejects**; independent appraisal and inspection on every asset; a committee member independent of Locator.X, Inc.; and the coverage panel's own output attached to every investment memo — so the Basket cannot buy on a valuation the platform itself grades as unsupported.
+
+### Why the two parts make each other better
+
+A platform that underwrites real estate is worth more when its operator runs it on live assets. A basket underwritten on an evidence-graded platform is diligenced better than one underwritten in a spreadsheet. **The Basket produces the evidence; the platform learns from it.** That feedback loop is Portfolio Pulse, the third Part A earmark, and it is the honest version of the link between the two: documented, at arm's length, and not shared ownership.
 
 ### Next step
 
-Accredited investors reviewing this may request the diligence data room: entity register, risk register with named owners, capital structure, use-of-proceeds schedules, product roadmap, and the source repository with every validator readable.
+Accredited investors reviewing this may request the diligence data room: entity register, risk register with named owners, the two-part ask with full earmarks, basket thesis and conflict controls, and the source repository with every validator readable.
 
 **Contact AGI Corp to schedule a diligence conversation.**
 

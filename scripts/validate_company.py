@@ -47,7 +47,7 @@ INDEX = 'README.md'
 DOCS = ['POSITIONING.md', 'PRICING.md', 'PORTFOLIO_STRATEGY.md', 'FUNDING.md', 'AGENTS.md',
         'CAPITAL_STRUCTURE.md', 'MISSION_RIGHTS.md', 'INSTRUMENTS.md', 'CAP_TABLE.md',
         'USE_OF_PROCEEDS.md', 'RISK_REGISTER.md', 'INVESTOR_REPORTING.md',
-        'SAFE_TERMS.md']
+        'SAFE_TERMS.md', 'THE_ASK.md', 'PORTFOLIO_BASKET.md']
 STATUS = ('ships', 'partial', 'not built')
 
 # ---- the prohibited-language lint ----------------------------------------
@@ -184,7 +184,8 @@ def check_budgets():
     impossible. If the low ends sum above 100, or the high ends sum below it,
     no allocation satisfies the table — and nobody notices by reading."""
     checked = 0
-    for fn in ('USE_OF_PROCEEDS.md', 'PORTFOLIO_STRATEGY.md'):
+    for fn in ('USE_OF_PROCEEDS.md', 'PORTFOLIO_STRATEGY.md', 'THE_ASK.md',
+               'PORTFOLIO_BASKET.md'):
         path = os.path.join(DIR, fn)
         if not os.path.exists(path):
             continue
@@ -247,6 +248,41 @@ def check_prose_matches_tables():
                     % (fn, m.group(2), total))
             checked += 1
     return checked
+
+
+
+def check_two_part_ask():
+    """The two-part ask is the highest-risk document in this repository.
+
+    A two-part ask is one careless sentence away from a commingled offering, and
+    the fact pattern that ends in rescission almost always starts with both parts
+    on one slide described as one opportunity. So the document must, mechanically:
+    name a DISTINCT issuer for each part, and state for each part what it does
+    NOT convey. A missing firewall sentence is not a style problem."""
+    path = os.path.join(DIR, 'THE_ASK.md')
+    text = open(path, encoding='utf-8').read()
+    issuers = re.search(r'^\| \*\*Issuer\*\* \| (.+?) \| (.+?) \|$', text, re.M)
+    if not issuers:
+        die('THE_ASK.md no longer names an issuer for each part. Every offering names one '
+            'issuer; a two-part ask names two, and they must differ.')
+    a, b = issuers.group(1).strip(), issuers.group(2).strip()
+    if a == b:
+        die('THE_ASK.md gives both parts the same issuer (%r). Two parts, two entities, '
+            'or it is one offering wearing a costume.' % a)
+    for phrase, why in (
+        ('conveys rights in Locator.X, Inc. and nothing else',
+         'Part A must state that it conveys no property interest'),
+        ('conveys the economics of the Basket and nothing else',
+         'Part B must state that it conveys no equity in the software company'),
+        ('No cross-collateralisation',
+         'the ask must rule out cross-collateralisation explicitly'),
+        ('One cheque does not buy both',
+         'the ask must say plainly that one subscription does not buy the other'),
+    ):
+        if phrase.lower() not in text.lower():
+            die('THE_ASK.md is missing the firewall statement %r — %s. This sentence is '
+                'load-bearing, not decoration.' % (phrase, why))
+    return a, b
 
 
 def main():
@@ -344,6 +380,7 @@ def main():
     risks = check_risk_register()
     budgets = check_budgets()
     prose = check_prose_matches_tables()
+    ask_a, ask_b = check_two_part_ask()
 
     # 8. the language lint
     hits, scanned = lint_language()
@@ -358,6 +395,8 @@ def main():
           % len(tiers))
     print('  · %d entities, each stating what an investor does NOT automatically own'
           % len(entities))
+    print('  · two-part ask: %s / %s — distinct issuers, firewall stated'
+          % (ask_a[:34], ask_b[:34]))
     print('  · %d risks, every one with a mitigation and a named owner · %d budget tables '
           'that can sum to 100%% · %d prose counts re-derived from their own tables'
           % (risks, budgets, prose))

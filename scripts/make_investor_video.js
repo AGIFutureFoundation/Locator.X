@@ -1,6 +1,6 @@
 /* make_investor_video — the investor pitch film.
    ----------------------------------------------------------------------------
-   Six scenes, 1920x1080, H.264. Every figure on screen comes from
+   Seven scenes, 1920x1080, H.264. Every figure on screen comes from
    scripts/deck_figures.py --json, which MEASURES each one at build time, for the
    same reason content/investor/DECK.md carries no digits: a number rendered into
    a video is the least checkable claim a company can make. It cannot be
@@ -11,10 +11,16 @@
    drawing a placeholder or a plausible round number.
 
    The scene order is the argument: the problem, what we measured, what we have
-   NOT built, the governance, the round, the call to action. Scene three exists
-   because a pitch film that omits it is a pitch film a diligence process
-   contradicts, and being contradicted by your own repository is worse than
-   having the gap.
+   NOT built, the governance, Part A, Part B, the firewall, the call to action.
+   Scene three exists because a pitch film that omits it is a pitch film a
+   diligence process contradicts, and being contradicted by your own repository
+   is worse than having the gap.
+
+   The firewall scene is not a disclaimer slide. A two-part ask is one careless
+   sentence away from a commingled offering, and the fact pattern that ends in
+   rescission usually starts with both parts on one slide called one
+   opportunity. Saying it out loud, in the film, is cheaper than saying it to a
+   regulator.
 
    CODEC NOTE (measured this session): Chromium's MediaRecorder has no H.264
    encoder, and a bare video/mp4 request silently writes VP9-in-MP4 that Chromium
@@ -88,7 +94,8 @@ function scenes(f) {
               [n(f.agents_shipping) + ' of ' + n(f.agents), 'agents ship outright'],
               [n(f.coverage_blocked + f.coverage_norecord), 'coverage rows blocked or absent']],
       note: 'Of ' + n(f.coverage_rows) + ' coverage rows, ' + n(f.coverage_shipped)
-            + ' are shipped. We publish the other ' + n(f.coverage_rows - f.coverage_shipped) + '.' },
+            + ' are shipped. We publish the other ' + n(f.coverage_rows - f.coverage_shipped)
+            + ' \u2014 and the seed round is priced to close them.' },
 
     { key: 'proof', secs: 12,
       kicker: 'THE PROOF IS MECHANICAL',
@@ -100,13 +107,33 @@ function scenes(f) {
               [n(f.landscape_verified), 'competitor prices we claim to have verified']],
       note: 'An assessed value is never presented as a transaction. A comparable is a recorded sale with a date, or it is not a comparable.' },
 
-    { key: 'round', secs: 13,
-      kicker: 'THE ROUND',
-      head: 'Pre-seed.\nOne entity. One form.',
-      sub: 'AGI Corp · post-money SAFE, valuation cap only · $1.5M–$2.5M planning range',
-      stats: [['506(b)', 'Reg D · accredited · no general solicitation'],
-              ['1', 'standard form, unmodified']],
-      note: 'An interest in AGI Corp conveys rights in AGI Corp only — not in any property SPV or other subsidiary. Property capital enters a named SPV for a named asset.' },
+    { key: 'parta', secs: 13,
+      kicker: 'PART A \u2014 THE COMPANY',
+      head: 'Locator.X, Inc.\n$4.0M seed.',
+      sub: 'A separate company. AGI Corp is the founder. Post-money SAFE or preferred, valuation cap only.',
+      stats: [['26\u201334%', 'record-layer expansion'],
+              ['14\u201320%', 'collaboration layer'],
+              ['12\u201318%', 'the two unbuilt products'],
+              ['8\u201312%', 'go-to-market']],
+      note: 'Every earmark closes a gap on the previous slide. The round is priced against a backlog we publish, not a vision we describe.' },
+
+    { key: 'partb', secs: 14,
+      kicker: 'PART B \u2014 THE BUNDLE',
+      head: 'Portfolio Basket I.\n$6.0M property capital.',
+      sub: 'A separate entity, sponsored by AGI Property Holdings, running on the platform.',
+      stats: [['58\u201366%', 'acquisition equity'],
+              ['15\u201321%', 'renovation and capex'],
+              ['8\u201312%', 'reserves, funded at close'],
+              ['4\u20137%', 'independent diligence']],
+      note: 'Bought only where the record is deepest \u2014 inside the counties already shipped. A sponsor whose own system says it cannot value an asset, and buys anyway, learned nothing from building the system.' },
+
+    { key: 'firewall', secs: 13,
+      kicker: 'THE FIREWALL',
+      head: 'One cheque does\nnot buy both.',
+      sub: 'Two entities. Two sets of documents. Two sets of economics.',
+      stats: [['Part A', 'rights in Locator.X, Inc. and nothing else \u2014 no property, no SPV, no distribution'],
+              ['Part B', 'the Basket\u2019s economics and nothing else \u2014 no equity in any platform company']],
+      note: 'No cross-collateralisation. Separate bank accounts and books. The tie is a written, arm\u2019s-length services agreement with a fee schedule fixed in advance \u2014 contractual and disclosed, never shared ownership.' },
 
     { key: 'cta', secs: 12,
       kicker: 'NEXT STEP',
