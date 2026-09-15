@@ -459,6 +459,17 @@ def main():
     # silent chapter, so the copy is checked even though the video is not here.
     run(["scripts/pack_walkthrough.py", "--check"])
 
+    # ---- 11b3. competitor claims keep their sources -----------------------
+    # docs/market/LANDSCAPE.md is the ONLY place a pricing claim about another
+    # vendor may live, and docs/market/GAP.md is the only place this repository
+    # claims a capability against one. Both are the easiest documents in the
+    # project to quietly inflate - nobody re-counts a competitor's tier sheet,
+    # and nobody re-counts a module they wrote. The validator re-counts both: a
+    # priced row without a source link, a status outside the vocabulary, an
+    # undated verification, a figure surviving in an unsourced row, or a module
+    # line count that has drifted all stop the build.
+    run(["scripts/validate_landscape.py"])
+
     # ---- 11c. the published-edition map still parses ----------------------
     # tests/edition_sweep.js is the gate between "built with real data" and
     # "republished": it checks each built edition's title and RECORD COUNT against
