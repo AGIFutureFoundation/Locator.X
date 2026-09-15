@@ -305,6 +305,71 @@ async function main() {
        point is that alignment in a table is an argument it has to earn. */
     if (!/strateg/i.test(sb.note)) errs.push('the switchboard states no summary of what it could evaluate');
 
+    /* THE COVERAGE PANEL, on every edition.
+
+       The stated cost of getting this wrong is specific: a panel that
+       UNDER-REPORTS gaps is worse than no panel, because it converts an unknown
+       into an implied pass. Asserting that it rendered something would not catch
+       that. So this RECOUNTS the field coverage independently, straight from
+       LX.allListings() through evidence.js's own tests, and fails if the panel's
+       numbers disagree with the records by even one. A panel that drifts from
+       the data it describes is the whole failure mode, caught arithmetically. */
+    const cov = await page.evaluate(async () => {
+      const c = document.getElementById('coverpage'); if (c) c.remove();
+      document.getElementById('covopen').click();
+      await new Promise(r => setTimeout(r, 2500));
+      const rep = LXCov.report();
+      const rows = LX.allListings();
+      const recount = (window.LXEvid && LXEvid.TESTS || []).map(t => {
+        let n = 0; for (const l of rows) { try { if (t[2](l)) n++; } catch (e) {} }
+        return t[0] + '=' + n;
+      }).join(' ');
+      const printed = rep.fields.map(f => f.key + '=' + f.have).join(' ');
+      const body = (document.getElementById('covbody') || {}).textContent || '';
+      /* Every gap the report names must also be ON SCREEN. A report object that
+         knows about a gap the panel does not draw is the same failure wearing a
+         different hat. */
+      const drawn = rep.gaps.every(g => body.indexOf(g.name) >= 0);
+      const s = rep.strategies;
+      return {
+        open: document.getElementById('covpanel').classList.contains('open'),
+        bodyLen: body.length, printed, recount, agree: printed === recount, drawn,
+        nFields: rep.fields.length, nGaps: rep.gaps.length,
+        total: rows.length, clsN: rep.classification.n,
+        /* A blocked or inapplicable play must carry its OWN reason; the two are
+           counted separately and must never be pooled. */
+        stratOk: !s ? null : s.insufficient ? 'insufficient'
+          : s.rows.every(r => (r.blocked === 0 || (r.topBlock || '').length > 25)
+                           && (r.na === 0 || (r.topNa || '').length > 25)
+                           && r.computed + r.blocked + r.na === r.sampled),
+        counties: rep.footprint.counties.length,
+        fpTotal: rep.footprint.counties.reduce((a, x) => a + x.n, 0)
+      };
+    });
+    if (!cov.open) errs.push('the coverage panel did not open');
+    if (!(cov.bodyLen > 400)) errs.push('the coverage panel rendered almost nothing: ' + cov.bodyLen + ' chars');
+    if (!cov.agree) {
+      errs.push('the coverage panel DISAGREES with the records it describes.\n'
+        + '       panel:   ' + cov.printed + '\n'
+        + '       recount: ' + cov.recount
+        + '\n       A panel that under-reports a gap converts an unknown into an implied pass.');
+    }
+    if (!cov.drawn) errs.push('the coverage report names a gap that the panel does not draw on screen');
+    if (cov.nFields < 5) errs.push('the coverage panel measured only ' + cov.nFields + ' record fields');
+    if (cov.clsN !== cov.total) {
+      errs.push('the classification count (' + cov.clsN + ') does not cover every record (' + cov.total + ')');
+    }
+    if (cov.fpTotal !== cov.total) {
+      errs.push('the footprint accounts for ' + cov.fpTotal + ' records out of ' + cov.total
+        + ' — every record belongs to somewhere, even if that somewhere is unnamed');
+    }
+    if (cov.stratOk === false) {
+      errs.push('a coverage strategy row is missing its reason, or its three states do not sum '
+        + 'to the sample — blocked and inapplicable are opposite findings and are never pooled');
+    }
+    await page.evaluate(() => LXCov.close());
+    await page.waitForTimeout(200);
+
     await page.evaluate(() => LX.showView('mapview'));
     await page.waitForTimeout(500);
 

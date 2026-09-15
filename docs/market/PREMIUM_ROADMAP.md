@@ -41,7 +41,7 @@ value to blocker in the whole plan.
 One property, every strategy, side by side: buy-and-hold, flip, BRRRR, house hack,
 conversion. `src/underwrite.js` (552), `src/conv.js` (88), `src/dev.js` (158) and
 `src/hacks.js` (137) each answered one and none of them answered together;
-`src/switchboard.js` (430) asks all five through those modules' own public interfaces
+`src/switchboard.js` (438) asks all five through those modules' own public interfaces
 and re-derives none of them — the underwriting desk's own sheet, the house-hack
 finder's own math, the conversion lab's own model, and comps.js's own account of why
 it came back empty. Each column is graded on the **facts** it rests on; the levers a
@@ -62,7 +62,7 @@ and a grade that cannot move is decoration.
   Each column carries its own evidence grade, and where two columns rest on different
   kinds of input the screen says so and refuses to rank them.
 
-### 1.2 The coverage panel — what this edition cannot answer
+### 1.2 The coverage panel — what this edition cannot answer — **shipped**
 
 The oldest outstanding app recommendation. Every edition should be able to say, in the
 app, which questions its record layer cannot answer: fields the county does not publish,
@@ -73,10 +73,15 @@ use codes not mapped, the parcels outside the footprint.
 - **Proof** — `tests/fleet_smoke.js` opens the panel in all 11 editions and asserts the
   named-gap count is non-zero and each gap names its source; `tests/edition_sweep.js`
   cross-checks the panel against the coverage inventory row for that edition.
-- **Blocker** — none; the data is already in [`../states/coverage/`](../states/coverage/) and `src/evidence.js`.
+- **Blocker** — none. **Shipped** as `src/coverage.js` (227): field coverage measured
+  through `src/evidence.js`'s own tests rather than a second list that could drift from
+  them, classification counts, an edition-level strategy probe, and the footprint. There
+  is deliberately no overall score — a single number would be read as a ranking, and the
+  useful answer is the specific list.
 - **Cost of being wrong** — a coverage panel that under-reports gaps is worse than none,
-  because it converts an unknown into an implied pass. Generate it from `status_of()`,
-  never hand-write it.
+  because it converts an unknown into an implied pass. Nothing in it is written down:
+  `tests/fleet_smoke.js` recounts every field independently from the records and fails
+  if the panel's printed numbers disagree by one.
 
 ### 1.3 Strategy-aware buy box
 

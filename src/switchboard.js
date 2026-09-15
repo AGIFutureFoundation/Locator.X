@@ -114,11 +114,19 @@ function arvFrom(l){
   try{ res = window.LXComps && window.LXComps.find(l); }catch(e){ res=null; }
   if(!res) return {ok:false, why:'The comparable-sales engine is not loaded in this edition.'};
   if(!res.enough) return {ok:false, why: res.why || 'Not enough recorded comparable sales in this market to support an after-repair value.', n:res.n};
+  /* THE BASIS IS NOT A DETAIL. comps.js works from one of two things: recorded
+     SALE PRICES, or post-sale ASSESSED VALUES where a county publishes no dated
+     sale. Both are in the public record and they are not the same kind of fact —
+     one is a transaction, the other is an assessor's opinion, and this project's
+     oldest rule is that an assessment is never called a price. An after-repair
+     value built on assessments is a model wearing a record's clothes, so the
+     basis travels with the figure and decides the column's grade. */
+  const solid = res.basis==='sale';
   const sf=l.sqft, un=l.units;
   if(sf && sf>150 && res.ppsf && res.ppsf.n>=3 && res.ppsf.med)
-    return {ok:true, arv: Math.round(res.ppsf.med*sf), how:'median $'+Math.round(res.ppsf.med)+'/sq ft across '+res.ppsf.n+' recorded '+res.basisName+'s × '+L().fmtN(sf)+' sq ft', n:res.ppsf.n, from:res.from, to:res.to};
+    return {ok:true, solid, arv: Math.round(res.ppsf.med*sf), how:'median $'+Math.round(res.ppsf.med)+'/sq ft across '+res.ppsf.n+' '+res.basisName+' × '+L().fmtN(sf)+' sq ft'+(solid?'':' — these are assessed values, not transactions, so this is an estimate of an estimate'), n:res.ppsf.n, from:res.from, to:res.to};
   if(un && res.ppu && res.ppu.n>=3 && res.ppu.med)
-    return {ok:true, arv: Math.round(res.ppu.med*un), how:'median $'+L().fmtN(Math.round(res.ppu.med))+'/unit across '+res.ppu.n+' recorded '+res.basisName+'s × '+un+' units', n:res.ppu.n, from:res.from, to:res.to};
+    return {ok:true, solid, arv: Math.round(res.ppu.med*un), how:'median $'+L().fmtN(Math.round(res.ppu.med))+'/unit across '+res.ppu.n+' '+res.basisName+' × '+un+' units'+(solid?'':' — these are assessed values, not transactions, so this is an estimate of an estimate'), n:res.ppu.n, from:res.from, to:res.to};
   return {ok:false, why:'This market has '+res.n+' comparable recorded sales, but none of them carry a usable size or unit count, so there is nothing to scale to this building. A sale price with no denominator cannot become a value here.'};
 }
 
@@ -202,7 +210,7 @@ function stratFlip(l){
     ],
     basis:[
       {what:'Purchase price', kind:'record', how:'the record for this parcel'},
-      {what:'After-repair value', kind:'record', how:a.how+(a.from?' ('+a.from+'–'+a.to+')':'')},
+      {what:'After-repair value', kind: a.solid?'record':'model', how:a.how+(a.from?' ('+a.from+'–'+a.to+')':'')},
       {what:'Rehab', kind:'assumption', lever:true, how:'the rehab preset on the underwriting desk'},
       {what:'Carry', kind:'assumption', lever:true, how:SB.holdMonths+' months of taxes, insurance and bridge interest'},
       {what:'Cost of sale', kind:'assumption', lever:true, how:SB.sellPct+'% of the after-repair value'}
@@ -245,7 +253,7 @@ function stratBRRRR(l){
     ],
     basis:[
       {what:'Purchase price', kind:'record', how:'the record for this parcel'},
-      {what:'After-repair value', kind:'record', how:a.how},
+      {what:'After-repair value', kind: a.solid?'record':'model', how:a.how},
       {what:'Rent', kind:/your figure|from your data/.test(re.how)?'record':'model', how:re.how},
       {what:'Rehab', kind:'assumption', lever:true, how:'the rehab preset on the underwriting desk'},
       {what:'Refinance', kind:'assumption', lever:true, how:SB.refiLTV+'% loan-to-value at your assumed rate — no lender has quoted this'}

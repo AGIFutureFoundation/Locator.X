@@ -40,7 +40,7 @@ six either.
 | Rent estimates | Rentometer, Mashvisor, AirDNA | `src/conv.js` (88) and `src/rebuild.js` (335) produce **models, labelled as models** | **partial** — no licensed rent feed; the label is the point |
 | Market analytics and forecasts | Mashvisor, AirDNA, HouseCanary | `src/predict.js` (587) with a stated method and a **backtest that says whether to believe it**; `src/outlook.js` (225) | **ships** |
 | STR-specific revenue modelling | AirDNA | `src/conv.js`, `src/campus.js` (250) student-housing demand | **partial** — lodging expansion scoped in [`HOTEL_EXPANSION.md`](../HOTEL_EXPANSION.md) |
-| Source quality shown to the user | *nobody in the register* | `src/evidence.js` (219) grades every county feed; `src/sources.js` (176) catalogues how each source attaches | **ships** — this has no equivalent in the category |
+| Source quality shown to the user | *nobody in the register* | `src/evidence.js` (223) grades every county feed; `src/sources.js` (176) catalogues how each source attaches | **ships** — this has no equivalent in the category |
 | Asset-class normalisation across jurisdictions | *nobody in the register* | [`crosswalk/usecodes.json`](../../crosswalk/usecodes.json), 48 codes across 8 jurisdictions, each with source + date | **ships** — no equivalent |
 
 ### 3. Contact and acquire
@@ -85,7 +85,7 @@ The research names five gaps. Scored honestly:
 | "Replace the app stack" — one place for data, underwriting and portfolio | **Two of three.** Data and underwriting are in one file; portfolio and operations are not built. |
 | "Make every decision explainable" | **Already the architecture.** `src/evidence.js`, `src/sources.js`, `src/comps.js` and `src/predict.js`'s backtest exist for this reason. It is not a roadmap item here; it is the reason the roadmap is slow. |
 | An AI agent system | **Partial.** `src/rag.js` (224) is BM25 retrieval over the research corpus, in-page and offline, with grounded citation when the viewer grants the capability; `src/assistant.js` (174) and `src/walkthrough.js` (195) guide. No autonomous agent takes an action on a user's behalf, by design. |
-| Strategy switchboard — compare hold / flip / BRRRR / STR on one property | **Ships**, as `src/switchboard.js` (430). Five strategies over one record, each column graded by its **weakest** input rather than its average, and columns resting on different kinds of input are shown side by side but deliberately **not ranked**. Where a strategy cannot be evaluated the column names the missing input; where the building rules it out, it says what about the building. |
+| Strategy switchboard — compare hold / flip / BRRRR / STR on one property | **Ships**, as `src/switchboard.js` (438). Five strategies over one record, each column graded by its **weakest** input rather than its average, and columns resting on different kinds of input are shown side by side but deliberately **not ranked**. Where a strategy cannot be evaluated the column names the missing input; where the building rules it out, it says what about the building. |
 | Close the loop after acquisition | **Not built.** See Operate, above. |
 
 ## What this platform will not build, and why

@@ -470,6 +470,17 @@ def main():
     # line count that has drifted all stop the build.
     run(["scripts/validate_landscape.py"])
 
+    # ---- 11b4. the company layer cannot drift into a pitch deck -----------
+    # docs/company/ is where a product NAME meets a product, and where
+    # securities-adjacent language would first appear. Being wrong about a
+    # competitor's price is embarrassing; stating a projected return as fact,
+    # soliciting an investment, or implying that software equity conveys
+    # ownership of portfolio property is a legal exposure. The operating brief
+    # forbids all three pending counsel review, and every rule in this project
+    # that mattered got a validator rather than a policy - a policy is
+    # remembered until the week it is inconvenient.
+    run(["scripts/validate_company.py"])
+
     # ---- 11c. the published-edition map still parses ----------------------
     # tests/edition_sweep.js is the gate between "built with real data" and
     # "republished": it checks each built edition's title and RECORD COUNT against
