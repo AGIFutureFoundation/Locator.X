@@ -501,6 +501,20 @@ def main():
     # exists.
     run(["scripts/standard_feasibility.py", "--check"])
 
+    # ---- 11b7. the expansion ranking is generated, and regenerates clean ----
+    # docs/EXPANSION.md is a derived document: it ranks every market by what its
+    # public record can answer against measured submarket demand. Derived things
+    # are generated, never edited, so the check is the same one gen_courses.py
+    # gets - regenerate and diff. A hand-edited expansion ranking is a strategy
+    # document that has quietly stopped matching the inventory it claims to read.
+    run(["scripts/expansion_rank.py", "--check"])
+    before = open(os.path.join(ROOT, "docs", "EXPANSION.md"), encoding="utf-8").read()
+    run(["scripts/expansion_rank.py", "--write", os.path.join(ROOT, "docs", "EXPANSION.md")])
+    after = open(os.path.join(ROOT, "docs", "EXPANSION.md"), encoding="utf-8").read()
+    check(before == after,
+          "docs/EXPANSION.md is not what scripts/expansion_rank.py generates - it has "
+          "been hand-edited, or the inventory moved under it. Regenerate, never patch.")
+
     # ---- 11c. the published-edition map still parses ----------------------
     # tests/edition_sweep.js is the gate between "built with real data" and
     # "republished": it checks each built edition's title and RECORD COUNT against

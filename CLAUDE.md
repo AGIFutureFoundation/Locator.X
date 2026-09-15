@@ -14,12 +14,13 @@ python3 scripts/validate_landscape.py # competitor claims keep their sources; mo
 python3 scripts/validate_company.py   # branded names name real modules; no securities-adjacent language
 python3 scripts/build_deck.py --check  # the investor deck states no figure it did not measure
 python3 scripts/standard_feasibility.py --check  # no market's criteria ceiling is overstated
+python3 scripts/expansion_rank.py --check       # then: docs/EXPANSION.md must regenerate clean
 python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/
 python3 tests/run.py                  # doctrine smoke tests (PII strip, sample floor, ...)
 ```
 
-CI (`.github/workflows/validate.yml`) runs exactly these — ten gates now, and the last
-four also run inside `tests/run.py` so a clean local run cannot miss them. A red check is
+CI (`.github/workflows/validate.yml`) runs exactly these — eleven gates now, and the last
+five also run inside `tests/run.py` so a clean local run cannot miss them. A red check is
 real — the validator has no flake mode.
 
 ## The rules that are never bent
@@ -73,6 +74,7 @@ real — the validator has no flake mode.
 | Resources | `docs/resources/` (data sources, lenders, programs, administrators) |
 | Asset classes | `crosswalk/usecodes.json` + `scripts/class_screen.py` + `docs/asset-classes/` |
 | Measured market layer | `market/` (extracted from the shipped editions, never hand-edited) rendered by `scripts/build_market_pages.py` at deploy |
+| Where to expand | `docs/EXPANSION.md` — **generated** by `scripts/expansion_rank.py`; every market ranked by what its record can answer against measured demand |
 | Next data session | `docs/PULL_QUEUE.md` (ordered probes; ingest tools ready); New Orleans expansion ranked in `docs/PULL_NOLA.md` by `scripts/standard_feasibility.py --plan` |
 | Articles (SEO/blog) | `content/blog/*.md` rendered by `scripts/build_blog.py`; every figure resolves from `market/*.json`, never typed inline |
 | Instructor profile | `content/instructor-profile.json` — **ships empty**; guide in `curriculum/INSTRUCTOR_PROFILE.md` |
