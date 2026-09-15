@@ -46,7 +46,8 @@ DIR = os.path.join(ROOT, 'docs', 'company')
 INDEX = 'README.md'
 DOCS = ['POSITIONING.md', 'PRICING.md', 'PORTFOLIO_STRATEGY.md', 'FUNDING.md', 'AGENTS.md',
         'CAPITAL_STRUCTURE.md', 'MISSION_RIGHTS.md', 'INSTRUMENTS.md', 'CAP_TABLE.md',
-        'USE_OF_PROCEEDS.md', 'RISK_REGISTER.md', 'INVESTOR_REPORTING.md']
+        'USE_OF_PROCEEDS.md', 'RISK_REGISTER.md', 'INVESTOR_REPORTING.md',
+        'SAFE_TERMS.md']
 STATUS = ('ships', 'partial', 'not built')
 
 # ---- the prohibited-language lint ----------------------------------------
@@ -205,6 +206,49 @@ def check_budgets():
     return checked
 
 
+
+def check_prose_matches_tables():
+    """A summary sentence must agree with the table above it.
+
+    This is not hypothetical: AGENTS.md shipped saying "one of six ships
+    outright" while its own table showed two. Nobody re-reads a summary against
+    the rows it summarises, which is exactly why it drifts - and a count in
+    prose is the form a reader quotes back. The counts are recomputed from the
+    rows and compared to the words."""
+    WORD = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+            'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10}
+
+    def count(fn, marker):
+        text = open(os.path.join(DIR, fn), encoding='utf-8').read()
+        rows = [l for l in text.split('\n') if l.startswith('| **') and l.count('|') >= 5]
+        return text, sum(1 for l in rows if marker in l), len(rows)
+
+    checked = 0
+    for fn, phrases in (
+        ('AGENTS.md', [(r'\*\*(\w+) of (\w+) ships? outright', '**ships**')]),
+        ('POSITIONING.md', [(r'\*\*(\w+) of (\w+) are absent', '**not built**')]),
+    ):
+        for pat, marker in phrases:
+            text, real, total = count(fn, marker)
+            m = re.search(pat, text, re.I)
+            if not m:
+                die('%s no longer carries the summary sentence this check reads. A count '
+                    'that stops being checked is a count that starts drifting.' % fn)
+            said = WORD.get(m.group(1).lower())
+            said_total = WORD.get(m.group(2).lower())
+            if said is None or said_total is None:
+                die('%s states a count this check cannot parse: %r' % (fn, m.group(0)))
+            if said != real:
+                die('%s says %r and its own table shows %d. Nobody re-reads a summary '
+                    'against the rows it summarises, which is why it drifts.'
+                    % (fn, m.group(0), real))
+            if said_total != total:
+                die('%s says "of %s" and its table has %d rows'
+                    % (fn, m.group(2), total))
+            checked += 1
+    return checked
+
+
 def main():
     if not os.path.isdir(DIR):
         die('docs/company/ is missing — the company layer is where a product name '
@@ -299,6 +343,7 @@ def main():
     entities = check_entity_register()
     risks = check_risk_register()
     budgets = check_budgets()
+    prose = check_prose_matches_tables()
 
     # 8. the language lint
     hits, scanned = lint_language()
@@ -314,7 +359,8 @@ def main():
     print('  · %d entities, each stating what an investor does NOT automatically own'
           % len(entities))
     print('  · %d risks, every one with a mitigation and a named owner · %d budget tables '
-          'that can sum to 100%%' % (risks, budgets))
+          'that can sum to 100%% · %d prose counts re-derived from their own tables'
+          % (risks, budgets, prose))
     print('  · %d markdown files linted for return projections, solicitation, fund terms, '
           'commingled offerings and property-ownership claims — none found' % scanned)
     return 0

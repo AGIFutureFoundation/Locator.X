@@ -481,6 +481,16 @@ def main():
     # remembered until the week it is inconvenient.
     run(["scripts/validate_company.py"])
 
+    # ---- 11b5. the investor deck states no figure it did not measure --------
+    # content/investor/DECK.md carries {{placeholders}} and no digits. A deck is
+    # the one document that gets screenshotted, forwarded and quoted back six
+    # months later, so a number typed into it is a number nobody will ever
+    # re-check. build_deck.py --check re-measures every figure, refuses a
+    # placeholder nothing measures, refuses a measured figure nobody quotes, and
+    # refuses a digit outside the fenced round-terms block - which states a
+    # management plan and a rule number, neither of which can be measured.
+    run(["scripts/build_deck.py", "--check"])
+
     # ---- 11c. the published-edition map still parses ----------------------
     # tests/edition_sweep.js is the gate between "built with real data" and
     # "republished": it checks each built edition's title and RECORD COUNT against
