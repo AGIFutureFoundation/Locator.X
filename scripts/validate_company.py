@@ -44,7 +44,9 @@ ROOT = os.path.dirname(HERE)
 DIR = os.path.join(ROOT, 'docs', 'company')
 
 INDEX = 'README.md'
-DOCS = ['POSITIONING.md', 'PRICING.md', 'PORTFOLIO_STRATEGY.md', 'FUNDING.md', 'AGENTS.md']
+DOCS = ['POSITIONING.md', 'PRICING.md', 'PORTFOLIO_STRATEGY.md', 'FUNDING.md', 'AGENTS.md',
+        'CAPITAL_STRUCTURE.md', 'MISSION_RIGHTS.md', 'INSTRUMENTS.md', 'CAP_TABLE.md',
+        'USE_OF_PROCEEDS.md', 'RISK_REGISTER.md', 'INVESTOR_REPORTING.md']
 STATUS = ('ships', 'partial', 'not built')
 
 # ---- the prohibited-language lint ----------------------------------------
@@ -64,6 +66,11 @@ FORBIDDEN = [
     (re.compile(r'\b(?:preferred return|carried interest|waterfall|management fee)\s+(?:of|is|will be)\s+[\d]', re.I),
      'a fund term presented as agreed',
      'Fund terms are settled in counsel-approved documents, not in repository prose.'),
+    (re.compile(r'invest in AGI[^.]{0,60}\b(?:exposure|access|stake|interest)\b[^.]{0,80}'
+                r'(?:portfolio|real estate|robotics|foundation)', re.I),
+     'a single offering pitched as exposure across the whole group',
+     'One cheque does not buy the group. Every offering names one issuer, one security '
+     'and one approved budget; anything else is the ambiguity that produces litigation.'),
     (re.compile(r'software (?:equity|investors?|shareholders?)[^.]{0,80}\b(?:own|receive|entitled to|'
                 r'stake in|share of)\b[^.]{0,40}\b(?:propert|portfolio|asset|real estate)', re.I),
      'a claim that software equity conveys property ownership',
@@ -72,6 +79,8 @@ FORBIDDEN = [
 ]
 # Files that are ABOUT the prohibition necessarily quote it.
 LINT_EXEMPT = {os.path.join('docs', 'company', 'FUNDING.md'),
+               # states the never-pitch in order to forbid it
+               os.path.join('docs', 'company', 'CAPITAL_STRUCTURE.md'),
                os.path.join('scripts', 'validate_company.py')}
 
 
@@ -102,6 +111,98 @@ def lint_language():
                         line = text[:m.start()].count('\n') + 1
                         hits.append((rel, line, what, why, m.group(0)[:70]))
     return hits, scanned
+
+
+
+def check_entity_register():
+    """Every entity states what an investor does NOT automatically own.
+
+    That last column is the whole design. An empty cell there is exactly the
+    ambiguity the capital structure exists to remove, and it is the cell a
+    hurried edit drops first because it is the only one that is awkward to
+    write."""
+    path = os.path.join(DIR, 'CAPITAL_STRUCTURE.md')
+    text = open(path, encoding='utf-8').read()
+    rows = []
+    for line in text.split('\n'):
+        if not line.startswith('| **'):
+            continue
+        cells = [c.strip() for c in line.strip().strip('|').split('|')]
+        if len(cells) != 5:
+            die('an entity-register row has %d cells, not 5:\n  %s' % (len(cells), line[:110]))
+        name = re.sub(r'\*', '', cells[0])
+        labels = ['a capital purpose', 'what an investor owns', 'a use of proceeds',
+                  'what investors do NOT automatically own']
+        for i, lab in enumerate(labels, start=1):
+            if len(cells[i]) < 12:
+                die('%s does not state %s. The last column in particular is the one that '
+                    'prevents an investor believing one cheque bought the group.'
+                    % (name, lab))
+        rows.append(name)
+    if len(rows) < 6:
+        die('only %d entities parsed from the register; the group names more. A row that '
+            'stops parsing is a disclosure that stops being made.' % len(rows))
+    return rows
+
+
+def check_risk_register():
+    """Every risk names a mitigation and an OWNER.
+
+    A risk owned by "the company" is owned by nobody, and a register without
+    owners is a disclaimer with a table around it."""
+    path = os.path.join(DIR, 'RISK_REGISTER.md')
+    text = open(path, encoding='utf-8').read()
+    n = 0
+    for line in text.split('\n'):
+        if not re.match(r'^\| \d+ \|', line):
+            continue
+        cells = [c.strip() for c in line.strip().strip('|').split('|')]
+        if len(cells) != 6:
+            die('a risk row has %d cells, not 6:\n  %s' % (len(cells), line[:110]))
+        num, risk, exposure, why, mit, owner = cells
+        if len(mit) < 25:
+            die('risk %s (%s) states no real mitigation. A risk with no mitigation is a '
+                'disclaimer, and a disclaimer persuades nobody.' % (num, risk))
+        if not owner or len(owner) < 3 or owner.lower() in ('tbd', 'n/a', 'the company', 'everyone'):
+            die('risk %s (%s) has owner %r. A risk owned by nobody in particular is owned '
+                'by nobody.' % (num, risk, owner))
+        if re.search(r'\b(eliminat|remov|no risk|risk[- ]free)\w*\b', mit, re.I):
+            die('risk %s (%s) claims its mitigation eliminates the risk. Several of these '
+                'are permanent conditions of the business; the honest mitigation is a '
+                'control, not a cure.' % (num, risk))
+        n += 1
+    if n < 15:
+        die('only %d risk rows parsed; the register lists far more' % n)
+    return n
+
+
+def check_budgets():
+    """A percentage-range budget must be able to add up to 100%.
+
+    Ranges look reasonable individually and can still be collectively
+    impossible. If the low ends sum above 100, or the high ends sum below it,
+    no allocation satisfies the table — and nobody notices by reading."""
+    checked = 0
+    for fn in ('USE_OF_PROCEEDS.md', 'PORTFOLIO_STRATEGY.md'):
+        path = os.path.join(DIR, fn)
+        if not os.path.exists(path):
+            continue
+        block, lo, hi = None, 0.0, 0.0
+        for line in open(path, encoding='utf-8').read().split('\n') + ['']:
+            m = re.search(r'\|\s*(\d+(?:\.\d+)?)%\s*[\u2013-]\s*(\d+(?:\.\d+)?)%\s*\|', line)
+            if m:
+                block = True
+                lo += float(m.group(1)); hi += float(m.group(2))
+            elif block and not line.strip().startswith('|'):
+                if lo > 100.0001:
+                    die('%s has a percentage table whose MINIMUM shares sum to %.0f%% — no '
+                        'allocation can satisfy it.' % (fn, lo))
+                if hi < 99.9999:
+                    die('%s has a percentage table whose MAXIMUM shares sum to %.0f%% — the '
+                        'budget cannot reach 100%%.' % (fn, hi))
+                checked += 1
+                block, lo, hi = None, 0.0, 0.0
+    return checked
 
 
 def main():
@@ -194,7 +295,12 @@ def main():
                     'it has not checked — least of all about itself.'
                     % os.path.relpath(full, ROOT))
 
-    # 7. the language lint
+    # 7. structural disclosures
+    entities = check_entity_register()
+    risks = check_risk_register()
+    budgets = check_budgets()
+
+    # 8. the language lint
     hits, scanned = lint_language()
     if hits:
         rel, line, what, why, frag = hits[0]
@@ -205,8 +311,12 @@ def main():
           % (names, claimed, len(mods)))
     print('  · %d pricing tiers, every one labelled management-set · no comparison claim'
           % len(tiers))
-    print('  · %d markdown files linted for return projections, solicitation, fund terms '
-          'and property-ownership claims — none found' % scanned)
+    print('  · %d entities, each stating what an investor does NOT automatically own'
+          % len(entities))
+    print('  · %d risks, every one with a mitigation and a named owner · %d budget tables '
+          'that can sum to 100%%' % (risks, budgets))
+    print('  · %d markdown files linted for return projections, solicitation, fund terms, '
+          'commingled offerings and property-ownership claims — none found' % scanned)
     return 0
 
 
