@@ -41,5 +41,9 @@ jobs:
         run: python3 crosswalk/validate_usecodes.py
       - name: Market data gate
         run: python3 market/validate_market.py
+      - name: Market register and measured capability claims
+        run: python3 scripts/validate_landscape.py
+      - name: Company layer gate — branded names, pricing labels, language lint
+        run: python3 scripts/validate_company.py
       - name: Doctrine smoke tests
         run: python3 tests/run.py
