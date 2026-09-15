@@ -213,6 +213,98 @@ async function main() {
     if (hh.staleRegion) {
       errs.push('the house-hack lede still names San Francisco and Alameda County');
     }
+    /* THE STRATEGY SWITCHBOARD, on every edition.
+
+       The failure this guards against is not a crash, it is a POLITE BLANK. Five
+       strategies over one record, and the inputs behind them are wildly unequal:
+       a flip needs recorded comparable sales, which roughly half the counties in
+       this catalogue do not publish at all. The tempting rendering of a column
+       with no input is an empty cell or a zero. An empty cell reads as "small"
+       and a zero reads as "none", and both are claims the record does not
+       support.
+
+       So the assertions are about what a NON-COMPUTED column says, not about how
+       many columns compute. An edition where four of five columns are blocked is
+       a correct edition, as long as each one names what is missing. */
+    const sb = await page.evaluate(async () => {
+      LX.showView('switchboard');
+      if (window.LXSB) LXSB.render();
+      await new Promise(r => setTimeout(r, 1200));
+      const view = document.getElementById('switchboard');
+      const tab = document.querySelector('nav.tabs button[data-view="switchboard"]');
+      const cols = [...document.querySelectorAll('#sbgrid .sbcol')];
+      const states = cols.map(c => c.classList.contains('sbna') ? 'n/a'
+                              : c.classList.contains('sbblocked') ? 'blocked' : 'computed');
+      /* A non-computed column must carry a REASON. Measure the reason element,
+         not the column's whole text: the heading alone would satisfy a length
+         test and say nothing. */
+      const reasons = cols.map((c, i) => states[i] === 'computed' ? null
+                              : ((c.querySelector('.sbwhy') || {}).textContent || '').trim());
+      const graded = cols.map((c, i) => states[i] !== 'computed' ? null
+                              : !!c.querySelector('.sbband') && !!c.querySelector('.sbbasis li'));
+      /* No computed column may print a bare zero as its headline: a zero here is
+         almost always a missing input that reached the arithmetic anyway. */
+      const heads = cols.map((c, i) => states[i] !== 'computed' ? null
+                              : ((c.querySelector('.sbhead .sbval') || {}).textContent || '').trim());
+      const note = (document.getElementById('sbnote') || {}).textContent || '';
+      let api = null;
+      try {
+        const l = LX.filtered()[0] || LX.allListings()[0];
+        const c = LXSB.compare(l);
+        api = { n: c.length, keys: c.map(x => x.key).join(','),
+                allStated: c.every(x => x.state === 'computed'
+                                     ? (!!x.grade && x.basis && x.basis.length > 0)
+                                     : (typeof x.why === 'string' && x.why.length > 25)),
+                ranked: LXSB.comparable(c).ok };
+      } catch (e) { api = { err: String(e && e.message || e) }; }
+      return {
+        visible: !!view && getComputedStyle(view).display !== 'none',
+        tabShown: !!tab && getComputedStyle(tab).display !== 'none' && !tab.hidden,
+        n: cols.length, states, reasons, graded, heads, note, api
+      };
+    });
+    if (!sb.visible) errs.push('the strategy switchboard did not open');
+    if (!sb.tabShown) errs.push('the strategy-switchboard tab is hidden in this edition');
+    if (sb.n !== 5) errs.push('the switchboard rendered ' + sb.n + ' columns, not the five strategies');
+    sb.states.forEach((st, i) => {
+      if (st !== 'computed' && !(sb.reasons[i] && sb.reasons[i].length > 25)) {
+        errs.push('switchboard column ' + (i + 1) + ' is "' + st
+          + '" and gives no reason — a blank column reads as an oversight, and a '
+          + 'blocked one is usually the most important thing on the screen');
+      }
+      if (st === 'computed' && sb.graded[i] !== true) {
+        errs.push('switchboard column ' + (i + 1) + ' computed a number with no grade band '
+          + 'or no basis list — the grade IS the claim');
+      }
+      if (st === 'computed' && /^\$?0$/.test((sb.heads[i] || '').replace(/[,\s]/g, ''))) {
+        errs.push('switchboard column ' + (i + 1) + ' headlines a bare zero; a zero here is a '
+          + 'missing input that reached the arithmetic');
+      }
+      /* The em-dash is what money() and pct() print for a null. A column that
+         claims to be computed and headlines a dash has not computed anything -
+         it has failed quietly and kept its grade band, which is strictly worse
+         than being blocked, because the grade is a claim about a number that
+         does not exist. This caught a real defect: the switchboard read
+         LXUW.sheetFor() as if it returned the input object when it returns
+         {u, uw}, so three of five columns rendered fully graded dashes. */
+      if (st === 'computed' && /\u2014/.test(sb.heads[i] || '')) {
+        errs.push('switchboard column ' + (i + 1) + ' is graded "computed" and headlines "'
+          + sb.heads[i] + '" - a dash is what this module prints for a number it does not '
+          + 'have, so the column is claiming a grade for nothing');
+      }
+    });
+    if (sb.api && sb.api.err) errs.push('LXSB.compare threw: ' + sb.api.err);
+    else {
+      if (sb.api.n !== 5) errs.push('LXSB.compare returned ' + sb.api.n + ' strategies, not 5');
+      if (!sb.api.allStated) {
+        errs.push('a strategy came back neither graded nor explained — every column is '
+          + 'either computed with a basis or refused with a reason, never silent');
+      }
+    }
+    /* The note line must say something about comparability either way: the whole
+       point is that alignment in a table is an argument it has to earn. */
+    if (!/strateg/i.test(sb.note)) errs.push('the switchboard states no summary of what it could evaluate');
+
     await page.evaluate(() => LX.showView('mapview'));
     await page.waitForTimeout(500);
 
