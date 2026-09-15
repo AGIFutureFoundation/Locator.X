@@ -27,6 +27,22 @@ rather than implied.
 | [`FUNDING.md`](FUNDING.md) | The operating-company / property-capital separation, the entity model, and the language that may never ship | **boundary** — enforced by a lint, not a policy |
 | [`AGENTS.md`](AGENTS.md) | The six agents, each one's hard boundary, and what exists today | **measured**, with the same module rule as positioning |
 
+## The capital layer
+
+The group runs mission governance, software, robotics hardware and real-estate assets. The
+essential rule is that these are never mixed inside an unclear entity structure — each
+capital pool is separated, its rights defined, and its risks disclosed plainly.
+
+| Document | What it settles | The kind of claim it makes |
+|---|---|---|
+| [`CAPITAL_STRUCTURE.md`](CAPITAL_STRUCTURE.md) | The entity register — for each entity, what an investor owns, what proceeds fund, and **what they do not automatically own** | **boundary** — the last column may never be empty |
+| [`MISSION_RIGHTS.md`](MISSION_RIGHTS.md) | The PBC's narrow reserved matters, and the longer list it may **not** approve | **boundary**, plus six governing documents that do not exist yet |
+| [`INSTRUMENTS.md`](INSTRUMENTS.md) | Financing instruments by stage, and the planned programmes | **plan** — planning ranges, never an offer |
+| [`CAP_TABLE.md`](CAP_TABLE.md) | Pre-seed planning ranges, expensive mistakes, terms a priced round expects | **management target**, explicitly illustrative |
+| [`USE_OF_PROCEEDS.md`](USE_OF_PROCEEDS.md) | The schedule every raise carries, and budget guardrails | **management target** — ranges verified able to sum to 100% |
+| [`RISK_REGISTER.md`](RISK_REGISTER.md) | 24 risks, each with its mechanism, mitigation and a named owner | **honest disclosure** — no row claims a risk is eliminated |
+| [`INVESTOR_REPORTING.md`](INVESTOR_REPORTING.md) | Quarterly investor reporting and the annual public-benefit report | **plan** |
+
 ## The four kinds of claim, kept apart
 
 The operating brief requires that facts, assumptions, management targets and future plans
