@@ -315,6 +315,7 @@ def unnamed_values():
     ranking engine needs a name. Recovering it is a documentation task against
     an existing pull, not a new data session - but it is not a task anyone can
     do from the words alone, which is why it is listed rather than guessed."""
+    xw = crosswalk_values()
     out = []
     for r in rows():
         if NOT_A_FIELD.search(r['q']):
@@ -325,8 +326,24 @@ def unnamed_values():
             if NEG.search(low):
                 continue
             if any(re.search(p, low) for p, fs in VERDICT_CLASSIFY if 'price' in fs):
-                if not FIELD_TOKEN.search(clause):
-                    out.append((r['state'], r['q'], clause.strip()[:72]))
+                if FIELD_TOKEN.search(clause):
+                    break
+                # Not every unnamed value is a gap worth doing. Three cases, and
+                # only the middle one is a documentation task: a state may
+                # already declare a value field on another row, in which case
+                # nothing is missing, or it may have no crosswalk entry at all,
+                # which is a larger and different piece of work. Reporting all
+                # three as one list is how a list of four things that sounded
+                # cheap turned out to contain one.
+                x = xw.get(r['state'])
+                if x and x['declared']:
+                    kind = 'covered — %s already declares `%s`' % (
+                        x['declared'][0], x['fields'][x['declared'][0]])
+                elif x:
+                    kind = 'GAP — %s declares no value field' % ', '.join(x['ids'])
+                else:
+                    kind = 'no crosswalk entry for this state at all'
+                out.append((r['state'], r['q'], clause.strip()[:60], kind))
                 break
     return out
 
@@ -407,12 +424,13 @@ def report():
 
     un = unnamed_values()
     if un:
-        print('\n  Values reported in prose, with no column named. The pull measured '
-              'them;\n  nobody recorded WHICH FIELD, so nothing can rank them. A '
-              'documentation task\n  against an existing pull \u2014 not a new session, '
-              'and not something to guess:')
-        for state, q, clause in un:
-            print('    %-14s %-24s \u201c%s\u201d' % (state, q[:24], clause))
+        gaps = sum(1 for _s, _q, _c, k in un if k.startswith('GAP'))
+        print('\n  Values reported in prose with no column named. Only %d of these %d is '
+              'a\n  documentation gap worth closing \u2014 the rest are already covered '
+              'elsewhere or\n  need a whole crosswalk entry. The column name has to come '
+              'from the pull,\n  never from the prose:' % (gaps, len(un)))
+        for state, q, clause, kind in un:
+            print('    %-11s %-22s %s' % (state, q[:22], kind))
 
     print('\n  Greenfield \u2014 measured submarket demand, no coverage inventory:')
     if not green:
@@ -499,18 +517,22 @@ def write(path):
     un = unnamed_values()
     if un:
         L.append('## Values reported in prose, with no column named\n')
-        L.append('The most recoverable line on this page. In each of these rows the pull '
-                 'measured a value and the inventory wrote it down in words — and nobody '
-                 'recorded **which field**. `crosswalk/usecodes.json` declares the column '
-                 '`top_screen.py` is allowed to rank on, so a value nobody named is a '
-                 'value nothing can rank.\n')
-        L.append('This is a documentation task against an existing pull, not a new data '
-                 'session. It is also not something to guess: the column name has to come '
-                 'from the pull, not from the prose.\n')
-        L.append('| State | Row | What the inventory says |')
-        L.append('|---|---|---|')
-        for state, q, clause in un:
-            L.append('| %s | %s | "%s" |' % (state, q, clause))
+        gaps = [r for r in un if r[3].startswith('GAP')]
+        L.append('In each of these rows the pull measured a value and the inventory wrote '
+                 'it down in words — and nobody recorded **which field**. '
+                 '`crosswalk/usecodes.json` declares the column `top_screen.py` is allowed '
+                 'to rank on, so a value nobody named is a value nothing can rank.\n')
+        L.append('**%d of the %d is a documentation gap worth closing.** The others are '
+                 'either already covered by a value field declared on another row, or they '
+                 'belong to a state with no crosswalk entry at all — a larger and different '
+                 'piece of work. A list like this reads as cheap work until it is '
+                 'classified, which is exactly why it is.\n' % (len(gaps), len(un)))
+        L.append('The column name has to come from the pull, never from the prose, so none '
+                 'of this can be closed from a checkout alone.\n')
+        L.append('| State | Row | What the inventory says | Is it a gap? |')
+        L.append('|---|---|---|---|')
+        for state, q, clause, kind in un:
+            L.append('| %s | %s | "%s" | %s |' % (state, q, clause, kind))
         L.append('')
 
     L.append('## Greenfield — demand measured, no inventory written\n')

@@ -51,16 +51,18 @@ These gain almost nothing from a rent feed because no **value row** is recorded 
 
 ## Values reported in prose, with no column named
 
-The most recoverable line on this page. In each of these rows the pull measured a value and the inventory wrote it down in words — and nobody recorded **which field**. `crosswalk/usecodes.json` declares the column `top_screen.py` is allowed to rank on, so a value nobody named is a value nothing can rank.
+In each of these rows the pull measured a value and the inventory wrote it down in words — and nobody recorded **which field**. `crosswalk/usecodes.json` declares the column `top_screen.py` is allowed to rank on, so a value nobody named is a value nothing can rank.
 
-This is a documentation task against an existing pull, not a new data session. It is also not something to guess: the column name has to come from the pull, not from the prose.
+**1 of the 4 is a documentation gap worth closing.** The others are either already covered by a value field declared on another row, or they belong to a state with no crosswalk entry at all — a larger and different piece of work. A list like this reads as cheap work until it is classified, which is exactly why it is.
 
-| State | Row | What the inventory says |
-|---|---|---|
-| florida | Millage by authority | "DOR millage tables per county/authority" |
-| indiana | Building attributes | "assessed values" |
-| louisiana | Assessed values, millage | "Assessor roll + parish millage" |
-| nebraska | Statewide standardized valuations | "Nebraska's state valuation lookup (property assessment division)" |
+The column name has to come from the pull, never from the prose, so none of this can be closed from a checkout alone.
+
+| State | Row | What the inventory says | Is it a gap? |
+|---|---|---|---|
+| florida | Millage by authority | "DOR millage tables per county/authority" | covered — florida_dor already declares `JV` |
+| indiana | Building attributes | "assessed values" | GAP — ohio_dte declares no value field |
+| louisiana | Assessed values, millage | "Assessor roll + parish millage" | no crosswalk entry for this state at all |
+| nebraska | Statewide standardized valuations | "Nebraska's state valuation lookup (property assessment divis" | no crosswalk entry for this state at all |
 
 ## Greenfield — demand measured, no inventory written
 
