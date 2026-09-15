@@ -10,12 +10,14 @@ global.setInterval = function(){ return 0; };
 var path = require('path');
 var R = path.join(__dirname, '..', 'src') + path.sep;
 require(R + 'tradecraft.js');                       // defines window.LXTC.TRACKS (11 base tracks)
-['gradschool','mindset','devcourse','pmcourse','datacourse','eqcourse','labcourse','widercourse']
+['gradschool','mindset','devcourse','pmcourse','datacourse','eqcourse','labcourse','widercourse',
+ 'nondisccourse']
   .forEach(function(m){ require(R + m + '.js'); });
 
 var T = (window.LXTC && window.LXTC.TRACKS) || [];
 // the appenders mount on DOMContentLoaded/setTimeout, both stubbed — register directly
-['LXGrad','LXMindset','LXInvDev','LXDeliver','LXEvidenceCourse','LXEquity','LXLab','LXWider']
+['LXGrad','LXMindset','LXInvDev','LXDeliver','LXEvidenceCourse','LXEquity','LXLab','LXWider',
+ 'LXNonDisc']
   .forEach(function(g){ if(window[g] && window[g].register) window[g].register(); });
 T = (window.LXTC && window.LXTC.TRACKS) || [];
 

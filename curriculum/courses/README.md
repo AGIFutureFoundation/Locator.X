@@ -1,6 +1,6 @@
 # The course catalog, separated by pillar
 
-**50 curriculum items** (44 courses, 6 guides) · **209 modules** · **8 pillars** · **4 levels** · all 50 live.
+**51 curriculum items** (45 courses, 6 guides) · **215 modules** · **8 pillars** · **4 levels** · all 51 live.
 
 This directory splits the single-file curriculum into one readable document per pillar. It is a **generated view**: the source of truth stays [`curriculum/curriculum.py`](../curriculum.py) / [`curriculum-50.csv`](../curriculum-50.csv), gated by the eight checks in [`validate.py`](../validate.py). If a table here disagrees with the CSV, the CSV wins.
 
@@ -14,7 +14,7 @@ This directory splits the single-file curriculum into one readable document per 
 | 04 | [The asset](04-the-asset.md) | 7 | 28 | 1, 2, 3, 4 |
 | 05 | [Capital & structure](05-capital-structure.md) | 7 | 28 | 2, 3, 4 |
 | 06 | [Development & delivery](06-development-delivery.md) | 7 | 29 | 3, 4 |
-| 07 | [Evidence, data & judgment](07-evidence-data-judgment.md) | 5 | 20 | 2, 3, 4 |
+| 07 | [Evidence, data & judgment](07-evidence-data-judgment.md) | 6 | 26 | 2, 3, 4 |
 | 08 | [Market, practice & the long game](08-market-practice.md) | 3 | 12 | 2, 4 |
 
 ## The four levels
@@ -22,7 +22,7 @@ This directory splits the single-file curriculum into one readable document per 
 - **Level 1 — Orientation** — First contact: vocabulary, the income streams, the platform's numbers. (10 items)
 - **Level 2 — Practitioner** — Working skills: the buy box, survival numbers, coverage, the relationship map in practice. (13 items)
 - **Level 3 — Operator** — Running deals: entitlement, feasibility, pro formas, the lender's triangle, hard conversations. (14 items)
-- **Level 4 — Principal** — Structuring and judgment: waterfalls, capital markets, partnerships, the exit, the thesis. (13 items)
+- **Level 4 — Principal** — Structuring and judgment: waterfalls, capital markets, partnerships, the exit, the thesis. (14 items)
 
 ## Pillar × level matrix
 
@@ -34,7 +34,7 @@ This directory splits the single-file curriculum into one readable document per 
 | [The asset](04-the-asset.md) | A1 A2 | A3 A4 A5 | A6 | A7 |
 | [Capital & structure](05-capital-structure.md) | — | C1 C2 | C3 C4 | C5 C6 C7 |
 | [Development & delivery](06-development-delivery.md) | — | — | D1 D2 D3 D4 D5 | D6 D7 |
-| [Evidence, data & judgment](07-evidence-data-judgment.md) | — | V1 | V2 V3 | V4 V5 |
+| [Evidence, data & judgment](07-evidence-data-judgment.md) | — | V1 | V2 V3 | V4 V5 V6 |
 | [Market, practice & the long game](08-market-practice.md) | — | M1 | — | M2 M3 |
 
 ## Suggested order
@@ -97,6 +97,7 @@ Entry points (no prerequisites): **E1**, **F5**, **A1**.
 | V3 | Medians, skew and the sample-size floor | [Evidence, data & judgment](07-evidence-data-judgment.md) | 3 | course |
 | V4 | Fitting, holding out and refusing to extrapolate | [Evidence, data & judgment](07-evidence-data-judgment.md) | 4 | course |
 | V5 | Drawing a number so it cannot mislead | [Evidence, data & judgment](07-evidence-data-judgment.md) | 4 | course |
+| V6 | Screening a market that cannot answer you | [Evidence, data & judgment](07-evidence-data-judgment.md) | 4 | course |
 | M1 | Markets, jobs and where the money is going | [Market, practice & the long game](08-market-practice.md) | 2 | course |
 | M2 | Disruption in commercial real estate | [Market, practice & the long game](08-market-practice.md) | 4 | guide |
 | M3 | Holding, tax and the exit | [Market, practice & the long game](08-market-practice.md) | 4 | course |
