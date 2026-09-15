@@ -51,5 +51,7 @@ jobs:
         run: python3 scripts/standard_feasibility.py --check
       - name: Expansion ranking regenerates clean
         run: python3 scripts/expansion_rank.py --check
+      - name: Social copy states no unmeasured figure
+        run: python3 scripts/build_social.py --check
       - name: Doctrine smoke tests
         run: python3 tests/run.py

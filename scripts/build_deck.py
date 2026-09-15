@@ -246,12 +246,26 @@ def main():
         die('usage: build_deck.py <out.html>  |  build_deck.py --check')
 
     figs = deck_figures.figures()
-    body, used, unused = render(figs)
+    body, used, _ = render(figs)
 
+    # The "nobody quotes this" rule now spans every consumer of the figures
+    # module, not just this deck. Social copy quotes figures the deck does not,
+    # and checking the deck alone would demand the deck quote them - which is
+    # how a rule designed to prevent dead measurements starts padding a slide.
+    quoted = set(used)
+    for sub in ('investor', 'social'):
+        d = os.path.join(ROOT, 'content', sub)
+        if not os.path.isdir(d):
+            continue
+        for fn in os.listdir(d):
+            if fn.endswith('.md'):
+                quoted |= set(re.findall(r'\{\{(\w+)\}\}',
+                                         open(os.path.join(d, fn), encoding='utf-8').read()))
+    unused = sorted(set(figs) - quoted)
     if unused:
-        die('%d measured figure(s) are never quoted: %s\nA figure nobody quotes is a '
-            'figure that quietly stops being true. Use it or stop measuring it.'
-            % (len(unused), ', '.join(unused)))
+        die('%d measured figure(s) are quoted by nothing under content/: %s\nA figure '
+            'nobody quotes is a figure that quietly stops being true. Use it or stop '
+            'measuring it.' % (len(unused), ', '.join(unused)))
 
     page = to_html(body, figs)
     if check:
