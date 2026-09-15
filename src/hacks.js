@@ -28,7 +28,31 @@ function hack(l){
   const cashNeed=P*0.035+P*a.closing/100;
   return {l,P,units,elig,rate,pitia,pi,mip,tax,ins,totRent,otherRent,cost,zipRent,save,ss,cover,cashNeed,rentHow:re.how,sus};
 }
-function candidates(){ return L().allListings().filter(l=>l.hh && (l.units||1)>=2 && (l.units||1)<=4); }
+/* WHO IS A CANDIDATE. This used to require l.hh, a flag only build_data.py (the
+   Bay builder) ever sets — so in every other edition the finder computed over an
+   empty set and rendered an empty screen, which is why all eleven specs hid the
+   tab. Measured 2026-09-15 across the fleet: every edition carries 2-4 unit
+   stock (750, 450, 360, 300, 270, 240, 180, 180, 8 ...) and NOT ONE record
+   anywhere carries hh.
+
+   Owner-occupied 2-4 unit candidacy is a property of the record, not of a
+   builder: the unit count says it. The flag is still honoured where a builder
+   set it deliberately. */
+function candidates(){
+  return L().allListings().filter(l => {
+    const u = l.units || 1;
+    return (l.hh || (u >= 2 && u <= 4)) && u >= 2 && u <= 4;
+  });
+}
+/* The sale dates this edition's candidates actually carry — the lede used to
+   assert "sold 2022–2024 in San Francisco and Alameda County" in every edition,
+   including the Louisiana and national ones. */
+function dateRange(rows){
+  const ds = rows.map(h => (h.l.priceDate || '').slice(0, 4)).filter(y => /^\d{4}$/.test(y));
+  if(!ds.length) return '';
+  const lo = ds.reduce((a, b) => a < b ? a : b), hi = ds.reduce((a, b) => a > b ? a : b);
+  return lo === hi ? ', recorded ' + lo : ', recorded ' + lo + '\u2013' + hi;
+}
 function compute(){ computed=candidates().map(hack); return computed; }
 function filteredRows(){
   const rows=(computed||compute()).filter(h=>{
@@ -46,6 +70,19 @@ function filteredRows(){
 function render(){
   const X=L(); compute();
   const all=computed; $('#hhtotal').textContent=all.length.toLocaleString('en-US');
+  const rng=$('#hhrange'); if(rng) rng.textContent=dateRange(all);
+  /* An edition with no 2-4 unit stock says so rather than drawing empty tiles,
+     an empty chart and a headless table. */
+  if(!all.length){
+    $('#hhtiles').innerHTML='<div class="tile" style="grid-column:1/-1"><div class="v">None</div>'
+      + '<div class="l">this edition carries no two-to-four-unit records</div>'
+      + '<div class="d">The finder needs a unit count of 2\u20134 on the record. Nothing is '
+      + 'hidden here \u2014 there is nothing to show.</div></div>';
+    $('#hhchart').innerHTML=''; $('#hhboards').innerHTML='';
+    $('#hhtable thead').innerHTML=''; $('#hhtable tbody').innerHTML='';
+    $('#hhcount').textContent='0 match';
+    return;
+  }
   const cs=[...new Set(all.map(h=>h.l.city))].sort(); const sel=$('#hh_city'); const cur=f.city;
   sel.innerHTML='<option value="">All cities</option>'+cs.map(c=>`<option ${cur===c?'selected':''}>${X.esc(c)}</option>`).join('');
   const rows=filteredRows();
@@ -53,7 +90,7 @@ function render(){
   const paying=rows.filter(h=>h.cost<=0).length, beatRent=rows.filter(h=>h.save!=null&&h.save>0).length;
   const best=rows[0]; const cheapest=rows.slice().sort((a,b)=>a.cashNeed-b.cashNeed)[0]; const ssn=rows.filter(h=>h.ss===true).length;
   $('#hhtiles').innerHTML=`
-    <div class="tile"><div class="v" style="color:var(--cat2)">${rows.length.toLocaleString('en-US')}</div><div class="l">house-hack candidates match your filters</div><div class="d">${all.length.toLocaleString('en-US')} in the public record (2022–2024 sales)</div></div>
+    <div class="tile"><div class="v" style="color:var(--cat2)">${rows.length.toLocaleString('en-US')}</div><div class="l">house-hack candidates match your filters</div><div class="d">${all.length.toLocaleString('en-US')} two-to-four-unit records in this edition${X.esc(dateRange(all))}</div></div>
     <div class="tile"><div class="v" style="color:${beatRent?'var(--good)':'var(--bad)'}">${beatRent}</div><div class="l">cheaper than renting in their ZIP</div><div class="d">${paying? paying+' of them pay YOU to live there':'at FHA 3.5% down and '+(X.state.assump.rate-0.3).toFixed(2)+'%'}</div></div>
     <div class="tile"><div class="v">${best? X.fmt$(best.cost)+'/mo' : '—'}</div><div class="l">best deal vs renting — your cost</div><div class="d">${best? X.esc(best.l.addr)+', '+X.esc(best.l.city)+' ('+best.units+' units)':''}</div></div>
     <div class="tile"><div class="v">${cheapest? X.fmt$(cheapest.cashNeed):'—'}</div><div class="l">smallest cash to close</div><div class="d">${cheapest? X.esc(cheapest.l.addr)+', '+X.esc(cheapest.l.city):''} · ${ssn} pass self-sufficiency</div></div>`;
@@ -85,9 +122,9 @@ function renderBoards(rows){
 }
 function renderTable(rows){
   const X=L();
-  $('#hhtable thead').innerHTML=`<tr><th>#</th><th>Property</th><th>City</th><th class="r">Units</th><th class="r">Price paid</th><th class="r">Sale</th><th class="r">Est. rent (all)</th><th class="r">PITI+MIP</th><th class="r">Your cost/mo</th><th class="r">ZIP rent</th><th class="r">You save</th><th>Coverage</th><th>FHA</th><th></th></tr>`;
+  $('#hhtable thead').innerHTML=`<tr><th>#</th><th>Property</th><th>City</th><th class="r">Units</th><th class="r">Price paid</th><th class="r">Sale</th><th class="r">Est. rent (all)</th><th class="r">PITI+MIP</th><th class="r">Your cost/mo</th><th class="r">ZIP rent</th><th class="r">You save</th><th>Coverage</th><th>FHA ceiling</th><th></th></tr>`;
   const list=rows.slice(0,shown);
-  $('#hhtable tbody').innerHTML=list.map((h,i)=>{ const cvr=Math.min(130,h.cover||0); return `<tr data-id="${h.l.id}"><td class="r">${i+1}</td><td><b>${X.esc(h.l.addr)}</b>${h.l.nb?`<br><span style="font-size:11px;color:var(--muted)">${X.esc(h.l.nb)}</span>`:''}</td><td>${X.esc(h.l.city)}</td><td class="r">${h.units}${/secondary/i.test(h.l.kind)?' (SFR+ADU)':''}</td><td class="r">${X.fmt$(h.P)}</td><td class="r">${(h.l.priceDate||'').slice(0,7)}</td><td class="r">$${X.fmtN(h.totRent)}</td><td class="r">$${X.fmtN(h.pitia)}</td><td class="r" style="color:${h.cost<(h.zipRent??Infinity)?'var(--good)':'var(--bad)'};font-weight:600">${h.cost<=0? '+$'+X.fmtN(-h.cost)+' to you' : '$'+X.fmtN(h.cost)}</td><td class="r">${h.zipRent?'$'+X.fmtN(h.zipRent):'—'}</td><td class="r ${h.save>0?'pos':'neg'}">${h.save!=null? (h.save>0?'+':'')+'$'+X.fmtN(h.save):'—'}</td><td><div style="width:90px" class="bar-outer"><div style="height:7px;border-radius:4px;background:var(--panel2);overflow:hidden"><i style="display:block;height:100%;width:${cvr/1.3}%;background:${h.cover>=100?'var(--good)':h.cover>=75?'var(--cat3)':'var(--cat5)'}"></i></div><span style="font-size:10px;color:var(--muted)">${h.cover?h.cover.toFixed(0)+'% of PITI':''}</span></div></td><td>${h.elig? (h.ss===false? '<span class="badge warn">limit OK · self-suff fails</span>' : '<span class="badge good">eligible</span>') : '<span class="badge bad">over limit</span>'}</td><td style="white-space:nowrap"><button class="btn" data-act="uw">Underwrite</button> <button class="btn" data-act="map">Map</button></td></tr>`; }).join('') + (rows.length>shown? `<tr><td colspan="14"><button class="btn" id="hhmore">Show ${Math.min(500,rows.length-shown)} more of ${rows.length}</button></td></tr>`:'');
+  $('#hhtable tbody').innerHTML=list.map((h,i)=>{ const cvr=Math.min(130,h.cover||0); return `<tr data-id="${h.l.id}"><td class="r">${i+1}</td><td><b>${X.esc(h.l.addr)}</b>${h.l.nb?`<br><span style="font-size:11px;color:var(--muted)">${X.esc(h.l.nb)}</span>`:''}</td><td>${X.esc(h.l.city)}</td><td class="r">${h.units}${/secondary/i.test(h.l.kind)?' (SFR+ADU)':''}</td><td class="r">${X.fmt$(h.P)}</td><td class="r">${(h.l.priceDate||'').slice(0,7)}</td><td class="r">$${X.fmtN(h.totRent)}</td><td class="r">$${X.fmtN(h.pitia)}</td><td class="r" style="color:${h.cost<(h.zipRent??Infinity)?'var(--good)':'var(--bad)'};font-weight:600">${h.cost<=0? '+$'+X.fmtN(-h.cost)+' to you' : '$'+X.fmtN(h.cost)}</td><td class="r">${h.zipRent?'$'+X.fmtN(h.zipRent):'—'}</td><td class="r ${h.save>0?'pos':'neg'}">${h.save!=null? (h.save>0?'+':'')+'$'+X.fmtN(h.save):'—'}</td><td><div style="width:90px" class="bar-outer"><div style="height:7px;border-radius:4px;background:var(--panel2);overflow:hidden"><i style="display:block;height:100%;width:${cvr/1.3}%;background:${h.cover>=100?'var(--good)':h.cover>=75?'var(--cat3)':'var(--cat5)'}"></i></div><span style="font-size:10px;color:var(--muted)">${h.cover?h.cover.toFixed(0)+'% of PITI':''}</span></div></td><td>${h.elig? (h.ss===false? '<span class="badge warn" title="Within the national FHA ceiling, but 75% of gross rent does not cover the payment — the 3–4 unit self-sufficiency test.">within ceiling · self-suff fails</span>' : '<span class="badge good" title="Within the 2025 national FHA ceiling. Limits are set per county between a floor and that ceiling, so this is an upper bound, not eligibility — check the county.">within ceiling</span>') : '<span class="badge bad" title="Above even the national high-cost ceiling, so no county limit reaches it.">over ceiling</span>'}</td><td style="white-space:nowrap"><button class="btn" data-act="uw">Underwrite</button> <button class="btn" data-act="map">Map</button></td></tr>`; }).join('') + (rows.length>shown? `<tr><td colspan="14"><button class="btn" id="hhmore">Show ${Math.min(500,rows.length-shown)} more of ${rows.length}</button></td></tr>`:'');
   const hm=$('#hhmore'); if(hm) hm.onclick=()=>{ shown+=500; renderTable(filteredRows()); };
   $$('#hhtable [data-act]').forEach(b=>b.addEventListener('click', e=>{ const id=b.closest('tr').dataset.id; if(b.dataset.act==='map') X.select(id,true); else { const s=(L().store('uwscen')||{}); X.showView('uw'); window.LXUW.openSheet(id); } }));
 }

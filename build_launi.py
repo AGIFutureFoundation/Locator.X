@@ -24,7 +24,7 @@ for a,b in [
 body=body.replace('Which of these properties would pay you?','Student housing, rentals and land around Louisiana\u2019s biggest campuses')
 body=body.replace('A walkable Bay Area, built from the catalog','A walkable Baton Rouge, built from the catalog')
 # hide Bay-specific tabs (guide, house hacks) on the NOLA edition
-head=head.replace('</style>', 'button[data-view="guide"],button[data-view="hacks"],#guide,#hacks{display:none!important}\n</style>',1)
+head=head.replace('</style>', 'button[data-view="guide"],#guide{display:none!important}\n</style>',1)
 
 
 extra = [B.read('sig2_launi.js')]

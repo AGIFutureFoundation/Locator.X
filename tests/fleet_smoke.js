@@ -137,6 +137,85 @@ async function main() {
       }
     }
 
+    /* The house-hack finder, on EVERY edition, because the defect was on every
+       edition: it required a flag (l.hh) that only the Bay data builder ever
+       sets, so everywhere else it computed over an empty set and drew an empty
+       screen - which is why all eleven specs hid the tab and why the surface
+       shipped into eleven editions and opened in none.
+
+       Candidacy comes from the record's unit count now. So: if the edition
+       carries 2-4 unit stock the tab must be REACHABLE and the finder must find
+       them, and the FHA column must never say "eligible" - the constant behind
+       it is the national high-cost ceiling, and the real limit is set per
+       county, so eligibility is not ours to assert. */
+    const hh = await page.evaluate(async () => {
+      const u24 = LX.allListings().filter(l => (l.units || 1) >= 2 && (l.units || 1) <= 4).length;
+      /* Read the tab AFTER opening the view: the nav groups its tabs and only the
+         active group's buttons are displayed, so a tab read from another group is
+         legitimately display:none and says nothing about whether the EDITION
+         hides it. Opening the view activates its group. */
+      LX.showView('hacks');
+      if (window.LXHH) LXHH.render();
+      await new Promise(r => setTimeout(r, 900));
+      const tab = document.querySelector('nav.tabs button[data-view="hacks"], [data-view="hacks"]');
+      const tabShown = !!tab && getComputedStyle(tab).display !== 'none' && !tab.hidden;
+      const view = document.getElementById('hacks');
+      const rows = document.querySelectorAll('#hhtable tbody tr[data-id]').length;
+      const head = (document.querySelector('#hhtable thead') || {}).textContent || '';
+      const body = (document.querySelector('#hhtable tbody') || {}).textContent || '';
+      const lede = (view ? view.textContent : '') || '';
+      /* The default list opens on the 3-4 unit rows, which all render the
+         self-sufficiency badge — so the "within ceiling" badge, the one that used
+         to read "eligible", never appears and an assertion about it could not
+         fail. Narrow to two-unit rows, where that badge is what renders. */
+      const sel = document.getElementById('hh_units');
+      let twoUnit = '', badgeText = [];
+      if (sel) {
+        sel.value = '2'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+        await new Promise(r => setTimeout(r, 700));
+        twoUnit = (document.querySelector('#hhtable tbody') || {}).textContent || '';
+        badgeText = [...document.querySelectorAll('#hhtable tbody .badge')]
+          .map(e => e.textContent.trim());
+        sel.value = ''; sel.dispatchEvent(new Event('change', { bubbles: true }));
+        await new Promise(r => setTimeout(r, 400));
+      }
+      badgeText = badgeText.concat([...document.querySelectorAll('#hhtable tbody .badge')]
+        .map(e => e.textContent.trim()));
+      return { u24, tabShown, rows, head, badges: body, twoUnitRows: twoUnit.length > 0,
+               visible: !!view && getComputedStyle(view).display !== 'none',
+               /* Read the BADGE ELEMENTS, not the row text: textContent runs the
+                  cells together, so "38% of PITI" + "eligible" became
+                  "PITIeligible" and a word-boundary test could never match the
+                  very word it was written to catch. */
+               badgeText: badgeText,
+               claimsEligible: badgeText.some(t => /eligible/i.test(t)),
+               saysCeiling: /ceiling/i.test(lede),
+               staleRegion: /San Francisco and Alameda|2022.2024 in San Francisco/i.test(lede),
+               total: (document.getElementById('hhtotal') || {}).textContent || '' };
+    });
+    if (!hh.tabShown) errs.push('the house-hack tab is still hidden in this edition');
+    if (!hh.visible) errs.push('the house-hack view did not open');
+    if (hh.u24 > 0 && !(hh.rows > 0)) {
+      errs.push('the finder found none of this edition\'s ' + hh.u24 + ' two-to-four-unit records');
+    }
+    if (hh.u24 === 0 && hh.rows > 0) {
+      errs.push('the finder listed ' + hh.rows + ' rows in an edition with no 2-4 unit records');
+    }
+    if (hh.claimsEligible) {
+      errs.push('the finder calls a property FHA "eligible" from a national ceiling — '
+        + 'the limit is set per county');
+    }
+    if (!hh.saysCeiling) errs.push('the FHA ceiling caveat is missing from the house-hack view');
+    const strayBadge = (hh.badgeText || []).find(t => !/^(within ceiling|over ceiling)/.test(t));
+    if (strayBadge) {
+      errs.push('an FHA badge says something outside the ceiling vocabulary: "' + strayBadge + '"');
+    }
+    if (hh.staleRegion) {
+      errs.push('the house-hack lede still names San Francisco and Alameda County');
+    }
+    await page.evaluate(() => LX.showView('mapview'));
+    await page.waitForTimeout(500);
+
     let chipNote = '';
     if (i === 0) {
       await page.click('#chips .chip[data-f="bb"]');
