@@ -39,14 +39,15 @@ lawsuit**. `scripts/validate_company.py` fails the build if any cell in it is em
 
 | Entity | Capital purpose | What an investor owns | Use of proceeds | What investors do NOT own automatically |
 |---|---|---|---|---|
-| **AGI Future Foundation PBC** | Mission governance, public-benefit initiatives, fellowships, standards, research, scholarships | PBC equity or mission-aligned economic interest, if it raises capital directly | Public-benefit programs, governance, research, impact reporting, approved shared services | Any direct interest in AGI Corp, Cognition.X, Locator.X, Robotics.X or property SPVs unless expressly documented |
-| **AGI Corp** | Parent operating company and shared IP platform | Equity or a SAFE / convertible instrument in AGI Corp | Core IP, platform infrastructure, AI and data systems, shared technical teams, security, legal, central operations | Direct ownership of real-estate assets unless AGI Corp itself owns the relevant SPV interests |
-| **Cognition.X** | Education, training, simulation, content and enterprise learning | Parent-company equity, or direct subsidiary equity depending on the round | Learning platform, curriculum, simulation content, customer success, enterprise pilots, integrations | Any direct interest in Locator.X, property assets or unrelated AGI commercial lines |
+| **AGI Future Foundation PBC** | Mission governance, public-benefit initiatives, fellowships, standards, research, scholarships | PBC equity or mission-aligned economic interest, if it raises capital directly | Public-benefit programs, governance, research, impact reporting, approved shared services | Any direct interest in AGI Corp, Locator.X, Cognition.X, Robotics.X or any property vehicle unless expressly documented |
+| **AGI Corp** | Parent operating company, shared IP platform, and **founder of Locator.X, Inc.** | Equity or a SAFE / convertible instrument in AGI Corp | Core IP, platform infrastructure, AI and data systems, shared technical teams, security, legal, central operations | Direct ownership of real-estate assets, and any direct interest in Locator.X, Inc.'s separate seed round |
+| **Locator.X, Inc.** | **Separate company. Real-estate intelligence, underwriting, acquisition workflow and portfolio analytics — raising its own seed round (Part A)** | Preferred equity or a post-money SAFE in Locator.X, Inc. | The earmarks in [`THE_ASK.md`](THE_ASK.md): record-layer expansion, the collaboration layer, the two unbuilt products, data licences, security, go-to-market, reserve | **Any ownership of, or claim on, any property, any SPV, or any distribution from the Portfolio Basket.** Platform fees and any documented sponsor promote are revenue of the company, not a property interest |
+| **Cognition.X** | Education, training, simulation, content and enterprise learning | Parent-company equity, or direct subsidiary equity depending on the round | Learning platform, curriculum, simulation content, customer success, enterprise pilots, integrations | Any direct interest in Locator.X, Inc., property assets or unrelated AGI commercial lines |
 | **Robotics.X / AGI Robotics Lab** | Robotics simulation, lab partnerships, hardware pilots, workforce training | AGI Corp equity, dedicated subsidiary equity, equipment financing, grant participation or project financing | Robotics curriculum, simulation environments, leased equipment, labs, integrations, safety programs | Direct ownership of unrelated software or real estate unless expressly included |
-| **Locator.X** | Real-estate intelligence, underwriting, acquisition workflow, portfolio analytics | AGI Corp equity or dedicated Locator.X equity | Product, data licences, AI workflows, go-to-market, integrations, customer acquisition | Any direct economic interest in individual properties unless the investor separately invests in a property vehicle |
-| **AGI Development Management, LLC** | Development and asset-management operator | Operating-entity interest where offered | Development management, asset management, project supervision | Ownership of the properties it manages, or equity in the platform companies |
-| **AGI Property Holdings, LLC** | Holding company for owned properties | Holding-company interest where offered | Holding-entity capitalisation, SPV sponsorship, reserves | Equity in AGI Corp, Cognition.X, Robotics.X or Locator.X unless expressly offered |
-| **AGI asset-level SPVs** | Acquisition, renovation, development, operation, refinance or sale of defined real estate | Membership interest, preferred equity, a debt note or another property-specific instrument | Purchase price, closing costs, rehab, reserves, debt service, operating expenses | Equity in AGI Corp, Cognition.X, Robotics.X or Locator.X unless expressly offered |
+| **AGI Development Management, LLC** | Development and asset-management operator | Operating-entity interest where offered | Development management, asset management, project supervision | Ownership of the properties it manages, or equity in any platform company |
+| **AGI Property Holdings, LLC** | Holding company for owned properties; **sponsor of the Portfolio Basket** | Holding-company interest where offered | Holding-entity capitalisation, basket sponsorship, reserves | Equity in AGI Corp, Locator.X, Inc., Cognition.X or Robotics.X unless expressly offered |
+| **Locator.X Portfolio Basket I, LLC** | **The real-estate bundle (Part B).** Acquisition, renovation, operation, refinance or sale of a defined basket of assets sourced and underwritten on the platform | Membership interests in the Basket, per its operating agreement | The earmarks in [`PORTFOLIO_BASKET.md`](PORTFOLIO_BASKET.md): acquisition equity, renovation, closing costs, reserves, formation, contingency | **Any equity in Locator.X, Inc., AGI Corp or any other group entity.** Basket economics come from the Basket's own assets and from nothing else |
+| **Asset-level SPVs** | A single property or property cluster beneath the Basket | Where offered separately: membership interest, preferred equity or a debt note | Purchase price, closing costs, rehab, reserves, debt service, operating expenses | Equity in any platform company, and the assets of any other SPV |
 
 ## Ownership architecture
 
@@ -54,22 +55,31 @@ lawsuit**. `scripts/validate_company.py` fails the build if any cell in it is em
 AGI Future Foundation PBC
 │
 ├── Holds defined mission-protection rights
-├── Runs fellowships, standards, public-benefit initiatives
 ├── Publishes impact reporting
 └── Does not manage day-to-day operating decisions
      │
      ▼
-AGI Corp (commercial parent / core IP owner)
+AGI Corp  (commercial parent / core IP owner / FOUNDER)
 │
-├── Cognition.X (education and workforce platform)
-├── Robotics.X / AGI Robotics Lab (simulation, labs, robotics readiness)
-├── Locator.X (real-estate intelligence and investor operating system)
-├── AGI Development Management, LLC (development / asset management)
-└── AGI Property Holdings, LLC
+├── Cognition.X          (education and workforce platform)
+├── Robotics.X           (simulation, labs, robotics readiness)
+├── AGI Development Management, LLC
+│
+├── Locator.X, Inc.  ◀── PART A: raising its own seed round
+│     · a separate company, founded by AGI Corp
+│     · AGI Corp holds founder equity; seed investors hold the rest
+│     · earns platform fees, and a documented promote, from the Basket
+│     · owns NO property
+│
+└── AGI Property Holdings, LLC   (sponsor)
       │
-      ├── AGI Property SPV 001, LLC
-      ├── AGI Property SPV 002, LLC
-      └── AGI Property SPV 003, LLC
+      └── Locator.X Portfolio Basket I, LLC  ◀── PART B: property capital
+            │   · separate books, separate bank account, separate investors
+            │   · uses the Locator.X platform under a written, arm's-length
+            │     services agreement — the tie is CONTRACTUAL, not ownership
+            ├── SPV 001
+            ├── SPV 002
+            └── SPV 003
 ```
 
 This is the **intended** architecture as supplied by the platform owner. This repository

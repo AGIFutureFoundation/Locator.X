@@ -35,16 +35,20 @@ planning ranges; the instrument column is an intention that counsel will confirm
 
 | Programme | Issuer | Planning range | Instrument | Purpose |
 |---|---|---:|---|---|
-| AGI Corp pre-seed | AGI Corp | $1.5M–$2.5M | Post-money SAFE or preferred equity | Core AI, shared IP, and the platform foundations of Cognition.X, Robotics.X and Locator.X; product team; security; pilots |
+| **Locator.X seed — Part A** | **Locator.X, Inc.** | $4.0M | Preferred equity, or post-money SAFE with a valuation cap | The earmarks in [`THE_ASK.md`](THE_ASK.md). AGI Corp is the founder and holds founder equity; this round sells the rest |
+| **Portfolio Basket I — Part B** | **Locator.X Portfolio Basket I, LLC** | $6.0M | Membership interests per the Basket operating agreement | Acquisition, renovation, closing costs and reserves for a defined basket ([`PORTFOLIO_BASKET.md`](PORTFOLIO_BASKET.md)) |
+| AGI Corp pre-seed | AGI Corp | $1.5M–$2.5M | Post-money SAFE or preferred equity | Core AI and shared IP; the platform foundations of Cognition.X and Robotics.X; central operations |
 | Cognition.X strategic pilots | Cognition.X or AGI Corp | $250K–$750K | Paid pilots, implementation agreements, grants | Enterprise learning, AI readiness, cybersecurity, workforce and simulation modules |
 | Robotics lab programme | AGI Robotics Lab / Cognition.X | $500K–$1.5M | Grants, equipment leases, customer-sponsored labs, strategic partnerships | Simulation content, hardware access, lab partners, workforce cohorts |
-| Locator.X commercial pilots | Locator.X or AGI Corp | $100K–$500K | Paid pilots, subscriptions, strategic design partners | Investor workflow, property intelligence, underwriting and agent features |
-| Property capital | Individual AGI property SPVs | Deal-specific | Property-level equity or debt | Defined acquisitions only — never a general operating-company budget |
+| Individual asset SPVs | Named SPV beneath the Basket | Deal-specific | Property-level equity or debt | A single named asset only — never a general operating-company budget |
 
-**The last row is the whole point of the table.** Property capital enters a named SPV for
-a named asset. It does not fund the operating company, and operating capital does not buy
-buildings. A software investor is never placed in an unintended property fund, and grant
-restrictions never land on venture-funded product work.
+**The first two rows are the two-part ask, and their separation is the whole point of the
+table.** Part A funds a software company. Part B funds property. Property capital enters a
+named vehicle for named assets; it does not fund the operating company, and operating
+capital does not buy buildings. A software investor is never placed in an unintended
+property fund, a property investor never discovers their capital paid an engineering team,
+and grant restrictions never land on venture-funded product work. The firewall is stated
+in full in [`THE_ASK.md`](THE_ASK.md).
 
 ## What every instrument carries, without exception
 
