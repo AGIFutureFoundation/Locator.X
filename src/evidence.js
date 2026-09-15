@@ -215,5 +215,9 @@ function render(){
 }
 function tile(k,v,note){ return '<div class="tile"><p class="eyebrow" style="margin:0">'+esc(k)+'</p><p class="big num" style="margin:4px 0 2px">'+v+'</p><p style="font-size:11.5px;color:var(--muted);margin:0">'+esc(note)+'</p></div>'; }
 
-window.LXEvid={render, grade, scorecard, disagree, BANDS, col};
+/* TESTS is exported for the coverage panel (src/coverage.js), which measures
+   each of these across a whole edition. A second list there would drift from
+   this one, and the panel would then report coverage of fields the grade no
+   longer uses. */
+window.LXEvid={render, grade, scorecard, disagree, BANDS, TESTS, col};
 })();

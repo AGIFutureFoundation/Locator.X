@@ -34,9 +34,23 @@
   <button class="navtoggle" id="navtoggle" aria-label="Sections and views" aria-expanded="false"><span></span><span></span><span></span></button><div class="brand"><span class="name">Locator<span class="x">.X</span></span><span class="sub">powered by AGI Corp</span></div>
   <div class="spacer"></div>
   <div class="stat" id="hstat"></div>
+  <button class="iconbtn" id="covopen" title="What this edition cannot answer — the fields its records do not carry, the plays it cannot evaluate, and the footprint outside which nothing exists">Coverage</button>
   <button class="iconbtn" id="guidebtn" title="User's guide — the written tour, question search, and a spoken walkthrough that opens each section for you">User's guide</button>
   <button class="iconbtn" id="themebtn" title="Toggle theme">Theme</button>
 </header>
+<div class="covpanel" id="covpanel" role="dialog" aria-modal="true" aria-hidden="true" aria-label="What this edition cannot answer">
+  <div class="covsheet">
+    <div class="covhead">
+      <div>
+        <p class="eyebrow">Coverage · measured from this edition’s own records</p>
+        <h2>What this edition cannot answer</h2>
+      </div>
+      <button class="iconbtn" id="covclose" aria-label="Close">Close</button>
+    </div>
+    <div class="covbody" id="covbody"></div>
+    <p class="src">Every figure on this panel is counted from the records loaded in this browser at the moment you opened it — nothing here is written down in advance, because a coverage claim that is not recounted is a coverage claim that has already drifted. There is deliberately no overall score: a single number would be read as a ranking, and the useful answer is the specific list of things this edition cannot do.</p>
+  </div>
+</div>
   <div class="groupbar" role="tablist" aria-label="Sections">
     <button data-gsel="start" aria-selected="true">Start</button>
     <button data-gsel="find">Find</button>
