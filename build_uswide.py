@@ -22,7 +22,7 @@ for a,b in [
 body=body.replace('Which of these properties would pay you?','Multifamily, lodging and commercial where the capital is landing')
 body=body.replace('A walkable Bay Area, built from the catalog','Five corridors, built from five county assessors')
 # hide Bay-specific tabs (guide, house hacks) on the NOLA edition
-head=head.replace('</style>', 'button[data-view="guide"],button[data-view="hacks"],#guide,#hacks{display:none!important}\n</style>',1)
+head=head.replace('</style>', 'button[data-view="guide"],#guide{display:none!important}\n</style>',1)
 
 
 extra = [B.read('sig2_uscorridor.js')]

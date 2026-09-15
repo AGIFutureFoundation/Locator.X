@@ -7,6 +7,43 @@ such.
 
 ## [Unreleased]
 
+- **The view that shipped into eleven editions and opened in none is open** —
+  and the reason it was hidden turned out to be a defect rather than a decision.
+  The house-hack finder required `l.hh`, a flag only `build_data.py` (the Bay
+  builder) ever sets. Measured across the fleet on 2026-09-15: **every edition
+  carries 2–4 unit stock** (750, 450, 360, 300, 270, 240, 180, 180, 8 …) and
+  **not one record anywhere carries `hh`**. So in ten editions the finder
+  computed over an empty set and drew an empty screen, and every spec author hid
+  the tab locally for a reason none of them could see whole.
+
+  Owner-occupied 2–4 unit candidacy is a property of the record — the unit count
+  says it — so that is where it comes from now, with the flag still honoured
+  where a builder set it deliberately. `hide_tabs` drops `hacks` in all eleven
+  specs and their hand builders, `UNREACHABLE_VIEWS` is empty, and the two-way
+  reachability check keeps both halves honest.
+
+- **The finder stopped calling properties FHA-eligible** — it was reading the
+  **national high-cost ceiling** ($1,209,750 for one unit) as though it were the
+  limit. FHA sets a limit per county, between a floor and that ceiling, and this
+  platform holds no county limits: in most of the country the badge was
+  over-permissive. Badges now read `within ceiling` / `over ceiling`, the filter
+  says *within the national FHA ceiling*, and the source line leads with **these
+  are ceilings, not eligibility** and says to verify the county's own limit.
+
+  The lede also asserted, in every edition, that its buildings "sold 2022–2024 in
+  San Francisco and Alameda County". It now names this edition's records and the
+  years they actually carry, and an edition with no 2–4 unit stock says so rather
+  than drawing empty tiles.
+
+- **A guard that could not fail, found by breaking it** — the new assertion read
+  the row's `textContent`, where `"38% of PITI"` and `"eligible"` concatenate into
+  `"PITIeligible"`, so `/\beligible\b/` could never match the one word it existed
+  to catch. It reads the badge elements now. The three guards are proven: dropping
+  back to `l.hh` fails with *"the finder found none of this edition's 750
+  two-to-four-unit records"*, restoring the badge fails with *"the finder calls a
+  property FHA 'eligible' from a national ceiling"*, and re-hiding the tab fails
+  with *"the house-hack tab is still hidden in this edition"*.
+
 - **Five promotional films, rendered from the real app** —
   `scripts/make_promos.js` captures a still from the running application per
   film, draws the frames on a canvas, and records them through MediaRecorder off

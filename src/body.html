@@ -288,12 +288,12 @@
 <section id="hacks" class="view"><div class="page"><div class="inner wide">
   <p class="eyebrow">House-hack finder · every 2–4 unit in the public record</p>
   <h1>Live in one unit. Let the others pay the mortgage.</h1>
-  <p class="lede">The classic first move from earner to owner: buy a small multi-unit with an owner-occupied loan, live in one unit, and let the tenants carry most of the payment. This finder holds <span id="hhtotal" class="num"></span> two-to-four-unit buildings and homes with a legal second unit that sold 2022–2024 in San Francisco and Alameda County — every one priced at what the buyer actually paid, screened with FHA 3.5%-down math at today's rates.</p>
+  <p class="lede">The classic first move from earner to owner: buy a small multi-unit with an owner-occupied loan, live in one unit, and let the tenants carry most of the payment. This finder holds <span id="hhtotal" class="num"></span> two-to-four-unit buildings and homes with a legal second unit from this edition's own records<span id="hhrange"></span> — each at the figure the record carries, screened with FHA 3.5%-down math at the rate in your assumptions.</p>
   <div class="cards" id="hhtiles"></div>
   <div class="toolbar">
     <select id="hh_city"><option value="">All cities</option></select>
     <select id="hh_units"><option value="">2–4 units + SFR w/ 2nd unit</option><option value="2">2 units</option><option value="3">3 units</option><option value="4">4 units</option></select>
-    <label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="hh_fha" checked> FHA-eligible only (under the loan limit)</label>
+    <label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="hh_fha" checked> within the national FHA ceiling <span title="FHA limits are set per county between a national floor and this ceiling. This screen holds the ceiling only, so passing it is an upper bound, not eligibility — check your county's limit.">(?)</span></label>
     <label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="hh_ss"> passes FHA self-sufficiency (3–4 units)</label>
     <label style="font-size:12px;color:var(--muted)"><input type="checkbox" id="hh_sus"> include below-market transfers</label>
     <label class="field" style="flex-direction:row;align-items:center;gap:6px;font-size:12px;color:var(--muted)">Max cash to close $<input type="number" id="hh_cash" style="width:110px" step="10000" placeholder="any"></label>
@@ -304,7 +304,7 @@
   <div class="boards" id="hhboards"></div>
   <h2 class="h2">The list</h2>
   <div class="tablewrap"><table class="grid" id="hhtable"><thead></thead><tbody></tbody></table></div>
-  <p class="src">FHA owner-occupied loan limits used (2025, high-cost counties): 1 unit $1,209,750 · 2 units $1,548,975 · 3 units $1,872,225 · 4 units $2,326,875. FHA requires you to occupy a unit for one year; 3–4 unit purchases must pass the self-sufficiency test (75% of gross rent ≥ full payment). Rents are ZIP-level index estimates — verify with real comps. Buildings with tenants in place come with their leases and, in SF, Oakland and Berkeley, with rent control; underwrite the rents that exist, not the ones you want.</p>
+  <p class="src"><b>These are ceilings, not eligibility.</b> FHA sets a loan limit per county, between a national floor and the high-cost ceiling; this screen holds only the 2025 ceiling — 1 unit $1,209,750 · 2 units $1,548,975 · 3 units $1,872,225 · 4 units $2,326,875 — so a building marked <i>within ceiling</i> may still be over your county's limit. Verify the limit for the county the property is in before relying on it. FHA requires you to occupy a unit for one year; 3–4 unit purchases must pass the self-sufficiency test (75% of gross rent ≥ full payment). Rents are ZIP-level index estimates — verify with real comps. Buildings with tenants in place come with their leases and, in SF, Oakland and Berkeley, with rent control; underwrite the rents that exist, not the ones you want.</p>
 </div></div></section>
 
 <!-- ================= UNDERWRITE ================= -->

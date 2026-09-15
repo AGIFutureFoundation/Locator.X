@@ -75,14 +75,13 @@ import lxbuild as B
 #
 # Declaring one is not endorsing it. These are open questions for the platform
 # owner: drop the module from MODULES, or give some edition a reason to show it.
-UNREACHABLE_VIEWS = {
-    'hacks': (
-        'The house-hack finder. Every shipped spec hides it, so it is inlined '
-        'into all eleven editions and openable in none. Only the three refusing '
-        'templates would show it, and they never load. Open question: drop it '
-        'from lxbuild.MODULES, or let one edition show it.'
-    ),
-}
+# Empty, and the check above is what keeps it honest either way. The one entry
+# this table ever held - the house-hack finder - is resolved rather than removed:
+# it was hidden everywhere because it required a flag only the Bay data builder
+# set, so in every other edition it computed over nothing. Candidacy now comes
+# from the record's own unit count (src/hacks.js), every edition carries 2-4 unit
+# stock, and the tab is shown.
+UNREACHABLE_VIEWS = {}
 
 
 SPECS = {
@@ -92,7 +91,7 @@ SPECS = {
         self_id='atlasnola',
         data_module='data_atlas_nola.js',
         extra_modules=['sig2_nola.js'],
-        hide_tabs=['guide', 'hacks'],
+        hide_tabs=['guide'],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · New Orleans'),
             ('where most Bay Area buyers end up', 'where most buyers in this market end up'),
@@ -126,7 +125,7 @@ SPECS = {
         self_id='atlasbay',
         data_module='data_atlas_bay.js',
         extra_modules=['sig2_bay.js'],
-        hide_tabs=['hacks'],
+        hide_tabs=[],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area',
              'Locator X dashboard · Bay Area — full-market atlas'),
@@ -153,7 +152,7 @@ SPECS = {
         self_id='below',
         data_module='data_below.js',
         extra_modules=['sig2_bay.js'],
-        hide_tabs=['hacks'],
+        hide_tabs=[],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area',
              'Locator X dashboard · Bay Area — Below Market 100k'),
@@ -174,7 +173,7 @@ SPECS = {
         self_id='income',
         data_module='data_income.js',
         extra_modules=['sig2_bay.js'],
-        hide_tabs=['hacks'],
+        hide_tabs=[],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area',
              'Locator X dashboard · Bay Area — Income Fifty (income-property classes)'),
@@ -195,7 +194,7 @@ SPECS = {
         self_id='launi',
         data_module='data_launi.js',
         extra_modules=['sig2_launi.js'],
-        hide_tabs=['guide', 'hacks'],
+        hide_tabs=['guide'],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area',
              'Locator X dashboard · Baton Rouge &amp; Louisiana university cities'),
@@ -220,7 +219,7 @@ SPECS = {
         self_id='match',
         data_module='data_match.js',
         extra_modules=['sig2_bay.js'],
-        hide_tabs=['hacks'],
+        hide_tabs=[],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area',
              'Locator X dashboard · Bay Area — Match Fifty (high-match band)'),
@@ -245,7 +244,7 @@ SPECS = {
         self_id='nola',
         data_module='data_nola.js',
         extra_modules=['sig2_nola.js'],
-        hide_tabs=['guide', 'hacks'],
+        hide_tabs=['guide'],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · New Orleans'),
             ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),
@@ -282,7 +281,7 @@ SPECS = {
         self_id='sc',
         data_module='data_sc.js',
         extra_modules=['sig2_bay.js'],
-        hide_tabs=['guide', 'hacks'],
+        hide_tabs=['guide'],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · Shelter Cove'),
             ('Every one of the 128,319 sites', 'Every one of the 4,284 parcels'),
@@ -302,7 +301,7 @@ SPECS = {
         self_id='corr',
         data_module='data_uscorridor.js',
         extra_modules=['sig2_uscorridor.js'],
-        hide_tabs=['guide', 'hacks'],
+        hide_tabs=['guide'],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · US growth corridors'),
             ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),
@@ -324,7 +323,7 @@ SPECS = {
         self_id='new5',
         data_module='data_usnew5.js',
         extra_modules=['sig2_uscorridor.js'],
-        hide_tabs=['guide', 'hacks'],
+        hide_tabs=['guide'],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · US growth corridors'),
             ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),
@@ -346,7 +345,7 @@ SPECS = {
         self_id='wide',
         data_module='data_uswide.js',
         extra_modules=['sig2_uscorridor.js'],
-        hide_tabs=['guide', 'hacks'],
+        hide_tabs=['guide'],
         body_pairs=[
             ('Locator X dashboard · SF Bay Area', 'Locator X dashboard · US growth corridors'),
             ('Every one of the 128,319 sites', 'Every one of the 90,000 parcels'),

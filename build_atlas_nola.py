@@ -32,7 +32,7 @@ for a,b in [
   "const EDITION_STATE = 'Louisiana';"),
 ]: app=app.replace(a,b)
 # hide Bay-specific tabs (guide, house hacks) on the NOLA edition
-head=head.replace('</style>', 'button[data-view="guide"],button[data-view="hacks"],#guide,#hacks{display:none!important}\n</style>',1)
+head=head.replace('</style>', 'button[data-view="guide"],#guide{display:none!important}\n</style>',1)
 
 
 extra = [B.read('sig2_nola.js')]
