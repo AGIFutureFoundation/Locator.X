@@ -38,12 +38,17 @@ function hack(l){
    Owner-occupied 2-4 unit candidacy is a property of the record, not of a
    builder: the unit count says it. The flag is still honoured where a builder
    set it deliberately. */
-function candidates(){
-  return L().allListings().filter(l => {
-    const u = l.units || 1;
-    return (l.hh || (u >= 2 && u <= 4)) && u >= 2 && u <= 4;
-  });
+/* Exported so twin.js asks THIS function instead of keeping its own copy of the
+   rule. Every surface that has kept a private copy of a candidacy rule in this
+   project has drifted from it: the operating-expense stack, the evidence field
+   list, and the conversion lab, which was gated on a flag two of seventeen
+   builders set while the map lens kept a second copy of the same mistake. */
+function candidate(l){
+  if(!l) return false;
+  const u = l.units || 1;
+  return (l.hh || (u >= 2 && u <= 4)) && u >= 2 && u <= 4;
 }
+function candidates(){ return L().allListings().filter(candidate); }
 /* The sale dates this edition's candidates actually carry — the lede used to
    assert "sold 2022–2024 in San Francisco and Alameda County" in every edition,
    including the Louisiana and national ones. */
@@ -133,5 +138,5 @@ $('#hh_fha').addEventListener('change', e=>{ f.fha=e.target.checked; render(); }
 $('#hh_ss').addEventListener('change', e=>{ f.ss=e.target.checked; render(); });
 $('#hh_sus').addEventListener('change', e=>{ f.sus=e.target.checked; render(); });
 $('#hh_cash').addEventListener('input', e=>{ f.cash=e.target.value; render(); });
-window.LXHH={render, hack};
+window.LXHH={render, hack, candidate};
 })();

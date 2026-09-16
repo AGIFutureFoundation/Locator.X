@@ -34,7 +34,7 @@ function buildAll(){
     const cat=a&&a.cat? a.cat.id : 'liab';
     const fp=footprint(l);
     catAll[l.id]={cat, score:a?Math.round(a.score):null, va:a&&a.va?a.va.score:0, rc:a&&a.rc?a.rc.level:'good', sus:a?!!a.sus:false};
-    return {type:'Feature', properties:{id:l.id, cat, h:fp.h, st:fp.st, hh:l.hh?1:0, va:catAll[l.id].va>=25?1:0, rc:catAll[l.id].rc, score:catAll[l.id].score}, geometry:{type:'Polygon', coordinates:fp.poly}};
+    return {type:'Feature', properties:{id:l.id, cat, h:fp.h, st:fp.st, hh:((window.LXHH&&LXHH.candidate)? LXHH.candidate(l) : ((l.units||1)>=2 && (l.units||1)<=4))?1:0, va:catAll[l.id].va>=25?1:0, rc:catAll[l.id].rc, score:catAll[l.id].score}, geometry:{type:'Polygon', coordinates:fp.poly}};
   });
   bldGeo={type:'FeatureCollection', features:feats};
   return bldGeo;
@@ -67,7 +67,22 @@ function initMap(){
         'fill-extrusion-height':['get','h'], 'fill-extrusion-base':0, 'fill-extrusion-opacity':0.92}}
     ]};
   try{
-    tmap=new maplibregl.Map({container:'twinmap', style, center:[-122.416,37.762], zoom:15.4, pitch:58, bearing:-17, minZoom:9, maxZoom:19.5, attributionControl:false, maxBounds:[[-124.2,36.2],[-120.2,39.2]], maxPitch:80, antialias:true});
+    /* THE TWIN OPENED IN SAN FRANCISCO, IN EVERY EDITION.
+
+       center was [-122.416, 37.762] and maxBounds was the Bay Area box, both
+       hard-coded, while app.js has always taken BA.region for exactly this.
+       Measured on the synthetic fleet 2026-09-16: the twin opened 11,566 km
+       from the edition's own records, and because the records fell OUTSIDE
+       maxBounds the user could not pan to them — the view was not merely
+       misplaced, it was locked away from its own data.
+
+       Same defect as the sixty-four hard-coded Bay Area city labels and the
+       Bay-calibrated choropleth stops: Bay-Area-first code that was never
+       revisited when the app went multi-edition. The region is used where it
+       exists; otherwise the centroid of the records themselves, which is the
+       one thing that is always right. */
+    const TW = twinView();
+    tmap=new maplibregl.Map({container:'twinmap', style, center:TW.center, zoom:15.4, pitch:58, bearing:-17, minZoom:9, maxZoom:19.5, attributionControl:false, maxBounds:TW.maxBounds, maxPitch:80, antialias:true});
     tmap.addControl(new maplibregl.NavigationControl({visualizePitch:true}), 'top-right');
     tmap.on('click','bld3d', e=>{ const f=e.features&&e.features[0]; if(f) openCatalog(f.properties.id); });
     tmap.on('mouseenter','bld3d',()=>tmap.getCanvas().style.cursor='pointer');
@@ -143,9 +158,37 @@ function openCatalog(id){
   $('#twc_map').onclick=()=>L().select(l.id,true);
   if(tmap) tmap.easeTo({center:[l.lng,l.lat], zoom:Math.max(tmap.getZoom(),17.6), duration:700});
 }
+
+/* Where the twin should open, and how far it may be panned. */
+function twinView(){
+  const X = L();
+  const REG = (X && X.BA && X.BA.region) ? X.BA.region : null;
+  if(REG && REG.center) return {center: REG.center, maxBounds: REG.maxBounds || null};
+  /* No declared region: derive from the records. A box padded around the
+     footprint keeps the user inside their own edition without inventing a
+     boundary the data does not support. */
+  let sx=0, sy=0, n=0, x0=180, y0=90, x1=-180, y1=-90;
+  try{
+    (X.allListings()||[]).forEach(function(l){
+      if(typeof l.lng!=='number' || typeof l.lat!=='number') return;
+      sx+=l.lng; sy+=l.lat; n++;
+      if(l.lng<x0) x0=l.lng; if(l.lng>x1) x1=l.lng;
+      if(l.lat<y0) y0=l.lat; if(l.lat>y1) y1=l.lat;
+    });
+  }catch(e){}
+  if(!n) return {center:[-122.416,37.762], maxBounds:null};
+  const pad = 0.25;
+  return {center:[sx/n, sy/n], maxBounds:[[x0-pad, y0-pad],[x1+pad, y1+pad]]};
+}
+
 function bldStories(id){ const f=bldGeo&&bldGeo.features.find(x=>x.properties.id===id); return f? f.properties.st+' stories':null; }
 function scenario(){
-  const rows=L().allListings().filter(l=>l.hh&&!l.approx);
+  /* l.hh is set by NONE of the seventeen data builders, so this list was always
+     empty and the training drop never fired. Candidacy comes from hacks.js,
+     which derives it from the record's unit count. */
+  const cand = (window.LXHH && LXHH.candidate) ? LXHH.candidate
+             : function(l){ const u=l.units||1; return u>=2 && u<=4; };
+  const rows=L().allListings().filter(function(l){ return cand(l) && !l.approx; });
   const l=rows[Math.floor(Math.random()*rows.length)]; if(!l) return;
   openCatalog(l.id);
   L().toast('Training drop: you are standing at a live house-hack site. Walk it, then underwrite it — the Academy house-hack missions use exactly this playbook.');
@@ -216,5 +259,5 @@ function render(){
   if(!tmap){ failedGL=false; $('#twinfallback').hidden=true; L().toast('Building the twin — extruding 128,319 sites…'); setTimeout(()=>{ initMap(); if(failedGL) $('#twinfallback').hidden=false; },30); }
   else setTimeout(()=>tmap.resize(),30);
 }
-window.LXTwin={render, openCatalog, get map(){return tmap;}};
+window.LXTwin={render, openCatalog, twinView, get map(){return tmap;}};
 })();

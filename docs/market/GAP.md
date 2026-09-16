@@ -57,7 +57,7 @@ six either.
 
 | Capability | Category tools | Locator.X | Status |
 |---|---|---|---|
-| Loan modelling | DealCheck, BiggerPockets | `src/underwrite.js` offer solver; `src/hacks.js` (137) owner-occupied math against the published FHA ceiling | **ships** |
+| Loan modelling | DealCheck, BiggerPockets | `src/underwrite.js` offer solver; `src/hacks.js` (142) owner-occupied math against the published FHA ceiling | **ships** |
 | Lender and program navigation | *nobody* | [`docs/resources/`](../resources/) lenders, programs, administrators | **ships** — navigation of the public record, never a recommendation |
 | Lender marketplace / brokered placement | — | — | **refused** — that is advice with a commission attached |
 
