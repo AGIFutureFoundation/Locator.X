@@ -1,10 +1,72 @@
 #!/usr/bin/env python3
-"""Generate curriculum/courses/ — one markdown file per pillar, from curriculum-50.csv."""
+"""Generate curriculum/curriculum-50.csv and curriculum/courses/ — both from
+curriculum.py, which is the single source of truth for the curriculum.
+
+WHY THE CSV IS GENERATED HERE. It used to be hand-maintained ALONGSIDE
+curriculum.py, and both files were called "the source of truth" in different
+documents — including in the very README this script emits. Two authoritative
+copies of the same facts with no gate between them is a drift waiting to happen:
+change a title in one, and every reader of the other keeps citing the old one
+until somebody notices by eye. Nothing checked they agreed.
+
+They did agree, as it turned out — the CSV this script now derives from
+curriculum.py reproduced the hand-maintained file byte for byte, so no
+information was lost in making it derived and no edit was outstanding. But
+"they happen to agree today" is not a guarantee, and the repository does not
+run on those. The CSV is now what curriculum.py says, regenerated before the
+course pages are built from it, and CI diffs it like any other derived thing.
+
+Everything the CSV carries is present in curriculum.py: Level from LEVELS
+membership, Pillar from the ID prefix through PILLARS, Modules as the length of
+the item's own module list, Status from status_of() rather than stored, Backed
+by from BACKS, and Title / Kind / Prereqs / Promise / Lands on from the item
+tuple itself."""
 import csv, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV = os.path.join(ROOT, "curriculum", "curriculum-50.csv")
 OUT = os.path.join(ROOT, "curriculum", "courses")
+
+sys.path.insert(0, os.path.join(ROOT, "curriculum"))
+import curriculum as K
+
+CSV_HEAD = ["ID", "Level", "Pillar", "Title", "Kind", "Modules", "Status",
+            "Backed by", "Prereqs", "Promise", "Lands on"]
+
+
+def write_csv():
+    """Derive curriculum-50.csv from curriculum.py. Returns True if it changed."""
+    pillar = {p[0]: p[1] for p in K.PILLARS}
+    level = {}
+    for (n, _t, _s, _d, _o, ids) in K.LEVELS:
+        for i in ids:
+            level[i] = n
+    import io as _io
+    buf = _io.StringIO()
+    w = csv.writer(buf, quoting=csv.QUOTE_ALL, lineterminator="\n")
+    w.writerow(CSV_HEAD)
+    for (i, title, kind, promise, mods, lands, _doc, prereq, _stored) in K.C:
+        if i not in level:
+            sys.exit("curriculum.py: %s belongs to no level in LEVELS, so its CSV row "
+                     "cannot be derived. A level is not optional and is not guessed." % i)
+        if i[0] not in pillar:
+            sys.exit("curriculum.py: %s carries a pillar prefix %r that PILLARS does not "
+                     "define." % (i, i[0]))
+        w.writerow([i, level[i], pillar[i[0]], title, kind, len(mods),
+                    K.status_of(i), " ".join(K.BACKS.get(i, [])),
+                    " ".join(prereq), promise, lands])
+    out = buf.getvalue()
+    try:
+        cur = open(CSV, encoding="utf-8").read()
+    except FileNotFoundError:
+        cur = None
+    if cur == out:
+        print("curriculum-50.csv already matches curriculum.py (%d items)" % len(K.C))
+        return False
+    with open(CSV, "w", encoding="utf-8", newline="") as f:
+        f.write(out)
+    print("wrote curriculum-50.csv from curriculum.py (%d items)" % len(K.C))
+    return True
 
 PILLARS = [
     ("Emotional equity & relationships", "01-emotional-equity", "E",
@@ -57,6 +119,9 @@ def load():
     return [r for r in rows if r.get("ID")]
 
 def main():
+    # The CSV is derived FIRST, so the course pages below are always built from
+    # what curriculum.py currently says rather than from a CSV that drifted.
+    write_csv()
     rows = load()
     by_id = {r["ID"]: r for r in rows}
     os.makedirs(OUT, exist_ok=True)
@@ -75,10 +140,11 @@ def main():
         lines.append("")
         lines.append(intro)
         lines.append("")
-        lines.append("Source of truth: [`curriculum/curriculum-50.csv`](../curriculum-50.csv) and "
-                     "[`curriculum/curriculum.py`](../curriculum.py). Status is derived by "
-                     "`status_of()`, never stored; [`validate.py`](../validate.py) gates every build "
-                     "on the eight checks. Edit the source, not this file — regenerate with "
+        lines.append("Source of truth: [`curriculum/curriculum.py`](../curriculum.py). "
+                     "[`curriculum-50.csv`](../curriculum-50.csv) is derived from it, and so is this "
+                     "page. Status is derived by `status_of()`, never stored; "
+                     "[`validate.py`](../validate.py) gates every build on the eight checks. Edit "
+                     "curriculum.py, not this file and not the CSV — regenerate with "
                      "`python3 curriculum/gen_courses.py`, as noted in [`README.md`](README.md).")
         lines.append("")
         lines.append("## At a glance")
@@ -153,10 +219,13 @@ def main():
                  f"**{total_mod} modules** · **8 pillars** · **4 levels** · all {len(rows)} live.")
     lines.append("")
     lines.append("This directory splits the single-file curriculum into one readable document per "
-                 "pillar. It is a **generated view**: the source of truth stays "
-                 "[`curriculum/curriculum.py`](../curriculum.py) / "
-                 "[`curriculum-50.csv`](../curriculum-50.csv), gated by the eight checks in "
-                 "[`validate.py`](../validate.py). If a table here disagrees with the CSV, the CSV wins.")
+                 "pillar. It is a **generated view**, and so is "
+                 "[`curriculum-50.csv`](../curriculum-50.csv) beside it: the one source of truth is "
+                 "[`curriculum/curriculum.py`](../curriculum.py), gated by the eight checks in "
+                 "[`validate.py`](../validate.py). The CSV was hand-maintained alongside it until "
+                 "both were being called authoritative in different documents with nothing checking "
+                 "they agreed; it is now derived, and CI diffs it. If anything here disagrees with "
+                 "curriculum.py, curriculum.py wins and the disagreement is a regeneration nobody ran.")
     lines.append("")
     lines.append("## The eight pillars")
     lines.append("")
@@ -209,10 +278,12 @@ def main():
     lines.append("")
     lines.append("## Regenerating")
     lines.append("")
-    lines.append("These files are emitted from the CSV. To regenerate after a curriculum change, "
-                 "re-run `python3 curriculum/gen_courses.py`, or "
-                 "rebuild the tables from `curriculum-50.csv` — then run `python3 curriculum/validate.py` "
-                 "before committing.")
+    lines.append("These files and `curriculum-50.csv` are both emitted from `curriculum.py` by one "
+                 "script. After a curriculum change, edit `curriculum.py` and re-run "
+                 "`python3 curriculum/gen_courses.py` — then run `python3 curriculum/validate.py` "
+                 "before committing. Editing the CSV or a page here directly does not survive: the "
+                 "next regeneration overwrites it, and CI fails the build on the difference in the "
+                 "meantime.")
     with open(os.path.join(OUT, "README.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     print("wrote README.md index")

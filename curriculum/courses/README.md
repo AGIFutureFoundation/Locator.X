@@ -2,7 +2,7 @@
 
 **51 curriculum items** (45 courses, 6 guides) · **215 modules** · **8 pillars** · **4 levels** · all 51 live.
 
-This directory splits the single-file curriculum into one readable document per pillar. It is a **generated view**: the source of truth stays [`curriculum/curriculum.py`](../curriculum.py) / [`curriculum-50.csv`](../curriculum-50.csv), gated by the eight checks in [`validate.py`](../validate.py). If a table here disagrees with the CSV, the CSV wins.
+This directory splits the single-file curriculum into one readable document per pillar. It is a **generated view**, and so is [`curriculum-50.csv`](../curriculum-50.csv) beside it: the one source of truth is [`curriculum/curriculum.py`](../curriculum.py), gated by the eight checks in [`validate.py`](../validate.py). The CSV was hand-maintained alongside it until both were being called authoritative in different documents with nothing checking they agreed; it is now derived, and CI diffs it. If anything here disagrees with curriculum.py, curriculum.py wins and the disagreement is a regeneration nobody ran.
 
 ## The eight pillars
 
@@ -104,4 +104,4 @@ Entry points (no prerequisites): **E1**, **F5**, **A1**.
 
 ## Regenerating
 
-These files are emitted from the CSV. To regenerate after a curriculum change, re-run `python3 curriculum/gen_courses.py`, or rebuild the tables from `curriculum-50.csv` — then run `python3 curriculum/validate.py` before committing.
+These files and `curriculum-50.csv` are both emitted from `curriculum.py` by one script. After a curriculum change, edit `curriculum.py` and re-run `python3 curriculum/gen_courses.py` — then run `python3 curriculum/validate.py` before committing. Editing the CSV or a page here directly does not survive: the next regeneration overwrites it, and CI fails the build on the difference in the meantime.

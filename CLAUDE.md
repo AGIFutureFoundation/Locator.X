@@ -17,7 +17,7 @@ python3 scripts/standard_feasibility.py --check  # no market's criteria ceiling 
 python3 scripts/crosscheck_sources.py           # inventory and crosswalk agree on what is valued
 python3 scripts/expansion_rank.py --check       # then: docs/EXPANSION.md must regenerate clean
 python3 scripts/build_social.py --check         # public posts: measured figures, no markdown, under limit
-python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/
+python3 curriculum/gen_courses.py     # then: git diff must be clean on curriculum/courses/ and curriculum-50.csv
 python3 tests/run.py                  # doctrine smoke tests (PII strip, sample floor, ...)
 ```
 
@@ -37,8 +37,11 @@ real — the validator has no flake mode.
   `crosswalk/usecodes.json` carries source + date per code.
 - **No PII, no data commits.** `data/` stays ignored; owner fields are stripped on
   ingest; git history cannot be cleaned later.
-- **Derived things are generated, not edited.** `curriculum/courses/` comes from
-  `gen_courses.py`; an item's status comes from `status_of()`; the public site's
+- **Derived things are generated, not edited.** `curriculum/courses/` **and
+  `curriculum/curriculum-50.csv`** both come from `gen_courses.py`, which reads
+  `curriculum.py` — the curriculum has **one** source of truth, not two (the CSV was
+  hand-maintained beside it, with both called authoritative in different documents and
+  nothing checking they agreed); an item's status comes from `status_of()`; the public site's
   `demo.html`, `crosswalk.html` and the seven market pages are built at deploy and
   never committed; regenerate, never patch.
 - **Instructor notes and the instructor profile ship empty** until the platform owner
@@ -70,7 +73,7 @@ real — the validator has no flake mode.
 |---|---|
 | App + Academy modules (86) | `src/` (shared shell: `src/head.html`, `src/body.html`) |
 | Builders | `build_*.py`; shared lib `lxbuild.py`; parameterised `build_state.py` (`--dry-run` verifies pairs against source) |
-| Curriculum source of truth | `curriculum/curriculum.py` + `curriculum-50.csv` |
+| Curriculum source of truth | `curriculum/curriculum.py` — **the only one**; `curriculum-50.csv` and `curriculum/courses/` are generated from it by `gen_courses.py` |
 | State layer | `docs/states/` (guides, `coverage/` inventories, `ninety-day-path.md`) |
 | Louisiana record friction | `docs/LOUISIANA_DEVELOPMENT_FRICTION.md` (what slows a deal, ranked, each with its probe) |
 | Resources | `docs/resources/` (data sources, lenders, programs, administrators) |

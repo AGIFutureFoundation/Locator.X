@@ -511,6 +511,29 @@ def main():
     # exists.
     run(["scripts/standard_feasibility.py", "--check"])
 
+    # ---- 11b6. the curriculum has ONE source of truth ---------------------
+    # curriculum-50.csv was hand-maintained ALONGSIDE curriculum.py, and both
+    # were called "the source of truth" in different documents - including in
+    # the README that gen_courses.py emits. Two authoritative copies of the same
+    # facts with nothing checking they agree is a drift waiting to happen: the
+    # CSV feeds the course pages and scripts/build_packet.py, curriculum.py
+    # feeds validate.py, gen_env.py and the blog, so a title changed in one
+    # would keep being cited from the other until somebody noticed by eye.
+    #
+    # The CSV is now derived. This regenerates it and fails if the file on disk
+    # is not what curriculum.py says - the same regenerate-and-diff check
+    # curriculum/courses/ and docs/EXPANSION.md already get. It catches a
+    # hand-edited CSV and a curriculum.py change nobody regenerated after,
+    # which are the same failure from opposite ends.
+    csv_path = os.path.join(ROOT, "curriculum", "curriculum-50.csv")
+    before = open(csv_path, encoding="utf-8").read()
+    run(["curriculum/gen_courses.py"])
+    after = open(csv_path, encoding="utf-8").read()
+    check(before == after,
+          "curriculum/curriculum-50.csv is not what curriculum.py generates - it has been "
+          "hand-edited, or curriculum.py changed and nobody regenerated. There is one source "
+          "of truth and it is curriculum.py; regenerate, never patch.")
+
     # ---- 11b7. the expansion ranking is generated, and regenerates clean ----
     # docs/EXPANSION.md is a derived document: it ranks every market by what its
     # public record can answer against measured submarket demand. Derived things
