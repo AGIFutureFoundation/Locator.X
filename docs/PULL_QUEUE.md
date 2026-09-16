@@ -41,6 +41,8 @@ recipe's additions log — they are the valuable findings.
 | 9 | **Mecklenburg County, NC** groupBy + excise-stamp sales | County assessor/GIS | Gives NC a valuation gate to set against Wake's asset depth ([`north-carolina.md`](states/coverage/north-carolina.md)) | Crosswalk + screen |
 | 10 | **LA Tax Commission** statewide roll (bulk availability unverified) | latax.state.la.us | Lifts every rural parish at once ([`louisiana.md`](states/coverage/louisiana.md)) | Probe first — availability itself is the finding |
 
+| 11 | **Published effective property-tax rates** for every shipped county outside the ten in `CITY_TAX` | County assessor / tax collector millage tables (published by every one of them) | `src/app.js` carries a measured effective rate for ten counties and falls back to a **1.2% national-average placeholder** for the rest. Two shipped editions run on it: Baton Rouge entirely (East Baton Rouge is absent) and half of NOLA (Jefferson is absent; Orleans is present). The app now says "no published rate for X — 1.2% placeholder" rather than attributing the constant to the county, but the honest figure is a pull away | Drop each measured rate into `CITY_TAX` with its source and date; `tests/fleet_smoke.js` already asserts a county in the table never renders the placeholder label |
+
 Ordering rationale: #1–2 are the two single-probe unlocks (a new market; 67 counties);
 #3 completes an anchor market's metro; everything after deepens what already ships.
 

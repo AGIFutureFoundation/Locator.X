@@ -179,7 +179,29 @@ function rentEstimate(l){
           how:'no rent source for this market — 0.4%/mo rule of thumb, not a measurement'};
 }
 function price(l){ const o=state.overrides[l.id]||{}; return o.price||l.price||0; }
-function taxRate(l){ const a=state.assump; if(a.taxOverride!=='' && a.taxOverride!=null) return +a.taxOverride; return CITY_TAX[l.county]||1.2; }
+/* WHERE THIS RATE CAME FROM.
+
+   CITY_TAX carries a published effective rate for ten counties. Every other
+   county falls to 1.2%, a national-average placeholder — and the assumptions
+   panel rendered that as "East Baton Rouge: 1.2", attributing a constant to a
+   county that publishes its own millage. Two shipped editions run on it: the
+   Baton Rouge edition entirely (East Baton Rouge is not in the table) and half
+   the NOLA edition (Jefferson is not; Orleans is).
+
+   Unlike rent, this does NOT get refused. The difference is proportion and it is
+   worth stating rather than applying the rent rule reflexively: rent is the
+   input DSCR rests on and a rule-of-thumb rent makes the whole metric fictional,
+   whereas tax is one line of the operating stack and 1.2% is a defensible
+   national average. Labelling it is the proportionate response; blocking a cap
+   rate over it would not be. What is NOT acceptable is calling it the county's
+   rate when the county was never consulted. */
+const TAX_DEFAULT = 1.2;
+function taxRate(l){ const a=state.assump; if(a.taxOverride!=='' && a.taxOverride!=null) return +a.taxOverride; return CITY_TAX[l.county]||TAX_DEFAULT; }
+function taxBasis(l){
+  const a=state.assump;
+  if(a.taxOverride!=='' && a.taxOverride!=null) return 'yours';
+  return CITY_TAX[l.county]!=null ? 'county' : 'placeholder';
+}
 /* THE OPERATING EXPENSE STACK, IN ONE PLACE.
 
    This used to be written twice - once here in deal() and once in
@@ -1377,7 +1399,7 @@ function renderDrawer(){
       <label>Maint. % of rent <input type="number" id="a_maint" value="${a.maint}"></label>
       <label>CapEx % of rent <input type="number" id="a_capex" value="${a.capex}"></label>
       <label>Insurance % price/yr <input type="number" id="a_ins" value="${a.ins}" step="0.05"></label>
-      <label>Tax rate % (${l.county}: ${taxRate(l)}) <input type="number" id="a_taxOverride" value="${a.taxOverride}" placeholder="county default" step="0.01"></label>
+      <label>Tax rate % (${taxBasis(l)==='county'? esc(l.county)+': '+taxRate(l) : taxBasis(l)==='yours'? 'your figure' : 'no published rate for '+esc(l.county)+' — '+TAX_DEFAULT+'% placeholder'}) <input type="number" id="a_taxOverride" value="${a.taxOverride}" placeholder="${taxBasis(l)==='county'? 'county rate' : 'placeholder — enter the published rate'}" step="0.01"></label>
       <label>HOA $/mo <input type="number" id="a_hoa" value="${a.hoa}" placeholder="${d.hoa/12}"></label>
       <label>Appreciation %/yr <input type="number" id="a_appr" value="${a.appr}" placeholder="${d.appr.toFixed(1)} (ZIP 1-yr)" step="0.5"></label>
       <label>Income method <select id="a_rentMethod"><option value="yield" ${a.rentMethod==='yield'?'selected':''}>Long-term: ZIP rent-to-value × price</option><option value="beds" ${a.rentMethod==='beds'?'selected':''}>Long-term: typical rent × bedrooms</option><option value="rooms" ${a.rentMethod==='rooms'?'selected':''}>Co-living: rent by the room</option><option value="bed" ${a.rentMethod==='bed'?'selected':''}>Student housing: rent by the bed</option><option value="str" ${a.rentMethod==='str'?'selected':''}>Short-term rental (regulation-adjusted)</option><option value="fmr" ${a.rentMethod==='fmr'?'selected':''}>Section 8: HUD Fair Market Rent</option></select></label>
@@ -1385,7 +1407,7 @@ function renderDrawer(){
     </div><div class="src">Rent basis: ${esc(d.rentHow)}. Market source: ${mk.src?srcLine({src:mk.src}):esc(mk.src)}. Assumptions apply to every property; price and rent overrides apply to this one.</div></div>
     <div class="sec"><h3>Annual pro forma</h3><table class="pl">
       <tr><td>Gross rent</td><td>${fmtFull(d.rent)}</td></tr><tr><td>Vacancy (${a.vacancy}%)</td><td>−${fmtFull(d.vac)}</td></tr>
-      <tr><td>Property tax (${taxRate(l)}%)</td><td>−${fmtFull(d.tax)}</td></tr><tr><td>Insurance</td><td>−${fmtFull(d.ins)}</td></tr><tr><td>Maintenance + CapEx</td><td>−${fmtFull(d.maint+d.capex)}</td></tr><tr><td>Management</td><td>−${fmtFull(d.mgmt)}</td></tr>${d.hoa?`<tr><td>HOA</td><td>−${fmtFull(d.hoa)}</td></tr>`:''}
+      <tr><td>Property tax (${taxRate(l)}%${taxBasis(l)==='placeholder'? ' — placeholder, not '+esc(l.county)+'\u2019s published rate' : taxBasis(l)==='yours'? ' — your figure' : ''})</td><td>−${fmtFull(d.tax)}</td></tr><tr><td>Insurance</td><td>−${fmtFull(d.ins)}</td></tr><tr><td>Maintenance + CapEx</td><td>−${fmtFull(d.maint+d.capex)}</td></tr><tr><td>Management</td><td>−${fmtFull(d.mgmt)}</td></tr>${d.hoa?`<tr><td>HOA</td><td>−${fmtFull(d.hoa)}</td></tr>`:''}
       <tr class="total"><td>Net operating income</td><td>${fmtFull(d.noi)}</td></tr>
       <tr><td>Debt service (${fmt$(d.loan)} @ ${a.rate}%, ${a.term} yr)</td><td>−${fmtFull(d.ds)}</td></tr>
       <tr class="total"><td>Cash flow</td><td class="${d.cf>0?'pos':'neg'}">${fmtFull(d.cf)}</td></tr>
@@ -1650,7 +1672,7 @@ $$('#toc a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); con
 
 function updateZipsSource(){ if(USE_GL && mapReady && map.getSource && map.getSource('zips')) map.getSource('zips').setData(BA.geo.zips); else if(map && map.draw) map.draw(); }
 /* ---------------- public API for dashboard/research ---------------- */
-window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine, EDITION_STATE, focusCity, focusDistrict, renderCityRail, renderDistrictRail, districtOf, NO_DISTRICT, editionFootprint, inFootprint, cityStats, CITY_LABEL_CAP};
+window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, taxBasis, TAX_DEFAULT, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine, EDITION_STATE, focusCity, focusDistrict, renderCityRail, renderDistrictRail, districtOf, NO_DISTRICT, editionFootprint, inFootprint, cityStats, CITY_LABEL_CAP};
 /* ---------------- boot ---------------- */
 fillCounties(); renderList(); initMap(); renderRentMarkets(); setTimeout(()=>{ try{ if(window.LXScout&&LXScout.autoStart) LXScout.autoStart(); }catch(e){} }, 800); setTimeout(()=>{ if(window.LXDash) window.LXDash.render(); },0); $('#impcount').textContent = state.imported.length? `${state.imported.length} imported in this browser` : '';
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !tour.open && state.sel) closeDrawer(); });
