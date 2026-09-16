@@ -514,6 +514,14 @@ img,canvas,svg{max-width:100%}
 .covtab tr.covzero th,.covtab tr.covzero td{color:var(--bad)}
 .covtab tr.covthin th,.covtab tr.covthin td{color:var(--warn)}
 p.covwhy{font-size:13px;line-height:1.65;color:var(--ink2);margin:0 0 6px}
+
+/* ---- lens reach note ---------------------------------------------------
+   A grey map means one of two opposite things, and the user cannot tell them
+   apart by looking. This says which. */
+.lensnote{font-size:12px;line-height:1.5;color:var(--ink2);margin:4px 0 0;padding:6px 9px;
+  border-radius:7px;background:var(--panel2);border:1px solid var(--line)}
+.lensnote:empty{display:none}
+.lensnote.blind{border-color:var(--warn);color:var(--ink)}
 </style>
 
 <style>
