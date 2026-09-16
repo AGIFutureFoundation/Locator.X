@@ -5,7 +5,7 @@
 const $=s=>document.querySelector(s);
 const L=()=>window.LX;
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const CATCOL={asset:'--cat1',hack:'--cat2',value:'--cat3',growth:'--cat4',liab:'--cat5'};
+const CATCOL={asset:'--cat1',hack:'--cat2',value:'--cat3',growth:'--cat4',liab:'--cat5',unrated:'--muted'};
 const CATNAME={asset:'Cash-flow asset',hack:'House-hack',value:'Value-add',growth:'Appreciation bet',liab:'Liability'};
 /* Categorical hues come from the validated slot order and are assigned in
    fixed order, never cycled: a ninth county folds into a muted "Other" rather
