@@ -92,6 +92,7 @@ real — the validator has no flake mode.
 | Social copy | `content/social/*.md` — placeholders only, rendered by `scripts/build_social.py`; linted for solicitation like everything under `content/`, which matters most here because a post is public |
 | Investor deck | `content/investor/DECK.md` — placeholders only, rendered by `scripts/build_deck.py`; every figure measured at build time by `scripts/deck_figures.py`. Pitch film: `scripts/make_investor_video.js` |
 | Roadmap / history | `docs/ROADMAP.md` (every milestone names its proof) / `CHANGELOG.md` |
+| Known gaps | `docs/KNOWN_GAPS.md` — defects that are **measured, known and not fixed yet**, each with its measurement and the stated cost of leaving it. An entry that cannot say how it was measured does not belong there |
 
 ## Environment gotchas
 
