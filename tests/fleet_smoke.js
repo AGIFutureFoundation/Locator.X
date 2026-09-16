@@ -461,6 +461,87 @@ async function main() {
     await page.evaluate(() => LXCov.close());
     await page.waitForTimeout(200);
 
+    /* NOTHING SCORES ON A RULE OF THUMB.
+
+       LX.rentEstimate() always returns a number. Where a market publishes no
+       rent - no record rent, no ZORI, no city median, no FMR - the last branch
+       is `price x 0.004`, a rule of thumb anchored to nothing. Rent is never
+       public record, and of the fourteen markets this repository has measured,
+       eight publish none, so that branch is the COMMON case rather than a
+       corner. It produced a cap rate, a cash flow and a DSCR to three decimals,
+       and those sailed through the buy box's rent floors: a record "met the
+       Locator X criteria" on a number nobody measured.
+
+       Note which half was already handled, because it is instructive: an
+       UNKNOWN dscr becomes 0 via `||0` and was correctly excluded. The case that
+       looked broken was fine; the fabricated one looked fine and passed.
+
+       Every fixture in this fleet used to carry a full rent series, so the
+       branch never fired in any test. The fleet now carries a rent-less edition
+       and this asserts, on EVERY edition, that a rent-derived floor never admits
+       a record whose rent has no basis. */
+    const rent = await page.evaluate(() => {
+      const ls = LX.allListings();
+      let none = 0;
+      for (const l of ls) { try { if (LX.rentEstimate(l).basis === 'none') none++; } catch (e) {} }
+      const bb = LXUW.bb;
+      const keep = {cap: bb.minCap, dscr: bb.minDscr, score: bb.minScore, price: bb.maxPrice,
+                    units: bb.minUnits, evid: bb.minEvid};
+      const relax = (cap, dscr) => { bb.minCap = cap; bb.minDscr = dscr; bb.minScore = 0;
+        bb.maxPrice = 1e12; bb.minUnits = 0; bb.minEvid = 'any'; LX.dealBump(); LXUW.render(); };
+      /* THE FLOOR MUST BE ONE THE INVENTED NUMBER CLEARS.
+
+         At a floor of 1.0 the rule-of-thumb DSCR (~0.4) fails the comparison on
+         its own, so the gate is never what excludes it and removing the gate
+         changes nothing - this assertion passed while testing nothing, which is
+         how it was first written. The floor is therefore set just under the
+         smallest positive DSCR present, so ONLY the rent-basis gate can keep
+         these records out. */
+      relax(0, 0);
+      const rows = (LXDash.rows && LXDash.rows.length) ? LXDash.rows : [];
+      const pos = rows.map(r => (r.d && r.d.dscr) || 0).filter(v => v > 0);
+      const low = pos.length ? Math.max(0.001, Math.min.apply(null, pos) / 2) : 0.01;
+      relax(0, low);
+      const gated = LXUW.matches();
+      const leaked = gated.filter(r => r.d && r.d.rentBasis === 'none').length;
+      const funnel = (document.getElementById('funnel') || {}).textContent || '';
+      const saysBlind = /publishes no rent/.test(funnel);
+      relax(0, 0);
+      const open = LXUW.matches().length;
+      Object.assign(bb, {minCap: keep.cap, minDscr: keep.dscr, minScore: keep.score,
+                         maxPrice: keep.price, minUnits: keep.units, minEvid: keep.evid});
+      LX.dealBump(); LXUW.render();
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low,
+              basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
+    });
+    if (rent.leaked > 0) {
+      errs.push(rent.leaked + ' record(s) passed the buy box at a DSCR floor of ' + rent.floor
+        + ' while their rent is a 0.4%/mo rule of thumb - the criteria were met on a number '
+        + 'nobody measured');
+    }
+    if (!rent.basisOfFirst) {
+      errs.push('deal() no longer carries rentBasis, so nothing downstream can tell a measured '
+        + 'rent from a rule of thumb');
+    }
+    if (rent.none > 0) {
+      /* A rent-blind market must SAY it is rent-blind. A buy box that quietly
+         returns nothing here reads as "no good deals", not "this question
+         cannot be asked here", and those are opposite findings. */
+      if (!rent.saysBlind) {
+        errs.push('this edition publishes no rent for ' + rent.none + ' of ' + rent.n
+          + ' records, and the funnel does not say so - silently returning nothing reads as '
+          + '"no good deals here" when the truth is "this cannot be asked here"');
+      }
+      /* ...and the advice that note gives must be true: clearing the rent floors
+         must actually rank on what the record does carry. */
+      if (!(rent.open > 0)) {
+        errs.push('with both rent floors cleared this rent-blind edition still matches nothing, '
+          + 'so the funnel note telling the user to clear them is wrong');
+      }
+    } else if (rent.saysBlind) {
+      errs.push('this edition publishes rent for every record but the funnel claims it is rent-blind');
+    }
+
     /* EVERY MAP LENS, on every edition.
 
        A lens that leaves every property dim draws a uniformly grey map, and the
