@@ -31,10 +31,10 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
       - name: Curriculum gate (eight checks)
         run: python3 curriculum/validate.py
-      - name: Course catalog is in sync with the CSV
+      - name: Course catalog and the CSV are what curriculum.py says
         run: |
           python3 curriculum/gen_courses.py
-          git diff --exit-code -- curriculum/courses
+          git diff --exit-code -- curriculum/courses curriculum/curriculum-50.csv
       - name: Internal markdown links resolve
         run: python3 scripts/check_links.py
       - name: Asset-class crosswalk gate
