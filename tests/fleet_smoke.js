@@ -501,6 +501,58 @@ async function main() {
       }
     }
 
+    /* THE DIGITAL TWIN, on every edition.
+
+       It opened in San Francisco everywhere. center was [-122.416, 37.762] and
+       maxBounds was the Bay Area box, both hard-coded, while app.js has always
+       read BA.region for exactly this. Measured on the synthetic fleet: the twin
+       opened 11,566 km from the edition's own records and, because the records
+       fell OUTSIDE maxBounds, the user could not pan to them. The view was not
+       misplaced; it was locked away from its own data.
+
+       Third instance of one defect: Bay-Area-first code never revisited when the
+       app went multi-edition (the sixty-four city labels, the choropleth stops,
+       this). So the check is geographic, not cosmetic: the twin must open near
+       the records and must be able to reach them. */
+    const twin = await page.evaluate(() => {
+      if (!window.LXTwin || !LXTwin.twinView) return { err: 'twinView not exported' };
+      const v = LXTwin.twinView();
+      const all = LX.allListings();
+      let sx = 0, sy = 0, n = 0, inB = 0;
+      all.forEach(l => {
+        if (typeof l.lng !== 'number' || typeof l.lat !== 'number') return;
+        sx += l.lng; sy += l.lat; n++;
+        if (!v.maxBounds) { inB++; return; }
+        if (l.lng >= v.maxBounds[0][0] && l.lng <= v.maxBounds[1][0]
+         && l.lat >= v.maxBounds[0][1] && l.lat <= v.maxBounds[1][1]) inB++;
+      });
+      if (!n) return { none: true };
+      const cen = [sx / n, sy / n];
+      return { km: Math.hypot((v.center[0] - cen[0]) * 88, (v.center[1] - cen[1]) * 111),
+               inB, n, hh: all.filter(l => window.LXHH && LXHH.candidate
+                                        && LXHH.candidate(l)).length,
+               u24: all.filter(l => (l.units || 1) >= 2 && (l.units || 1) <= 4).length };
+    });
+    if (twin.err) errs.push('digital twin: ' + twin.err);
+    else if (!twin.none) {
+      if (!(twin.km < 200)) {
+        errs.push('the digital twin opens ' + Math.round(twin.km) + ' km from this '
+          + 'edition\'s own records — it is reading a hard-coded centre instead of '
+          + 'BA.region or the record centroid');
+      }
+      if (twin.inB < twin.n) {
+        errs.push('the digital twin\'s maxBounds excludes ' + (twin.n - twin.inB)
+          + ' of ' + twin.n + ' records — the view is locked away from its own data');
+      }
+      /* The training drop and the house-hack fabric were gated on l.hh, which no
+         data builder sets. Candidacy comes from hacks.js candidate(). */
+      if (twin.u24 > 0 && twin.hh === 0) {
+        errs.push('house-hack candidacy resolves to zero against ' + twin.u24
+          + ' two-to-four-unit records — twin.js is back on the l.hh flag, which '
+          + '0 of 17 data builders set');
+      }
+    }
+
     await page.evaluate(() => LX.showView('mapview'));
     await page.waitForTimeout(500);
 
