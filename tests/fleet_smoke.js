@@ -554,6 +554,27 @@ async function main() {
          makes DSCR itself fictional. Both directions are checked, because a
          label that fires on a county the table DOES cover would be a new
          falsehood rather than a fix. */
+      /* A FIGURE THE USER DID NOT SET MUST NOT LOOK LIKE ONE THEY DID.
+
+         opexOf floors insurance at $1,200, because no carrier writes a policy
+         for $250 a year. The floor is right; applying it SILENTLY was not. A
+         user who sets 0.35% and opens a $200,000 record was shown a number that
+         works out to 0.6%, with nothing saying the floor had bound — measured at
+         581 of 14,024 fleet records. This is narrower than rent or the tax
+         placeholder: the figure is defensible and nothing is invented. The
+         defect is only that it disagreed with the stated input in silence. */
+      let ins = null;
+      try {
+        const a2 = LX.state.assump;
+        const lo = ls.filter(x => LX.price(x) * a2.ins / 100 < 1200)[0];
+        const hi = ls.filter(x => LX.price(x) * a2.ins / 100 >= 1200)[0];
+        ins = {
+          loFlag: lo ? LX.deal(lo).insFloored : null,
+          loIns:  lo ? Math.round(LX.deal(lo).ins) : null,
+          hiFlag: hi ? LX.deal(hi).insFloored : null
+        };
+      } catch (e) { ins = {err: String(e)}; }
+
       let tax = null;
       try {
         const l0 = LX.allListings()[0];
@@ -592,7 +613,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -639,6 +660,21 @@ async function main() {
         /* ...and the control: where rent IS published, nothing should be unrated. */
         errs.push(t.unrated + ' record(s) are marked unrated although this market publishes rent '
           + 'for every one - the state is leaking beyond the case it exists for');
+      }
+    }
+    if (rent.ins && rent.ins.err) {
+      errs.push('the insurance floor could not be evaluated: ' + rent.ins.err);
+    } else if (rent.ins) {
+      if (rent.ins.loFlag === false) {
+        errs.push('a record whose insurance comes from the $1,200 floor does not say so — its '
+          + 'pro-forma shows a figure the user did not set and nothing marks it');
+      }
+      if (rent.ins.loFlag === true && rent.ins.loIns !== 1200) {
+        errs.push('a record is flagged as floored but its insurance is ' + rent.ins.loIns);
+      }
+      if (rent.ins.hiFlag === true) {
+        errs.push('a record whose insurance exceeds the floor is flagged as floored — the label '
+          + 'would appear over a figure that IS the stated assumption');
       }
     }
     if (rent.tax && rent.tax.err) {

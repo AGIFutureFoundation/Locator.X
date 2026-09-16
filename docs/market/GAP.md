@@ -24,7 +24,7 @@ six either.
 
 | Capability | Category tools | Locator.X | Status |
 |---|---|---|---|
-| Nationwide record search and filtering | PropStream, PropertyRadar, DataTree | `src/views.js` (189 lines) stacks asset-class, land/building and plain-language price filters; `src/app.js` (1679) holds the record layer and map | **partial** — 8 editions shipped against 90 gate rows ([coverage](../states/coverage/README.md)), not nationwide |
+| Nationwide record search and filtering | PropStream, PropertyRadar, DataTree | `src/views.js` (189 lines) stacks asset-class, land/building and plain-language price filters; `src/app.js` (1691) holds the record layer and map | **partial** — 8 editions shipped against 90 gate rows ([coverage](../states/coverage/README.md)), not nationwide |
 | Parcel boundaries and field lookup | LandGlide, DealMachine | `src/app.js` map layers, `src/ar.js` (248) field view, `src/walk.js` (167) walkable destinations | **ships**, within an edition's footprint |
 | Distress discovery | Foreclosure.com, PropertyRadar | `src/reo.js` (150) government-owned resale, `src/signals.js` (139) ten researched outside forces | **partial** — federal REO is live; county distress feeds are in [`PULL_QUEUE.md`](../PULL_QUEUE.md) |
 | New-listing monitoring and diffing | DealMachine, REsimpli | `src/scout.js` (287) scans feeds, diffs, scores and writes a review digest per pass | **ships** |
@@ -40,7 +40,7 @@ six either.
 | Rent estimates | Rentometer, Mashvisor, AirDNA | `src/conv.js` (111) and `src/rebuild.js` (335) produce **models, labelled as models** | **partial** — no licensed rent feed; the label is the point |
 | Market analytics and forecasts | Mashvisor, AirDNA, HouseCanary | `src/predict.js` (587) with a stated method and a **backtest that says whether to believe it**; `src/outlook.js` (225) | **ships** |
 | STR-specific revenue modelling | AirDNA | `src/conv.js`, `src/campus.js` (250) student-housing demand | **partial** — lodging expansion scoped in [`HOTEL_EXPANSION.md`](../HOTEL_EXPANSION.md) |
-| Source quality shown to the user | *nobody in the register* | `src/evidence.js` (223) grades every county feed; `src/sources.js` (176) catalogues how each source attaches; the **evidence lens** in `src/app.js` (1679) maps the grade across a whole market and names the field that market is missing most | **ships** — this has no equivalent in the category, and it is now spatial rather than per-property |
+| Source quality shown to the user | *nobody in the register* | `src/evidence.js` (223) grades every county feed; `src/sources.js` (176) catalogues how each source attaches; the **evidence lens** in `src/app.js` (1691) maps the grade across a whole market and names the field that market is missing most | **ships** — this has no equivalent in the category, and it is now spatial rather than per-property |
 | Asset-class normalisation across jurisdictions | *nobody in the register* | [`crosswalk/usecodes.json`](../../crosswalk/usecodes.json), 48 codes across 8 jurisdictions, each with source + date | **ships** — no equivalent |
 
 ### 3. Contact and acquire
