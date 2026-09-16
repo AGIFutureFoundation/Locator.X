@@ -48,6 +48,11 @@ function underwrite(l, u){ // returns full sheet numbers for financing option u.
   const a=L().state.assump; const X=L();
   const P=u.offer, rehab=u.rehab||0, cont=(u.cont!=null?u.cont:10)/100;
   const rentMo=u.rentMo; const rent=rentMo*12;
+  /* WHERE THIS SHEET'S RENT CAME FROM, carried so the LOCATOR screen can refuse
+     to rule on it. A rent the user typed is 'given' whatever the market
+     publishes; otherwise it is whatever LX.rentEstimate said, and 'none' means
+     the 0.4%/mo rule of thumb. */
+  const rentBasis = u.rentBasis || 'model';
   const vac=rent*a.vacancy/100, egi=rent-vac;
   /* One expense stack, shared with deal() in app.js, so the ranking engine and
      the underwriting sheet can never disagree again. */
@@ -156,7 +161,7 @@ function underwrite(l, u){ // returns full sheet numbers for financing option u.
     all:     dscrAt(0.90, 5, 2)         // all three at once
   };
   const stressPass = Object.keys(stress).filter(k => stress[k]!=null && stress[k]>=1).length;
-  return {P, rehab, rehabAll, rentMo, rent, vac, egi, tax, ins, maint, capex, mgmt, hoa, util, opex, noi, loan, ds, cf, cfMo:cf/12, cash, dscr, coc, capCost, beOcc, arv, irr, appr, apprSrc, flows, fhaSelfSuff,
+  return {P, rehab, rehabAll, rentMo, rentBasis, rent, vac, egi, tax, ins, maint, capex, mgmt, hoa, util, opex, noi, loan, ds, cf, cfMo:cf/12, cash, dscr, coc, capCost, beOcc, arv, irr, appr, apprSrc, flows, fhaSelfSuff,
     eqMult, grm, pricePerUnit, pricePerSqft, rentPerSqft, onePctRule, debtYield, ltv, ltc, oer, paybackYears,
     breakevenRent, rentCushion, breakevenRate, rateHeadroom, maxLoan125, loanGap, stress, stressPass};
 }
@@ -171,7 +176,7 @@ function maxOffer(l, base){ // bisection on offer price; rent fixed
 function price0(l){ return L().price(l); }
 function baseInputs(l, s){ const X=L(); const r=D().analyze(l); const rentMo=(s&&s.rentMo)|| r.d.rentMo; const rp=(s&&s.rehabPreset)||'none'; const rate=REHAB.find(x=>x[0]===rp)[2]; const rehab=(s&&s.rehab!=null)? s.rehab : Math.round((l.sqft||1200)*rate); const uplift = rp==='none'?1: rp==='cosmetic'?1.08: rp==='medium'?1.15:1.25;
   const fin=(s&&s.fin)||'conv';
-  return {offer:(s&&s.offer)||price0(l), rehab, cont:(s&&s.cont!=null)?s.cont:10, rentMo:Math.round(rentMo*((s&&s.rentMo)?1:uplift)), rehabPreset:rp, fin, finOpt:null, selfManage:!!(s&&s.selfManage), hoa:s&&s.hoa, util:s&&s.util, arv:s&&s.arv, analysis:r};
+  return {offer:(s&&s.offer)||price0(l), rehab, cont:(s&&s.cont!=null)?s.cont:10, rentMo:Math.round(rentMo*((s&&s.rentMo)?1:uplift)), rentBasis:(s&&s.rentMo)? 'given' : (r.d.rentBasis||'model'), rehabPreset:rp, fin, finOpt:null, selfManage:!!(s&&s.selfManage), hoa:s&&s.hoa, util:s&&s.util, arv:s&&s.arv, analysis:r};
 }
 function withFin(l, u){ const opts=financeOptions(l,u); u.finOpt=opts.find(o=>o.id===u.fin&&!o.disabled)||opts[0]; u.opts=opts; return u; }
 

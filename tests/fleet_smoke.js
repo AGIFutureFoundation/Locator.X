@@ -511,7 +511,25 @@ async function main() {
       Object.assign(bb, {minCap: keep.cap, minDscr: keep.dscr, minScore: keep.score,
                          maxPrice: keep.price, minUnits: keep.units, minEvid: keep.evid});
       LX.dealBump(); LXUW.render();
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low,
+      /* THE TEACHING SURFACE MUST NOT RULE ON AN INVENTED RENT.
+
+         Three of the LOCATOR screen's seven gates are rent questions. Where a
+         market publishes none they used to return confident negatives: C said
+         "this fails the first test" and A said "Liability - well documented, and
+         it takes money out of your pocket", about a building nobody has a rent
+         for. The record is well documented; the rent is not documented at all.
+         This is the framework the curriculum is built on, so a wrong verdict
+         here is a lesson. */
+      let gate = null;
+      try {
+        const sh = LXUW.sheetFor(ls[0]);
+        const g = LXLocator.gates(ls[0], sh.uw);
+        const at = k => g.find(x => x.k === k) || {};
+        gate = {basis: sh.uw.rentBasis, C: at('C').v, A: at('A').v, Aval: at('A').val,
+                O: at('O').v, Cnote: at('C').note || ''};
+      } catch (e) { gate = {err: String(e)}; }
+
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -540,6 +558,32 @@ async function main() {
       }
     } else if (rent.saysBlind) {
       errs.push('this edition publishes rent for every record but the funnel claims it is rent-blind');
+    }
+    if (rent.gate && rent.gate.err) {
+      errs.push('the LOCATOR screen could not be evaluated: ' + rent.gate.err);
+    } else if (rent.gate && rent.gate.basis === 'none') {
+      if (rent.gate.C !== 'unknown') {
+        errs.push('the LOCATOR cash-flow gate returned "' + rent.gate.C + '" in a market that '
+          + 'publishes no rent - a verdict on a 0.4%/mo rule of thumb, on the teaching surface');
+      }
+      if (rent.gate.A !== 'unknown' || /Liabilit/i.test(rent.gate.Aval || '')) {
+        errs.push('the LOCATOR asset test returned "' + rent.gate.Aval + '" (' + rent.gate.A
+          + ') with no rent published - it asks whether the cash flows can be SOURCED, and they cannot');
+      }
+      if (rent.gate.O !== 'unknown') {
+        errs.push('the LOCATOR ownership-economics gate counted cash flow as known with no rent published');
+      }
+      if (!/publishes no rent/.test(rent.gate.Cnote)) {
+        errs.push('the LOCATOR cash-flow gate refused without saying the market publishes no rent');
+      }
+    } else if (rent.gate && rent.gate.basis && rent.gate.basis !== 'none') {
+      /* ...and the control: where rent IS anchored to something published, the
+         gates must still be willing to return a negative. A screen that answers
+         "unknown" everywhere is not honest, it is useless. */
+      if (rent.gate.C === 'unknown' && rent.gate.A === 'unknown' && rent.gate.O === 'unknown') {
+        errs.push('every rent-derived LOCATOR gate returned unknown even though this market '
+          + 'publishes rent (basis ' + rent.gate.basis + ') - the refusal is too broad');
+      }
     }
 
     /* EVERY MAP LENS, on every edition.
