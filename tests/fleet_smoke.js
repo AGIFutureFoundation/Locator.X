@@ -542,6 +542,30 @@ async function main() {
          eligibility filter comes first and can leave none — so the invariant is
          not "the subject always has rent", it is "a subject without rent always
          says so". */
+      /* A PLACEHOLDER TAX RATE MUST NOT BE CALLED THE COUNTY'S RATE.
+
+         CITY_TAX covers ten counties; every other county falls to a 1.2%
+         national-average placeholder, and the assumptions panel used to render
+         that as "East Baton Rouge: 1.2" — attributing a constant to a county
+         that publishes its own millage. Two shipped editions run on it.
+
+         This is labelled rather than refused, unlike rent: tax is one line of
+         the operating stack and 1.2% is defensible, whereas a rule-of-thumb rent
+         makes DSCR itself fictional. Both directions are checked, because a
+         label that fires on a county the table DOES cover would be a new
+         falsehood rather than a fix. */
+      let tax = null;
+      try {
+        const l0 = LX.allListings()[0];
+        const saved = l0.county;
+        l0.county = 'Alameda';           // in CITY_TAX
+        const known = {basis: LX.taxBasis(l0), rate: LX.taxRate(l0)};
+        l0.county = '\u200bNowhere Parish';  // cannot be in the table
+        const unknown = {basis: LX.taxBasis(l0), rate: LX.taxRate(l0)};
+        l0.county = saved;
+        tax = {known, unknown, def: LX.TAX_DEFAULT};
+      } catch (e) { tax = {err: String(e)}; }
+
       let acad = null;
       try {
         const A = window.LXAcad;
@@ -568,7 +592,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -615,6 +639,21 @@ async function main() {
         /* ...and the control: where rent IS published, nothing should be unrated. */
         errs.push(t.unrated + ' record(s) are marked unrated although this market publishes rent '
           + 'for every one - the state is leaking beyond the case it exists for');
+      }
+    }
+    if (rent.tax && rent.tax.err) {
+      errs.push('the tax-rate basis could not be evaluated: ' + rent.tax.err);
+    } else if (rent.tax) {
+      if (rent.tax.known.basis !== 'county') {
+        errs.push('a county WITH a published rate in CITY_TAX reports basis "' + rent.tax.known.basis
+          + '" — the placeholder label would appear over a real figure');
+      }
+      if (rent.tax.unknown.basis !== 'placeholder') {
+        errs.push('a county absent from CITY_TAX reports basis "' + rent.tax.unknown.basis
+          + '" — a national-average constant is being presented as that county\'s published rate');
+      }
+      if (rent.tax.unknown.rate !== rent.tax.def) {
+        errs.push('the fallback tax rate is ' + rent.tax.unknown.rate + ', not the declared default');
       }
     }
     if (rent.acad && rent.acad.err) {
