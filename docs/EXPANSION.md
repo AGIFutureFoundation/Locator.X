@@ -14,7 +14,7 @@ answer a question.
 
 ## The finding that outranks every region
 
-**No market in this catalogue can answer more than 7 of the 15 requirements, and the reason is the same everywhere: there is no rent figure.** `cf`, `cap`, `grm`, `dscr`, `beocc`, `norent` and `yield` all fail for that one missing input. A rent feed is worth **seven requirements** in 7 of the 11 markets below.
+**No market in this catalogue can answer more than 7 of the 15 requirements, and the reason is the same everywhere: there is no rent figure.** `cf`, `cap`, `grm`, `dscr`, `beocc`, `norent` and `yield` all fail for that one missing input. A rent feed is worth **seven requirements** in 8 of the 14 markets below.
 
 No amount of new territory raises any ceiling above 7 until that feed exists. With it, the best market in the catalogue reaches **14 of 15**. Expansion is the second lever here, not the first.
 
@@ -31,7 +31,10 @@ No amount of new territory raises any ceiling above 7 until that feed exists. Wi
 | **New Mexico** | 5 | 5 | 0 | **12** | 5 | — |
 | **Louisiana** | 5 | 5 | 0 | **12** | 20 | `sale`, `saledate` |
 | **Indiana** | 5 | 5 | 0 | **6** | 28 | — |
+| **Wisconsin** | 3 | 5 | 2 | **12** | 22 | — |
+| **Nevada** | 3 | 5 | 2 | **6** | 17 | — |
 | **Nebraska** | 3 | 5 | 2 | **12** | 0 | `rent` |
+| **Georgia** | 3 | 5 | 2 | **6** | 4 | — |
 | **New York** | 3 | 3 | 0 | **4** | 6 | — |
 
 *Ceiling* is what the market reaches if every `named` and `blocked` row were pulled. A low ceiling is permanent; a large gap is only work.
@@ -45,6 +48,8 @@ These gain almost nothing from a rent feed because no **value row** is recorded 
 | Utah | 6 | +1 | REAL gap — utah_co_ut declares no value field either |
 | Ohio | 6 | +1 | REAL gap — ohio_dte declares no value field either |
 | Indiana | 5 | +1 | REAL gap — ohio_dte declares no value field either |
+| Nevada | 5 | +1 | unknown — the crosswalk does not cover this state |
+| Georgia | 5 | +1 | unknown — the crosswalk does not cover this state |
 | New York | 3 | +1 | REAL gap — onondaga_ny declares no value field either |
 
 `scripts/crosscheck_sources.py` fails the build when the two records disagree in the dangerous direction — an inventory promising a value the ranking engine cannot rank on, which makes a market read as expandable and screen into nothing.
@@ -66,19 +71,14 @@ The column name has to come from the pull, never from the prose, so none of this
 
 ## Greenfield — demand measured, no inventory written
 
-| State | Ranked submarkets | Best score |
-|---|---:|---:|
-| GA | 4 | 71.7 |
-| NV | 17 | 80.1 |
-| WI | 22 | 86.3 |
-
-These carry measured demand and no coverage inventory at all. Writing one is a desk afternoon and tells you whether an edition is possible before anyone builds one.
+None — every state with measured demand has an inventory.
 
 ## What the classifier could not read
 
-8 coverage rows matched no field pattern. They **contribute nothing** to any score above, which understates those markets rather than overstating them — the safe direction, since overstating a ceiling ships an edition that cannot answer its own screen. Listed so the blind spots are visible:
+9 coverage rows matched no field pattern. They **contribute nothing** to any score above, which understates those markets rather than overstating them — the safe direction, since overstating a ceiling ships an edition that cannot answer its own screen. Listed so the blind spots are visible:
 
 - `indiana` — Keys
+- `nevada` — Bulk GIS downloads
 - `new-mexico` — Year built
 - `new-york` — County selection
 - `new-york` — Multifamily form

@@ -303,7 +303,9 @@ def demand():
 # coverage filenames -> the USPS code the submarket index uses
 ABBR = {'arizona': 'AZ', 'california': 'CA', 'florida': 'FL', 'indiana': 'IN',
         'louisiana': 'LA', 'nebraska': 'NE', 'new-mexico': 'NM', 'new-york': 'NY',
-        'north-carolina': 'NC', 'ohio': 'OH', 'utah': 'UT'}
+        'north-carolina': 'NC', 'ohio': 'OH', 'utah': 'UT',
+        # greenfield, portals identified 2026-09-16, nothing pulled
+        'georgia': 'GA', 'nevada': 'NV', 'wisconsin': 'WI'}
 NAME = {v: k.replace('-', ' ').title() for k, v in ABBR.items()}
 
 

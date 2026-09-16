@@ -49,6 +49,9 @@ work, and which are documented traps):
 | Ohio | Franklin, Mahoning (+ Trumbull `blocked`) | [`ohio.md`](ohio.md) |
 | Indiana | Marion, Tippecanoe | [`indiana.md`](indiana.md) |
 | Utah | Utah County | [`utah.md`](utah.md) |
+| Georgia *(greenfield — portals identified 2026-09-16, nothing pulled)* | Fulton, DeKalb via qPublic | [`georgia.md`](georgia.md) |
+| Nevada *(greenfield — portals identified 2026-09-16, nothing pulled)* | Clark, Washoe | [`nevada.md`](nevada.md) |
+| Wisconsin *(greenfield — portals identified 2026-09-16, nothing pulled)* | Statewide parcel layer | [`wisconsin.md`](wisconsin.md) |
 | Arizona | Maricopa | [`arizona.md`](arizona.md) |
 | New Mexico | Bernalillo, Sandoval | [`new-mexico.md`](new-mexico.md) |
 | New York | Onondaga (NYC `named`) | [`new-york.md`](new-york.md) |
@@ -58,10 +61,26 @@ work, and which are documented traps):
 - **Container `curl`** — county GIS/open-data hosts blocked as a class (CONNECT 403,
   verified 2026-09-09 across six Louisiana hosts and the FL DOR).
 - **WebFetch (API-side fetch)** — probed 2026-09-10 against the known-good Bernalillo
-  endpoint: **blocked by the same egress policy.** No route from this environment
-  reaches county records.
+  endpoint and re-tested 2026-09-16 against `data.nola.gov` and `www.census.gov`:
+  **blocked by the same egress policy**, which returns an explicit `EGRESS_BLOCKED` for
+  the domain. The agent proxy itself reports zero relay failures and full CA coverage, so
+  the refusal is upstream organisation policy and not a trust or configuration problem —
+  the proxy README is explicit that such denials are reported, never retried.
+- **Web search** — re-tested 2026-09-16 and it **works**, which is the one thing in this
+  section that is not a wall. It returns titles, URLs and publisher summaries; it does not
+  return data. That is precisely enough to move a row from *nothing* to `named`, because
+  `named` means the office and portal are identified — and it is the route by which the
+  Georgia, Nevada and Wisconsin inventories were written without reaching a single
+  endpoint. It can never advance a row past `named`: a portal identified is not a field
+  list, a record count, or a value column, and this project does not let a search summary
+  stand in for a pull.
 - **Desktop browser pane** — the proven route ([`PULL_RECIPE.md`](../../PULL_RECIPE.md));
   all `named` probes queue behind a desktop session.
+
+**The boundary, stated once.** An agent session can identify offices, portals and access
+constraints, and can write an inventory honestly labelled `named`. It cannot count a
+parcel, read a field list, or fill a value column. Everything past `named` needs the
+desktop route, and a session that blurs the two has fabricated a pull.
 
 ## How a row is filled
 
