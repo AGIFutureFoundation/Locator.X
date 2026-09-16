@@ -6,26 +6,26 @@
 Every state file here answers the seven LOCATOR gates for its counties, one row
 per gate, each carrying a status from the vocabulary [`README.md`](README.md)
 defines. Each file states its own coverage honestly; this is the sum, which was
-not stated anywhere. **90 gate rows across 11 state files.**
+not stated anywhere. **103 gate rows across 14 state files.**
 
 ## Where the record layer actually stands
 
 | Status | Rows | Share | What it means |
 |---|---:|---:|---|
-| `shipped` | 8 | 9% | In a built edition; fleet-sweep verified |
-| `pulled` | 50 | 56% | Rows retrieved; field quirks documented |
+| `shipped` | 8 | 8% | In a built edition; fleet-sweep verified |
+| `pulled` | 50 | 49% | Rows retrieved; field quirks documented |
 | `no public record` | 3 | 3% | The jurisdiction does not publish it |
 | `blocked` | 3 | 3% | Attempted and refused, with the reason dated |
-| `named` | 26 | 29% | Office or portal identified; no pull yet |
-| **Total** | **90** | | |
+| `named` | 39 | 38% | Office or portal identified; no pull yet |
+| **Total** | **103** | | |
 
-**8 of 90 rows are in a built edition.** Another **50 have been pulled but not
+**8 of 103 rows are in a built edition.** Another **50 have been pulled but not
 packed** — the rows came back and their quirks are documented, and they are still
 not in front of a user. That gap, 50 rows wide, is the largest single piece of
 finished work sitting behind the shipping step, and it is a bigger number than
 everything still unprobed.
 
-The 26 `named` rows are the research queue. The 3 `blocked` rows are findings
+The 39 `named` rows are the research queue. The 3 `blocked` rows are findings
 with dated reasons, not to-dos. The 3 `no public record` rows are ceilings: the
 jurisdiction does not publish it, and nothing advances them.
 
@@ -42,8 +42,11 @@ jurisdiction does not publish it, and nothing advances them.
 | New Mexico | 7 | — | 7 | — | — | — |
 | Ohio | 7 | — | 6 | — | 1 | — |
 | New York | 6 | — | 5 | — | — | 1 |
+| Nevada | 5 | — | — | — | — | 5 |
 | Arizona | 4 | — | 4 | — | — | — |
+| Georgia | 4 | — | — | — | — | 4 |
 | Utah | 4 | — | 4 | — | — | — |
+| Wisconsin | 4 | — | — | — | — | 4 |
 
 ## By gate
 
@@ -52,12 +55,12 @@ covered. A row naming several gates counts once for each.
 
 | Gate | Rows | `shipped` | `pulled` | `no public record` | `blocked` | `named` |
 |---|---:|---:|---:|---:|---:|---:|
-| L — Location | 28 | 4 | 13 | — | 3 | 8 |
-| O — Ownership economics | 33 | — | 18 | 2 | 1 | 12 |
-| C — Condition & income | 13 | — | 5 | 1 | 1 | 6 |
-| A — Assessment & tax | 49 | 4 | 32 | — | 3 | 10 |
-| T — Title & instruments | 14 | — | 5 | — | 1 | 8 |
-| R — Regulation & permits | 11 | — | 6 | — | 1 | 4 |
+| L — Location | 40 | 4 | 13 | — | 3 | 20 |
+| O — Ownership economics | 39 | — | 18 | 2 | 1 | 18 |
+| C — Condition & income | 18 | — | 5 | 1 | 1 | 11 |
+| A — Assessment & tax | 59 | 4 | 32 | — | 3 | 20 |
+| T — Title & instruments | 19 | — | 5 | — | 1 | 13 |
+| R — Regulation & permits | 16 | — | 6 | — | 1 | 9 |
 
 ## The ceilings
 
