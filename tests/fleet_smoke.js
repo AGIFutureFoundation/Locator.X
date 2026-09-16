@@ -318,6 +318,11 @@ async function main() {
       const c = document.getElementById('coverpage'); if (c) c.remove();
       document.getElementById('covopen').click();
       await new Promise(r => setTimeout(r, 2500));
+      /* The recount below compares against LX.allListings(), so the panel is put
+         on EDITION scope explicitly rather than relying on "no filter is active,
+         so the view happens to be the edition" — an accident that would stop
+         holding the first time a default filter appeared. */
+      LXCov.setScope('edition');
       const rep = LXCov.report();
       const rows = LX.allListings();
       const recount = (window.LXEvid && LXEvid.TESTS || []).map(t => {
@@ -343,7 +348,18 @@ async function main() {
                            && (r.na === 0 || (r.topNa || '').length > 25)
                            && r.computed + r.blocked + r.na === r.sampled),
         counties: rep.footprint.counties.length,
-        fpTotal: rep.footprint.counties.reduce((a, x) => a + x.n, 0)
+        fpTotal: rep.footprint.counties.reduce((a, x) => a + x.n, 0),
+        /* THE REASON MUST REACH THE SCREEN. The report object carried topBlock
+           and topNa for a year while the table read a field named `top` that the
+           tally never produced, so every non-evaluable play printed an empty
+           cell: the panel promised a reason and showed none, and the object-level
+           assertion above could not see it. This checks the rendered text. */
+        reasonsDrawn: !s || s.insufficient ? null
+          : s.rows.every(r => (!r.blocked || body.indexOf(r.topBlock.slice(0, 40)) >= 0)
+                           && (!r.na || body.indexOf(r.topNa.slice(0, 40)) >= 0)),
+        /* THE PANEL MUST NAME THE SET IT IS DESCRIBING. */
+        scopeNamed: /Describing/.test(body) && body.indexOf('in this edition') >= 0,
+        scopeN: rep.scope.n, scopeAll: rep.scope.all, scopeEff: rep.scope.effective
       };
     });
     if (!cov.open) errs.push('the coverage panel did not open');
@@ -367,6 +383,81 @@ async function main() {
       errs.push('a coverage strategy row is missing its reason, or its three states do not sum '
         + 'to the sample — blocked and inapplicable are opposite findings and are never pooled');
     }
+    if (cov.reasonsDrawn === false) {
+      errs.push('the coverage panel reports a blocked or inapplicable play but does not PRINT its '
+        + 'reason — an empty cell where the record layer was supposed to be stated');
+    }
+    if (!cov.scopeNamed) errs.push('the coverage panel does not say which set of records it is describing');
+    if (cov.scopeEff !== 'edition' || cov.scopeN !== cov.scopeAll) {
+      errs.push('the coverage panel was put on edition scope and did not take it: '
+        + cov.scopeEff + ', ' + cov.scopeN + ' of ' + cov.scopeAll);
+    }
+
+    /* SCOPE FOLLOWS THE FILTER.
+
+       The panel used to read allListings() everywhere, so it described the whole
+       edition even while the screen showed one filtered city — silently answering
+       "what can this edition answer" under a heading the user read as "what can
+       THESE answer". The two are different questions and the second is the one an
+       offer is made against. This filters to the edition's largest county, then
+       recounts the panel's field figures against THAT set: a panel still reading
+       the edition would disagree by the whole remainder. */
+    const scoped = await page.evaluate(async () => {
+      /* A PRICE FLOOR, not a county filter. The synthetic fleet gives every
+         record the same county, so a county filter narrows nothing and the whole
+         assertion would skip itself silently on every edition — a guard that
+         passes because it never ran. A floor at the median narrows any edition
+         holding two distinct prices, which every shipped one does. */
+      const all = LX.allListings();
+      const ps = all.map(l => LX.price(l)).filter(v => typeof v === 'number' && isFinite(v)).sort((a, b) => a - b);
+      if (ps.length < 4) return { skip: 'this edition prices fewer than four records' };
+      const mid = ps[Math.floor(ps.length / 2)];
+      if (mid <= ps[0]) return { skip: 'this edition has no price spread to filter on' };
+      const prev = LX.state.filters.min;
+      LX.state.filters.min = String(mid);
+      LXCov.setScope('view');
+      const rep = LXCov.report();
+      const rows = LX.filtered();
+      const recount = (window.LXEvid && LXEvid.TESTS || []).map(t => {
+        let n = 0; for (const l of rows) { try { if (t[2](l)) n++; } catch (e) {} }
+        return t[0] + '=' + n;
+      }).join(' ');
+      const printed = rep.fields.map(f => f.key + '=' + f.have).join(' ');
+      const body = (document.getElementById('covbody') || {}).textContent || '';
+      const title = (document.getElementById('covtitle') || {}).textContent || '';
+      LX.state.filters.min = prev; LXCov.setScope('edition');
+      return {
+        cut: mid, view: rows.length, all: all.length,
+        eff: rep.scope.effective, n: rep.scope.n, fpTotal: rep.footprint.counties.reduce((a, x) => a + x.n, 0),
+        agree: printed === recount, printed, recount,
+        /* And it must SAY it is describing the smaller set — a panel that silently
+           narrows is as misleading as one that silently widens. */
+        saysView: /now on the map/.test(body), titleMoved: !/this edition/.test(title)
+      };
+    });
+    if (!scoped.skip) {
+      if (scoped.view >= scoped.all) {
+        errs.push('a price floor at ' + scoped.cut + ' did not narrow the record set, so scope could not be tested');
+      } else {
+        if (scoped.eff !== 'view' || scoped.n !== scoped.view) {
+          errs.push('the coverage panel did not follow the active filter: it reports ' + scoped.eff
+            + ' / ' + scoped.n + ' while the map shows ' + scoped.view + ' of ' + scoped.all);
+        }
+        if (!scoped.agree) {
+          errs.push('with a filter active the coverage panel DISAGREES with the records on screen.\n'
+            + '       panel:   ' + scoped.printed + '\n'
+            + '       recount: ' + scoped.recount);
+        }
+        if (scoped.fpTotal !== scoped.view) {
+          errs.push('the filtered footprint accounts for ' + scoped.fpTotal + ' records out of ' + scoped.view);
+        }
+        if (!scoped.saysView || !scoped.titleMoved) {
+          errs.push('the coverage panel narrowed to the filtered set without saying so — a silent '
+            + 'narrowing misleads exactly as much as a silent widening');
+        }
+      }
+    }
+
     await page.evaluate(() => LXCov.close());
     await page.waitForTimeout(200);
 

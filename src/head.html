@@ -514,6 +514,14 @@ img,canvas,svg{max-width:100%}
 .covtab tr.covzero th,.covtab tr.covzero td{color:var(--bad)}
 .covtab tr.covthin th,.covtab tr.covthin td{color:var(--warn)}
 p.covwhy{font-size:13px;line-height:1.65;color:var(--ink2);margin:0 0 6px}
+/* The scope switch. Two sets, one of which is always the honest answer to a
+   different question, so neither is styled as the default. */
+.covscope{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:10px 0 6px}
+.covscopelab{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.covscopebtn{font:inherit;font-size:12.5px;padding:4px 11px;border-radius:999px;cursor:pointer;
+  background:var(--panel2);color:var(--ink2);border:1px solid var(--line)}
+.covscopebtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.covscopenote{font-size:12.5px;line-height:1.6;color:var(--ink2);margin:0 0 10px}
 
 /* ---- lens reach note ---------------------------------------------------
    A grey map means one of two opposite things, and the user cannot tell them

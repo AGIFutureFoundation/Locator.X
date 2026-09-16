@@ -13,7 +13,7 @@ way [`../market/GAP.md`](../market/GAP.md) measures everything else.
    already exist and are not optional decoration: `src/evidence.js` (223) grades a
    source, `src/sources.js` (176) says how it attaches, `src/comps.js` (282) refuses a
    comparable that is not a recorded sale with a date, `src/switchboard.js` (438) grades
-   every strategy column by the facts it rests on, and `src/coverage.js` (227) states
+   every strategy column by the facts it rests on, and `src/coverage.js` (340) states
    what the edition cannot answer at all.
 3. **Human approval for anything material.** An agent proposes; a person decides. This
    is not a courtesy — it is the reason the platform can be honest about confidence,
