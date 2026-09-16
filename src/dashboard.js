@@ -141,11 +141,22 @@ function analyze(l){
     for(const k in fw) fw[k]=+(fw[k]/tot*100).toFixed(1); }
   let score=0; for(const k in fw) score+=fw[k]*fs[k]/100;
   score = Math.round(score);
+  /* EVERY BRANCH HERE EXCEPT THE LAST IS A RENT QUESTION. cf, dscr - both move
+     when rent moves. Where a market publishes no rent, d.rentBasis is 'none' and
+     every one of those numbers descends from `price x 0.004`, a rule of thumb
+     anchored to nothing, so each test resolves on an invented figure.
+
+     The value-add play is the exception: valueAdd() reads units, lot area, year
+     and building detail - all record - and nothing else. Gating it behind a
+     fabricated DSCR was the bug, because it is precisely the play a rent-blind
+     record CAN still support. So where rent has no basis it is assigned on its
+     own record-derived score, and the rent-derived plays are simply not claimed. */
+  const rentless = d.rentBasis === 'none';
   let cat;
-  if(d.cf>0) cat='asset';
-  else if((l.units||1)>=2 && (l.units||1)<=4 && d.P<=FHA_4UNIT && d.dscr>=0.6) cat='hack';
-  else if(va.score>=40 && d.dscr>=0.55) cat='value';
-  else if(mk.yoy!=null && mk.yoy>=2.5 && d.dscr>=0.75) cat='growth';
+  if(!rentless && d.cf>0) cat='asset';
+  else if(!rentless && (l.units||1)>=2 && (l.units||1)<=4 && d.P<=FHA_4UNIT && d.dscr>=0.6) cat='hack';
+  else if(va.score>=40 && (rentless || d.dscr>=0.55)) cat='value';
+  else if(!rentless && mk.yoy!=null && mk.yoy>=2.5 && d.dscr>=0.75) cat='growth';
   else cat='liab';
   const be=breakEvenDown(d,l);
   const a=L().state.assump;

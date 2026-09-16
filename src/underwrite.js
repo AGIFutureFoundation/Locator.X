@@ -217,8 +217,30 @@ function insightsBlock(l, uw){
 }
 
 /* ---------- matches ---------- */
+/* A CRITERION ABOUT RENT CANNOT BE MET BY A RULE OF THUMB.
+
+   The cap-rate and DSCR floors are both rent-derived: change the rent and both
+   move. Where a market publishes no rent at all, LX.rentEstimate falls back to
+   `price x 0.004` - a rule of thumb anchored to nothing - and until now that
+   produced a real-looking cap rate and a DSCR to three decimals which sailed
+   through these floors. The record then "met the Locator X criteria" on a number
+   nobody measured.
+
+   Note the asymmetry that hid it: an UNKNOWN dscr becomes 0 through `||0` and is
+   correctly excluded, so the one case that was handled was the one that looked
+   broken. The fabricated case looked fine and passed.
+
+   So a rent-derived floor now excludes a record whose rent has no basis, and
+   says so in the funnel rather than silently shrinking the result. Nothing is
+   excluded when neither floor is asked for - a buyer who has not set a rent
+   criterion is not asking a rent question. */
+function rentBlind(r){ return r && r.d && r.d.rentBasis === 'none'; }
+function rentFloorOn(){ return (+bb.minCap > 0) || (+bb.minDscr > 0); }
 function matches(){ const rowsD=D().rows.length? D().rows : (D().render(), D().rows); // ensure computed
-  return rowsD.filter(r=>{ const l=r.l; if(price0(l)>bb.maxPrice) return false; if(r.score<bb.minScore) return false; if(r.d.cap<bb.minCap) return false; if((r.d.dscr||0)<bb.minDscr) return false; if((l.units||1)<bb.minUnits) return false;
+  const rentGate = rentFloorOn();
+  return rowsD.filter(r=>{ const l=r.l; if(price0(l)>bb.maxPrice) return false; if(r.score<bb.minScore) return false;
+    if(rentGate && rentBlind(r)) return false;
+    if(r.d.cap<bb.minCap) return false; if((r.d.dscr||0)<bb.minDscr) return false; if((l.units||1)<bb.minUnits) return false;
     if(bb.minEvid&&bb.minEvid!=='any'){ try{ const g=window.LXEvid&&LXEvid.grade(l); const ord={A:4,B:3,C:2,D:1};
       if(!g||(ord[g.band]||0) < (ord[bb.minEvid]||0)) return false; }catch(e){} } if(bb.city && l.city!==bb.city) return false; if(bb.county && l.county!==bb.county) return false; if(!bb.cats[r.cat]) return false; return true; }).sort((p,q)=>q.score-p.score);
 }
@@ -255,7 +277,23 @@ function renderFunnel(ms){
   ms.forEach(r=>counts[S(r.l.id).stage]++);
   const rowsF=[['Universe', total, '--muted'],['Buy-box matches', ms.length, '--bay'],['Screened', counts.scr+counts.uw+counts.off, '--stg-scr'],['Underwritten', counts.uw+counts.off, '--stg-uw'],['Offers drafted', counts.off, '--stg-off']];
   const max=total;
-  $('#funnel').innerHTML=rowsF.map(r=>`<div class="funnelrow"><span>${r[0]}</span><div class="bar"><i style="--c:var(${r[2]});width:${Math.max(r[1]/max*100, r[1]?2:0)}%"></i></div><b>${X.fmtN(r[1])}</b></div>`).join('')+`<div style="font-size:11px;color:var(--muted);margin-top:6px">Passed: ${counts.pass}. Stages persist in this browser.</div>`;
+  /* A record excluded because this market publishes no rent is NOT the same as
+     one that failed the floor, and the funnel must not let it look that way: a
+     buy box that quietly returns nothing in a rent-blind market reads as "no
+     good deals here" when the truth is "this question cannot be asked here". */
+  let blind = 0;
+  if(rentFloorOn()){
+    try{ const all = D().rows.length ? D().rows : (D().render(), D().rows);
+         blind = all.filter(rentBlind).length; }catch(e){}
+  }
+  let note = `Passed: ${counts.pass}. Stages persist in this browser.`;
+  if(blind){
+    note += ` <b>${X.fmtN(blind)} of ${X.fmtN(total)} records are excluded because this market `
+         +  `publishes no rent</b> — the cap-rate and DSCR floors are rent questions, and the only `
+         +  `rent available here is a 0.4%/mo rule of thumb. They are not failing your criteria; `
+         +  `they cannot be tested against them. Clear both rent floors to rank on what the record does carry.`;
+  }
+  $('#funnel').innerHTML=rowsF.map(r=>`<div class="funnelrow"><span>${r[0]}</span><div class="bar"><i style="--c:var(${r[2]});width:${Math.max(r[1]/max*100, r[1]?2:0)}%"></i></div><b>${X.fmtN(r[1])}</b></div>`).join('')+`<div style="font-size:11px;color:var(--muted);margin-top:6px">${note}</div>`;
 }
 function autoUW(ms){
   const X=L(); const btn=$('#autouw'); btn.disabled=true; const prog=$('#autoprog'); prog.innerHTML='<div class="uwprog"><i style="width:0%"></i></div><span id="uwpct"></span>';
@@ -548,5 +586,5 @@ function deskRecord(l, u, uw, a){
     disclaimer:'Education, not advice; not a valuation. Exported from record-plus-assumption numbers: every input needs its document before relying, and the blank insurance field needs a real quote. Unknown means unknown.'
   };
 }
-window.LXUW={render, openSheet, underwrite, sheetFor, deskRecord, maxOffer, matches, get bb(){ return bb; }};
+window.LXUW={rentBlind, rentFloorOn, render, openSheet, underwrite, sheetFor, deskRecord, maxOffer, matches, get bb(){ return bb; }};
 })();

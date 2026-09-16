@@ -228,6 +228,32 @@ for i, key in enumerate(sorted(BS.SPECS)):
                                    0.8 + (i % 4) * 0.18, 0.8 + ((i * 2) % 3) * 0.22,
                                    key in CAMPUS)}
 
+# ---- a market with NO RENT FEED, because that is the common case ----------
+# Every edition above carries a full ZORI series, so the app's rent-blind path -
+# the `price x 0.004` rule of thumb LX.rentEstimate falls back to - never fired
+# in any test. That is not the rare case: rent is never public record, and of the
+# fourteen markets this repository has measured, EIGHT publish no rent at all,
+# including Orleans, whose 213,381 shipped records answer 6 of the Investment
+# Standard's 15 requirements precisely because rent is missing.
+#
+# So the fleet carries one. It is the `bay` fixture with every rent series
+# removed - same parcels, same values, same geography, no rent - which isolates
+# exactly one variable. tests/fleet_smoke.js drives it like any other edition and
+# additionally asserts that nothing SCORES on the rule of thumb.
+_nr = make_ba(3, COUNTS["bay"], 0.8, 0.8, False)
+for _z in _nr["market"]["zips"].values():
+    _z.pop("r", None)
+for _c in _nr["market"]["cities"].values():
+    _c.pop("r", None)
+for _l in _nr["listings"]:
+    _l.pop("rent", None)
+order.append("norent")
+editions["norent"] = {
+    "label": "Locator X No-Rent Market",
+    "hide": editions[order[0]]["hide"] if order else [],
+    "n": COUNTS["bay"], "BA": _nr,
+}
+
 fleet = {"order": order, "editions": editions, "templates": templates, "default": "bay"}
 switcher = r"""
 /* SYNTHETIC FLEET — all edition versions over generated fixtures. */

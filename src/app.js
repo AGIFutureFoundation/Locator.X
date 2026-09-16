@@ -120,37 +120,63 @@ function strFactor(l){
   if(city==='san francisco') return {f:0.45, why:'SF: registered hosts only, primary residence, 90-night/yr cap un-hosted — modeled hosted-hybrid'};
   return {f:0.8, why:'verify the local STR ordinance; many Bay cities cap or register short-term rentals'};
 }
+/* WHERE A RENT COMES FROM, CARRIED WITH IT.
+
+   Every branch below returns a number, and until now that was all it returned
+   plus a sentence. The last branch is `price × 0.004` — a rule of thumb anchored
+   to nothing, which fires when the county publishes no rent, the ZIP series has
+   no ZORI, there is no city median and no FMR table. That is the NORMAL case:
+   rent is never public record, and of the fourteen markets this repository has
+   measured, eight have no rent feed at all.
+
+   A number with no source that looks exactly like a number with one is how an
+   unknown becomes a quiet pass. So each branch now declares its basis, and the
+   things that DECIDE — the buy box, the criteria chip, the switchboard — can
+   refuse a rule of thumb instead of ranking on it:
+
+     given   the user typed it, or the record carried it
+     market  a published series says it (ZORI, a city median, HUD FMR)
+     model   derived from a published series by a stated method (per room, per
+             bed, short-let, rent-to-value ratio) — weaker than market, still
+             anchored to something somebody published
+     none    the 0.4%/mo rule of thumb. Anchored to nothing. Not evidence.
+
+   The number is still returned for `none`, because a rough figure the user can
+   see and overtype is more useful than a blank — but nothing may SCORE on it. */
 function rentEstimate(l){
   const o = state.overrides[l.id]||{};
-  if(o.rent) return {rent:o.rent, how:'your figure'};
-  if(l.rent) return {rent:l.rent, how:'from your data'};
+  if(o.rent) return {rent:o.rent, how:'your figure', basis:'given'};
+  if(l.rent) return {rent:l.rent, how:'from your data', basis:'given'};
   const rm = state.rentMarkets[(l.city||'').toLowerCase()];
   const mk = marketFor(l);
   const meth = state.assump.rentMethod;
   if(meth==='rooms' && mk.zori){
     const b=totalRooms(l);
-    return {rent: Math.round(b*mk.zori*0.62), how:'co-living: '+b+' rooms × ZIP typical rent × 0.62/room — check local occupancy and house-rule limits'};
+    return {rent: Math.round(b*mk.zori*0.62), basis:'model', how:'co-living: '+b+' rooms × ZIP typical rent × 0.62/room — check local occupancy and house-rule limits'};
   }
   if(meth==='str' && mk.zori){
     const sf=strFactor(l);
-    if(sf.f===0) return {rent:0, how:'short-term rental: $0 — '+sf.why};
-    return {rent: Math.round(mk.zori*1.9*0.65*sf.f*Math.max(1,l.units||1)), how:'short-term rental (modeled ADR ≈ 1.9× monthly rent ÷ 30, 65% occupancy, regulatory factor '+sf.f+') — '+sf.why};
+    if(sf.f===0) return {rent:0, basis:'model', how:'short-term rental: $0 — '+sf.why};
+    return {rent: Math.round(mk.zori*1.9*0.65*sf.f*Math.max(1,l.units||1)), basis:'model', how:'short-term rental (modeled ADR ≈ 1.9× monthly rent ÷ 30, 65% occupancy, regulatory factor '+sf.f+') — '+sf.why};
   }
   if(meth==='fmr'){
     const t=FMR[l.county];
     if(t){ const b=Math.min(4, l.beds==null? 2 : l.beds); const r=t[b]*Math.max(1,l.units||1);
-      return {rent: Math.round(r), how:'Section 8 / HUD Fair Market Rent FY2026, '+b+'BR'+((t.approx||t.approx4&&b===4)?' (~approximate — verify huduser.gov)':'')+' × units; landlords may not refuse vouchers in CA (source-of-income law)'}; }
+      return {rent: Math.round(r), basis:'market', how:'Section 8 / HUD Fair Market Rent FY2026, '+b+'BR'+((t.approx||t.approx4&&b===4)?' (~approximate — verify huduser.gov)':'')+' × units; landlords may not refuse vouchers in CA (source-of-income law)'}; }
   }
   if(meth==='bed' && mk.zori){
     const b=totalRooms(l);
-    return {rent: Math.round(b*mk.zori*0.47), how:'student housing by the bed: '+b+' beds × ZIP typical rent × 0.47/bed — campus-proximity product'};
+    return {rent: Math.round(b*mk.zori*0.47), basis:'model', how:'student housing by the bed: '+b+' beds × ZIP typical rent × 0.47/bed — campus-proximity product'};
   }
   if(meth==='beds' || !mk.ratio){
     const base = rm ? rm.medianRent : mk.zori;
-    if(base){ const b = l.beds==null? 2.5 : l.beds; const f = l.beds==null?1.1:(BED_F[Math.min(5,b)]||1.6); return {rent: Math.round(base*f*Math.max(1,l.units||1)), how: (rm?'city median rent':'ZIP typical rent')+' × bedroom factor'}; }
+    if(base){ const b = l.beds==null? 2.5 : l.beds; const f = l.beds==null?1.1:(BED_F[Math.min(5,b)]||1.6); return {rent: Math.round(base*f*Math.max(1,l.units||1)), basis:'market', how: (rm?'city median rent':'ZIP typical rent')+' × bedroom factor'}; }
   }
-  if(mk.ratio){ const prem = (l.units||1)>1 ? 1.2 : 1; return {rent: Math.round(price(l)*mk.ratio*prem), how:'ZIP rent-to-value ratio ('+(mk.ratio*100).toFixed(2)+'%/mo) × price'+(prem>1?' × 1.2 multi-unit premium':'')}; }
-  return {rent: Math.round(price(l)*0.004), how:'fallback 0.4%/mo'};
+  if(mk.ratio){ const prem = (l.units||1)>1 ? 1.2 : 1; return {rent: Math.round(price(l)*mk.ratio*prem), basis:'model', how:'ZIP rent-to-value ratio ('+(mk.ratio*100).toFixed(2)+'%/mo) × price'+(prem>1?' × 1.2 multi-unit premium':'')}; }
+  /* Nothing published reaches this property. The figure is a rule of thumb and
+     says so in both its sentence and its basis; every scoring surface refuses it. */
+  return {rent: Math.round(price(l)*0.004), basis:'none',
+          how:'no rent source for this market — 0.4%/mo rule of thumb, not a measurement'};
 }
 function price(l){ const o=state.overrides[l.id]||{}; return o.price||l.price||0; }
 function taxRate(l){ const a=state.assump; if(a.taxOverride!=='' && a.taxOverride!=null) return +a.taxOverride; return CITY_TAX[l.county]||1.2; }
@@ -258,7 +284,7 @@ function dealCompute(l){
   const loan=P*(1-a.down/100), r=a.rate/100/12, n=a.term*12, pmt = r>0 ? loan*r/(1-Math.pow(1+r,-n)) : loan/n, ds=pmt*12;
   const cf=noi-ds, cash=P*a.down/100+P*a.closing/100;
   const mk=marketFor(l); const appr = (a.appr!==''&&a.appr!=null)? +a.appr : (mk.yoy!=null? mk.yoy : 2);
-  return {P, rent, rentMo:re.rent, rentHow:re.how, vac, egi, tax, ins, maint, capex, mgmt, hoa, util, opex, noi, loan, pmt, ds, cf, cfMo:cf/12, cash, cap:noi/P*100, coc:cf/cash*100, grm:P/rent, dscr: ds>0? noi/ds : null, ppsf: l.sqft? P/l.sqft : null, one: re.rent/P*100, gross: rent/P*100, appr, mk,
+  return {P, rent, rentMo:re.rent, rentHow:re.how, rentBasis:re.basis||'model', vac, egi, tax, ins, maint, capex, mgmt, hoa, util, opex, noi, loan, pmt, ds, cf, cfMo:cf/12, cash, cap:noi/P*100, coc:cf/cash*100, grm:P/rent, dscr: ds>0? noi/ds : null, ppsf: l.sqft? P/l.sqft : null, one: re.rent/P*100, gross: rent/P*100, appr, mk,
     proj: (()=>{ const out=[]; let v=P, bal=loan, rr=rent, eq=0; for(let y=1;y<=5;y++){ v*=1+appr/100; rr*=1+a.rentGrowth/100; let ib=0; for(let m=0;m<12;m++){ const i=bal*r; ib+=i; bal-=(pmt-i); } const noi_y=rr*(1-a.vacancy/100)-(tax*Math.pow(1.02,y-1)+ins+ (rr*(a.maint+a.capex)/100) + rr*(1-a.vacancy/100)*a.mgmt/100 + hoa + util); out.push({y, value:v, equity:v-bal, cf:noi_y-ds, noi:noi_y}); } return out; })()
   };
 }
