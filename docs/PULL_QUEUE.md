@@ -13,6 +13,14 @@ tiers, generated from the measured layer, plus the measured cost of growing an
 edition. Its first probe outranks most of this queue for a hotel focus: the anchor
 markets hold the most lodging stock and have no lodging vocabulary mapped.
 
+**The transport is shipped and tested.** Both halves of the pull protocol are code —
+[`scripts/desk/pull_driver.js`](../scripts/desk/pull_driver.js) in the browser,
+[`scripts/desk_ingest.py`](../scripts/desk_ingest.py) in the container — and
+[`tests/desk_roundtrip.js`](../tests/desk_roundtrip.js) drives both end to end against a
+local fixture server on every `tests/run.py` run. Nothing in this queue needs the
+protocol debugged first; a session spends its time on the county, which is the only part
+that cannot be tested from here.
+
 **Ground rules carried in from the recipe:** count query first, never a blind pull;
 never conclude a field is empty from a timeout (async-launch and poll); transfer each
 layer as soon as it finishes; PII stripped on ingest; record the disappointments in the
@@ -27,7 +35,7 @@ recipe's additions log — they are the valuable findings.
 | 3 | **Jefferson Parish, LA** parcel layer | geoportal.jeffparish.net (ArcGIS) | Completes the NOLA metro in [`louisiana.md`](states/coverage/louisiana.md); extends the `atlas_nola` footprint | Regionalization pairs already carry "Orleans & Jefferson"; [`build_state.py`](../build_state.py) `nola` spec takes the data module |
 | 4 | **Lancaster County, NE** groupBy | Lancaster County Assessor / GIS | Lincoln + the UNL campus ring — the `launi` method's second market ([landing rows](states/coverage/nebraska.md#landing-rows--exactly-what-the-pull-session-fills-and-where-it-lands)); feeds `build_state.py lincoln-template` | Same crosswalk/screen path as #1 |
 | 5 | **NYC PLUTO** bulk download | NYC Planning — PLUTO/MapPLUTO release | The Northeast's single biggest `named`→`pulled` jump ([`new-york.md`](states/coverage/new-york.md)); BBL joins to the rent-regulation overlay | Bulk file, no scraping; document field verdicts in the recipe log |
-| 6 | **Bay ring** — Marin, Sonoma, Napa, Solano | County assessor/GIS portals | Extends `atlas_bay` beyond the five shipped counties ([`california.md`](states/coverage/california.md)) | Existing `/root/bayarea` pipeline (recipe step 4 + grab.py transport) |
+| 6 | **Bay ring** — Marin, Sonoma, Napa, Solano | County assessor/GIS portals | Extends `atlas_bay` beyond the five shipped counties ([`california.md`](states/coverage/california.md)) | [`scripts/desk/pull_driver.js`](../scripts/desk/pull_driver.js) + [`desk_ingest.py`](../scripts/desk_ingest.py) — the same transport as every other row now |
 | 7 | **CA NOD/trustee-sale feed**, five core counties | County recorder indexes | The weakest shipped gate in the Bay editions — the distress pipeline | New feed; record mechanics in the recipe |
 | 8 | **Salt Lake County, UT** groupBy | County assessor (UGRC parcels free) | Completes the Wasatch Front next to Utah County's measured rows ([`utah.md`](states/coverage/utah.md)) | Crosswalk + screen |
 | 9 | **Mecklenburg County, NC** groupBy + excise-stamp sales | County assessor/GIS | Gives NC a valuation gate to set against Wake's asset depth ([`north-carolina.md`](states/coverage/north-carolina.md)) | Crosswalk + screen |

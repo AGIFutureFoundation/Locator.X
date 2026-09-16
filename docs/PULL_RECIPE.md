@@ -1,7 +1,40 @@
-# Locator.X browser-pane parcel pull — proven recipe (2026-09-04)
+# Locator.X browser-pane parcel pull — proven recipe (2026-09-04, tooling 2026-09-16)
 
-Container egress to every county GIS host is BLOCKED (403 CONNECT). The ONLY route is
-the desktop browser pane: `mcp__remote-devices__Claude_Browser__*`.
+Container egress is BLOCKED: the agent proxy's gateway answers **403 to CONNECT for every
+host**, including `example.com` (re-measured 2026-09-16 — the proxy reports itself healthy
+with `bundleCoversEveryHost: true`, so the denial is upstream policy, not configuration).
+No browser inside the container can reach a county either; the ONLY route is a browser on
+a machine that HAS egress — the desktop browser pane, e.g.
+`mcp__remote-devices__Claude_Browser__*`.
+
+## The protocol is code now — do not retype it
+
+Steps 4 and 5 below used to be prose you pasted by hand, and step 5 told you to run
+`/root/bayarea/grab.py`, **which was never in this repository and no longer exists
+anywhere** — anyone following this recipe failed at the transfer with a missing file.
+Both halves now ship:
+
+| Half | File | What it does |
+|---|---|---|
+| Browser side | [`scripts/desk/pull_driver.js`](../scripts/desk/pull_driver.js) | Paste once per tab. Paging, retry, polygon centroid, gzip+base64 pack, 240,000-char slicing. Sets the same `LXPULL` / `lxrun` / `lxpack` globals this recipe has always polled, plus `lxpoll()` and `lxslice(i)`. |
+| Container side | [`scripts/desk_ingest.py`](../scripts/desk_ingest.py) | Reassembles the slices, verifies slice geometry and the packed length, refuses PII and ragged rows, writes one canonical JSON under `data/`. Replaces `grab.py` and the hand-typed length assertion. |
+
+[`tests/desk_roundtrip.js`](../tests/desk_roundtrip.js) drives both against a **local
+ArcGIS-shaped fixture server** in a real browser — 30,000 rows over 31 pages and 4
+slices, compared value by value after the round trip — so the protocol is known-good
+before a session starts, and the only untested thing left is the remote host, which is
+the only genuinely unknown part. It runs in `tests/run.py`, needs no egress, and its
+fixture asserts nothing about the real world.
+
+**Two refusals the driver makes that are worth knowing before you plan a pull:**
+
+- It **will not fetch at all** if your `fields` list contains an owner or fiduciary name
+  field, and it names the field rather than dropping it silently. The cheapest place to
+  not have PII is to never have fetched it. `desk_ingest.py` refuses the same columns
+  again on the far side.
+- It **will not report a partial pull as a complete one**. A page error that outlasts the
+  retries, or hitting the row cap, ends the run with `ok: false`; `lxpack` then refuses to
+  pack it. Partial rows stay readable so you can see how far you got.
 
 ## HARD RULES
 - NEVER fabricate a row, a coordinate, a price or a use class. If a layer fails, report
@@ -35,84 +68,66 @@ and the LAST EXPRESSION is the return value — do NOT write `return`.
 `returnDistinctValues` often 400s; groupByFieldsForStatistics is reliable.
 Field list + maxRecordCount: `await (await fetch(location.origin+'<layer>?f=json')).json()` then map `.fields`.
 
-## STEP 4 — paged pull driver (paste once per tab)
-    window.LXPULL={rows:[],done:false,err:null,pages:0};
-    window.lxrun=async function(cfg){
-      const S=window.LXPULL; S.rows=[];S.done=false;S.err=null;S.pages=0;
-      const step=cfg.step||2000; let off=0;
-      try{
-        while(true){
-          const p=Object.assign({f:'json',where:cfg.where,outFields:cfg.fields,returnGeometry:cfg.geom?'true':'false',
-            outSR:4326,resultOffset:off,resultRecordCount:step,orderByFields:cfg.order||'OBJECTID'},cfg.extra||{});
-          let j=null,tries=0;
-          while(tries<4){ try{ const r=await fetch(cfg.url+'?'+new URLSearchParams(p)); j=await r.json(); if(!j.error) break; }catch(e){}
-            tries++; await new Promise(x=>setTimeout(x,1200*tries)); }
-          if(!j||j.error){ S.err=JSON.stringify(j&&j.error||'fetch failed')+' @off '+off; break; }
-          const fs=j.features||[];
-          for(const f of fs){
-            const a=f.attributes; let ll=null;
-            if(f.geometry){
-              if(f.geometry.x!=null) ll=[f.geometry.x,f.geometry.y];
-              else if(f.geometry.rings){ let sx=0,sy=0,n=0; for(const r of f.geometry.rings) for(const pt of r){sx+=pt[0];sy+=pt[1];n++;}
-                if(n) ll=[+(sx/n).toFixed(6),+(sy/n).toFixed(6)]; }
-            }
-            S.rows.push(cfg.map(a,ll));
-          }
-          S.pages++;
-          if(fs.length<step || fs.length===0) break;
-          off+=fs.length;
-          if(off>(cfg.cap||400000)) break;
-        }
-      }catch(e){ S.err='EX '+e.message; }
-      S.done=true; return S.rows.length;
-    };
-    'driver ready'
+## STEP 4 — paged pull driver
 
-Launch (returns immediately; poll):
-    window.lxrun({url:..., where:..., fields:"A,B,C", geom:true, step:<maxRecordCount>,
-      map:(a,ll)=>[a.PIN, a.ADDR, ..., ll?ll[1]:null, ll?ll[0]:null]});
-    'launched'
-Poll:
-    JSON.stringify({n:LXPULL.rows.length,pages:LXPULL.pages,done:LXPULL.done,err:LXPULL.err})
+**Paste [`scripts/desk/pull_driver.js`](../scripts/desk/pull_driver.js) once per tab** —
+it is the file below, kept current and tested. The listing that used to live here is gone
+on purpose: a driver retyped each session could never be fixed once and stay fixed.
+Then launch (returns immediately) and poll:
+
+    window.lxrun({url:<layer>/query, where:"1=1", fields:"PIN,SITEADDR,USECLASS,ASSDVALUE",
+      geom:true, step:<maxRecordCount>,
+      map:(a,ll)=>[a.PIN, a.SITEADDR, a.USECLASS, a.ASSDVALUE, ll?ll[1]:null, ll?ll[0]:null]});
+    // -> 'launched', or a string starting REFUSED (read it; it names the reason)
+
+    window.lxpoll()
+    // -> {"n":12000,"pages":6,"done":false,"ok":false,"err":null}
+
+`ok` is the field that matters: `done` only means it stopped. `done:true, ok:false` with an
+`err` is a partial pull, and `lxpack` will refuse it.
 
 NOTE on geometry: most parcel layers have no lat/lng attribute fields. Request
 `geom:true` — the driver averages the polygon ring to a centroid IN THE BROWSER and
-throws the polygon away, so nothing heavy crosses the bridge. If the layer DOES publish
-lat/lng attributes (e.g. Maricopa LATITUDE/LONGITUDE), use `geom:false` and read them
-from the attributes instead — much faster.
+throws the polygon away, so nothing heavy crosses the bridge. A feature with no usable
+geometry gets a **null** pair, never a zero and never the centre of the county. If the
+layer DOES publish lat/lng attributes (e.g. Maricopa LATITUDE/LONGITUDE), use
+`geom:false` and read them from the attributes instead — much faster.
 
 ## STEP 5 — transfer (gzip + base64, 240,000-char slices)
-    window.lxpack=async function(rows){
-      const s=new Blob([JSON.stringify(rows)]).stream().pipeThrough(new CompressionStream('gzip'));
-      const b=new Uint8Array(await new Response(s).arrayBuffer());
-      let t=''; const C=8192; for(let i=0;i<b.length;i+=C) t+=String.fromCharCode.apply(null,b.subarray(i,i+C));
-      window.__B=btoa(t); return {rows:rows.length, b64:window.__B.length, slices:Math.ceil(window.__B.length/240000)};
-    };
-    JSON.stringify(await window.lxpack(LXPULL.rows))
 
-Then, one call per slice — each WILL exceed the bridge cap and auto-save to a file whose
-path the error message names. That is expected and is the transport, not a failure:
-    window.__B.slice(0,240000)
-    window.__B.slice(240000,480000)
-    ... last one: window.__B.slice(N*240000)
+Pack, naming the columns your `map` emits — they travel with the rows and the ingest
+side checks every row against them:
 
-Record each saved path in order. Then in the container:
-    python3 /root/bayarea/grab.py <saved-path> /root/bayarea/pull/<name>.<i>
+    await window.lxpack({jurisdiction:"<jid>", columns:["pin","addr","use","assessed","lat","lng"],
+                         notes:"<anything the next reader needs>"})
+    // -> {"rows":213381,"json_bytes":...,"gzip_bytes":...,"b64":183412,"slices":8,"slice_size":240000}
 
-`grab.py` json-parses the saved envelope, takes text[0] between the first and last
-double-quote, and strips non-base64 characters. Do NOT hand-slice the raw file: the
-envelope's own `"type"`/`"text"` keys are alphanumeric and survive a naive regex.
+**Write down `b64`.** It is the number the ingest side checks the reassembled payload
+against, and it is the only thing that catches a slice that arrived short, twice, or out
+of order.
 
-Reassemble and ASSERT the length:
-    python3 -c "
-    import base64,gzip,json
-    s=''.join(open('/root/bayarea/pull/<name>.%d'%i).read() for i in range(<K>))
-    assert len(s)==<b64 length reported by lxpack>, len(s)
-    rows=json.loads(gzip.decompress(base64.b64decode(s)))
-    print(len(rows), rows[0])
-    json.dump(rows,open('/root/bayarea/us_<name>.json','w'))"
+Then one call per slice. Each WILL exceed the bridge cap and auto-save to a file whose
+path the error message names — that is expected, and is the transport, not a failure:
 
-Every intermediate slice must be exactly 240,000 characters except the last.
+    window.lxslice(0)
+    window.lxslice(1)
+    ...
+
+Record each saved path **in order**. Then in the container — one command, no hand-typed
+assertion:
+
+    python3 scripts/desk_ingest.py --slices <dir-of-saved-slices> \
+        --out data/<jid>_<layer>.json --expect-b64 <the b64 number> --jurisdiction <jid>
+
+It accepts either the raw slice payloads or the bridge's JSON envelopes, sorts a
+directory naturally (`s.0, s.1, ... s.10`), and writes **nothing at all** unless every
+check passes: slice geometry, the packed length, the envelope's own row count, no
+owner-identity column, and every row matching the declared column list. A partial or
+unverifiable pull is reported and discarded, because a stub file is worse than no file —
+the next session cannot tell it from a real one.
+
+Do NOT hand-slice a saved envelope: its own `"type"`/`"text"` keys are alphanumeric and
+survive a naive regex. `desk_ingest.py` parses the envelope properly.
 
 ## STEP 3b — the 45-second tool timeout (learned the hard way)
 A slow query (a groupBy over 350k parcels can take 60s) will time out the tool and look

@@ -16,6 +16,9 @@ on:
       - "build_state.py"
       - "scripts/build_fleet_demo.py"
       - "tests/fleet_smoke.js"
+      - "scripts/desk/**"
+      - "scripts/desk_ingest.py"
+      - "tests/desk_roundtrip.js"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/fleet-smoke.yml"
@@ -26,6 +29,9 @@ on:
       - "build_state.py"
       - "scripts/build_fleet_demo.py"
       - "tests/fleet_smoke.js"
+      - "scripts/desk/**"
+      - "scripts/desk_ingest.py"
+      - "tests/desk_roundtrip.js"
   workflow_dispatch:
 
 permissions:
@@ -53,3 +59,10 @@ jobs:
         run: python3 scripts/build_fleet_demo.py /tmp/demo.html
       - name: Drive every edition
         run: node tests/fleet_smoke.js /tmp/demo.html
+      # The desk-browser pull protocol, end to end against a LOCAL fixture
+      # server. It needs a browser, which the validate workflow deliberately
+      # does not install, and it needs no egress — the fixture is served from
+      # 127.0.0.1. tests/run.py runs the transport selftest everywhere and this
+      # half only where a browser exists, saying so when it does not.
+      - name: Drive the desk-browser pull protocol
+        run: node tests/desk_roundtrip.js
