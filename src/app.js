@@ -296,7 +296,20 @@ const LENSES={
  estate:{label:'Estate-pipeline signal (long-tenure basis gap)'},
  dis:{label:'PREDICTIVE — live distress records (foreclosure, code, evictions)'},
  fcast:{label:'PREDICTIVE — 12-mo Scout forecast by ZIP'},
- bmkt:{label:'Below market — index from sale, $/sf and basis evidence'}
+ bmkt:{label:'Below market — index from sale, $/sf and basis evidence'},
+ /* THE LENS THIS PLATFORM SHOULD HAVE HAD FIRST.
+
+    Evidence grading is the one capability docs/market/GAP.md records as having
+    no equivalent in the category, and it reached exactly one surface: the
+    drawer of a property you had already opened. You could grade a building. You
+    could not see WHERE IN THIS MARKET THE RECORD IS THIN — which is the question
+    a buyer choosing a submarket actually has, and the question the whole
+    platform exists to answer.
+
+    It costs 1.2 ms per thousand records, measured, which is cheaper than half
+    the lenses already here. The only reason it was absent is that nobody
+    joined it. */
+ evid:{label:'Evidence grade — how much record there is to underwrite on'}
 };
 function lensOf(l){
  // returns {tier:0 green|1 yellow|2 red|3 dim, s:0..100 size driver, col}
@@ -315,6 +328,17 @@ function lensOf(l){
    return a.idx>=45? {tier:0,s:35+a.idx*0.7,col:G} : a.idx>=25? {tier:1,s:28+a.idx*0.5,col:Y} : {tier:2,s:20,col:R}; }
   if(mode==='dis'){ const dd=(window.LXDash&&LXDash.distressOf)? LXDash.distressOf(l):null; if(!dd||dd.e<0.4) return {tier:3,s:14,col:DIM}; return dd.s>=70? {tier:0,s:40+dd.s*0.6,col:G} : dd.s>=45? {tier:1,s:30+dd.s*0.5,col:Y} : {tier:2,s:18,col:R}; }
  if(mode==='fcast'){ let g=null,r2=0; try{ if(window.LXScout){ const zf=LXScout.zipFC(l.zip); if(zf&&zf.v){ g=zf.v.g12; r2=zf.v.r2||0; } } }catch(e){} if(g==null||r2<0.15) return {tier:3,s:14,col:DIM}; return g>=2.5? {tier:0,s:40+Math.min(60,g*8),col:G} : g>=0? {tier:1,s:35,col:Y} : {tier:2,s:30,col:R}; }
+ if(mode==='evid'){
+   /* Colours come from LXEvid.col so the map and the Evidence tab can never
+      disagree about what a B looks like — the drift that has cost this project
+      its expense stack, its field list and two candidacy rules. */
+   let g=null; try{ g = window.LXEvid && LXEvid.grade(l); }catch(e){}
+   if(!g) return {tier:3, s:14, col:DIM};
+   const band=g.band;
+   let col=DIM; try{ col = LXEvid.col(band) || DIM; }catch(e){}
+   const tier = band==='A'?0 : band==='B'?1 : band==='C'?1 : 2;
+   return {tier, s: Math.max(18, g.score), col};
+ }
  // fit (default): evidence-weighted score terciles
  const sc=r? r.score : 40;
  return sc>=60? {tier:0,s:sc,col:G} : sc>=45? {tier:1,s:sc,col:Y} : {tier:2,s:Math.max(18,sc),col:R};
@@ -344,7 +368,8 @@ const LENS_BLIND = {
   fcast:  'no ZIP forecast that clears the model-fit floor',
   bmkt:   'not enough basis evidence to index against the market',
   cat:    'not scored by the ranking engine',
-  fit:    'not scored by the ranking engine'
+  fit:    'not scored by the ranking engine',
+  evid:   'the evidence grader could not read these records at all'
 };
 function lensReach(){
   const rows = filtered();
@@ -352,11 +377,55 @@ function lensReach(){
   for(const l of rows){ try{ if(lensOf(l).tier !== 3) placed++; }catch(e){} }
   return {n: rows.length, placed: placed, dim: rows.length - placed};
 }
+/* For the evidence lens the interesting number is not how many were placed —
+   it is WHICH FIELD THE MARKET IS MISSING MOST. That turns the map from a
+   picture of quality into an answer to "what would I have to buy to underwrite
+   here", and every part of it is already computed by the grader. */
+function evidShortfall(){
+  const rows = filtered();
+  const miss = {}, bands = {};
+  let graded = 0;
+  for(const l of rows){
+    let g=null; try{ g = window.LXEvid && LXEvid.grade(l); }catch(e){}
+    if(!g) continue;
+    graded++;
+    bands[g.band] = (bands[g.band]||0)+1;
+    (g.missing||[]).forEach(function(tst){ const nm = tst && tst[3]; if(nm) miss[nm]=(miss[nm]||0)+1; });
+  }
+  const top = Object.keys(miss).sort(function(a,b){ return miss[b]-miss[a]; })[0] || null;
+  return {graded, bands, top, topN: top? miss[top] : 0,
+          spread: Object.keys(bands).length};
+}
 function lensNote(){
   const el = $('#lensnote'); if(!el) return;
   const mode = state.lens || 'fit';
   const r = lensReach();
   if(!r.n){ el.textContent = ''; return; }
+  if(mode === 'evid'){
+    const e = evidShortfall();
+    if(!e.graded){
+      el.innerHTML = '<b>The evidence grader could not read any of the ' + fmtN(r.n)
+        + ' properties in view.</b>';
+      el.className = 'lensnote blind';
+      return;
+    }
+    const order = ['A','B','C','D'];
+    const parts = order.filter(function(b){ return e.bands[b]; })
+      .map(function(b){ return fmtN(e.bands[b]) + ' ' + b; });
+    let s = '<b>' + parts.join(' \u00b7 ') + '</b> across ' + fmtN(e.graded) + ' properties. ';
+    if(e.spread === 1){
+      s += 'Every property here grades the same, so this lens separates nothing in this '
+         + 'market \u2014 the record is uniform, not the properties. ';
+    }
+    if(e.top){
+      s += 'The field missing most often is <b>' + esc(e.top) + '</b> (' + fmtN(e.topN)
+         + ' of ' + fmtN(e.graded) + '). That is the one document that would lift this '
+         + 'market fastest.';
+    }
+    el.innerHTML = s;
+    el.className = 'lensnote';
+    return;
+  }
   if(r.placed === 0){
     el.innerHTML = '<b>This lens places none of the ' + fmtN(r.n) + ' properties in view</b> \u2014 '
       + esc(LENS_BLIND[mode] || 'the inputs it needs are not in these records')
@@ -716,7 +785,7 @@ function setBasemap(mode, silent){
   $('#attrib').textContent=attrib+' · Market data © Zillow Research'; if(!silent){ $('#mapnotice').classList.remove('on'); }
 }
 $('#basemap').addEventListener('change', e=>setBasemap(e.target.value));
-const _lensEl=$('#lens'); if(_lensEl) _lensEl.addEventListener('change', e=>{ state.lens=e.target.value; renderMarkers(); lensNote(); const lg=$('#lenslegend'); if(lg){ lg.innerHTML= state.lens==='cat'? '<span><i style="background:var(--cat1)"></i>asset</span><span><i style="background:var(--cat2)"></i>hack</span><span><i style="background:var(--cat3)"></i>value</span><span><i style="background:var(--cat4)"></i>growth</span><span><i style="background:var(--cat5)"></i>liability</span>' : state.lens==='conv'? '<span><i style="background:var(--accent)"></i>conversion class · size = units</span><span><i style="background:#66748a"></i>other</span>' : state.lens==='dis'? '<span><i style="background:#1F8A4C"></i>hard distress on record</span><span><i style="background:#D96F0E"></i>elevated</span><span><i style="background:#66748a"></i>no live record</span>' : state.lens==='fcast'? '<span><i style="background:#1F8A4C"></i>ZIP forecast ≥ +2.5%</span><span><i style="background:#D96F0E"></i>flat-to-up</span><span><i style="background:#C42B55"></i>declining</span><span style="color:var(--muted)">dim = weak model fit</span>' : state.lens==='bmkt'? '<span><i style="background:#1F8A4C"></i>index ≥ 45</span><span><i style="background:#D96F0E"></i>25–45</span><span><i style="background:#C42B55"></i>under 25</span><span style="color:var(--muted)">size = index</span>' : '<span><i style="background:#1F8A4C"></i>best match</span><span><i style="background:#D96F0E"></i>close — needs a lever</span><span><i style="background:#C42B55"></i>weak fit</span><span style="color:var(--muted)">size = fit</span>'; } });
+const _lensEl=$('#lens'); if(_lensEl) _lensEl.addEventListener('change', e=>{ state.lens=e.target.value; renderMarkers(); lensNote(); const lg=$('#lenslegend'); if(lg){ lg.innerHTML= state.lens==='cat'? '<span><i style="background:var(--cat1)"></i>asset</span><span><i style="background:var(--cat2)"></i>hack</span><span><i style="background:var(--cat3)"></i>value</span><span><i style="background:var(--cat4)"></i>growth</span><span><i style="background:var(--cat5)"></i>liability</span>' : state.lens==='conv'? '<span><i style="background:var(--accent)"></i>conversion class · size = units</span><span><i style="background:#66748a"></i>other</span>' : state.lens==='dis'? '<span><i style="background:#1F8A4C"></i>hard distress on record</span><span><i style="background:#D96F0E"></i>elevated</span><span><i style="background:#66748a"></i>no live record</span>' : state.lens==='fcast'? '<span><i style="background:#1F8A4C"></i>ZIP forecast ≥ +2.5%</span><span><i style="background:#D96F0E"></i>flat-to-up</span><span><i style="background:#C42B55"></i>declining</span><span style="color:var(--muted)">dim = weak model fit</span>' : state.lens==='bmkt'? '<span><i style="background:#1F8A4C"></i>index ≥ 45</span><span><i style="background:#D96F0E"></i>25–45</span><span><i style="background:#C42B55"></i>under 25</span><span style="color:var(--muted)">size = index</span>' : state.lens==='evid'? (function(){ var sw=function(b){ try{ return LXEvid.col(b); }catch(e){ return '#888'; } }; return '<span><i style="background:'+sw('A')+'"></i>A — underwritable from the record</span><span><i style="background:'+sw('B')+'"></i>B — most of the work is done</span><span><i style="background:'+sw('C')+'"></i>C — shortlist, not offer</span><span><i style="background:'+sw('D')+'"></i>D — a location and little else</span><span style="color:var(--muted)">size = score</span>'; })() : '<span><i style="background:#1F8A4C"></i>best match</span><span><i style="background:#D96F0E"></i>close — needs a lever</span><span><i style="background:#C42B55"></i>weak fit</span><span style="color:var(--muted)">size = fit</span>'; } });
 $('#fitbtn').addEventListener('click', fitToResults);
 /* The city rail — one map per city, in one click.
    ----------------------------------------------------------------------------

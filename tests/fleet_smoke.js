@@ -414,6 +414,19 @@ async function main() {
             + 'cannot be told apart from a broken layer');
         }
       });
+      /* THE EVIDENCE LENS. docs/market/GAP.md records source grading as the one
+         capability with no equivalent in the category, and until now it reached
+         a single surface: the drawer of a property already opened. A lens that
+         shows WHERE the record is thin is the map's version of the coverage
+         panel, and it must colour from LXEvid's own palette rather than a
+         second copy — the drift that has cost this project four rules already. */
+      const ev = lens.lenses.find(L => L.lens === 'evid');
+      if (!ev) {
+        errs.push('the evidence lens is missing from the lens control');
+      } else if (!/\d/.test(ev.note)) {
+        errs.push('the evidence lens states no grade counts — the whole point is the '
+          + 'distribution of record quality, not another colour ramp');
+      }
       const conv = lens.lenses.find(L => L.lens === 'conv');
       if (conv && lens.convStock > 0 && conv.blind) {
         errs.push('the conversion lens placed NOTHING while this edition carries '
