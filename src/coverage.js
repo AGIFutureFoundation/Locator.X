@@ -56,9 +56,52 @@ const ZONED=/^zoned\b/i, UNCL=/unclassified/i;
    "insufficient sample", printed, rather than a percentage nobody should read. */
 const PROBE = 120, PROBE_FLOOR = 25;
 
+/* WHICH RECORDS THIS PANEL IS DESCRIBING.
+
+   It read allListings() everywhere, so it always described the whole edition —
+   including when the user opened it while looking at a map filtered to one city.
+   Both questions are real and they are not the same question: "what can this
+   EDITION answer" decides whether to buy the edition, "what can THESE PROPERTIES
+   answer" decides whether to make an offer here. The panel silently answered the
+   first while the screen showed the second.
+
+   Scope is now explicit. The panel follows the active filter, states which set it
+   is describing, and says when the two differ — because a market whose edition
+   grades well and whose current view does not is exactly the case a buyer needs
+   to see. */
+let SCOPE = 'view';
+function scoped(){
+  const X = L();
+  const all = X.allListings();
+  if(SCOPE === 'edition') return all;
+  let f = null;
+  try{ f = X.filtered(); }catch(e){ f = null; }
+  return (f && f.length) ? f : all;
+}
+/* The scope state is reported with its own caveats rather than smoothed over.
+   A filter that matches nothing leaves nothing to measure; the panel falls back
+   to the edition in that case, but it SAYS SO. Silently describing 354,000
+   records under a heading the user believes refers to the eleven on their screen
+   is the same class of error as under-reporting a gap. */
+function scopeState(){
+  const X = L();
+  const all = X.allListings().length;
+  let view = all, ok = true;
+  try{ const f = X.filtered(); view = f ? f.length : all; }catch(e){ ok = false; }
+  const empty = ok && view === 0;
+  const effective = (SCOPE === 'edition' || empty || !ok) ? 'edition' : 'view';
+  return {all: all, view: view, ok: ok, empty: empty,
+          filtered: ok && view < all, scope: SCOPE, effective: effective,
+          n: effective === 'edition' ? all : view};
+}
+function setScope(s){
+  if(s !== 'view' && s !== 'edition') return;
+  SCOPE = s; render();
+}
+
 /* ---------- 1. fields -------------------------------------------------- */
 function fields(){
-  const X=L(); const rows=X.allListings();
+  const rows=scoped();
   const T=(window.LXEvid && LXEvid.TESTS) || [];
   const n=rows.length;
   return T.map(t=>{
@@ -70,7 +113,7 @@ function fields(){
 
 /* ---------- 2. classification ------------------------------------------ */
 function classification(){
-  const rows=L().allListings(); const n=rows.length;
+  const rows=scoped(); const n=rows.length;
   let uncl=0, zoned=0, blank=0;
   for(const l of rows){
     const k=(l.kind||'').trim();
@@ -88,7 +131,7 @@ function classification(){
    — an even stride through the edition's own order — so two runs agree and the
    fleet test can recompute it. */
 function strategies(){
-  const X=L(); const rows=X.allListings();
+  const X=L(); const rows=scoped();
   if(!window.LXSB) return null;
   if(rows.length < PROBE_FLOOR)
     return {insufficient:true, n:rows.length, floor:PROBE_FLOOR};
@@ -121,7 +164,7 @@ function strategies(){
 
 /* ---------- 4. footprint ------------------------------------------------ */
 function footprint(){
-  const rows=L().allListings(); const c={};
+  const rows=scoped(); const c={};
   for(const l of rows){ const k=l.county||l.city||'(unnamed)'; c[k]=(c[k]||0)+1; }
   const list=Object.keys(c).map(k=>({name:k, n:c[k]})).sort((a,b)=>b.n-a.n);
   return {n:rows.length, counties:list};
@@ -136,25 +179,65 @@ function report(){
      gaps harder to see. */
   const gaps=f.filter(x=>x.have===0);
   const thin=f.filter(x=>x.have>0 && x.pct<50);
-  return {fields:f, gaps, thin, classification:classification(),
+  return {scope:scopeState(), fields:f, gaps, thin, classification:classification(),
           strategies:strategies(), footprint:footprint()};
 }
 
 /* ---------- rendering --------------------------------------------------- */
 function pctTxt(p){ return p==null? 'unknown' : (p>=99.5&&p<100? '>99%' : p<=0.5&&p>0? '<1%' : Math.round(p)+'%'); }
 
+/* The scope control. It is drawn from the report rather than written into the
+   markup because both counts are live: the "on screen" figure changes every time
+   the user touches a filter, and a stale number here would be a coverage claim
+   that has drifted — the one thing this panel exists to prevent. */
+function scopeBar(sc){
+  const X=L();
+  let h='<div class="covscope"><span class="covscopelab">Describing</span>'
+    +'<button type="button" class="covscopebtn'+(sc.effective==='view'?' on':'')+'" data-covscope="view"'
+    +' aria-pressed="'+(sc.effective==='view')+'">The '+X.fmtN(sc.view)+' on screen</button>'
+    +'<button type="button" class="covscopebtn'+(sc.effective==='edition'?' on':'')+'" data-covscope="edition"'
+    +' aria-pressed="'+(sc.effective==='edition')+'">All '+X.fmtN(sc.all)+' in this edition</button></div>';
+  if(!sc.ok)
+    h+='<p class="covscopenote">The active filter could not be read, so every figure below is counted from all '
+      +X.fmtN(sc.all)+' records in this edition.</p>';
+  else if(sc.empty)
+    h+='<p class="covscopenote"><b>The current filter matches no records</b>, so there is nothing on screen to measure. '
+      +'Every figure below is counted from all '+X.fmtN(sc.all)+' records in this edition instead.</p>';
+  else if(!sc.filtered)
+    h+='<p class="covscopenote">No filter is active, so both sets are the same '+X.fmtN(sc.all)+' records.</p>';
+  else if(sc.effective==='view')
+    h+='<p class="covscopenote">A filter is active. Every figure below is counted from the <b>'+X.fmtN(sc.view)
+      +' records now on the map</b>, not the '+X.fmtN(sc.all)+' in the edition. An edition can grade well and still '
+      +'hold a view that cannot be underwritten — and it is the view you would be making an offer in.</p>';
+  else
+    h+='<p class="covscopenote">Counted from all <b>'+X.fmtN(sc.all)+' records in this edition</b>, while the map is '
+      +'filtered to '+X.fmtN(sc.view)+'. These figures describe what the edition can answer, not what is on screen.</p>';
+  return h;
+}
+
 function render(){
   const X=L(); const host=$('#covbody'); if(!host) return;
-  const r=report();
-  let h='';
+  const r=report(); const sc=r.scope;
+  const SET = sc.effective==='view'
+    ? 'the '+X.fmtN(sc.n)+' records on screen'
+    : 'this edition';
+  let h=scopeBar(sc);
 
   /* --- the headline: the list, not a score --- */
   if(r.gaps.length===0){
-    h+='<p class="covlede">Every field this desk grades on is present on at least one record in this edition. '
-      +'That is not the same as complete — see the coverage percentages below, and the strategies this edition still cannot evaluate.</p>';
+    h+='<p class="covlede">Every field this desk grades on is present on at least one of '+SET+'. '
+      +'That is not the same as complete — see the coverage percentages below, and the strategies these records still cannot support.</p>';
   } else {
-    h+='<p class="covlede"><b>'+r.gaps.length+' of '+r.fields.length+' record fields are absent from this edition entirely.</b> '
-      +'Not thin — absent. Every question below is one this edition cannot be asked, whatever you filter or sort:</p><ul class="covgaps">';
+    h+='<p class="covlede"><b>'+r.gaps.length+' of '+r.fields.length+' record fields are absent from '+SET+' entirely.</b> '
+      +'Not thin — absent. '
+      /* The reach of a gap depends on the set: an edition-wide gap survives any
+         filter, a view-level one may not. Saying the stronger thing at view
+         scope would overstate; saying the weaker thing at edition scope would
+         understate. Both are wrong, so the sentence follows the scope. */
+      +(sc.effective==='edition'
+         ? 'Every question below is one this edition cannot be asked, whatever you filter or sort:'
+         : 'Every question below is one these records cannot be asked — switch to the whole edition above to see whether a different filter would find them:')
+      +'</p><ul class="covgaps">';
     for(const g of r.gaps) h+='<li><b>'+X.esc(g.name)+'</b> — 0 of '+X.fmtN(g.n)+' records. '+X.esc(g.why)+'</li>';
     h+='</ul>';
   }
@@ -178,34 +261,63 @@ function render(){
   h+='</p>';
 
   /* --- strategies --- */
-  h+='<h3>Which plays this edition can evaluate</h3>';
+  h+='<h3>'+(sc.effective==='view'?'Which plays these records support':'Which plays this edition can evaluate')+'</h3>';
   const s=r.strategies;
   if(!s) h+='<p class="covwhy">The strategy switchboard is not loaded in this edition, so this cannot be measured here.</p>';
   else if(s.insufficient)
     h+='<p class="covwhy">This edition holds '+X.fmtN(s.n)+' records, below the '+s.floor
       +'-record floor this desk uses before reporting a rate. The answer is <b>insufficient sample</b>, not a percentage.</p>';
   else {
-    h+='<p class="covwhy">Measured on '+X.fmtN(s.sampled)+' records sampled evenly across this edition’s '
-      +X.fmtN(s.of)+'. A blocked play is not a defect in the tool — it is this county’s record layer, stated.</p>'
-      +'<table class="covtab"><thead><tr><th>Play</th><th>Evaluable</th><th>The most common reason it is not</th></tr></thead><tbody>';
+    h+='<p class="covwhy">Measured on '+X.fmtN(s.sampled)+' records sampled evenly across '
+      +(sc.effective==='view'? 'the '+X.fmtN(s.of)+' on screen' : 'this edition’s '+X.fmtN(s.of))
+      +'. A blocked play is not a defect in the tool — it is this county’s record layer, stated.</p>'
+      /* Two reason columns, never one. The tally has always counted BLOCKED and
+         INAPPLICABLE separately — "this county publishes no dated sale price"
+         against "this building has one unit" — and this table used to read a
+         field (`x.top`) that the tally never produced, so it printed an empty
+         cell for every non-evaluable play: the panel promised a reason and gave
+         none. They are now printed side by side, under their own headings,
+         because pooling them would hide a data gap behind a structural one. */
+      +'<table class="covtab"><thead><tr><th>Play</th><th>Evaluable</th>'
+      +'<th>Blocked — the record layer</th><th>Inapplicable — the building</th></tr></thead><tbody>';
     for(const x of s.rows){
       const rate=x.sampled? Math.round(x.computed/x.sampled*100) : null;
       h+='<tr class="'+(x.computed===0?'covzero':'')+'"><th>'+X.esc(x.name)+'</th>'
         +'<td>'+X.fmtN(x.computed)+' of '+X.fmtN(x.sampled)+' · '+(rate==null?'unknown':rate+'%')+'</td>'
-        +'<td class="covwhy">'+(x.computed===x.sampled? '—' : X.esc(x.top))+'</td></tr>';
+        +'<td class="covwhy">'+(x.blocked? X.fmtN(x.blocked)+' · '+X.esc(x.topBlock) : '—')+'</td>'
+        +'<td class="covwhy">'+(x.na? X.fmtN(x.na)+' · '+X.esc(x.topNa) : '—')+'</td></tr>';
     }
     h+='</tbody></table>';
   }
 
   /* --- footprint --- */
   const fp=r.footprint;
-  h+='<h3>What this edition covers</h3><p class="covwhy">'+X.fmtN(fp.n)+' records across '
+  h+='<h3>'+(sc.effective==='view'?'What this view covers':'What this edition covers')+'</h3><p class="covwhy">'+X.fmtN(fp.n)+' records across '
     +fp.counties.length+' '+(fp.counties.length===1?'county or place':'counties or places')+': '
     +fp.counties.slice(0,12).map(x=>X.esc(x.name)+' ('+X.fmtN(x.n)+')').join(', ')
     +(fp.counties.length>12? ', and '+(fp.counties.length-12)+' more' : '')
-    +'. Anything outside this footprint is not thin coverage here — it is absent, and no filter in this app will find it.</p>';
+    +'. '+(sc.effective==='edition'
+        ? 'Anything outside this footprint is not thin coverage here — it is absent, and no filter in this app will find it.'
+        : 'This is the footprint of the current filter, not of the edition — clear the filter, or switch scope above, to see everything the edition holds.')
+    +'</p>';
 
   host.innerHTML=h;
+  /* The sheet's own title is part of the claim, so it moves with the scope too —
+     a heading that says "this edition" over figures counted from eleven filtered
+     records would mislabel the whole panel. */
+  const t=$('#covtitle');
+  if(t) t.textContent = sc.effective==='view'
+    ? 'What these ' + X.fmtN(sc.n) + ' properties cannot answer'
+    : 'What this edition cannot answer';
+  const eb=$('#coveyebrow');
+  if(eb) eb.textContent = sc.effective==='view'
+    ? 'Coverage \u00b7 measured from the records now on the map'
+    : 'Coverage \u00b7 measured from this edition\u2019s own records';
+  const pn=$('#covpanel');
+  if(pn && t) pn.setAttribute('aria-label', t.textContent);
+  host.querySelectorAll('[data-covscope]').forEach(b=>{
+    b.onclick=()=>setScope(b.getAttribute('data-covscope'));
+  });
 }
 
 function open(){
@@ -223,5 +335,6 @@ function bind(){
 }
 if(document.readyState!=='loading') setTimeout(bind,0); else document.addEventListener('DOMContentLoaded',bind);
 
-window.LXCov={render, report, open, close, bind, fields, classification, strategies, footprint, PROBE, PROBE_FLOOR};
+window.LXCov={render, report, open, close, bind, setScope, scopeState, scoped,
+  fields, classification, strategies, footprint, PROBE, PROBE_FLOOR};
 })();

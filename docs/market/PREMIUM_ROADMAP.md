@@ -73,7 +73,7 @@ use codes not mapped, the parcels outside the footprint.
 - **Proof** — `tests/fleet_smoke.js` opens the panel in all 11 editions and asserts the
   named-gap count is non-zero and each gap names its source; `tests/edition_sweep.js`
   cross-checks the panel against the coverage inventory row for that edition.
-- **Blocker** — none. **Shipped** as `src/coverage.js` (227): field coverage measured
+- **Blocker** — none. **Shipped** as `src/coverage.js` (340): field coverage measured
   through `src/evidence.js`'s own tests rather than a second list that could drift from
   them, classification counts, an edition-level strategy probe, and the footprint. There
   is deliberately no overall score — a single number would be read as a ranking, and the
