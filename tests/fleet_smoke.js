@@ -520,6 +520,19 @@ async function main() {
          for. The record is well documented; the rent is not documented at all.
          This is the framework the curriculum is built on, so a wrong verdict
          here is a lesson. */
+      /* NO RECORD IS CALLED A LIABILITY FOR WANT OF A RENT.
+
+         Every branch of the category chain except the fall-through is a rent
+         question, so a rent-blind market used to label everything it could not
+         place "Liability at this price" - a confident negative claim about a
+         building whose rent the app had invented. The `unrated` state is the
+         absence of a verdict, not a sixth kind of property: muted rather than
+         given a sixth hue (five is already at the colour-blind ceiling), and off
+         by default in the buy box because nothing should rank on it. */
+      LX.dealBump(); LXDash.render();
+      const tally = {};
+      for (const r of (LXDash.rows || [])) tally[r.cat] = (tally[r.cat] || 0) + 1;
+
       let gate = null;
       try {
         const sh = LXUW.sheetFor(ls[0]);
@@ -529,7 +542,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -558,6 +571,25 @@ async function main() {
       }
     } else if (rent.saysBlind) {
       errs.push('this edition publishes rent for every record but the funnel claims it is rent-blind');
+    }
+    {
+      const t = rent.tally || {};
+      if (rent.none === rent.n && rent.n > 0) {
+        /* Wholly rent-blind: not one record may be called a liability. */
+        if (t.liab) {
+          errs.push(t.liab + ' record(s) are categorised "Liability at this price" in a market '
+            + 'that publishes no rent - a confident negative claim about a building whose rent '
+            + 'the app invented');
+        }
+        if (!t.unrated) {
+          errs.push('no record is marked unrated in a wholly rent-blind edition, so the absence '
+            + 'of a rent feed is not visible in the categories at all');
+        }
+      } else if (rent.none === 0 && t.unrated) {
+        /* ...and the control: where rent IS published, nothing should be unrated. */
+        errs.push(t.unrated + ' record(s) are marked unrated although this market publishes rent '
+          + 'for every one - the state is leaking beyond the case it exists for');
+      }
     }
     if (rent.gate && rent.gate.err) {
       errs.push('the LOCATOR screen could not be evaluated: ' + rent.gate.err);

@@ -15,7 +15,16 @@ const CATS = [
   {id:'hack', name:'House-hack candidate', c:'--cat2', shape:'square', blurb:'2–4 units you can buy with an owner-occupied loan; live in one, let the others carry it.'},
   {id:'value', name:'Value-add / ADU play', c:'--cat3', shape:'diamond', blurb:'Cash-flow negative as-is, but the lot, the unit count or the age give you a lever.'},
   {id:'growth', name:'Appreciation bet', c:'--cat4', shape:'triangle', blurb:'Negative cash flow in a rising ZIP. Speculation — fine if you call it that.'},
-  {id:'liab', name:'Liability at this price', c:'--cat5', shape:'cross', blurb:'Rent covers too little of the loan and the market isn\'t bailing you out.'}
+  {id:'liab', name:'Liability at this price', c:'--cat5', shape:'cross', blurb:'Rent covers too little of the loan and the market isn\'t bailing you out.'},
+  /* NOT a sixth kind of property — the absence of a verdict. Every test above is
+     a rent question (cf, dscr), and where a market publishes no rent those all
+     descend from a 0.4%/mo rule of thumb. Calling such a record a "Liability at
+     this price" is a confident negative claim about a building nobody has a rent
+     for, which is what this state exists to stop. It is muted rather than
+     coloured, and off by default in the buy box, because nothing should rank on
+     it. */
+  {id:'unrated', name:'Unrated — no rent published', c:'--muted', shape:'ring',
+   blurb:'This market publishes no rent, so every category test here would rest on a 0.4%/mo rule of thumb. Type a rent you can source and it will be categorised.'}
 ];
 const CAT = Object.fromEntries(CATS.map(c=>[c.id,c]));
 const FHA_4UNIT = 2326875; // 2025 FHA 4-unit limit, high-cost counties
@@ -157,6 +166,11 @@ function analyze(l){
   else if(!rentless && (l.units||1)>=2 && (l.units||1)<=4 && d.P<=FHA_4UNIT && d.dscr>=0.6) cat='hack';
   else if(va.score>=40 && (rentless || d.dscr>=0.55)) cat='value';
   else if(!rentless && mk.yoy!=null && mk.yoy>=2.5 && d.dscr>=0.75) cat='growth';
+  /* The fall-through used to be 'liab' unconditionally, so a rent-blind market
+     labelled every record it could not place a "Liability at this price" — on a
+     price the app had invented a rent for. "Cannot be categorised without a rent
+     feed" and "is a liability" are opposite findings. */
+  else if(rentless) cat='unrated';
   else cat='liab';
   const be=breakEvenDown(d,l);
   const a=L().state.assump;

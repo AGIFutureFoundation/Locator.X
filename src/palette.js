@@ -49,7 +49,15 @@
     const i=CATORDER.indexOf(id);
     return i>=0 ? c(i+1) : tok('--muted');
   }
-  const SHAPE={asset:'circle', hack:'square', value:'diamond', growth:'triangle', liab:'cross'};
+  /* `unrated` is deliberately NOT given a sixth hue. It is not a peer category —
+     it is the absence of one, the state a record is in when the market publishes
+     no rent and every category test descends from a rule of thumb. cat() already
+     returns --muted for an id outside CATORDER, which is the right answer, and
+     the note below is the reason a sixth hue would be actively wrong: five is
+     already at the colour-blind ceiling. Its shape is a hollow ring, which reads
+     as empty rather than as another kind of thing. */
+  const SHAPE={asset:'circle', hack:'square', value:'diamond', growth:'triangle', liab:'cross',
+               unrated:'ring'};
   /* Shape is the second channel. At five hues no ordering clears the all-pairs
      colour-blind floor, so any chart that puts all five on a plane at once —
      the map, the scatter, the bubble field — must carry shape as well. */
@@ -59,6 +67,7 @@
       case 'diamond':  return `M${x} ${y-r*1.3}L${x+r*1.3} ${y}L${x} ${y+r*1.3}L${x-r*1.3} ${y}Z`;
       case 'triangle': return `M${x} ${y-r*1.25}L${x+r*1.2} ${y+r}L${x-r*1.2} ${y+r}Z`;
       case 'cross':    return `M${x-r} ${y-r}L${x+r} ${y+r}M${x+r} ${y-r}L${x-r} ${y+r}`;
+      case 'ring':     return `M${x-r} ${y}a${r} ${r} 0 1 0 ${2*r} 0a${r} ${r} 0 1 0 ${-2*r} 0`;
       default:         return null;   // circle — caller draws <circle>
     }
   }
@@ -66,7 +75,7 @@
     const s=size||11, r=s/2-1;
     const p=shapePath(shape, s/2, s/2, r);
     const body = p
-      ? (shape==='cross'
+      ? ((shape==='cross' || shape==='ring')
          ? `<path d="${p}" stroke="${color}" stroke-width="2.4" stroke-linecap="round" fill="none"/>`
          : `<path d="${p}" fill="${color}"/>`)
       : `<circle cx="${s/2}" cy="${s/2}" r="${r}" fill="${color}"/>`;

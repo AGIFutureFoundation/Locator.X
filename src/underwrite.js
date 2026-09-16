@@ -7,7 +7,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const pct=(v,d=1)=>L().fmtPct(v,d);
 const STAGES=[['new','New','--stg-new'],['scr','Screened','--stg-scr'],['uw','Underwritten','--stg-uw'],['off','Offer drafted','--stg-off'],['pass','Passed','--stg-pass']];
 const STG=Object.fromEntries(STAGES.map(s=>[s[0],s]));
-const DEF_BB={maxPrice:2000000, minScore:35, minCap:3.5, minDscr:0.7, minUnits:1, city:'', county:'', minEvid:'any', cats:{asset:true,hack:true,value:true,growth:false,liab:false}, target:'dscr12'};
+const DEF_BB={maxPrice:2000000, minScore:35, minCap:3.5, minDscr:0.7, minUnits:1, city:'', county:'', minEvid:'any', cats:{asset:true,hack:true,value:true,growth:false,liab:false,unrated:false}, target:'dscr12'};
 const TARGETS=[['dscr12','DSCR ≥ 1.20 (lender-ready)'],['dscr10','Break even (DSCR 1.0)'],['coc6','Cash-on-cash ≥ 6%'],['cf200','Cash flow ≥ $200/mo']];
 const REHAB=[['none','As-is',0],['cosmetic','Cosmetic · $30/sf',30],['medium','Medium · $70/sf',70],['heavy','Heavy · $130/sf',130]];
 let bb=Object.assign({}, DEF_BB, L().store('buybox')||{}); bb.cats=Object.assign({},DEF_BB.cats,(L().store('buybox')||{}).cats||{});

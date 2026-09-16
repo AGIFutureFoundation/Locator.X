@@ -41,13 +41,13 @@ function buildAll(){
 }
 
 /* ---------- map ---------- */
-function catColors(){ return {asset:css('--cat1'),hack:css('--cat2'),value:css('--cat3'),growth:css('--cat4'),liab:css('--cat5')}; }
+function catColors(){ return {asset:css('--cat1'),hack:css('--cat2'),value:css('--cat3'),growth:css('--cat4'),liab:css('--cat5'),unrated:css('--muted')}; }
 function colorExpr(mode){
   const c=catColors();
   if(mode==='hack') return ['case',['==',['get','hh'],1], c.hack, '#54637a'];
   if(mode==='dev') return ['case',['==',['get','va'],1], c.value, '#54637a'];
   if(mode==='reg') return ['match',['get','rc'],'bad',window.LXPal.tok('--bad'),'warn',c.value,window.LXPal.tok('--good')];
-  return ['match',['get','cat'],'asset',c.asset,'hack',c.hack,'value',c.value,'growth',c.growth,c.liab];
+  return ['match',['get','cat'],'asset',c.asset,'hack',c.hack,'value',c.value,'growth',c.growth,'unrated',c.unrated,c.liab];
 }
 function initMap(){
   if(tmap || typeof maplibregl==='undefined') return;
@@ -137,12 +137,12 @@ function openCatalog(id){
   const l=L().allListings().find(x=>x.id===id); if(!l) return; sel=id;
   const c=catAll&&catAll[id]||{}; const d=L().deal(l);
   const cat=c.cat||'liab';
-  const names={asset:'Cash-flow asset',hack:'House-hack candidate',value:'Value-add / ADU play',growth:'Appreciation bet',liab:'Liability at this price'};
+  const names={asset:'Cash-flow asset',hack:'House-hack candidate',value:'Value-add / ADU play',growth:'Appreciation bet',liab:'Liability at this price',unrated:'Unrated — no rent published'};
   const p=l.panos&&l.panos.length? l.panos[0] : (l.tour==='eb'? L().BA.panos.p6 : L().BA.panos.p0);
   const el=$('#twincat'); el.hidden=false;
   el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><div class="eyebrow">${L().esc(l.city)} · inside catalog</div><h3 style="margin:2px 0 4px">${L().esc(l.addr)}</h3></div><button class="iconbtn" id="twc_x">✕</button></div>
   <div style="position:relative;border-radius:10px;overflow:hidden;height:130px;margin-bottom:8px"><img src="${p}" alt="" style="width:100%;height:100%;object-fit:cover"></div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><span class="chip on" style="background:var(--cat${{asset:1,hack:2,value:3,growth:4,liab:5}[cat]});color:#fff;border:0">${names[cat]}</span>${c.score!=null?`<span class="chip">Score ${c.score}</span>`:''}${l.hh?'<span class="chip">FHA house hack</span>':''}${c.va>=25?'<span class="chip">Dev upside</span>':''}</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><span class="chip on" style="background:${{asset:'var(--cat1)',hack:'var(--cat2)',value:'var(--cat3)',growth:'var(--cat4)',liab:'var(--cat5)',unrated:'var(--muted)'}[cat]||'var(--muted)'};color:#fff;border:0">${names[cat]}</span>${c.score!=null?`<span class="chip">Score ${c.score}</span>`:''}${l.hh?'<span class="chip">FHA house hack</span>':''}${c.va>=25?'<span class="chip">Dev upside</span>':''}</div>
   <table class="pl" style="margin-bottom:8px"><tr><td>Type</td><td>${L().esc(l.kind)}${l.units>1?' · '+l.units+' units':''}</td></tr><tr><td>Price (assessed)</td><td>${L().fmt$(l.price)}</td></tr>${d?`<tr><td>Est. rent / cash flow</td><td>$${L().fmtN(d.rentMo)}/mo · <span class="${d.cf>0?'pos':'neg'}">${(d.cfMo>0?'+':'')+L().fmt$(d.cfMo)}/mo</span></td></tr>`:''}<tr><td>Built / stories</td><td>${l.year||'—'} · ${(catAll[id]&&bldStories(id))||'—'} modeled</td></tr></table>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
     <button class="btn" id="twc_tour">Tour inside · 360°</button>
