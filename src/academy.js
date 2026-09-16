@@ -34,7 +34,47 @@ function pool(track){
   const f = p<0.45? easy : p<0.7? mid : hard;
   const c=all.filter(f); return c.length?c:all;
 }
-function pick(track, extra){ let c=pool(track); if(extra) { const c2=c.filter(extra); if(c2.length>4) c=c2; else { const c3=L().allListings().filter(l=>l.src!=='imp').filter(extra); if(c3.length) c=c3; } } return c[Math.floor(Math.random()*c.length)]; }
+/* A DRILL IS GRADED AGAINST ITS SUBJECT'S NUMBERS, so the subject had better
+   have some. Most missions here ask the student to compute DSCR, cap rate or
+   cash flow and then mark the answer against LX.deal(l) — and where a market
+   publishes no rent, every one of those descends from a 0.4%/mo rule of thumb.
+   The Academy would pose an exercise on a real address, grade it against an
+   invented figure, and explain that the result "is the line between an asset and
+   a liability". The student cannot tell, which makes this the worst surface in
+   the app for it and the reason the course review looked here.
+
+   So the picker PREFERS a record whose rent is sourced. In a market where some
+   records carry rent and some do not, the drill always lands on one that does.
+   Where the whole edition is rent-blind there is nothing to prefer, and
+   rentBlindNote() below says so on the exercise rather than letting it pass.
+
+   THE PREFERENCE IS BEST-EFFORT; THE NOTICE IS THE GUARANTEE. A mission's own
+   eligibility filter comes first — b3 wants an FHA-eligible 2-4 unit building,
+   b5 wants a lot over 2,500 sf — and where that leaves no rent-sourced record
+   the drill still has to run on something. Measured on a half-sourced market:
+   the picker landed on a sourced record for 13 of 14 missions, and every one of
+   the exceptions carried the notice. So the invariant worth asserting is not
+   "the subject always has rent" — that is not always achievable — but "a subject
+   without rent is never presented as though it had some". */
+function rentSourced(l){
+  try{ return L().deal(l).rentBasis !== 'none'; }catch(e){ return true; }
+}
+function pick(track, extra){ let c=pool(track); if(extra) { const c2=c.filter(extra); if(c2.length>4) c=c2; else { const c3=L().allListings().filter(l=>l.src!=='imp').filter(extra); if(c3.length) c=c3; } }
+  const sourced=c.filter(rentSourced); if(sourced.length) c=sourced;
+  return c[Math.floor(Math.random()*c.length)]; }
+
+/* Shown above any exercise whose subject's rent is a rule of thumb. It does not
+   refuse the drill — the arithmetic IS the lesson, and a student who can compute
+   DSCR from given inputs has learned the thing. It refuses to let the figure
+   pass as a measurement of this market, which is the part that would be false. */
+function rentBlindNote(l){
+  if(!l || rentSourced(l)) return '';
+  return '<p class="src" style="margin:0 0 8px"><b>Note on this market\u2019s numbers.</b> '
+    + 'No rent is published for this market, so the rent behind every figure below is a '
+    + '0.4%/mo rule of thumb rather than a measurement. Work the arithmetic \u2014 that is the '
+    + 'lesson \u2014 but do not read the result as a verdict on this building. In a real file you '
+    + 'would not accept a rent you had not seen a comparable lease for.</p>';
+}
 const propLine=l=>`${l.addr}, ${l.city} — ${l.kind}${l.beds!=null?`, ${l.beds} bd ${l.baths} ba`:''}${l.sqft?`, ${FN(l.sqft)} sf`:''}${l.year?`, built ${l.year}`:''}, recorded at ${F$(L().price(l))} (${l.priceDate||'public record'})`;
 
 /* ---------------- question helpers ---------------- */
@@ -373,7 +413,7 @@ function renderPlayer(box){
   const phases=['Trigger','Analyze','Troubleshoot','Feedback'];
   box.innerHTML=`<div class="player" style="--c:var(${r.c})"><div class="ph"><div style="flex:1;min-width:250px"><div class="eyebrow">${crew?'Crew mission':'Micro-mission'} · ${m.min} min band · rep ${idx+1}/${total}</div><h3>${m.title}</h3></div><button class="btn" id="pquit">Exit mission</button></div>
   <div class="loopbar">${phases.map((p,i)=>`<span class="${i===view.phase?'on':''}">${p}</span>`).join('')}</div>
-  <div class="trigger">${inst.trigger}</div>
+  <div class="trigger">${rentBlindNote(inst.l)}${inst.trigger}</div>
   ${inst.analyze&&view.phase>=1? `<div style="font-size:12.5px;color:var(--ink2);margin:8px 0"><b>Analyze:</b> ${esc(inst.analyze.note)} <button class="btn" id="popen" style="font-size:11px;padding:3px 8px">Open ${inst.analyze.view==='mapview'?'the map':'the '+inst.analyze.view+' tab'}</button> <span style="color:var(--muted)">(the mission stays here)</span></div>`:''}
   ${crew? `<div class="crewtabs">${inst.chairs.map((c,i)=>`<button aria-selected="${i===view.chair}" data-ch="${i}">${c.name}${(view.answered||[]).includes('c'+i)?' ✓':''}</button>`).join('')}</div>`:''}
   <div id="qzone"></div>
@@ -428,7 +468,7 @@ function startTransfer(){ view={mission:null, transfer:transferQs(P.role), qi:0,
 function renderTransfer(box){
   const r=ROLE[P.role]; const t=view.transfer; const item=t[view.qi]; const q=item.q;
   box.innerHTML=`<div class="player" style="--c:var(${r.c})"><div class="eyebrow">Behavioral-transfer check · fault ${view.qi+1} of ${t.length} · novel property · no hints · tightened tolerance</div><h3 style="font-family:var(--display)">${r.name} — verify</h3>
-  <div class="trigger">${item.inst.trigger}</div><div id="qzone"></div>
+  <div class="trigger">${rentBlindNote(item.inst.l)}${item.inst.trigger}</div><div id="qzone"></div>
   <div class="toolbar"><button class="btn" id="pquit">Abandon check</button></div></div>`;
   renderQ(q, [q]);
   $('#pquit').addEventListener('click', ()=>{ view.transfer=null; view.transferMode=false; renderMain(); });
@@ -505,5 +545,5 @@ function renderCreds(){
   box.innerHTML='<div class="badgewall">'+P.creds.map((c,i)=>{ const r=ROLE[c.role]; return `<div class="cred" style="--c:var(${r.c})"><div class="seal">${r.ic}</div><b>${r.name}</b><div class="meta">issued ${c.at.slice(0,10)}<br>sha-256 ${String(c.digest).slice(0,18)}…<br>Open Badges 3.0 / W3C VC shape</div><button class="btn" data-cp="${i}">Copy credential JSON</button></div>`; }).join('')+'</div>';
   $$('#acadcreds [data-cp]').forEach(b=>b.addEventListener('click', async()=>{ try{ await navigator.clipboard.writeText(JSON.stringify(P.creds[+b.dataset.cp].cred, null, 1)); L().toast('Credential JSON copied — hash-sealed and portable'); }catch(e){ L().toast('Clipboard blocked in this host'); } }));
 }
-window.LXAcad={render};
+window.LXAcad={render, rentSourced, rentBlindNote, pick, MISSIONS};
 })();
