@@ -427,6 +427,80 @@ async function main() {
       }
     }
 
+    /* THE ZIP CHOROPLETH OVERLAYS, on every edition.
+
+       Four of the five painted NOTHING, in every edition ever built. They read
+       zhvi / zori / yoy off the ZIP geojson feature properties, and the only
+       code that ever wrote a property onto those features was scout.js writing
+       `fc` for the forecast layer. The series existed the whole time in
+       M.zips - the same data marketFor() reads for every property panel - and
+       was never joined to the geometry.
+
+       Worse than blank: applyLayer() still drew a legend with a colour ramp,
+       dollar endpoints and a "Zillow Research" attribution under a fully
+       transparent map. A blank layer looks broken; a legend under a blank layer
+       asserts that data is shown and names a source for it.
+
+       Two further defects found while fixing it, both of which this checks:
+       maplibre keeps its own copy of a source's data, so mutating the geojson
+       left the paint reading pre-bake properties while every console probe saw
+       correct values; and the stops were Bay Area constants ($500k-$2.5M)
+       applied to every edition, so a market spanning $319k-$775k occupied 22.8%
+       of the ramp with everything under $500k clamped flat. */
+    const ovl = await page.evaluate(async () => {
+      LX.showView('mapview');
+      await new Promise(r => setTimeout(r, 1400));
+      const sel = document.getElementById('layer');
+      if (!sel) return { err: 'no layer control' };
+      const PROP = { zhvi: 'zhvi', zori: 'zori', yoy: 'yoy', fcast: 'fc' };
+      const out = { layers: [] };
+      for (const v of [...sel.options].map(o => o.value)) {
+        if (v === 'none') continue;
+        sel.value = v; sel.dispatchEvent(new Event('change', { bubbles: true }));
+        await new Promise(r => setTimeout(r, 300));
+        const zf = (window.BA && BA.geo && BA.geo.zips && BA.geo.zips.features) || [];
+        const painted = v === 'yield'
+          ? zf.filter(f => typeof f.properties.zhvi === 'number'
+                        && typeof f.properties.zori === 'number').length
+          : zf.filter(f => typeof f.properties[PROP[v]] === 'number').length;
+        const leg = (document.getElementById('legend') || {}).textContent || '';
+        out.layers.push({ layer: v, painted, of: zf.length, leg: leg.trim() });
+      }
+      sel.value = 'none'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+      return out;
+    });
+    if (ovl.err) {
+      errs.push('ZIP overlay audit: ' + ovl.err);
+    } else {
+      ovl.layers.forEach(L => {
+        /* A legend is a claim that data is displayed. It may only appear with a
+           colour ramp when something is actually shaded. */
+        const hasRamp = /\$|%/.test(L.leg) && !/nothing is shaded/.test(L.leg);
+        if (L.painted === 0 && hasRamp) {
+          errs.push('the "' + L.layer + '" ZIP overlay shades none of ' + L.of
+            + ' ZIPs and still draws a legend with a scale — a legend under a '
+            + 'transparent map asserts data that is not there');
+        }
+        if (L.painted > 0 && !/scale from this edition|default scale/.test(L.leg)) {
+          errs.push('the "' + L.layer + '" overlay shades ' + L.painted + ' ZIPs but its '
+            + 'legend does not say where the scale came from — hard-coded Bay Area stops '
+            + 'were applied to every edition once already');
+        }
+        if (L.painted === 0 && !/nothing is shaded/.test(L.leg)) {
+          errs.push('the "' + L.layer + '" overlay shades nothing and does not say so');
+        }
+      });
+      /* At least one overlay must work wherever the edition carries ZIP series
+         at all - the join that was missing for the entire life of the app. */
+      const anyPainted = ovl.layers.some(L => L.painted > 0);
+      const zipCount = ovl.layers.length ? ovl.layers[0].of : 0;
+      if (zipCount > 0 && !anyPainted) {
+        errs.push('NO ZIP overlay shades anything in an edition carrying ' + zipCount
+          + ' ZIP polygons — bakeZipStats() is not joining M.zips to the geometry, or '
+          + 'the GL source was not re-set after the bake');
+      }
+    }
+
     await page.evaluate(() => LX.showView('mapview'));
     await page.waitForTimeout(500);
 
