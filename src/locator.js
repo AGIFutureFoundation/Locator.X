@@ -31,6 +31,26 @@ function evidenceOf(l){
 /* ---- the seven gates ---------------------------------------------------- */
 function gates(l, uw){
   var g = [], ev = evidenceOf(l);
+  /* THREE OF THESE SEVEN GATES ARE RENT QUESTIONS, AND RENT IS NEVER PUBLIC RECORD.
+
+     Where a market publishes none, LX.rentEstimate falls back to price x 0.004 -
+     a rule of thumb anchored to nothing - and uw.rentBasis is 'none'. Cash flow
+     is then a real-looking number computed from an invented one, so C returned
+     FAIL ("this fails the first test") and A returned "Liability - well
+     documented, and it takes money out of your pocket", about a building nobody
+     has a rent for. The record IS well documented; the RENT is not documented at
+     all, and eight of the fourteen markets this repository has measured publish
+     none.
+
+     That is the worst place in the app for it to happen, because this is the
+     teaching surface: the LOCATOR screen is the framework the curriculum is
+     built on, and a confident wrong verdict here is a lesson.
+
+     Each of these gates already had the right words for the situation and simply
+     never reached them - C's "cash flow cannot be computed from what is
+     published", A's "Unproven". They fire now. This is the same idiom the O gate
+     has always used for a fallback appreciation figure, applied to rent. */
+  var rentless = uw && uw.rentBasis === 'none';
   var band = ev && (ev.band || ev.grade || ev.letter);
   var escore = ev && (ev.score != null ? ev.score : ev.total);
 
@@ -50,27 +70,37 @@ function gates(l, uw){
 
   /* O — ownership economics: how many of the four ways pay */
   (function(){
-    var ways = [], miss = [];
-    (uw.cfMo > 0) ? ways.push('cash flow') : miss.push('cash flow');
+    var ways = [], miss = [], unknowable = [];
+    /* Cash flow is neither paying nor not-paying when the rent behind it was
+       invented: it is unknown, and counting it as "not paying" would be this
+       gate asserting a negative it cannot support. */
+    if(rentless) unknowable.push('cash flow');
+    else (uw.cfMo > 0) ? ways.push('cash flow') : miss.push('cash flow');
     (uw.loan > 0) ? ways.push('amortisation') : miss.push('amortisation');
     (uw.appr != null && uw.apprSrc !== 'default') ? ways.push('appreciation') : miss.push('appreciation');
     (uw.P > 0) ? ways.push('tax') : miss.push('tax');
     var v = ways.length >= 3 ? PASS : (ways.length === 2 ? WARN : UNK);
     if(uw.apprSrc === 'default') v = (ways.length >= 3 ? WARN : UNK);
+    if(unknowable.length) v = UNK;
     g.push({k:'O', t:'Ownership economics', q:'How does it pay, and which of the four do you control?',
-      v:v, val: ways.length + ' of 4',
+      v:v, val: ways.length + ' of ' + (4 - unknowable.length) + (unknowable.length? ' knowable' : ''),
       note: 'Paying: ' + (ways.join(', ')||'none') + (miss.length? '. Not: ' + miss.join(', ') : '')
+            + (unknowable.length? '. Unknown: ' + unknowable.join(', ')
+               + ' — this market publishes no rent, so that way of paying cannot be tested.' : '')
             + (uw.apprSrc==='default' ? '. Appreciation is a fallback default, not a fitted figure.' : '')});
   })();
 
   /* C — cash flow */
   (function(){
     var v, note;
-    if(uw.cfMo == null || !isFinite(uw.cfMo)){ v=UNK; note='Cash flow cannot be computed from what is published.'; }
+    if(rentless){ v=UNK; note='Cash flow cannot be computed from what is published: this market publishes no rent, '
+      + 'and the only figure available is a 0.4%/mo rule of thumb. Type a rent you can source — a signed lease, a rent '
+      + 'roll, a written quote — and this gate will answer.'; }
+    else if(uw.cfMo == null || !isFinite(uw.cfMo)){ v=UNK; note='Cash flow cannot be computed from what is published.'; }
     else if(uw.cfMo > 0){ v=PASS; note='It pays while you hold it' + (uw.oer!=null? ', at a ' + n1(uw.oer) + '% expense ratio.' : '.'); }
     else { v=FAIL; note='It does not pay at this price. Cash flow before capital gains — this fails the first test.'; }
     g.push({k:'C', t:'Cash flow', q:'Does it pay while you hold it?',
-      v:v, val: uw.cfMo==null? '—' : fmt$(Math.round(uw.cfMo)) + '/mo', note:note});
+      v:v, val: (rentless || uw.cfMo==null)? '—' : fmt$(Math.round(uw.cfMo)) + '/mo', note:note});
   })();
 
   /* A — asset test */
@@ -78,7 +108,14 @@ function gates(l, uw){
     var pays = uw.cfMo > 0;
     var sourced = ev && (band === 'A' || band === 'B');
     var v, note, val;
-    if(pays && sourced){ v=PASS; val='Asset'; note='The cash flows can be named, sourced and defended before you own it.'; }
+    /* This gate asks whether the cash flows can be NAMED, SOURCED and DEFENDED.
+       Where the market publishes no rent the answer is plainly no, whatever the
+       parcel record contains — and the old code took the opposite view, reading
+       a well-graded record plus an invented rent as a documented liability. */
+    if(rentless){ v=UNK; val='Unproven';
+      note='The record is well documented, but the rent is not documented at all — this market publishes none. '
+         + 'You cannot source these cash flows, so there is no verdict to defend yet.'; }
+    else if(pays && sourced){ v=PASS; val='Asset'; note='The cash flows can be named, sourced and defended before you own it.'; }
     else if(pays && !sourced){ v=UNK; val='Unproven'; note='It pays on these inputs, but the record cannot source them. That is a position wearing an asset’s numbers.'; }
     else if(!pays && sourced){ v=FAIL; val='Liability'; note='Well documented, and it takes money out of your pocket at this price.'; }
     else { v=UNK; val='Unknown'; note='Neither the payment nor the paperwork supports a verdict yet.'; }

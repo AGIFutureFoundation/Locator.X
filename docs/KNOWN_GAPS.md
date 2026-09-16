@@ -39,10 +39,18 @@ repository has measured, **eight publish none** — see
 [`EXPANSION.md`](EXPANSION.md) and `scripts/standard_feasibility.py --check`. This is the
 common case, not a corner.
 
-**What is already fixed** (PR #93): `rentEstimate` declares its basis, `deal()` carries it,
+**What is already fixed.** PR #93: `rentEstimate` declares its basis, `deal()` carries it,
 the buy box's rent-derived floors refuse a baseless rent and the funnel says why, and the
-record-derived value-add play was ungated from a fabricated DSCR. The fall-through was
-left alone on purpose.
+record-derived value-add play was ungated from a fabricated DSCR. Then the LOCATOR screen
+(`src/locator.js`), which had the *same* defect on the teaching surface — its asset-test
+gate returned "Liability · well documented, and it takes money out of your pocket" about a
+building with no rent — now returns `Unproven` and says the rent is not documented. Its
+cash-flow and ownership-economics gates refuse too.
+
+**So this entry is now specifically the dashboard's category chain**, which is the last
+place the word "Liability" is still applied to a record whose rent was invented. The
+LOCATOR fix is the template: each of those gates already had the right words and simply
+never reached them, whereas the category chain has no honest state to reach.
 
 **Why it is not fixed.** An honest answer needs a sixth category state threaded through
 `CATS`/`CAT` in `src/dashboard.js`, the persisted `cats` object in `DEF_BB` in

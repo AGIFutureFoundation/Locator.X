@@ -35,7 +35,7 @@ six either.
 
 | Capability | Category tools | Locator.X | Status |
 |---|---|---|---|
-| Deal underwriting (rental, flip, BRRRR, commercial) | DealCheck, BiggerPockets Pro | `src/underwrite.js` (590) buy box, auto pipeline, offer solver; `src/dev.js` (158) conversion math | **ships** |
+| Deal underwriting (rental, flip, BRRRR, commercial) | DealCheck, BiggerPockets Pro | `src/underwrite.js` (595) buy box, auto pipeline, offer solver; `src/dev.js` (158) conversion math | **ships** |
 | Comparable sales | PropStream, HouseCanary | `src/comps.js` (282) — a comparable is a **recorded sale with a date**, never a listing or an estimate | **ships** |
 | Rent estimates | Rentometer, Mashvisor, AirDNA | `src/conv.js` (111) and `src/rebuild.js` (335) produce **models, labelled as models** | **partial** — no licensed rent feed; the label is the point |
 | Market analytics and forecasts | Mashvisor, AirDNA, HouseCanary | `src/predict.js` (587) with a stated method and a **backtest that says whether to believe it**; `src/outlook.js` (225) | **ships** |
