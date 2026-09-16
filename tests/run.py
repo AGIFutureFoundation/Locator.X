@@ -32,6 +32,7 @@ Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
 values — nothing here asserts anything about the real world.
 """
+import glob
 import json
 import os
 import re
@@ -581,6 +582,63 @@ def main():
             check(int(m.group(2)) >= 4,
                   "only %s edition(s) carry a documented record count — the count is "
                   "THE integrity check before a republish" % m.group(2))
+
+    # ---- 10d. the desk-browser pull protocol still works ------------------
+    # Container egress to every county GIS host is policy-blocked - the gateway
+    # answers 403 to CONNECT for EVERY host, including example.com - so the
+    # public record arrives over a browser on a machine that has egress. That
+    # protocol used to exist only as prose in docs/PULL_RECIPE.md, and the
+    # transport tool it told operators to run (/root/bayarea/grab.py) was never
+    # in this repository and no longer exists anywhere: anyone following the
+    # recipe failed at the transfer step with a missing file.
+    #
+    # It is code now, and this drives it end to end against a LOCAL ArcGIS-
+    # shaped fixture server - paging, retry, the polygon centroid, the
+    # gzip+base64 pack, the 240,000-character slicing, and the real ingest on
+    # the far side - so everything except talking to a county is covered
+    # without needing egress the container does not have. The fixture asserts
+    # nothing about the real world.
+    #
+    # The selftest first: it is fast, needs no browser, and its failure message
+    # is more specific than a browser run's.
+    r = subprocess.run([sys.executable, "scripts/desk_ingest.py", "--selftest"],
+                       capture_output=True, text=True, cwd=ROOT)
+    check(r.returncode == 0, "scripts/desk_ingest.py --selftest failed - the transport that "
+          "carries every county pull into this repository does not round-trip",
+          (r.stdout + r.stderr)[-1500:])
+
+    # The BROWSER half needs a browser, and the validate workflow deliberately
+    # installs none (it builds pages but drives none - see validate.yml). So it
+    # runs wherever Chromium exists: here, and in fleet-smoke.yml, whose path
+    # filter covers scripts/desk/ and this test. Where there is no browser this
+    # says so OUT LOUD and names where it does run, rather than passing quietly
+    # - a check that silently skips reads exactly like a check that passed, and
+    # this session has already been bitten once by a guard that passed because
+    # it never ran.
+    browser = os.environ.get("PW_CHROMIUM")
+    if not browser:
+        for cand in glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome") + \
+                    glob.glob(os.path.expanduser("~/.cache/ms-playwright/chromium-*/chrome-linux/chrome")):
+            if os.path.exists(cand):
+                browser = cand
+                break
+    if not node:
+        FAILURES.append("node is not on PATH, so the desk-pull round trip could not run - "
+                        "it is the only thing standing between the pull protocol and an "
+                        "operator discovering it is broken mid-session, with egress this "
+                        "container does not have")
+    elif not browser:
+        print("  - desk-pull round trip NOT RUN here (no Chromium on this machine); it runs "
+              "in fleet-smoke.yml, which installs one. The transport selftest above DID run.")
+    else:
+        env = dict(os.environ, PW_CHROMIUM=browser)
+        r = subprocess.run([node, "tests/desk_roundtrip.js"],
+                           capture_output=True, text=True, cwd=ROOT, env=env)
+        out = r.stdout + r.stderr
+        check(r.returncode == 0, "tests/desk_roundtrip.js failed - the desk-browser pull "
+              "protocol does not survive its own round trip", out[-2000:])
+        check("DESK ROUNDTRIP CLEAN" in out,
+              "tests/desk_roundtrip.js printed no clean line", out[-800:])
 
     # ---- 11. no generated page is ALSO committed under pages/ --------------
     # The market pages became a deploy-time build product, and a committed copy
