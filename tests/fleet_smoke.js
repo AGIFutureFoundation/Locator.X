@@ -529,6 +529,32 @@ async function main() {
          absence of a verdict, not a sixth kind of property: muted rather than
          given a sixth hue (five is already at the colour-blind ceiling), and off
          by default in the buy box because nothing should rank on it. */
+      /* THE ACADEMY MUST NOT GRADE A DRILL AGAINST AN INVENTED RENT SILENTLY.
+
+         Its missions pose an exercise on a real address, ask the student to
+         compute DSCR or cap rate, and mark the answer against LX.deal(l). Where
+         a market publishes no rent every one of those keys descends from a
+         0.4%/mo rule of thumb, and the explainer then teaches that the result
+         "is the line between an asset and a liability". The student cannot tell.
+         That makes this the worst surface in the app for the defect.
+
+         The picker prefers a rent-sourced subject, but a mission's own
+         eligibility filter comes first and can leave none — so the invariant is
+         not "the subject always has rent", it is "a subject without rent always
+         says so". */
+      let acad = null;
+      try {
+        const A = window.LXAcad;
+        acad = {missions: 0, blind: 0, noted: 0};
+        for (const m of A.MISSIONS) {
+          let inst = null;
+          try { inst = m.make(); } catch (e) { continue; }
+          if (!inst || !inst.l) continue;
+          acad.missions++;
+          if (!A.rentSourced(inst.l)) { acad.blind++; if (A.rentBlindNote(inst.l)) acad.noted++; }
+        }
+      } catch (e) { acad = {err: String(e)}; }
+
       LX.dealBump(); LXDash.render();
       const tally = {};
       for (const r of (LXDash.rows || [])) tally[r.cat] = (tally[r.cat] || 0) + 1;
@@ -542,7 +568,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -589,6 +615,23 @@ async function main() {
         /* ...and the control: where rent IS published, nothing should be unrated. */
         errs.push(t.unrated + ' record(s) are marked unrated although this market publishes rent '
           + 'for every one - the state is leaking beyond the case it exists for');
+      }
+    }
+    if (rent.acad && rent.acad.err) {
+      errs.push('the Academy missions could not be evaluated: ' + rent.acad.err);
+    } else if (rent.acad && rent.acad.missions > 0) {
+      if (rent.acad.blind !== rent.acad.noted) {
+        errs.push((rent.acad.blind - rent.acad.noted) + ' Academy mission(s) are set on a property '
+          + 'whose rent is a 0.4%/mo rule of thumb and say nothing about it — the drill is graded '
+          + 'against an invented number and the student cannot tell');
+      }
+      if (rent.none === 0 && rent.acad.blind > 0) {
+        errs.push(rent.acad.blind + ' Academy mission(s) drew a rent-blind subject in a market that '
+          + 'publishes rent for every record — the picker is not preferring sourced subjects');
+      }
+      if (rent.none === rent.n && rent.acad.noted !== rent.acad.missions) {
+        errs.push('only ' + rent.acad.noted + ' of ' + rent.acad.missions + ' Academy missions carry '
+          + 'the rent notice in a wholly rent-blind edition');
       }
     }
     if (rent.gate && rent.gate.err) {
