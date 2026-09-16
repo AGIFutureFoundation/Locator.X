@@ -555,19 +555,146 @@ function renderDots(fl){
 }
 /* choropleth */
 const LAYERS = {fcast:{label:'Forecast — ZIP value change, next 12 months (model)', prop:'fc', fmt:v=>(v>0?'+':'')+v.toFixed(1)+'%', stops:[-6,6], diverging:true}, zhvi:{label:'Typical home value (ZHVI)', prop:'zhvi', fmt:fmt$, stops:[500000,2500000]}, zori:{label:'Typical rent (ZORI, $/mo)', prop:'zori', fmt:v=>'$'+fmtN(v), stops:[2000,5500]}, yield:{label:'Gross yield (ZORI×12 ÷ ZHVI)', prop:'yield', fmt:v=>v.toFixed(1)+'%', stops:[3,7]}, yoy:{label:'1-year value change', prop:'yoy', fmt:v=>(v>0?'+':'')+v.toFixed(1)+'%', stops:[-8,8], diverging:true}};
+
+/* ---------- ZIP statistics, baked onto the geometry ---------------------
+   The five ZIP choropleth overlays paint from GEOJSON FEATURE PROPERTIES.
+   Exactly one of them ever had its property written: scout.js writes `fc` onto
+   every feature after it fits its forecasts. Nothing wrote `zhvi`, `zori` or
+   `yoy`, ever, in any edition — so four of the five overlays painted a fully
+   transparent map while applyLayer() still drew a legend with a colour ramp,
+   dollar or percent endpoints, and a "Zillow Research" attribution line.
+
+   That is worse than a blank layer. A blank layer looks broken; a legend under
+   a blank layer asserts that data is being displayed and names a source for it.
+
+   The data was never missing. M.zips[zip] carries the same value and rent
+   series marketFor() reads for every property panel in the app — measured on
+   the synthetic fleet, all 24 ZIP features had 36 months of both. It simply was
+   never joined to the geometry.
+
+   `last()` already honours window.__lxAsOf, so re-baking on a time scrub keeps
+   the choropleth on the same month as the rest of the app rather than drifting
+   to today while the panels show 2019. */
+function bakeZipStats(){
+  if(!window.BA || !BA.geo || !BA.geo.zips || !BA.geo.zips.features) return 0;
+  let painted = 0;
+  BA.geo.zips.features.forEach(ft => {
+    const p = ft.properties, z = M.zips[p.zip];
+    if(!z){ p.zhvi = null; p.zori = null; p.yoy = null; return; }
+    const v = last(z.v), r = last(z.r);
+    p.zhvi = (typeof v === 'number') ? v : null;
+    p.zori = (typeof r === 'number') ? r : null;
+    let yoy = null;
+    if(z.v){
+      const ao = window.__lxAsOf;
+      const nEnd = (ao != null && ao >= 0) ? Math.min(z.v.length - 1, ao | 0) : z.v.length - 1;
+      const a = last(z.v), b = at(z.v, nEnd - 12);
+      if(a && b) yoy = +((a / b - 1) * 100).toFixed(1);
+    }
+    p.yoy = yoy;
+    if(p.zhvi != null || p.zori != null) painted++;
+  });
+  return painted;
+}
+/* How many ZIPs the ACTIVE overlay can actually paint. Same question the lens
+   note asks of the point layer, asked of the choropleth. */
+function layerReach(mode){
+  if(!window.BA || !BA.geo || !BA.geo.zips) return {n:0, painted:0};
+  const feats = BA.geo.zips.features || [];
+  const L = LAYERS[mode];
+  if(!L) return {n: feats.length, painted: feats.length};
+  let painted = 0;
+  feats.forEach(f => {
+    const p = f.properties;
+    if(L.prop === 'yield') { if(typeof p.zhvi==='number' && typeof p.zori==='number' && p.zhvi>0) painted++; }
+    else if(typeof p[L.prop] === 'number') painted++;
+  });
+  return {n: feats.length, painted: painted};
+}
+
+
+/* ---------- the colour scale, from THIS edition's own distribution -------
+   LAYERS declares stops of [500000, 2500000] for typical home value, [2000,
+   5500] for rent. Those are Bay Area numbers, and they were applied to every
+   edition — the same defect as the sixty-four hard-coded Bay Area city labels
+   that once drew on a New Orleans map.
+
+   Measured on the synthetic fleet: its ZIPs span $319,637 to $774,948 against a
+   legend reading $500k to $2.5M. The entire market occupied 22.8% of the ramp,
+   every ZIP below $500k clamped to the palest shade, and the legend printed
+   three figures that describe nowhere in the edition. The choropleth painted,
+   and carried almost no information.
+
+   Stops now come from the values actually present. Sequential layers take the
+   10th to 90th percentile so a single outlier cannot flatten the rest;
+   DIVERGING layers (year-on-year change, forecast) stay symmetric about zero,
+   because on those the midpoint is a real quantity and moving it would make a
+   falling market look flat. Below the sample floor the declared stops stand and
+   the legend says the range is a default rather than a measurement — five ZIPs
+   cannot describe a distribution. */
+const LAYER_SAMPLE_FLOOR = 5;
+function layerValues(mode){
+  const L = LAYERS[mode]; if(!L || !window.BA || !BA.geo || !BA.geo.zips) return [];
+  const out = [];
+  (BA.geo.zips.features || []).forEach(f => {
+    const p = f.properties;
+    if(L.prop === 'yield'){
+      if(typeof p.zhvi === 'number' && typeof p.zori === 'number' && p.zhvi > 0)
+        out.push(p.zori * 12 / p.zhvi * 100);
+    } else if(typeof p[L.prop] === 'number') out.push(p[L.prop]);
+  });
+  return out.sort((a, b) => a - b);
+}
+function layerStops(mode){
+  const L = LAYERS[mode];
+  const v = layerValues(mode);
+  if(!L) return {stops: [0, 1], derived: false, n: 0};
+  if(v.length < LAYER_SAMPLE_FLOOR) return {stops: L.stops, derived: false, n: v.length};
+  const q = f => v[Math.min(v.length - 1, Math.max(0, Math.round((v.length - 1) * f)))];
+  if(L.diverging){
+    /* Zero has to stay in the middle: it is the line between a market that fell
+       and one that rose. Take the widest excursion and mirror it. */
+    const m = Math.max(Math.abs(q(0.10)), Math.abs(q(0.90)), 0.5);
+    return {stops: [-m, m], derived: true, n: v.length};
+  }
+  let lo = q(0.10), hi = q(0.90);
+  if(!(hi > lo)) { lo = v[0]; hi = v[v.length - 1]; }
+  if(!(hi > lo)) return {stops: L.stops, derived: false, n: v.length};
+  return {stops: [lo, hi], derived: true, n: v.length};
+}
+
 function applyLayer(){
+  /* Baking mutates the geojson object; maplibre keeps its OWN copy of a source's
+     data, so the paint expression would still read the pre-bake properties and
+     the choropleth would stay transparent while the feature objects looked
+     correct to every console probe. The re-set is what makes the join visible.
+     Found by screenshotting the map instead of trusting the property values. */
+  if(bakeZipStats() > 0) updateZipsSource();
   const L=LAYERS[state.layer]; const leg=$('#legend');
   if(!L){ if(USE_GL){ map.setPaintProperty('zipfill','fill-opacity',0); map.setPaintProperty('zipline','line-opacity',0); } else map.setChoropleth(null); leg.classList.remove('on'); return; }
   const curTheme=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
   const dark=curTheme==='dark'||curTheme==='contrast';
   const seq = dark ? ['#1c3a4d','#3a7ca6','#8ec5e8'] : ['#dbe9f2','#4f8fb8','#123c5c'];
   const div = dark ? ['#c45a5a','#3a3f3d','#4fa97a'] : ['#b8443f','#e8e6e0','#1f7a4a'];
-  const cols = L.diverging? div : seq; const [a,b]=L.stops; const mid=(a+b)/2;
+  const cols = L.diverging? div : seq;
+  const SC = layerStops(state.layer); const [a,b]=SC.stops; const mid=(a+b)/2;
   const isnum=p=>['==',['typeof',['get',p]],'number']; const val = L.prop==='yield' ? ['case',['all',isnum('zhvi'),isnum('zori'),['>',['get','zhvi'],0]], ['*',['/',['*',['get','zori'],12],['get','zhvi']],100], -999] : ['case',isnum(L.prop),['get',L.prop],-999];
   if(USE_GL){ map.setPaintProperty('zipfill','fill-color',['case',['<',val,-900],'rgba(0,0,0,0)',['interpolate',['linear'],val,a,cols[0],mid,cols[1],b,cols[2]]]);
   map.setPaintProperty('zipfill','fill-opacity', rasterOn?0.55:0.78); map.setPaintProperty('zipline','line-opacity',0.35); }
   else { map.setChoropleth(p=>{ let v; if(L.prop==='yield'){ v = (typeof p.zhvi==='number' && typeof p.zori==='number' && p.zhvi>0)? p.zori*12/p.zhvi*100 : null; } else v = typeof p[L.prop]==='number'? p[L.prop] : null; if(v==null) return null; const t=clamp((v-a)/(b-a),0,1); return t<0.5? hexLerp(cols[0],cols[1],t*2) : hexLerp(cols[1],cols[2],(t-0.5)*2); }); }
-  leg.innerHTML=`<div>${L.label}</div><div class="bar" style="background:linear-gradient(90deg,${cols[0]},${cols[1]},${cols[2]})"></div><div class="ends"><span>${L.fmt(a)}</span><span>${L.fmt(mid)}</span><span>${L.fmt(b)}</span></div><div style="color:var(--muted);margin-top:3px">Zillow Research · ${M.months[M.months.length-1]}</div>`; leg.classList.add('on');
+  const reach = layerReach(state.layer);
+  if(reach.painted === 0){
+    /* No legend. A colour ramp over a transparent map is a claim that data is
+       shown, and naming a source under it makes the claim worse. */
+    leg.innerHTML = `<div><b>${L.label}</b></div><div style="color:var(--warn);margin-top:3px">No ZIP in this edition publishes this figure, so nothing is shaded. The map is unshaded because the series is absent, not because every ZIP is equal.</div>`;
+    leg.classList.add('on');
+    return;
+  }
+  const short = reach.n - reach.painted;
+  const scaleNote = SC.derived
+    ? 'scale from this edition\u2019s ' + fmtN(SC.n) + ' ZIPs (10th\u201390th percentile)'
+    : 'default scale \u2014 only ' + fmtN(SC.n) + ' ZIP' + (SC.n===1?'':'s') + ' carry this figure, below the sample floor';
+  leg.innerHTML=`<div>${L.label}</div><div class="bar" style="background:linear-gradient(90deg,${cols[0]},${cols[1]},${cols[2]})"></div><div class="ends"><span>${L.fmt(a)}</span><span>${L.fmt(mid)}</span><span>${L.fmt(b)}</span></div><div style="color:var(--muted);margin-top:3px">Zillow Research · ${M.months[M.months.length-1]} · ${scaleNote}${short? ' · '+fmtN(short)+' of '+fmtN(reach.n)+' ZIPs unshaded' : ''}</div>`; leg.classList.add('on');
 }
 $('#layer').addEventListener('change', e=>{ state.layer=e.target.value; applyLayer(); });
 function setBasemap(mode, silent){
