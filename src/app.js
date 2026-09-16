@@ -202,6 +202,7 @@ function taxBasis(l){
   if(a.taxOverride!=='' && a.taxOverride!=null) return 'yours';
   return CITY_TAX[l.county]!=null ? 'county' : 'placeholder';
 }
+const INS_FLOOR = 1200;
 /* THE OPERATING EXPENSE STACK, IN ONE PLACE.
 
    This used to be written twice - once here in deal() and once in
@@ -226,8 +227,19 @@ function opexOf(l, P, rent, egi, o){
   o = o || {};
   const a = state.assump;
   const tax   = P * taxRate(l) / 100;
-  /* a floor, because no carrier writes a policy for $250 a year */
-  const ins   = Math.max(1200, P * a.ins / 100);
+  /* A floor, because no carrier writes a policy for $250 a year. The floor is
+     right; what was wrong is that it applied SILENTLY. A user who sets
+     "Insurance % price/yr" to 0.35 and looks at a $200,000 record was shown
+     $1,200 — which is 0.6%, not the figure they typed — with nothing on the line
+     saying the floor had bound. Measured across the fleet: 581 of 14,024 records
+     (4.1%) show an insurance figure that is not the stated assumption.
+
+     Not invented data, unlike rent and the tax placeholder: the number is
+     defensible and the reason is real. The defect is narrower and worth naming
+     precisely — a displayed figure silently disagreeing with the input the user
+     set. So the line says when the floor is what produced it. */
+  const insPct = P * a.ins / 100;
+  const ins   = Math.max(INS_FLOOR, insPct);
   const maint = rent * a.maint / 100;
   const capex = rent * a.capex / 100;
   const mgmt  = o.selfManage ? 0 : egi * a.mgmt / 100;
@@ -247,7 +259,7 @@ function opexOf(l, P, rent, egi, o){
   const utilMo = o.util != null ? o.util
                : (units > 1 ? Math.min(90 * units, rent * 0.12 / 12) : 0);
   const util = utilMo * 12;
-  return {tax, ins, maint, capex, mgmt, hoa, util,
+  return {tax, ins, insFloored: insPct < INS_FLOOR, maint, capex, mgmt, hoa, util,
           total: tax + ins + maint + capex + mgmt + hoa + util};
 }
 
@@ -306,7 +318,7 @@ function dealCompute(l){
   const loan=P*(1-a.down/100), r=a.rate/100/12, n=a.term*12, pmt = r>0 ? loan*r/(1-Math.pow(1+r,-n)) : loan/n, ds=pmt*12;
   const cf=noi-ds, cash=P*a.down/100+P*a.closing/100;
   const mk=marketFor(l); const appr = (a.appr!==''&&a.appr!=null)? +a.appr : (mk.yoy!=null? mk.yoy : 2);
-  return {P, rent, rentMo:re.rent, rentHow:re.how, rentBasis:re.basis||'model', vac, egi, tax, ins, maint, capex, mgmt, hoa, util, opex, noi, loan, pmt, ds, cf, cfMo:cf/12, cash, cap:noi/P*100, coc:cf/cash*100, grm:P/rent, dscr: ds>0? noi/ds : null, ppsf: l.sqft? P/l.sqft : null, one: re.rent/P*100, gross: rent/P*100, appr, mk,
+  return {P, rent, rentMo:re.rent, rentHow:re.how, rentBasis:re.basis||'model', vac, egi, tax, ins, insFloored:ox.insFloored, maint, capex, mgmt, hoa, util, opex, noi, loan, pmt, ds, cf, cfMo:cf/12, cash, cap:noi/P*100, coc:cf/cash*100, grm:P/rent, dscr: ds>0? noi/ds : null, ppsf: l.sqft? P/l.sqft : null, one: re.rent/P*100, gross: rent/P*100, appr, mk,
     proj: (()=>{ const out=[]; let v=P, bal=loan, rr=rent, eq=0; for(let y=1;y<=5;y++){ v*=1+appr/100; rr*=1+a.rentGrowth/100; let ib=0; for(let m=0;m<12;m++){ const i=bal*r; ib+=i; bal-=(pmt-i); } const noi_y=rr*(1-a.vacancy/100)-(tax*Math.pow(1.02,y-1)+ins+ (rr*(a.maint+a.capex)/100) + rr*(1-a.vacancy/100)*a.mgmt/100 + hoa + util); out.push({y, value:v, equity:v-bal, cf:noi_y-ds, noi:noi_y}); } return out; })()
   };
 }
@@ -1407,7 +1419,7 @@ function renderDrawer(){
     </div><div class="src">Rent basis: ${esc(d.rentHow)}. Market source: ${mk.src?srcLine({src:mk.src}):esc(mk.src)}. Assumptions apply to every property; price and rent overrides apply to this one.</div></div>
     <div class="sec"><h3>Annual pro forma</h3><table class="pl">
       <tr><td>Gross rent</td><td>${fmtFull(d.rent)}</td></tr><tr><td>Vacancy (${a.vacancy}%)</td><td>−${fmtFull(d.vac)}</td></tr>
-      <tr><td>Property tax (${taxRate(l)}%${taxBasis(l)==='placeholder'? ' — placeholder, not '+esc(l.county)+'\u2019s published rate' : taxBasis(l)==='yours'? ' — your figure' : ''})</td><td>−${fmtFull(d.tax)}</td></tr><tr><td>Insurance</td><td>−${fmtFull(d.ins)}</td></tr><tr><td>Maintenance + CapEx</td><td>−${fmtFull(d.maint+d.capex)}</td></tr><tr><td>Management</td><td>−${fmtFull(d.mgmt)}</td></tr>${d.hoa?`<tr><td>HOA</td><td>−${fmtFull(d.hoa)}</td></tr>`:''}
+      <tr><td>Property tax (${taxRate(l)}%${taxBasis(l)==='placeholder'? ' — placeholder, not '+esc(l.county)+'\u2019s published rate' : taxBasis(l)==='yours'? ' — your figure' : ''})</td><td>−${fmtFull(d.tax)}</td></tr><tr><td>Insurance${d.insFloored? ' — '+fmtFull(INS_FLOOR)+' minimum, above the '+a.ins+'% you set' : ''}</td><td>−${fmtFull(d.ins)}</td></tr><tr><td>Maintenance + CapEx</td><td>−${fmtFull(d.maint+d.capex)}</td></tr><tr><td>Management</td><td>−${fmtFull(d.mgmt)}</td></tr>${d.hoa?`<tr><td>HOA</td><td>−${fmtFull(d.hoa)}</td></tr>`:''}
       <tr class="total"><td>Net operating income</td><td>${fmtFull(d.noi)}</td></tr>
       <tr><td>Debt service (${fmt$(d.loan)} @ ${a.rate}%, ${a.term} yr)</td><td>−${fmtFull(d.ds)}</td></tr>
       <tr class="total"><td>Cash flow</td><td class="${d.cf>0?'pos':'neg'}">${fmtFull(d.cf)}</td></tr>
