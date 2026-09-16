@@ -274,7 +274,7 @@ $$('nav.tabs button').forEach(b=>b.addEventListener('click', ()=>showView(b.data
    which id was wrong. */
 function showView(v){ const _t=document.getElementById(v);
  if(!_t || !_t.classList.contains('view')){ try{ console.warn('showView: no such view: '+v); }catch(e){} return; }
- $$('nav.tabs button').forEach(b=>b.setAttribute('aria-selected', b.dataset.view===v)); try{ window.LXNav && LXNav.sync(v); }catch(e){} $$('.view').forEach(s=>s.classList.toggle('active', s.id===v)); if(v==='mapview' && map) setTimeout(()=>map.resize(),30); if(v==='home' && window.LXHome) LXHome.render(); if(v==='deals') renderDeals(); if(v==='market') renderMarket(); if(v==='guide') renderGuideLive(); if(v==='dash' && window.LXDash) window.LXDash.render(); if(v==='dash' && window.LXView) window.LXView.render(); if(v==='dash' && window.LXMotion) window.LXMotion.render(); if(v==='research' && window.LXResearch) window.LXResearch.show(); if(v==='uw' && window.LXUW) window.LXUW.render(); if(v==='uw' && window.LXConv) LXConv.render(); if(v==='hacks' && window.LXHH) window.LXHH.render(); if(v==='switchboard' && window.LXSB) window.LXSB.render(); if(v==='academy' && window.LXAcad) window.LXAcad.render(); if(v==='academy' && window.LXTS) LXTS.render(); if(v==='academy' && window.LXTC) LXTC.render(); if(v==='scout' && window.LXScout) window.LXScout.render(); if(v==='scout' && window.LXSig) LXSig.render(); if(v==='scout' && window.LXVis) LXVis.scoutPulse(); if(v==='scout' && window.LXRAG) LXRAG.render(); if(v==='program' && window.LXProg) LXProg.render(); if(v==='below' && window.LXBM) LXBM.render(); if(v==='patterns' && window.LXPat) LXPat.render(); if(v==='recon' && window.LXRecon) LXRecon.render(); if(v==='corridors' && window.LXCorridor) LXCorridor.render(); if(v==='evidence' && window.LXEvid) LXEvid.render(); if(v==='comps' && window.LXComps) LXComps.render(); if(v==='compliance' && window.LXCompliance) LXCompliance.render(); if(v==='corridorfield' && window.LXCorridorField) LXCorridorField.render(); if(v==='predict' && window.LXPredict) LXPredict.render(); if(v==='sources' && window.LXSources) LXSources.render(); if(v==='standard' && window.LXStdViz) LXStdViz.render(); if(v==='packages' && window.LXPkg) LXPkg.render(); if(v==='packages' && window.LXTiers) LXTiers.render(); if(v==='academy' && window.LXGrad) window.LXGrad.render(); if(v==='network' && window.LXNet) LXNet.render(); if(v==='reo' && window.LXReo) LXReo.render(); if(v==='scout' && window.LXCorp) LXCorp.render(); if(v==='scout' && window.LXCampus) LXCampus.render(); if(window.LXPanels) setTimeout(()=>LXPanels.scan(v), 260); if(v==='twin' && window.LXTwin) window.LXTwin.render(); linkSync(); }
+ $$('nav.tabs button').forEach(b=>b.setAttribute('aria-selected', b.dataset.view===v)); try{ window.LXNav && LXNav.sync(v); }catch(e){} $$('.view').forEach(s=>s.classList.toggle('active', s.id===v)); if(v==='mapview' && map) setTimeout(()=>map.resize(),30); if(v==='mapview') setTimeout(lensNote,60); if(v==='home' && window.LXHome) LXHome.render(); if(v==='deals') renderDeals(); if(v==='market') renderMarket(); if(v==='guide') renderGuideLive(); if(v==='dash' && window.LXDash) window.LXDash.render(); if(v==='dash' && window.LXView) window.LXView.render(); if(v==='dash' && window.LXMotion) window.LXMotion.render(); if(v==='research' && window.LXResearch) window.LXResearch.show(); if(v==='uw' && window.LXUW) window.LXUW.render(); if(v==='uw' && window.LXConv) LXConv.render(); if(v==='hacks' && window.LXHH) window.LXHH.render(); if(v==='switchboard' && window.LXSB) window.LXSB.render(); if(v==='academy' && window.LXAcad) window.LXAcad.render(); if(v==='academy' && window.LXTS) LXTS.render(); if(v==='academy' && window.LXTC) LXTC.render(); if(v==='scout' && window.LXScout) window.LXScout.render(); if(v==='scout' && window.LXSig) LXSig.render(); if(v==='scout' && window.LXVis) LXVis.scoutPulse(); if(v==='scout' && window.LXRAG) LXRAG.render(); if(v==='program' && window.LXProg) LXProg.render(); if(v==='below' && window.LXBM) LXBM.render(); if(v==='patterns' && window.LXPat) LXPat.render(); if(v==='recon' && window.LXRecon) LXRecon.render(); if(v==='corridors' && window.LXCorridor) LXCorridor.render(); if(v==='evidence' && window.LXEvid) LXEvid.render(); if(v==='comps' && window.LXComps) LXComps.render(); if(v==='compliance' && window.LXCompliance) LXCompliance.render(); if(v==='corridorfield' && window.LXCorridorField) LXCorridorField.render(); if(v==='predict' && window.LXPredict) LXPredict.render(); if(v==='sources' && window.LXSources) LXSources.render(); if(v==='standard' && window.LXStdViz) LXStdViz.render(); if(v==='packages' && window.LXPkg) LXPkg.render(); if(v==='packages' && window.LXTiers) LXTiers.render(); if(v==='academy' && window.LXGrad) window.LXGrad.render(); if(v==='network' && window.LXNet) LXNet.render(); if(v==='reo' && window.LXReo) LXReo.render(); if(v==='scout' && window.LXCorp) LXCorp.render(); if(v==='scout' && window.LXCampus) LXCampus.render(); if(window.LXPanels) setTimeout(()=>LXPanels.scan(v), 260); if(v==='twin' && window.LXTwin) window.LXTwin.render(); linkSync(); }
 
 /* ---------------- map ---------------- */
 /* The 64-entry hardcoded Bay Area city list that used to live here is gone.
@@ -305,7 +305,11 @@ function lensOf(l){
  const G='#1F8A4C', Y='#D96F0E', R='#C42B55', DIM='#66748a';
  if(mode==='cat' && r){ const c={asset:'--cat1',hack:'--cat2',value:'--cat3',growth:'--cat4',liab:'--cat5'}[r.cat]; return {tier:r.cat==='asset'?0:r.cat==='liab'?2:1, s:r.score, col:css(c)}; }
  if(mode==='cf'){ const d=r?r.d:deal(l); if(!d) return {tier:3,s:30,col:DIM}; return d.cf>0? {tier:0,s:80,col:G} : (d.dscr>=0.85? {tier:1,s:55,col:Y} : {tier:2,s:30,col:R}); }
- if(mode==='conv'){ if(l.cv){ const u=Math.min(100,(l.units||5)); return {tier:0, s:30+u*0.7, col:css('--accent')}; } return {tier:3, s:14, col:DIM}; }
+ if(mode==='conv'){ /* candidacy comes from conv.js so the lab and the lens can never disagree;
+     the inline fallback matches it exactly and exists only for a build without that module. */
+   const cand = (window.LXConv && LXConv.candidate) ? LXConv.candidate(l)
+     : (!!l.cv || /hotel|motel|lodging|sro/i.test(l.kind||'') || (l.units||0)>=5);
+   if(cand){ const u=Math.min(100,(l.units||5)); return {tier:0, s:30+u*0.7, col:css('--accent')}; } return {tier:3, s:14, col:DIM}; }
  if(mode==='estate'){ const mk2=r?r.d.mk:marketFor(l); const base=mk2&&mk2.zhvi? mk2.zhvi*((l.units||1)>1?(l.units)*0.62:1):null; const g=(!l.est&&base&&l.price)? Math.max(0,Math.min(1,(base-l.price)/base)) : null; if(g==null) return {tier:3,s:14,col:DIM}; return g>0.55? {tier:0,s:40+g*60,col:G} : g>0.3? {tier:1,s:30+g*60,col:Y} : {tier:2,s:20,col:R}; }
   if(mode==='bmkt'){ let a=null; try{ a=window.LXBM&&LXBM.assess(l); }catch(e){} if(!a) return {tier:3,s:14,col:DIM};
    return a.idx>=45? {tier:0,s:35+a.idx*0.7,col:G} : a.idx>=25? {tier:1,s:28+a.idx*0.5,col:Y} : {tier:2,s:20,col:R}; }
@@ -315,6 +319,61 @@ function lensOf(l){
  const sc=r? r.score : 40;
  return sc>=60? {tier:0,s:sc,col:G} : sc>=45? {tier:1,s:sc,col:Y} : {tier:2,s:Math.max(18,sc),col:R};
 }
+
+/* ---------- what a lens could actually classify -------------------------
+   A lens that leaves every property dim draws a uniformly grey map and says
+   nothing about why. The user cannot tell "this market has no distress on
+   record" from "the distress layer is broken", and those are opposite
+   findings. It is the same failure the coverage panel exists to prevent, one
+   surface further out.
+
+   Measured on the synthetic fleet 2026-09-16: three of the eight lenses left
+   all 2,500 records dim. One (conversion) was a real defect, fixed by deriving
+   candidacy from the record. Two were honest - the fixture carries no distress
+   records and few confident ZIP fits - and were indistinguishable from the
+   defect by looking at the map, which is the point of this note.
+
+   So the lens reports its own reach: how many properties it could place, out of
+   how many are in view, and what the rest were missing. Counted on the FILTERED
+   set, because that is what is drawn. */
+const LENS_BLIND = {
+  cf:     'no rent or expense figure, so no cash flow can be computed',
+  conv:   'not a lodging class and under five units',
+  estate: 'no ZIP value index to compare a basis against',
+  dis:    'no live distress record published for these parcels',
+  fcast:  'no ZIP forecast that clears the model-fit floor',
+  bmkt:   'not enough basis evidence to index against the market',
+  cat:    'not scored by the ranking engine',
+  fit:    'not scored by the ranking engine'
+};
+function lensReach(){
+  const rows = filtered();
+  let placed = 0;
+  for(const l of rows){ try{ if(lensOf(l).tier !== 3) placed++; }catch(e){} }
+  return {n: rows.length, placed: placed, dim: rows.length - placed};
+}
+function lensNote(){
+  const el = $('#lensnote'); if(!el) return;
+  const mode = state.lens || 'fit';
+  const r = lensReach();
+  if(!r.n){ el.textContent = ''; return; }
+  if(r.placed === 0){
+    el.innerHTML = '<b>This lens places none of the ' + fmtN(r.n) + ' properties in view</b> \u2014 '
+      + esc(LENS_BLIND[mode] || 'the inputs it needs are not in these records')
+      + '. The map is grey because the record is silent here, not because every property scored alike.';
+    el.className = 'lensnote blind';
+    return;
+  }
+  if(r.dim > 0){
+    el.innerHTML = 'Placed ' + fmtN(r.placed) + ' of ' + fmtN(r.n) + '. The other '
+      + fmtN(r.dim) + ' are dim because ' + esc(LENS_BLIND[mode] || 'this lens has no input for them') + '.';
+    el.className = 'lensnote';
+    return;
+  }
+  el.innerHTML = 'Placed all ' + fmtN(r.n) + ' properties in view.';
+  el.className = 'lensnote';
+}
+
 const USE_GL = (()=>{ try{ if(typeof maplibregl==='undefined' || typeof CanvasMap==='undefined') return typeof maplibregl!=='undefined'; const c=document.createElement('canvas'); const gl=c.getContext('webgl2')||c.getContext('webgl'); if(!gl) return false; const u=URL.createObjectURL(new Blob(['self.close()'],{type:'text/javascript'})); const w=new Worker(u); w.terminate(); URL.revokeObjectURL(u); return true; }catch(e){ return false; } })();
 const Marker = USE_GL ? maplibregl.Marker : CMarker;
 function hexLerp(a,b,t){ const p=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; const A=p(a),B=p(b); return 'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')+')'; }
@@ -530,7 +589,7 @@ function setBasemap(mode, silent){
   $('#attrib').textContent=attrib+' · Market data © Zillow Research'; if(!silent){ $('#mapnotice').classList.remove('on'); }
 }
 $('#basemap').addEventListener('change', e=>setBasemap(e.target.value));
-const _lensEl=$('#lens'); if(_lensEl) _lensEl.addEventListener('change', e=>{ state.lens=e.target.value; renderMarkers(); const lg=$('#lenslegend'); if(lg){ lg.innerHTML= state.lens==='cat'? '<span><i style="background:var(--cat1)"></i>asset</span><span><i style="background:var(--cat2)"></i>hack</span><span><i style="background:var(--cat3)"></i>value</span><span><i style="background:var(--cat4)"></i>growth</span><span><i style="background:var(--cat5)"></i>liability</span>' : state.lens==='conv'? '<span><i style="background:var(--accent)"></i>conversion class · size = units</span><span><i style="background:#66748a"></i>other</span>' : state.lens==='dis'? '<span><i style="background:#1F8A4C"></i>hard distress on record</span><span><i style="background:#D96F0E"></i>elevated</span><span><i style="background:#66748a"></i>no live record</span>' : state.lens==='fcast'? '<span><i style="background:#1F8A4C"></i>ZIP forecast ≥ +2.5%</span><span><i style="background:#D96F0E"></i>flat-to-up</span><span><i style="background:#C42B55"></i>declining</span><span style="color:var(--muted)">dim = weak model fit</span>' : state.lens==='bmkt'? '<span><i style="background:#1F8A4C"></i>index ≥ 45</span><span><i style="background:#D96F0E"></i>25–45</span><span><i style="background:#C42B55"></i>under 25</span><span style="color:var(--muted)">size = index</span>' : '<span><i style="background:#1F8A4C"></i>best match</span><span><i style="background:#D96F0E"></i>close — needs a lever</span><span><i style="background:#C42B55"></i>weak fit</span><span style="color:var(--muted)">size = fit</span>'; } });
+const _lensEl=$('#lens'); if(_lensEl) _lensEl.addEventListener('change', e=>{ state.lens=e.target.value; renderMarkers(); lensNote(); const lg=$('#lenslegend'); if(lg){ lg.innerHTML= state.lens==='cat'? '<span><i style="background:var(--cat1)"></i>asset</span><span><i style="background:var(--cat2)"></i>hack</span><span><i style="background:var(--cat3)"></i>value</span><span><i style="background:var(--cat4)"></i>growth</span><span><i style="background:var(--cat5)"></i>liability</span>' : state.lens==='conv'? '<span><i style="background:var(--accent)"></i>conversion class · size = units</span><span><i style="background:#66748a"></i>other</span>' : state.lens==='dis'? '<span><i style="background:#1F8A4C"></i>hard distress on record</span><span><i style="background:#D96F0E"></i>elevated</span><span><i style="background:#66748a"></i>no live record</span>' : state.lens==='fcast'? '<span><i style="background:#1F8A4C"></i>ZIP forecast ≥ +2.5%</span><span><i style="background:#D96F0E"></i>flat-to-up</span><span><i style="background:#C42B55"></i>declining</span><span style="color:var(--muted)">dim = weak model fit</span>' : state.lens==='bmkt'? '<span><i style="background:#1F8A4C"></i>index ≥ 45</span><span><i style="background:#D96F0E"></i>25–45</span><span><i style="background:#C42B55"></i>under 25</span><span style="color:var(--muted)">size = index</span>' : '<span><i style="background:#1F8A4C"></i>best match</span><span><i style="background:#D96F0E"></i>close — needs a lever</span><span><i style="background:#C42B55"></i>weak fit</span><span style="color:var(--muted)">size = fit</span>'; } });
 $('#fitbtn').addEventListener('click', fitToResults);
 /* The city rail — one map per city, in one click.
    ----------------------------------------------------------------------------
@@ -939,7 +998,7 @@ function renderScopeNote(){
   });
 }
 
-function refresh(){ renderScopeNote(); linkSync(); dealSync(); /* map layers owned by other modules follow the same filter as the pins */ try{ if(window.LX3D && LX3D.refreshTowers) LX3D.refreshTowers(); }catch(e){} dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
+function refresh(){ renderScopeNote(); linkSync(); dealSync(); lensNote(); /* map layers owned by other modules follow the same filter as the pins */ try{ if(window.LX3D && LX3D.refreshTowers) LX3D.refreshTowers(); }catch(e){} dealsShown = DEALS_PAGE; lensInvalidate(); renderList(); if(mapReady) renderMarkers(); if(state.sel) renderDrawer(); if(window.LXDash && $('#dash').classList.contains('active')) window.LXDash.render(); }
 /* The view, written into the URL fragment by src/permalink.js. Called from
    refresh() and from showView() because between them they cover every way the
    filters, the selection or the screen can change. Guarded: an edition built

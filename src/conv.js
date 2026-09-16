@@ -33,15 +33,38 @@ function model(l){
   return {hotel, mkt, beds, capexS, valS, profS, fam, capexF, valF, profF, best, zr};
 }
 let f={type:'all', county:'', minu:0, sort:'prof'};
+/* WHO IS A CONVERSION CANDIDATE.
+
+   This used to require l.cv, a flag only two of the seventeen data builders ever
+   set — the same defect the house-hack finder carried on l.hh, in the same
+   shape, on a different flag. Measured 2026-09-16 on the synthetic fleet: ZERO
+   records carry cv and 1,250 of 2,500 qualify on their own record, so the
+   Conversion lab rendered an empty screen and the map's conversion lens rendered
+   a uniformly dim map, in every edition whose builder does not set the flag.
+
+   Candidacy is a property of the RECORD, not of a builder: a lodging class or a
+   building with five or more units says it. The flag is still honoured where a
+   builder set it deliberately, so nothing that worked before stops working.
+
+   Exported so src/app.js's map lens asks THIS function rather than keeping a
+   second copy of the rule — the drift that cost this project its operating
+   expense stack and its evidence field list. */
+function candidate(l){
+  if(!l) return false;
+  if(l.cv) return true;
+  if(/hotel|motel|lodging|sro/i.test(l.kind||'')) return true;
+  return (l.units||0) >= 5;
+}
+
 function counties(){
   const X=L();
   const seen={};
-  X.allListings().filter(l=>l.cv).forEach(l=>{ if(l.county) seen[l.county]=(seen[l.county]||0)+1; });
+  X.allListings().filter(candidate).forEach(l=>{ if(l.county) seen[l.county]=(seen[l.county]||0)+1; });
   return Object.keys(seen).sort((a,b)=>seen[b]-seen[a]);
 }
 function rows(){
   const X=L();
-  let r=X.allListings().filter(l=>l.cv);
+  let r=X.allListings().filter(candidate);
   if(f.type==='hotel') r=r.filter(l=>/hotel|motel|lodging/i.test(l.kind||''));
   if(f.type==='sro') r=r.filter(l=>/sro/i.test(l.kind||''));
   if(f.type==='comm') r=r.filter(l=>/commercial|industrial|mixed-use/i.test(l.kind||''));
@@ -84,5 +107,5 @@ function render(){
   ['cv_type','cv_cty','cv_min','cv_sort'].forEach((id,i)=>{ const el=$('#'+id); el.value=[f.type,f.county,String(f.minu),f.sort][i]; el.addEventListener('change',()=>{ f={type:$('#cv_type').value, county:$('#cv_cty').value, minu:+$('#cv_min').value, sort:$('#cv_sort').value}; render(); }); });
   root.querySelectorAll('tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>X.select(tr.dataset.id,true)));
 }
-window.LXConv={render, model};
+window.LXConv={render, model, candidate};
 })();

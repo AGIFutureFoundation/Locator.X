@@ -370,6 +370,63 @@ async function main() {
     await page.evaluate(() => LXCov.close());
     await page.waitForTimeout(200);
 
+    /* EVERY MAP LENS, on every edition.
+
+       A lens that leaves every property dim draws a uniformly grey map, and the
+       user cannot tell "this market publishes no distress records" from "the
+       distress layer is broken". Those are opposite findings and they look
+       identical. Measured on the fleet: three of eight lenses placed nothing,
+       and exactly one of the three was a defect - the conversion lens was gated
+       on a builder flag (l.cv) that two of seventeen data builders set, so the
+       Conversion lab AND the lens rendered empty everywhere else. Same shape as
+       the l.hh house-hack defect, different flag.
+
+       So: the conversion lens must place SOMETHING wherever the edition carries
+       lodging or 5+ unit stock, and every lens must state its own reach. */
+    const lens = await page.evaluate(async () => {
+      LX.showView('mapview');
+      await new Promise(r => setTimeout(r, 1200));
+      const sel = document.getElementById('lens');
+      if (!sel) return { err: 'no lens control' };
+      const all = LX.allListings();
+      const convStock = all.filter(l => /hotel|motel|lodging|sro/i.test(l.kind || '')
+                                     || (l.units || 0) >= 5).length;
+      const out = { convStock, cvFlag: all.filter(l => l.cv).length, lenses: [] };
+      for (const v of [...sel.options].map(o => o.value)) {
+        sel.value = v; sel.dispatchEvent(new Event('change', { bubbles: true }));
+        await new Promise(r => setTimeout(r, 320));
+        const el = document.getElementById('lensnote');
+        out.lenses.push({ lens: v,
+          note: (el && el.textContent || '').trim(),
+          blind: !!(el && el.classList.contains('blind')) });
+      }
+      sel.value = 'fit'; sel.dispatchEvent(new Event('change', { bubbles: true }));
+      return out;
+    });
+    if (lens.err) {
+      errs.push('map lens audit: ' + lens.err);
+    } else {
+      /* Every lens states its reach. A silent note is the failure this whole
+         check exists for: it is what a broken lens and an empty market share. */
+      lens.lenses.forEach(L => {
+        if (!(L.note.length > 20)) {
+          errs.push('the "' + L.lens + '" lens states no reach — a grey map with no note '
+            + 'cannot be told apart from a broken layer');
+        }
+      });
+      const conv = lens.lenses.find(L => L.lens === 'conv');
+      if (conv && lens.convStock > 0 && conv.blind) {
+        errs.push('the conversion lens placed NOTHING while this edition carries '
+          + lens.convStock + ' lodging or 5+ unit records. Candidacy comes from the '
+          + 'record (src/conv.js candidate()), never from a builder flag — l.cv is set '
+          + 'by 2 of 17 builders and ' + lens.cvFlag + ' records here carry it.');
+      }
+      if (conv && lens.convStock === 0 && !conv.blind) {
+        errs.push('the conversion lens placed properties in an edition with no lodging '
+          + 'or 5+ unit stock at all');
+      }
+    }
+
     await page.evaluate(() => LX.showView('mapview'));
     await page.waitForTimeout(500);
 
