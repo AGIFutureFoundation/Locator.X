@@ -90,7 +90,7 @@ strategy and market, and want to know which properties cross into a box this wee
 
 - **Why** — REsimpli and InvestorFuse sell pipeline; nothing in the register lets the buy
   box itself be a first-class, versioned, shareable object.
-- **Proof** — round-trip through `src/permalink.js` (241) and `src/views.js` (189): a box
+- **Proof** — round-trip through `src/permalink.js` (241) and `src/views.js` (205): a box
   encoded into a URL restores to the identical matched set, and reports every key it
   could not apply — the rule `permalink.js` already enforces.
 - **Blocker** — none.

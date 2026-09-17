@@ -195,6 +195,19 @@ def make_ba(seed, count, wide, tall, campus):
         vacant = (i % 31 == 7)
         if vacant:
             kind, units = "Vacant land", 1
+        # ---- commercial and industrial stock ---------------------------------
+        # views.js defines nine asset classes and the fixture exercised six: the
+        # Commercial and Industrial & storage tests matched nothing across all
+        # 14,024 records, because every fixture kind was residential or lodging.
+        # A filter that can only ever return an empty set is not a filter anybody
+        # has tested. These are single-tenant by unit count, which is what the
+        # roll says of a store or a warehouse.
+        elif i % 23 == 5:
+            kind, units = ("Retail store", "Office building", "Restaurant",
+                           "Mixed-use commercial")[(i // 23) % 4], 1
+        elif i % 29 == 9:
+            kind, units = ("Warehouse", "Self-storage facility",
+                           "Light industrial")[(i // 29) % 3], 1
         if i % 25 == 11:
             kind = "Unclassified"
         elif i % 12 == 5:

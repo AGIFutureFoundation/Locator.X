@@ -21,7 +21,23 @@ const CLASSES=[
  {id:'ind',   name:'Industrial & storage', test:l=>/industrial|warehouse|storage|flex|terminal|data center|manufactur/i.test(l.kind||'')},
  {id:'condo', name:'Condo & townhouse',    test:l=>/condo|townhouse|co-op|cooperative|duet/i.test(l.kind||'')},
  {id:'sfr',   name:'Single-family',        test:l=>(l.units||1)<2 && /single.family|residential parcel|residence|home/i.test(l.kind||'') && !/condo|townhouse/i.test(l.kind||'')},
- {id:'conv',  name:'Conversion class',     test:l=>!!l.cv},
+ /* THE CONVERSION CLASS WAS GATED ON A BUILDER FLAG, AND MOST BUILDERS DO NOT SET IT.
+
+    src/conv.js had exactly this defect and was fixed: `l.cv` is written by a
+    minority of the data builders, so the Conversion lab and the conversion map
+    lens both rendered empty in every edition whose builder omitted it — not
+    because those editions hold no convertible stock, but because nobody had
+    ticked a box. The fix was to derive candidacy from the RECORD: a lodging use,
+    or five or more units, is a conversion candidate whatever the flag says.
+
+    This surface was missed. The view builder's Conversion class still asked for
+    the flag alone, so the class classified nothing across all 14,024 fixture
+    records while 1,209 of them carry five or more units and 395 are lodging.
+    It now asks conv.js the same question the lab and the lens ask, and falls
+    back to the same record test if that module is not loaded in this edition. */
+ {id:'conv',  name:'Conversion class',
+  test:l=>{ try{ if(window.LXConv && LXConv.candidate) return LXConv.candidate(l); }catch(e){}
+            return !!l.cv || /hotel|motel|lodging|sro/i.test(l.kind||'') || (l.units||0) >= 5; }},
  {id:'land',  name:'Land only',            test:isLand}
 ];
 /* Colour comes from the shared validated palette, assigned in fixed slot order
