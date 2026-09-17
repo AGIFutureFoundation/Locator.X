@@ -461,6 +461,52 @@ async function main() {
     await page.evaluate(() => LXCov.close());
     await page.waitForTimeout(200);
 
+    /* EVERY SECTION, OPENED, ON EVERY EDITION.
+
+       This suite drove seven of the app's thirty views. The other twenty-three —
+       the Academy, the evidence scorecard, comps, the Standard, Scout, the
+       relational map, the Digital Twin, recon, the pattern miner, the import
+       page and the rest — were never opened by any test, on any edition. They
+       work; driving all thirty by hand found no errors and nothing empty. But
+       "works today" and "guarded" are different states, and a regression in any
+       of the twenty-three would have reached a published edition without a
+       single check going red.
+
+       The bar here is deliberately low and absolute: open it, and it must not
+       throw and must not come back blank. Anything richer belongs in the
+       dedicated blocks above, which is where the panels that carry real
+       invariants are checked. What this catches is the failure those blocks
+       cannot: a view that stopped rendering at all. */
+    const sections = await page.evaluate(() =>
+      [...document.querySelectorAll('nav.tabs button[data-view]')].map(b => b.dataset.view));
+    if (sections.length < 20) {
+      errs.push('only ' + sections.length + ' views are reachable from the tab bar; the section '
+        + 'sweep would silently cover a fraction of the app');
+    }
+    const thin = [], broke = [], missing = [];
+    for (const v of sections) {
+      const before = errs.length;
+      const ok = await page.evaluate(x => { try { LX.showView(x); return true; } catch (e) { return String(e); } }, v);
+      if (ok !== true) { broke.push(v + ' (' + ok + ')'); continue; }
+      await page.waitForTimeout(260);
+      const got = await page.evaluate(x => {
+        const el = document.getElementById(x);
+        if (!el) return {found: false};
+        return {found: true, chars: ((el.innerText || '').trim()).length};
+      }, v);
+      if (!got.found) { missing.push(v); continue; }
+      /* 120 characters is below every real view's content and above an empty
+         shell's stray label — the thinnest genuine view in the fleet renders
+         about 800. */
+      if (got.chars < 120) thin.push(v + ' (' + got.chars + ' chars)');
+      if (errs.length > before) broke.push(v + ' threw: ' + errs[before]);
+    }
+    if (missing.length) errs.push('no container rendered for view(s): ' + missing.join(', '));
+    if (thin.length) errs.push('view(s) opened but rendered almost nothing: ' + thin.join(', '));
+    if (broke.length) errs.push('view(s) failed to open: ' + broke.join(' | '));
+    await page.evaluate(() => { try { LX.showView('mapview'); } catch (e) {} });
+    await page.waitForTimeout(250);
+
     /* NOTHING SCORES ON A RULE OF THUMB.
 
        LX.rentEstimate() always returns a number. Where a market publishes no
@@ -563,6 +609,22 @@ async function main() {
          581 of 14,024 fleet records. This is narrower than rent or the tax
          placeholder: the figure is defensible and nothing is invented. The
          defect is only that it disagreed with the stated input in silence. */
+      /* A COUNT IN THE SHELL MUST BE COUNTED, NOT WRITTEN DOWN.
+
+         The import page said "the map ships with 100 public-record properties"
+         on every edition. It was written when one edition held a hundred records
+         and never revisited: the Bay Atlas ships 213,381, the largest edition
+         354,260, and Shelter Cove 24 — wrong everywhere by two to four orders of
+         magnitude. Unlike the "walkable Bay Area" strings beside it, which
+         build_state.py rewrites per edition through its regionalisation pairs,
+         this one carried no pair, so the build could not correct it either. */
+      let ship = null;
+      try {
+        const el = document.getElementById('dataShipN');
+        const txt = el ? el.textContent.replace(/[,\s]/g, '') : null;
+        ship = {found: !!el, txt, expect: ls.filter(x => x.src !== 'imp').length};
+      } catch (e) { ship = {err: String(e)}; }
+
       let ins = null;
       try {
         const a2 = LX.state.assump;
@@ -613,7 +675,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -660,6 +722,17 @@ async function main() {
         /* ...and the control: where rent IS published, nothing should be unrated. */
         errs.push(t.unrated + ' record(s) are marked unrated although this market publishes rent '
           + 'for every one - the state is leaking beyond the case it exists for');
+      }
+    }
+    if (rent.ship && rent.ship.err) {
+      errs.push('the shipped-count claim could not be read: ' + rent.ship.err);
+    } else if (rent.ship) {
+      if (!rent.ship.found) {
+        errs.push('the import page no longer carries a countable shipped-record figure — if the '
+          + 'number went back to being written into the markup it is wrong on every other edition');
+      } else if (rent.ship.txt !== String(rent.ship.expect)) {
+        errs.push('the import page says it ships ' + rent.ship.txt + ' records; this edition holds '
+          + rent.ship.expect);
       }
     }
     if (rent.ins && rent.ins.err) {
