@@ -182,6 +182,19 @@ def make_ba(seed, count, wide, tall, campus):
         # a use, and one in twenty-five is unclassified — which is what the
         # thinner county rolls this app actually reads look like.
         bare = (i % 17 == 3)
+        # ---- vacant land: a parcel with no building on it --------------------
+        # Roughly one parcel in thirty-one. No fixture record had ever been
+        # vacant, which left three separate things unexercised: the VACANT
+        # exclusion in comps.js rolls(), added because a lot carried on the roll
+        # at a nominal few thousand and sold at a development price produced a
+        # median ratio above fifty in one real county; the land-versus-improved
+        # structure selector in views.js, which could only ever return the
+        # improved set; and the land-only asset class. A vacant parcel carries a
+        # lot area — that IS what was bought — and no building area, beds, baths,
+        # storeys or year, because there is no building to describe.
+        vacant = (i % 31 == 7)
+        if vacant:
+            kind, units = "Vacant land", 1
         if i % 25 == 11:
             kind = "Unclassified"
         elif i % 12 == 5:
@@ -206,9 +219,9 @@ def make_ba(seed, count, wide, tall, campus):
             # of them. Fall back to the cell if this ZIP has no street in it.
             **dict(zip(("lng", "lat"), PG.pick_in_cell(segs, x0, y0, cell_w, cell_h, rng))),
             "price": price, "units": units,
-            "beds": None if bare or units > 4 else max(1, units + i % 3),
-            "sqft": int((900 if units == 1 else 700 * units) * (0.8 + 0.5 * rng.random())),
-            "year": 1938 + (i * 7) % 85, "kind": kind,
+            "beds": None if bare or vacant or units > 4 else max(1, units + i % 3),
+            "sqft": None if vacant else int((900 if units == 1 else 700 * units) * (0.8 + 0.5 * rng.random())),
+            "year": None if vacant else 1938 + (i * 7) % 85, "kind": kind,
             "src": "Synthetic demo fixture", "priceDate": "2026-01",
             # ---- the fields the app is built to read, which no fixture carried --
             # Measured across the whole fleet before this was added: of 14,024
@@ -235,16 +248,26 @@ def make_ba(seed, count, wide, tall, campus):
             # Without it the B colour on the evidence lens, the B row on the
             # scorecard and the B branch of the LOCATOR location gate were all
             # unreachable in any test.
-            "lot": (None if bare or "condo" in kind.lower() or i % 10 < 3 or i % 25 == 11
+            "lot": (None if (bare and not vacant) or "condo" in kind.lower() or (i % 10 < 3 and not vacant) or i % 25 == 11
                     else int(1800 + 7800 * rng.random())),
             "sale": (None if bare or i % 5 < 3
                      else int(price * (0.55 + 0.38 * rng.random()))),
             # a recorded price with no recorded date — rarer, and its own branch
+            # The YEAR here decides whether a sale is usable, not just present:
+            # comps.js rolls() only counts a sale within three years, because an
+            # older one no longer says what the assessor thinks of today's
+            # building. The first version of this line used (i * 3) % 9, which
+            # cycles through {0, 3, 6} and nothing else — every synthetic sale
+            # landed in 2016, 2019 or 2022, all of them outside the window, and
+            # the roll-ratio analysis stayed exactly as dead as it was before the
+            # sale field existed. A coprime step spreads across the full range so
+            # both sides run: recent sales feed the ratio, older ones exercise
+            # the exclusion.
             "saleDate": (None if bare or i % 5 < 3 or i % 60 == 4
-                         else "%d-%02d" % (2016 + (i * 3) % 9, 1 + (i * 7) % 12)),
-            "baths": (None if bare or units > 4 or i % 9 == 0
+                         else "%d-%02d" % (2018 + (i * 5) % 8, 1 + (i * 7) % 12)),
+            "baths": (None if bare or vacant or units > 4 or i % 9 == 0
                       else max(1, (units + i % 3) - (i % 2))),
-            "stories": None if bare or i % 12 < 6 else 1 + (i % 3),
+            "stories": None if bare or vacant or i % 12 < 6 else 1 + (i % 3),
         })
     region = {"center": [W / 2, H / 2], "zoom": 11.0,
               "maxBounds": [[-0.2, -0.18], [W + 0.25, H + 0.22]], "pois": []}
