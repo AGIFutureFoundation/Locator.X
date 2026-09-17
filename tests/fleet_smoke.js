@@ -665,6 +665,24 @@ async function main() {
 
          Fleet-wide, like the asset classes: a rent-blind edition cannot produce a
          cash-flow asset and should not be asked to. */
+      /* THE STRATEGY COMPARISON MUST GRADE AN INVENTED RENT AS AN INVENTION.
+
+         switchboard.js classified rent by regex over LX.rentEstimate's `how`
+         sentence — 'record' if it matched "your figure" or "from your data",
+         'model' for everything else. Everything else included the 0.4%/mo rule
+         of thumb that fires wherever a market publishes no rent, so a hold column
+         in a rent-blind market carried the same basis band as one in the Bay. It
+         reads the basis field now. Measured: the same record grades C on a
+         modelled rent and D on a rule of thumb, where both were C before. */
+      let sbRent = null;
+      try {
+        const cols = LXSB.compare(ls[0]);
+        const hold = cols.find(c => c.key === 'hold');
+        const rb = hold && (hold.basis || []).find(x => /Rent/i.test(x.what));
+        sbRent = {kind: rb && rb.kind, band: hold && hold.grade && hold.grade.band,
+                  basis: (LX.deal(ls[0]) || {}).rentBasis};
+      } catch (e) { sbRent = {err: String(e)}; }
+
       let catTally = null;
       try {
         LX.dealBump(); LXDash.render();
@@ -739,7 +757,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -850,6 +868,19 @@ async function main() {
       if (rent.none === rent.n && rent.acad.noted !== rent.acad.missions) {
         errs.push('only ' + rent.acad.noted + ' of ' + rent.acad.missions + ' Academy missions carry '
           + 'the rent notice in a wholly rent-blind edition');
+      }
+    }
+    if (rent.sbRent && rent.sbRent.err) {
+      errs.push('the switchboard rent basis could not be read: ' + rent.sbRent.err);
+    } else if (rent.sbRent && rent.sbRent.kind) {
+      if (rent.sbRent.basis === 'none' && rent.sbRent.kind !== 'assumption') {
+        errs.push('the switchboard grades this market\'s rent as "' + rent.sbRent.kind
+          + '" while it is a 0.4%/mo rule of thumb — the strategy comparison is treating an '
+          + 'invented figure as a modelled one');
+      }
+      if (rent.sbRent.basis !== 'none' && rent.sbRent.kind === 'assumption') {
+        errs.push('the switchboard grades a rent with a real basis (' + rent.sbRent.basis
+          + ') as an assumption — the refusal is too broad');
       }
     }
     if (rent.gate && rent.gate.err) {

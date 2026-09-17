@@ -40,7 +40,7 @@ scorecard: there is no total, and a miss is not offset by a strength elsewhere.
 |---|---|---|
 | 1 | Fits an approved sleeve and market | The buy box in `src/underwrite.js` (595) and the view builder in `src/views.js` (205) |
 | 2 | Meets defined return, leverage, cash-flow, contingency and **downside-case** thresholds | `src/underwrite.js` stress block: break-even rent, break-even rate, rate headroom, DSCR at stress |
-| 3 | Has a written value-creation plan beyond general appreciation | `src/switchboard.js` (438) names which plays the record can support, and which it cannot |
+| 3 | Has a written value-creation plan beyond general appreciation | `src/switchboard.js` (455) names which plays the record can support, and which it cannot |
 | 4 | Passes ownership, title, tax, lien, zoning, permit, physical-condition, insurance, financing and legal diligence | `src/records.js` (250) assembles the per-jurisdiction sources; **ownership, title and lien retrieval are user-side** — the platform links, it does not hold |
 | 5 | Has confidence-scored supporting data and clearly logged open questions | `src/evidence.js` (223) grades the inputs; `src/coverage.js` (340) states what the edition cannot answer at all |
 | 6 | Has at least two credible exit paths where practical | `src/switchboard.js` — but note that where it reports **blocked**, that is a genuine absence of an exit analysis, not a pass |
