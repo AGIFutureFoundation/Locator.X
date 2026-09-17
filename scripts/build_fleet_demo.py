@@ -142,9 +142,33 @@ def make_ba(seed, count, wide, tall, campus):
         return out
     zips_m, cities_m = {}, {}
     for i, z in enumerate(zids):
-        v0 = 330000 + 80000 * ((seed + i) % 6)
-        r0 = 1800 + 260 * ((seed + i) % 6)
-        drift = [-.02, .01, .03, .04, .05, .07][(seed + i) % 6]
+        # ---- the spread that decides whether anything can pay for itself ----
+        # Measured before this change: of 14,024 records across twelve editions,
+        # ZERO were cash-flow positive. Not one. The Cash-flow asset category —
+        # the platform's own headline definition, "an asset puts money in your
+        # pocket" — was never assigned to a single record anywhere, and neither
+        # was Appreciation bet. The PASS branch of the LOCATOR cash-flow gate,
+        # the "Asset" verdict on its asset test, and the dashboard's cash-flow
+        # card were all dead: every positive path in the app was exercised only
+        # in the failure direction.
+        #
+        # The cause was the market spread, not the arithmetic. Every ZIP ran
+        # between 0.545% and 0.425% of value in monthly rent, so nothing came
+        # near the 1% rule this app teaches and underwrite.js measures. That is
+        # a coastal spread applied to every edition, including the Louisiana and
+        # Midwest markets this platform actually covers, where a cheaper house on
+        # a better ratio is the normal case.
+        #
+        # The ratio now FALLS as value rises, which is how real markets behave:
+        # roughly 0.92%/mo at $140k down to 0.37%/mo at $730k. The curve is set so
+        # the MAJORITY still do not pay for themselves — that is the honest state,
+        # and the reason the buy box exists at all — while the ones that can now
+        # exist. A fixture where everything cash-flows would be as useless as one
+        # where nothing does, in the opposite direction.
+        k = (seed + i) % 6
+        v0 = 140000 + 118000 * k
+        r0 = round(v0 * (0.0092 - 0.0011 * k) / 10) * 10
+        drift = [-.02, .01, .03, .04, .05, .07][k]
         amp, phase = rng.uniform(.004, .022), rng.uniform(0, 6.28)
         zips_m[z] = {"v": series(v0, drift, amp, phase),
                      "r": series(r0, drift + .02, amp * .8, phase + 1.1)}
