@@ -42,6 +42,9 @@ async function main() {
   console.log('fleet: %d editions + %d refusing templates', fleet.order.length, fleet.templates);
 
   let failures = 0;
+  /* Asset-class coverage accumulates ACROSS editions: a market of houses need
+     not contain a warehouse, but no class may be dead in the whole fleet. */
+  const clsTotal = {};
   for (let i = 0; i < fleet.order.length; i++) {
     const key = fleet.order[i];
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 950 } });
@@ -630,6 +633,34 @@ async function main() {
          magnitude. Unlike the "walkable Bay Area" strings beside it, which
          build_state.py rewrites per edition through its regionalisation pairs,
          this one carried no pair, so the build could not correct it either. */
+      /* A FILTER THAT CAN ONLY EVER RETURN NOTHING IS NOT A FILTER ANYBODY TESTED.
+
+         views.js defines nine asset classes. Three of them classified NOTHING
+         across all 14,024 fixture records: Commercial and Industrial & storage,
+         because every fixture kind was residential or lodging; and the
+         Conversion class, which was still gated on the `l.cv` builder flag.
+
+         That third one was an app defect, not a fixture gap, and one this
+         repository had already fixed once. conv.js derives candidacy from the
+         RECORD — a lodging use, or five or more units — precisely because `cv`
+         is written by a minority of the data builders, so the Conversion lab and
+         the conversion lens rendered empty in every edition whose builder
+         omitted it. The view builder's class was the surface that got missed.
+
+         Not every class can be non-empty in every edition — Shelter Cove holds
+         24 records and a market of houses need not contain a warehouse. What
+         must hold is that no class is dead across the WHOLE fleet, which is what
+         the totals below accumulate. */
+      let cls = null;
+      try {
+        cls = {};
+        for (const c of (window.LXView && LXView.CLASSES) || []) {
+          let n = 0;
+          for (const l of ls) { try { if (c.test(l)) n++; } catch (e) {} }
+          cls[c.id] = n;
+        }
+      } catch (e) { cls = {err: String(e)}; }
+
       let ship = null;
       try {
         const el = document.getElementById('dataShipN');
@@ -687,7 +718,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -735,6 +766,9 @@ async function main() {
         errs.push(t.unrated + ' record(s) are marked unrated although this market publishes rent '
           + 'for every one - the state is leaking beyond the case it exists for');
       }
+    }
+    if (rent.cls && !rent.cls.err) {
+      for (const k in rent.cls) clsTotal[k] = (clsTotal[k] || 0) + rent.cls[k];
     }
     if (rent.ship && rent.ship.err) {
       errs.push('the shipped-count claim could not be read: ' + rent.ship.err);
@@ -1709,6 +1743,21 @@ async function main() {
     fb.isGL ? 'maplibre-gl' : 'canvas', fb.all, fb.sectors + (fb.sectorCanvas ? '/drawn' : '/NOT DRAWN'),
     fok ? '' : (fbErrs.concat(ferrs).map(e => '\n     ERR: ' + e).join('')));
   await noGL.close();
+
+  const deadClasses = Object.keys(clsTotal).filter(k => !clsTotal[k]);
+  if (deadClasses.length) {
+    failures++;
+    console.log('FAIL %s  asset class(es) match NOTHING across the whole fleet: %s',
+      'asset-classes'.padEnd(13), deadClasses.join(', '));
+    console.log('     ERR: a filter that can only ever return an empty set is a filter nobody has '
+      + 'tested. Either the fixture carries no stock of that kind, or the class is gated on '
+      + 'something the records do not carry — which is how the Conversion class stayed dead on '
+      + 'the `l.cv` builder flag after conv.js had already been fixed to read the record.');
+  } else if (Object.keys(clsTotal).length) {
+    console.log('ok   %s  all %d asset classes match records somewhere in the fleet (%s)',
+      'asset-classes'.padEnd(13), Object.keys(clsTotal).length,
+      Object.keys(clsTotal).map(k => k + ':' + clsTotal[k]).join(' '));
+  }
 
   console.log(failures ? failures + ' EDITION(S) FAILED' : 'FLEET SMOKE CLEAN — every edition ran with zero page errors');
   process.exit(failures ? 1 : 0);
