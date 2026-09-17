@@ -674,6 +674,33 @@ async function main() {
          in a rent-blind market carried the same basis band as one in the Bay. It
          reads the basis field now. Measured: the same record grades C on a
          modelled rent and D on a rule of thumb, where both were C before. */
+      /* A RENT METHOD THAT CANNOT BE APPLIED MUST SAY SO.
+
+         The HUD Fair Market Rent table covers six counties. Everywhere else the
+         fmr branch fell through to the ratio method, which is the right FIGURE —
+         a usable rent beats a blank — and named the ratio honestly in its `how`.
+         But the selector still read "Section 8 / HUD Fair Market Rent" while
+         showing something else. Measured across the fleet before the fix: fmr
+         returned output identical to the default for every record, because no
+         fixture county is in the table.
+
+         Both directions, as ever: a county without a table entry must say the
+         method does not apply, and a county WITH one must return a real FMR
+         figure and no such note. */
+      let fmr = null;
+      try {
+        const l0 = ls[0], savedC = l0.county, savedM = LX.state.assump.rentMethod;
+        LX.state.assump.rentMethod = 'fmr'; LX.dealBump();
+        const away = LX.rentEstimate(l0).how || '';
+        l0.county = 'Orleans'; LX.dealBump();
+        const have = LX.rentEstimate(l0).how || '';
+        l0.county = savedC; LX.state.assump.rentMethod = savedM; LX.dealBump();
+        fmr = {awayNotes: /does not apply here/.test(away),
+               haveIsFmr: /Fair Market Rent/.test(have),
+               haveNotes: /does not apply here/.test(have),
+               inTable: /Fair Market Rent/.test(away)};
+      } catch (e) { fmr = {err: String(e)}; }
+
       let sbRent = null;
       try {
         const cols = LXSB.compare(ls[0]);
@@ -757,7 +784,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -868,6 +895,22 @@ async function main() {
       if (rent.none === rent.n && rent.acad.noted !== rent.acad.missions) {
         errs.push('only ' + rent.acad.noted + ' of ' + rent.acad.missions + ' Academy missions carry '
           + 'the rent notice in a wholly rent-blind edition');
+      }
+    }
+    if (rent.fmr && rent.fmr.err) {
+      errs.push('the FMR method could not be exercised: ' + rent.fmr.err);
+    } else if (rent.fmr) {
+      if (!rent.fmr.inTable && !rent.fmr.awayNotes) {
+        errs.push('the Fair Market Rent method silently returned another method\'s figure for a '
+          + 'county HUD does not publish — the selector says Section 8 while the number is not');
+      }
+      if (!rent.fmr.haveIsFmr) {
+        errs.push('the Fair Market Rent method did not return an FMR figure for a county that IS '
+          + 'in the table — the method is broken, not merely inapplicable');
+      }
+      if (rent.fmr.haveNotes) {
+        errs.push('a county with a published FMR still carries the does-not-apply note — the '
+          + 'caveat is leaking past the case it exists for');
       }
     }
     if (rent.sbRent && rent.sbRent.err) {
