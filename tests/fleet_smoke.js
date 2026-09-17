@@ -950,6 +950,81 @@ async function main() {
         errs.push('NO ZIP overlay shades anything in an edition carrying ' + zipCount
           + ' ZIP polygons — bakeZipStats() is not joining M.zips to the geometry, or '
           + 'the GL source was not re-set after the bake');
+
+      }
+    }
+    /* THE OVERLAY AUDIT ABOVE READS FEATURE PROPERTIES. THE USER READS PIXELS.
+
+       That distinction is the whole reason the choropleth shipped broken for the
+       life of the app, and the audit above — written after finding it — still
+       cannot see the failure it was written for. MapLibre keeps its OWN copy of
+       a source's data. bakeZipStats() writes zhvi/zori/yoy onto the geojson
+       features, so `f.properties.zhvi` reads back correctly from the console and
+       from that audit; if updateZipsSource() does not then re-set the source,
+       the paint expression keeps reading the pre-bake copy and the map does not
+       change. Properties correct, map wrong, every JS probe satisfied.
+
+       Measured, by deleting the updateZipsSource() call and rebuilding: zhvi,
+       zori, yield and yoy all rendered the IDENTICAL image — four different
+       datasets drawing one picture — and the full suite came back CLEAN. Only
+       fcast survived, because scout.js writes `fc` onto the features directly
+       rather than through the bake.
+
+       So this compares rendered pixels. Two invariants, both measured across
+       every edition before being asserted:
+
+         - every overlay must differ from no-overlay at all;
+         - zhvi must differ from yoy, and from zori.
+
+       Not "all four must differ": in a market that publishes no rent, zori and
+       yield legitimately collapse onto each other, which is honest rather than
+       broken, and `norent` shows exactly that (3 distinct of 4 while the other
+       eleven editions show 4). An invariant that failed there would be punishing
+       the app for telling the truth. */
+    {
+      const shot = async () => {
+        const box = await page.evaluate(() => {
+          const m = document.getElementById('map');
+          if (!m) return null;
+          const r = m.getBoundingClientRect();
+          if (r.width < 80 || r.height < 80) return null;
+          return {x: Math.round(r.x) + 10, y: Math.round(r.y) + 10,
+                  width: Math.min(600, Math.round(r.width) - 20),
+                  height: Math.min(420, Math.round(r.height) - 20)};
+        });
+        if (!box) return null;
+        const buf = await page.screenshot({clip: box});
+        return require('crypto').createHash('md5').update(buf).digest('hex').slice(0, 10);
+      };
+      const setLayer = async v => {
+        await page.evaluate(x => {
+          const sel = document.getElementById('layer');
+          if (sel) { sel.value = x; sel.dispatchEvent(new Event('change', {bubbles: true})); }
+        }, v);
+        await page.waitForTimeout(1400);
+      };
+      await page.evaluate(() => { try { LX.showView('mapview'); } catch (e) {} });
+      await page.waitForTimeout(900);
+      const pix = {};
+      for (const v of ['none', 'zhvi', 'zori', 'yield', 'yoy']) { await setLayer(v); pix[v] = await shot(); }
+      await setLayer('none');
+      if (pix.none == null) {
+        errs.push('the map could not be captured, so no overlay was checked against what it draws');
+      } else {
+        const flat = ['zhvi', 'zori', 'yield', 'yoy'].filter(v => pix[v] === pix.none);
+        if (flat.length) {
+          errs.push('ZIP overlay(s) ' + flat.join(', ') + ' draw the map exactly as it looks with '
+            + 'no overlay at all — the feature properties may be baked, but MapLibre is painting '
+            + 'from its own stale copy of the source');
+        }
+        if (pix.zhvi === pix.yoy) {
+          errs.push('the zhvi and yoy overlays render an IDENTICAL image — a value level and a '
+            + 'year-over-year change are never the same picture, so the GL source is stale');
+        }
+        if (pix.zhvi === pix.zori) {
+          errs.push('the zhvi and zori overlays render an IDENTICAL image — values and rents are '
+            + 'never the same picture, so the GL source is stale');
+        }
       }
     }
 
