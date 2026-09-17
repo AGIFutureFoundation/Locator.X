@@ -45,6 +45,7 @@ async function main() {
   /* Asset-class coverage accumulates ACROSS editions: a market of houses need
      not contain a warehouse, but no class may be dead in the whole fleet. */
   const clsTotal = {};
+  const catTotal = {};
   for (let i = 0; i < fleet.order.length; i++) {
     const key = fleet.order[i];
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 950 } });
@@ -651,6 +652,26 @@ async function main() {
          24 records and a market of houses need not contain a warehouse. What
          must hold is that no class is dead across the WHOLE fleet, which is what
          the totals below accumulate. */
+      /* THE HEADLINE CATEGORY MUST BE REACHABLE SOMEWHERE.
+
+         Measured before the fixture carried a realistic rent-to-value spread: of
+         14,024 records across twelve editions, ZERO were cash-flow positive. Not
+         one. So the Cash-flow asset category — this platform's own definition,
+         "an asset puts money in your pocket" — was never assigned to a single
+         record anywhere, and neither was Appreciation bet. The PASS branch of the
+         LOCATOR cash-flow gate, the "Asset" verdict on its asset test and the
+         dashboard's cash-flow card were all dead. Every positive path in the app
+         was exercised only in the failure direction.
+
+         Fleet-wide, like the asset classes: a rent-blind edition cannot produce a
+         cash-flow asset and should not be asked to. */
+      let catTally = null;
+      try {
+        LX.dealBump(); LXDash.render();
+        catTally = {};
+        for (const r of (LXDash.rows || [])) catTally[r.cat] = (catTally[r.cat] || 0) + 1;
+      } catch (e) { catTally = {err: String(e)}; }
+
       let cls = null;
       try {
         cls = {};
@@ -718,7 +739,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -769,6 +790,9 @@ async function main() {
     }
     if (rent.cls && !rent.cls.err) {
       for (const k in rent.cls) clsTotal[k] = (clsTotal[k] || 0) + rent.cls[k];
+    }
+    if (rent.catTally && !rent.catTally.err) {
+      for (const k in rent.catTally) catTotal[k] = (catTotal[k] || 0) + rent.catTally[k];
     }
     if (rent.ship && rent.ship.err) {
       errs.push('the shipped-count claim could not be read: ' + rent.ship.err);
@@ -1743,6 +1767,21 @@ async function main() {
     fb.isGL ? 'maplibre-gl' : 'canvas', fb.all, fb.sectors + (fb.sectorCanvas ? '/drawn' : '/NOT DRAWN'),
     fok ? '' : (fbErrs.concat(ferrs).map(e => '\n     ERR: ' + e).join('')));
   await noGL.close();
+
+  const CATS_EXPECTED = ['asset', 'hack', 'value', 'growth', 'liab', 'unrated'];
+  const deadCats = CATS_EXPECTED.filter(k => !catTotal[k]);
+  if (deadCats.length) {
+    failures++;
+    console.log('FAIL %s  categor(ies) never assigned anywhere in the fleet: %s',
+      'categories'.padEnd(13), deadCats.join(', '));
+    console.log('     ERR: every record in the fleet was once cash-flow negative, so "Cash-flow '
+      + 'asset" — the platform\'s own definition of an asset — was assigned to nothing, and every '
+      + 'positive branch downstream of it was dead.');
+  } else if (Object.keys(catTotal).length) {
+    console.log('ok   %s  all %d categories assigned somewhere (%s)',
+      'categories'.padEnd(13), CATS_EXPECTED.length,
+      CATS_EXPECTED.map(k => k + ':' + (catTotal[k] || 0)).join(' '));
+  }
 
   const deadClasses = Object.keys(clsTotal).filter(k => !clsTotal[k]);
   if (deadClasses.length) {
