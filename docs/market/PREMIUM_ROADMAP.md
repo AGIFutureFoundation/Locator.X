@@ -41,7 +41,7 @@ value to blocker in the whole plan.
 One property, every strategy, side by side: buy-and-hold, flip, BRRRR, house hack,
 conversion. `src/underwrite.js` (595), `src/conv.js` (111), `src/dev.js` (158) and
 `src/hacks.js` (142) each answered one and none of them answered together;
-`src/switchboard.js` (438) asks all five through those modules' own public interfaces
+`src/switchboard.js` (455) asks all five through those modules' own public interfaces
 and re-derives none of them — the underwriting desk's own sheet, the house-hack
 finder's own math, the conversion lab's own model, and comps.js's own account of why
 it came back empty. Each column is graded on the **facts** it rests on; the levers a

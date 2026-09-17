@@ -154,7 +154,24 @@ function stratHold(l){
   if(!S) return blocked('hold','Buy and hold',
     'The underwriting desk could not assemble a sheet for this record, so there is no hold to evaluate.');
   const u=S.u, uw=S.uw;
-  const rentKind = /your figure|from your data/.test(re.how) ? 'record' : 'model';
+  /* READ THE BASIS, DO NOT SNIFF THE PROSE.
+
+     This used to classify rent by regex over the `how` sentence: 'record' if it
+     matched "your figure" or "from your data", and 'model' for everything else.
+     Everything else includes the last branch of LX.rentEstimate — price x 0.004,
+     a rule of thumb anchored to nothing, which fires wherever a market publishes
+     no rent at all. Of the fourteen markets this repository has measured, eight
+     publish none. So the strategy comparison graded an invented rent exactly as
+     it graded a rent derived from a published ZIP series, and a hold column in a
+     rent-blind market carried the same basis band as one in the Bay.
+
+     rentEstimate now states its own basis, so this reads it. The mapping also
+     makes 'published' mean something for the first time: a ZORI series, a city
+     median or a HUD FMR table is someone's published figure, which is a stronger
+     claim than a model and a weaker one than this parcel's own record. A rule of
+     thumb is an assumption, and grades as the weakest kind there is. */
+  const RENT_KIND = {given:'record', market:'published', model:'model', none:'assumption'};
+  const rentKind = RENT_KIND[re.basis] || 'model';
   return {
     key:'hold', name:'Buy and hold', state:'computed',
     head:{label:'Cash flow', val:money(uw.cfMo)+'/mo', good:uw.cfMo>0},
