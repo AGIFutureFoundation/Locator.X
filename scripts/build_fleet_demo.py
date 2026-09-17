@@ -170,6 +170,22 @@ def make_ba(seed, count, wide, tall, campus):
         z = pzids[i % len(pzids)]; x0, y0 = cells[z]
         kind, units = KINDS[i % len(KINDS)]
         if units == 0: units = rng.choice([6, 8, 12, 16, 24])
+        # ---- records whose USE the county did not publish -------------------
+        # evidence.js caps a zoning-district record at 55 (grade C) and an
+        # unclassified one at 34 (grade D), because a permission is not a
+        # building and an unclassified parcel cannot be underwritten from the
+        # record. Both rules are doctrine and neither had ever been exercised:
+        # every fixture record carried a clean recorded use, so the caps, the C
+        # and D bands, the evidence lens's lower colours and the coverage
+        # panel's zoning-only and unclassified tallies were all dead paths.
+        # Roughly one record in twelve now carries a zoning district instead of
+        # a use, and one in twenty-five is unclassified — which is what the
+        # thinner county rolls this app actually reads look like.
+        bare = (i % 17 == 3)
+        if i % 25 == 11:
+            kind = "Unclassified"
+        elif i % 12 == 5:
+            kind = "Zoned %s" % ("R-1", "R-2", "C-2", "M-1")[(i // 12) % 4]
         zv = zips_m[z]["v"][0]
         price = int(round(zv * (0.55 + 0.9 * rng.random()) * (1 + 0.35 * math.log(max(1, units))), -3))
         listings.append({
@@ -190,10 +206,45 @@ def make_ba(seed, count, wide, tall, campus):
             # of them. Fall back to the cell if this ZIP has no street in it.
             **dict(zip(("lng", "lat"), PG.pick_in_cell(segs, x0, y0, cell_w, cell_h, rng))),
             "price": price, "units": units,
-            "beds": None if units > 4 else max(1, units + i % 3),
+            "beds": None if bare or units > 4 else max(1, units + i % 3),
             "sqft": int((900 if units == 1 else 700 * units) * (0.8 + 0.5 * rng.random())),
             "year": 1938 + (i * 7) % 85, "kind": kind,
             "src": "Synthetic demo fixture", "priceDate": "2026-01",
+            # ---- the fields the app is built to read, which no fixture carried --
+            # Measured across the whole fleet before this was added: of 14,024
+            # records, ZERO carried lot, sale, baths or stories. Two of the seven
+            # fields evidence.js grades on were therefore permanently absent, and
+            # the code that depends on them never ran in any test — the ADU and
+            # lot-split tests in dashboard.js (gated at 2,500 and 4,000 sf of lot),
+            # the whole recorded-sale comparables engine in comps.js (gated on
+            # sale + saleDate), and the sale tile on the evidence scorecard.
+            #
+            # They are PARTIAL on purpose, in the same spirit as the neighborhood
+            # above: a roll that carries every field for every parcel is not a roll
+            # anybody actually gets, and a fixture where every field is always
+            # present would stop exercising the missing-field paths that are just
+            # as real. The fractions below are chosen so both sides of every gate
+            # run: lot crosses both ADU thresholds, some sales are undated (a case
+            # comps.js handles explicitly), and condos carry no lot at all because
+            # a condo has no lot of its own.
+            # One record in seventeen is a BARE roll row: a clean recorded use,
+            # a price, a size and a year, and nothing else. That is grade B on
+            # evidence.js's scale — "most of the work is done" — and it was the
+            # one band the fixture could not produce, because every other record
+            # picks up a lot, a sale or a room count somewhere and lands in A.
+            # Without it the B colour on the evidence lens, the B row on the
+            # scorecard and the B branch of the LOCATOR location gate were all
+            # unreachable in any test.
+            "lot": (None if bare or "condo" in kind.lower() or i % 10 < 3 or i % 25 == 11
+                    else int(1800 + 7800 * rng.random())),
+            "sale": (None if bare or i % 5 < 3
+                     else int(price * (0.55 + 0.38 * rng.random()))),
+            # a recorded price with no recorded date — rarer, and its own branch
+            "saleDate": (None if bare or i % 5 < 3 or i % 60 == 4
+                         else "%d-%02d" % (2016 + (i * 3) % 9, 1 + (i * 7) % 12)),
+            "baths": (None if bare or units > 4 or i % 9 == 0
+                      else max(1, (units + i % 3) - (i % 2))),
+            "stories": None if bare or i % 12 < 6 else 1 + (i % 3),
         })
     region = {"center": [W / 2, H / 2], "zoom": 11.0,
               "maxBounds": [[-0.2, -0.18], [W + 0.25, H + 0.22]], "pois": []}

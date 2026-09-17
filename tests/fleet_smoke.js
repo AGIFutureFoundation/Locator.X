@@ -280,17 +280,29 @@ async function main() {
         errs.push('switchboard column ' + (i + 1) + ' headlines a bare zero; a zero here is a '
           + 'missing input that reached the arithmetic');
       }
-      /* The em-dash is what money() and pct() print for a null. A column that
-         claims to be computed and headlines a dash has not computed anything -
-         it has failed quietly and kept its grade band, which is strictly worse
-         than being blocked, because the grade is a claim about a number that
-         does not exist. This caught a real defect: the switchboard read
+      /* A COLUMN THAT CLAIMS TO HAVE COMPUTED SOMETHING MUST SHOW A NUMBER.
+
+         money() and pct() print an em-dash for a null, so a computed column
+         headlining a dash has failed quietly and kept its grade band — strictly
+         worse than being blocked, because the grade is a claim about a number
+         that does not exist. That caught a real defect: the switchboard read
          LXUW.sheetFor() as if it returned the input object when it returns
-         {u, uw}, so three of five columns rendered fully graded dashes. */
-      if (st === 'computed' && /\u2014/.test(sb.heads[i] || '')) {
+         {u, uw}, so three of five columns rendered fully graded dashes.
+
+         This used to test for the PRESENCE of a dash, which was wrong and only
+         looked right because no fixture record had ever produced the other case.
+         A full cash-out BRRRR legitimately headlines "none — $20k out": the dash
+         is punctuation in a real answer, not a missing value. Measured once the
+         fixtures carried lot and sale data: 4,928 computed headlines across the
+         fleet, none of them without a digit, and 209 carrying a dash AND a digit
+         — every one of which the old rule would have failed.
+
+         So the rule is the stronger and simpler one. A bare "—" has no digit and
+         is still caught; a sentence containing a dash and a figure is not. */
+      if (st === 'computed' && !/\d/.test(sb.heads[i] || '')) {
         errs.push('switchboard column ' + (i + 1) + ' is graded "computed" and headlines "'
-          + sb.heads[i] + '" - a dash is what this module prints for a number it does not '
-          + 'have, so the column is claiming a grade for nothing');
+          + sb.heads[i] + '" - a computed column must show a figure, and this one carries no '
+          + 'digit at all, so the column is claiming a grade for nothing');
       }
     });
     if (sb.api && sb.api.err) errs.push('LXSB.compare threw: ' + sb.api.err);
