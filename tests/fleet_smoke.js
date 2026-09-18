@@ -770,6 +770,54 @@ async function main() {
         };
       } catch (e) { comps2 = {err: String(e)}; }
 
+      /* FOUR MORE PLACES CALLED priceDate A SALE, AFTER THE FIRST FOUR WERE
+         FIXED AND THE COMPS AGENT WAS FIXED SEPARATELY.
+
+         signals.js's "Rate lock-in thaw" cross-signal said "bought" and
+         "recorded purchase" outright for any record with a priceDate,
+         regardless of whether a real sale existed - overclaiming what
+         belowmarket.js already hedges for the identical field ("Prop 13
+         tenure signal - a long hold, NOT a purchase discount"). patterns.js's
+         "Price basis" mining dimension read priceDate alone and called it
+         "sale since 2024" / "older recorded sale", never checking l.saleDate
+         at all - so a record with a real 2018 sale and a 2026 reassessment
+         could be bucketed "sale since 2024" on the wrong date, or a record
+         with a real sale and no priceDate fell to "no sale date". recon.js's
+         record-anatomy panel - literally "everything the public record
+         actually says", field by field - omitted the real sale fields
+         entirely (the same gap #110 fixed in geoexport.js) while labelling
+         priceDate "Sale recorded" and "what the buyer paid". dashboard.js's
+         "Price-basis quality" score modality, one of the eleven always-on
+         inputs to the Locator X score, called the same reassessment recency
+         "recorded sale" / "recent recorded sale" in its display value.
+
+         None of the underlying numbers changed - only what they are called.
+         Checked directly against LX.recordDate()'s own definition (prefer
+         the real sale, fall back to the assessor's date) rather than by
+         re-deriving it, so a regression in either side shows up here. */
+      let basisLabels = null;
+      try {
+        const Sig = window.LXSig, Pat = window.LXPat, Recon = window.LXRecon;
+        const saleSubj = ls.find(l => l.sale != null && l.saleDate);
+        const postSubj = ls.find(l => !(l.sale != null && l.saleDate) && l.price && l.priceDate && !l.est);
+        const lockSig = Sig && Sig.SIGNALS.find(s => s.id === 'lock');
+        const basisDim = Pat && Pat.DIMS.find(d => d.id === 'basis');
+        const evalOne = (l) => {
+          if (!l) return null;
+          const out = {};
+          if (lockSig) out.lockNote = lockSig.note({l, d: {}});
+          if (basisDim) out.patLabel = basisDim.get(l);
+          if (Recon) {
+            const rows = {};
+            Recon.extract(l).forEach(x => { rows[x.k] = x.v; });
+            out.reconHasSaleRow = 'Sale price' in rows;
+          }
+          if (LXDash) { const a = LXDash.analyze(l); out.dashLabel = a && a.f.bas.v; }
+          return out;
+        };
+        basisLabels = {sale: evalOne(saleSubj), postsale: evalOne(postSubj)};
+      } catch (e) { basisLabels = {err: String(e)}; }
+
       let acts = null;
       try {
         const A = window.LXActuals;
@@ -898,7 +946,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels, comps2,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels, comps2, basisLabels,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -1037,6 +1085,51 @@ async function main() {
         errs.push('a subject with only a post-sale assessed value gets a Comps agent finding '
           + 'labelled "' + p.label + '" — an assessor opinion is being called a sale, the exact '
           + 'mixing comps.js\'s own basisOf() exists to prevent');
+      }
+    }
+    if (rent.basisLabels && rent.basisLabels.err) {
+      errs.push('the priceDate-vs-sale labelling could not be exercised across signals.js, '
+        + 'patterns.js, recon.js and dashboard.js: ' + rent.basisLabels.err);
+    } else if (rent.basisLabels) {
+      const s = rent.basisLabels.sale, p = rent.basisLabels.postsale;
+      if (s) {
+        if (s.lockNote && !/^bought /.test(s.lockNote)) {
+          errs.push('the "Rate lock-in thaw" signal reads "' + s.lockNote + '" for a record with '
+            + 'a real recorded sale — it should say "bought", not fall back to the assessor date');
+        }
+        if (s.patLabel && !/sale/i.test(s.patLabel)) {
+          errs.push('the Patterns "Price basis" dimension reads "' + s.patLabel + '" for a record '
+            + 'with a real recorded sale — a real transaction is not being recognised at all');
+        }
+        if (s.reconHasSaleRow === false) {
+          errs.push('the 3D & records panel omits the sale price for a record that has one — the '
+            + 'same gap #110 fixed in geoexport.js, now open again in the record-anatomy panel');
+        }
+        if (s.dashLabel && !/sale/i.test(s.dashLabel)) {
+          errs.push('the Locator X score\'s "Price-basis quality" modality reads "' + s.dashLabel
+            + '" for a record with a real recorded sale — the strongest fact on the record is not '
+            + 'showing up in its own score modality');
+        }
+      }
+      if (p) {
+        if (p.lockNote && !/^reassessed /.test(p.lockNote)) {
+          errs.push('the "Rate lock-in thaw" signal reads "' + p.lockNote + '" for a record with '
+            + 'only a post-sale assessed value — an assessor\'s reassessment is being called a '
+            + 'purchase');
+        }
+        if (p.patLabel && /\bsale\b/i.test(p.patLabel)) {
+          errs.push('the Patterns "Price basis" dimension reads "' + p.patLabel + '" for a record '
+            + 'with no real sale — an assessed value is being bucketed as a sale');
+        }
+        if (p.reconHasSaleRow === true) {
+          errs.push('the 3D & records panel shows a sale price for a record with no real sale — '
+            + 'a fabricated transaction');
+        }
+        if (p.dashLabel && /\bsale\b/i.test(p.dashLabel)) {
+          errs.push('the Locator X score\'s "Price-basis quality" modality reads "' + p.dashLabel
+            + '" for a record with no real sale — an assessed value is being called a sale in the '
+            + 'app\'s own headline score');
+        }
       }
     }
     if (rent.acts && rent.acts.err) {

@@ -93,7 +93,15 @@ const DIMS=[
  {id:'units', name:'Unit count',  get:l=>bandUnits(l.units)},
  {id:'year',  name:'Vintage',     get:l=>bandYear(l.year)},
  {id:'sqft',  name:'Size',        get:l=>bandSqft(l.sqft)},
- {id:'basis', name:'Price basis', get:l=>l.est?'modeled estimate':(l.priceDate? (l.priceDate>='2024-01-01'?'sale since 2024':'older recorded sale') : 'no sale date')},
+ /* l.priceDate is the assessor's recorded or reassessed value date, present
+    on every record; l.sale/l.saleDate is a real transaction, populated only
+    where one exists (comps.js's own 'sale' vs 'postsale' basis). This
+    dimension used to read priceDate alone and call it a sale regardless -
+    the same mislabeling four other places had (app.js's recordDate() fix) -
+    so a record with no real sale at all could still be bucketed "sale since
+    2024" on nothing but a reassessment date, and a record with a genuine
+    recent sale but no priceDate fell to "no sale date". */
+ {id:'basis', name:'Price basis', get:l=>l.est?'modeled estimate':(l.sale && l.saleDate? (l.saleDate>='2024-01-01'?'sale since 2024':'older recorded sale') : l.priceDate? (l.priceDate>='2024-01-01'?'assessed since 2024':'older assessed value') : 'no dated basis')},
  {id:'conv',  name:'Class',       get:l=>l.cv?'conversion class':null},
  {id:'land',  name:'Structure',   get:l=>{ try{ return window.LXView? (LXView.isLand(l)?'land only':'improved building') : null; }catch(e){ return null; } }},
  {id:'corp',  name:'Live project nearby', get:l=>{ try{ const n=window.LXCorp&&LXCorp.nearest(l); if(!n||n.km==null) return null; return n.km<=10? 'within 10km of a live announced project' : n.km<=25? 'within 25km of a live announced project' : null; }catch(e){ return null; } }},
@@ -455,5 +463,5 @@ function compsHTML(l){
     return `<tr><td>${X.esc(c.l.addr)}${c.sameZip?' <span style="font-size:10px;color:var(--good)">same ZIP</span>':''}</td><td>${X.esc(c.l.city)}</td><td class="r">${X.fmt$(X.price(c.l))}</td><td class="r">${c.l.units||1}</td><td class="r">${c.l.sqft?X.fmtN(c.l.sqft):'-'}</td><td class="r">${r?r.score:'-'}</td></tr>`; }).join('')}
   </tbody></table></div><p class="src">Median of this reference set: ${X.fmt$(med(prices))}. Matched on property type, ZIP or city, and price within 45% — the same set the pattern miner draws on. Comparables from public records are a sanity check, not an appraisal.</p>`;
 }
-window.LXPat={render, mine, comps, compsHTML, flagsFor, evaluate, get autos(){ return AUTO; }};
+window.LXPat={render, mine, comps, compsHTML, flagsFor, evaluate, DIMS, get autos(){ return AUTO; }};
 })();

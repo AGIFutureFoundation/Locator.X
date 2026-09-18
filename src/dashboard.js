@@ -140,7 +140,22 @@ function analyze(l){
     case 'gr':   return mk.yoy==null?'\u2014':(mk.yoy>0?'+':'')+mk.yoy.toFixed(1)+'%';
     case 'risk': return rc.level==='bad'?'rent control':rc.level==='warn'?'AB 1482':'low';
     case 'fc':   return fcG==null?'\u2014':(fcG>0?'+':'')+fcG.toFixed(1)+'%';
-    case 'bas':  return l.est?'modeled estimate': ageMo==null?'no sale date': ageMo<=24?'recent recorded sale': ageMo<=48?'recorded sale':'older sale';
+    case 'bas': {
+      /* This modality's own age (ageMo) is deliberately unchanged — it is
+         still the assessor's reassessment recency, the same input the score
+         has always used. What was wrong is what the label CALLED that number:
+         "recorded sale"/"recent recorded sale" on a record that may never
+         have sold at all. A real transaction (l.sale + l.saleDate) is checked
+         on its own date here, honestly, before ever falling back to the
+         assessed-value language the other basis modality (fs.bas) is
+         actually scoring. */
+      if(l.est) return 'modeled estimate';
+      if(l.sale!=null && l.saleDate){
+        const saleAgeMo=Math.max(0,(Date.now()-new Date(l.saleDate).getTime())/2628e6);
+        return saleAgeMo<=24?'recent sale':saleAgeMo<=48?'sale on record':'older sale';
+      }
+      return ageMo==null?'no dated basis': ageMo<=24?'recent assessed value': ageMo<=48?'assessed value':'older assessed value';
+    }
     case 'liq':  return depth+' sites';
     case 'dis':  return dd.v;
     default:     return '';

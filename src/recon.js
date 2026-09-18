@@ -43,11 +43,21 @@
     add('Stories', l.stories||'not published', l.stories? P.REC : P.DER);
     add('Zoning', l.zoning||'not published', l.zoning? P.REC : P.DER);
     if(l.fz) add('Flood zone', l.fz, P.REC, 'from the parcel file — the effective FIRM panel governs, check FEMA');
+    /* comps.js names this app's own strongest fact type: an actual recorded
+       transaction (l.sale + l.saleDate), distinct from the assessed value
+       every record carries. This panel used to omit it entirely — the same
+       gap geoexport.js had (#110) — while labelling the weaker field below
+       "Sale recorded" and "what the buyer paid", which overclaims what a
+       reassessment date means: under Prop 13 a transfer usually resets the
+       assessed basis, but new construction, partial transfers and exclusions
+       reset it too, with no sale at all (comps.js's own basisOf() caveat). */
+    if(l.sale!=null && l.saleDate) add('Sale price', '$'+fmtN(l.sale), P.REC, 'a recorded transaction — this record’s strongest fact');
+    if(l.saleDate) add('Sale recorded', l.saleDate, P.REC);
     add('Value on record', l.price? ('$'+fmtN(l.price)) : '—', P.REC,
         l.est? 'ZIP-index ESTIMATE — this jurisdiction publishes no assessed value'
         : LA_COUNTIES.test(l.county) && l.county==='East Baton Rouge' ? 'assessor’s fair market value; this roll carries no sale date'
-        : l.priceDate? 'assessed after a change of ownership — what the buyer paid' : 'assessed value');
-    if(l.priceDate) add('Sale recorded', l.priceDate, P.REC);
+        : l.priceDate? 'assessed value — the reassessment date below is not necessarily a sale' : 'assessed value');
+    if(l.priceDate) add('Assessed', l.priceDate, P.REC);
     if(l.land!=null) add('Land / improvement split', '$'+fmtN(l.land)+' / $'+fmtN(l.imp||0), P.REC, 'the assessor’s allocation');
     if(l.adj) add('Adjudicated', 'yes — taken by the parish for unpaid taxes', P.REC, 'a distress record, not a discount');
     add('Source', l.src||'—', P.REC);
