@@ -7,6 +7,51 @@ such.
 
 ## [Unreleased]
 
+- **A critical CVE in the bundled map library, found and left open on purpose** —
+  routine dependency hygiene (`npm ci` against a clean `node_modules`, then
+  `npm audit`) surfaced [GHSA-jrc7-96c5-q579](https://github.com/advisories/GHSA-jrc7-96c5-q579)
+  (CVSS 10.0, CWE-79): an XSS sanitizer bypass in MapLibre GL JS's
+  `DOM.sanitize()`, affecting every release **≤6.4.0** — which includes the
+  pinned `maplibre-gl@5.24.0` every edition bundles (`lxbuild.py` inlines
+  `node_modules/maplibre-gl/dist/maplibre-gl.js` straight into the built HTML;
+  there is no later 5.x release to move to, 5.24.0 is the last one cut).
+
+  There is no drop-in fix. `npm audit fix --force` wants `maplibre-gl@6.10.0`,
+  and the whole v6 line dropped the UMD/IIFE bundle this repo's single-file
+  build depends on — `node_modules/maplibre-gl/dist/` ships only `.mjs`
+  modules plus a separately-loaded worker file. Installing 6.10.0 and
+  rebuilding the synthetic-fleet demo fails immediately:
+  `lxbuild.py`'s `read()` can't find `dist/maplibre-gl.js` because it no
+  longer exists at any v6 version — the sanitizer fix and the distribution-format
+  break landed in the same major version, so picking a newer patch can't get
+  one without the other. Verified by installing 6.10.0, confirming
+  `npm audit` goes clean, then confirming `scripts/build_fleet_demo.py` throws
+  `FileNotFoundError` on the same path every time; reverted rather than shipped,
+  because a build that cannot produce an edition is worse than a documented,
+  open finding.
+
+  Exposure check: the advisory's path is `Popup.setHTML()` rendering
+  attacker-controlled HTML through the bypassed sanitizer. `grep -rn
+  "setHTML\|maplibregl.Popup" src/*.js` returns nothing — this app never
+  constructs a MapLibre `Popup`; every marker and tooltip here is a
+  hand-built DOM element (`document.createElement`), so the documented
+  attack path is not wired up. That narrows the risk, it does not close the
+  finding: the vulnerable code still ships in every edition's bundle, and
+  "we don't call the vulnerable method today" is not a fix a scanner — or a
+  future change to this file — can see.
+
+  **What actually fixing this takes**, next: either (a) build a UMD bundle
+  from the v6 ESM source at build time (esbuild/rollup, added to the
+  toolchain) and keep inlining that, or (b) move `initMap()`'s MapLibre path
+  to a `<script type="module">` load with an explicit `workerUrl`, which the
+  network-off, single-file property may or may not survive — worker
+  instantiation from an inlined module is untested here. Either path needs
+  the full `fleet-smoke` sweep (all eleven editions, both the WebGL and
+  Canvas-fallback renderers, zero page errors) before it can replace this
+  entry with a shipped fix. Not attempted in this session: it is a real
+  build-toolchain change, not a version bump, and doctrine says a half-tested
+  fix is not a fix.
+
 - **Generative video, bounded before it was built** — the boundary is decided
   once in [`GENERATIVE_VIDEO.md`](docs/GENERATIVE_VIDEO.md) and enforced by a
   gate: synthesized pictures may appear in Academy and brand material where
