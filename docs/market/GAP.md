@@ -26,7 +26,7 @@ six either.
 |---|---|---|---|
 | Nationwide record search and filtering | PropStream, PropertyRadar, DataTree | `src/views.js` (205 lines) stacks asset-class, land/building and plain-language price filters; `src/app.js` (1756) holds the record layer and map | **partial** — 8 editions shipped against 90 gate rows ([coverage](../states/coverage/README.md)), not nationwide |
 | Parcel boundaries and field lookup | LandGlide, DealMachine | `src/app.js` map layers, `src/ar.js` (248) field view, `src/walk.js` (167) walkable destinations | **ships**, within an edition's footprint |
-| Distress discovery | Foreclosure.com, PropertyRadar | `src/reo.js` (150) government-owned resale, `src/signals.js` (139) ten researched outside forces | **partial** — federal REO is live; county distress feeds are in [`PULL_QUEUE.md`](../PULL_QUEUE.md) |
+| Distress discovery | Foreclosure.com, PropertyRadar | `src/reo.js` (150) government-owned resale, `src/signals.js` (148) ten researched outside forces | **partial** — federal REO is live; county distress feeds are in [`PULL_QUEUE.md`](../PULL_QUEUE.md) |
 | New-listing monitoring and diffing | DealMachine, REsimpli | `src/scout.js` (287) scans feeds, diffs, scores and writes a review digest per pass | **ships** |
 | Below-market identification | PropStream filters, Mashvisor | `src/belowmarket.js` (175) — three independently-separated measures, none of them a single "discount" number | **ships** |
 | Owner contact enrichment / skip tracing | PropStream, BatchLeads, DataSift, REISift, DealMachine | — | **refused**, see below |

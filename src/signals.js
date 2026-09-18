@@ -17,9 +17,18 @@ const SIGNALS=[
  src:'HousingWire · NAHB · Cotality / WORLD PROPERTY JOURNAL (2026)'},
 {id:'lock', name:'Rate lock-in thaw (future listings)', tag:'computed on records',
  body:`Owners who bought 2015–2021 hold mortgages near 3–4% and have been refusing to trade them away — the lock-in effect that starved inventory. It is now easing: by spring 2026, <b>one in three sellers was giving up a sub-5% rate to list</b> (Coldwell Banker 2026 Home Shopping Season Report), and forecasters expect 2026 to be the year the 2–3% cohort finally moves. Every additional rate dip releases a tranche of these owners.`,
- how:'Signal = recorded purchase in the 2015–2021 cheap-money window (they hold the rates worth keeping). High signal = the properties most likely to LIST when rates ease — your future-listing watchlist, straight from the recorder.',
- score(r){ const d=r.l.priceDate; if(!d||r.l.est) return null; const y=+d.slice(0,4); if(y>=2015&&y<=2021) return 85; if(y>=2012&&y<=2014) return 60; if(y<=2011) return 40; return 12; },
- note(r){ const d=r.l.priceDate; return d? ('bought '+d.slice(0,4)+(+d.slice(0,4)>=2015&&+d.slice(0,4)<=2021?' — cheap-money cohort':'')) : ''; },
+ /* This signal used to read l.priceDate alone and call it "recorded purchase"
+    and "bought" outright. priceDate is the assessor's reassessment date, not
+    a deed; belowmarket.js already names the correct hedge for the same field
+    ("Prop 13 tenure signal — a long hold, NOT a purchase discount") and
+    comps.js's own basisOf() caveat says why: new construction, partial
+    transfers and reassessment exclusions reset the same date with no sale at
+    all. Now prefers the real transaction (l.sale + l.saleDate) when one
+    exists, via the same LX.recordDate() four other places already use for
+    this, and only calls it "bought" when it actually was. */
+ how:'Signal = the record’s date (a real sale where one exists, otherwise the Prop 13 reassessment date — usually a purchase, not always) falling in the 2015–2021 cheap-money window. High signal = the properties most likely to LIST when rates ease — your future-listing watchlist, straight from the recorder.',
+ score(r){ const d=L().recordDate(r.l); if(!d||r.l.est) return null; const y=+d.slice(0,4); if(y>=2015&&y<=2021) return 85; if(y>=2012&&y<=2014) return 60; if(y<=2011) return 40; return 12; },
+ note(r){ const l=r.l; const d=L().recordDate(l); if(!d) return ''; const y=+d.slice(0,4); const cohort=(y>=2015&&y<=2021)?' — cheap-money cohort':''; return ((l.sale!=null&&l.saleDate)?'bought ':'reassessed ')+y+cohort; },
  src:'Coldwell Banker 2026 report · HousingWire (2026)'},
 {id:'corp', name:'Corporate & employment shocks', tag:'research + exposure map',
  body:`WARN filings put <b>1,270 confirmed Bay Area cuts January–May 2026</b> (of ~25,700 announced company-wide): Amazon led with 769 local cuts at 525 Market St and 188 Spear St downtown, Meta's Reality Labs cut 272 in Burlingame, and SF city government noticed 127 — every employer framing it as AI-driven restructuring (SF Bay Area Times WARN tracker; CA EDD). Employment shocks land on housing with a lag: sublease space first, then rent softness, then listings from relocating owners. The same force runs in reverse around AI hiring hubs.`,
