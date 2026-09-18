@@ -159,8 +159,21 @@ function rentEstimate(l){
     if(sf.f===0) return {rent:0, basis:'model', how:'short-term rental: $0 — '+sf.why};
     return {rent: Math.round(mk.zori*1.9*0.65*sf.f*Math.max(1,l.units||1)), basis:'model', how:'short-term rental (modeled ADR ≈ 1.9× monthly rent ÷ 30, 65% occupancy, regulatory factor '+sf.f+') — '+sf.why};
   }
+  /* A METHOD THAT CANNOT BE APPLIED SHOULD SAY SO, NOT QUIETLY BECOME ANOTHER ONE.
+
+     The FMR table covers six counties. Everywhere else this branch fell through
+     to the ratio method below, which is the right FIGURE — a usable rent beats a
+     blank — and its `how` line has always named the ratio honestly, so the number
+     never lied about itself. But the selector still read "Section 8 / HUD Fair
+     Market Rent" while showing something else, and nothing told the user their
+     chosen method did not apply here. Measured across the fleet: FMR returned
+     output identical to the default for every record, because no fixture county
+     is in the table. */
+  let methodNote = '';
   if(meth==='fmr'){
     const t=FMR[l.county];
+    if(!t) methodNote = ' — HUD publishes no Fair Market Rent for '
+      + (l.county || 'this county') + ', so that method does not apply here';
     if(t){ const b=Math.min(4, l.beds==null? 2 : l.beds); const r=t[b]*Math.max(1,l.units||1);
       return {rent: Math.round(r), basis:'market', how:'Section 8 / HUD Fair Market Rent FY2026, '+b+'BR'+((t.approx||t.approx4&&b===4)?' (~approximate — verify huduser.gov)':'')+' × units; landlords may not refuse vouchers in CA (source-of-income law)'}; }
   }
@@ -170,13 +183,19 @@ function rentEstimate(l){
   }
   if(meth==='beds' || !mk.ratio){
     const base = rm ? rm.medianRent : mk.zori;
-    if(base){ const b = l.beds==null? 2.5 : l.beds; const f = l.beds==null?1.1:(BED_F[Math.min(5,b)]||1.6); return {rent: Math.round(base*f*Math.max(1,l.units||1)), basis:'market', how: (rm?'city median rent':'ZIP typical rent')+' × bedroom factor'}; }
+    if(base){ const b = l.beds==null? 2.5 : l.beds; const f = l.beds==null?1.1:(BED_F[Math.min(5,b)]||1.6); return {rent: Math.round(base*f*Math.max(1,l.units||1)), basis:'market', how: (rm?'city median rent':'ZIP typical rent')+' × bedroom factor'+methodNote}; }
   }
-  if(mk.ratio){ const prem = (l.units||1)>1 ? 1.2 : 1; return {rent: Math.round(price(l)*mk.ratio*prem), basis:'model', how:'ZIP rent-to-value ratio ('+(mk.ratio*100).toFixed(2)+'%/mo) × price'+(prem>1?' × 1.2 multi-unit premium':'')}; }
+  if(mk.ratio){ const prem = (l.units||1)>1 ? 1.2 : 1; return {rent: Math.round(price(l)*mk.ratio*prem), basis:'model', how:'ZIP rent-to-value ratio ('+(mk.ratio*100).toFixed(2)+'%/mo) × price'+(prem>1?' × 1.2 multi-unit premium':'')+methodNote}; }
   /* Nothing published reaches this property. The figure is a rule of thumb and
      says so in both its sentence and its basis; every scoring surface refuses it. */
+  /* The THIRD fall-through, and the one a rent-blind market actually reaches:
+     with no ZORI and no ratio, neither branch above returns, so a note appended
+     only to those two never appeared where it was most needed. CI caught this on
+     the no-rent edition — the twelfth of twelve — after the first two branches
+     had been covered. A caveat that is absent exactly where the method is least
+     applicable is worse than no caveat at all. */
   return {rent: Math.round(price(l)*0.004), basis:'none',
-          how:'no rent source for this market — 0.4%/mo rule of thumb, not a measurement'};
+          how:'no rent source for this market — 0.4%/mo rule of thumb, not a measurement'+methodNote};
 }
 function price(l){ const o=state.overrides[l.id]||{}; return o.price||l.price||0; }
 /* WHERE THIS RATE CAME FROM.
