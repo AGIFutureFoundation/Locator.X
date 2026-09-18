@@ -1820,11 +1820,14 @@ async function main() {
       if (!sheet.stress) errs.push('the stress block did not render');
       if (!sheet.rows) errs.push('the stress table did not render the combined case');
       if (/,\s*CA\s/.test(sheet.loi)) errs.push('the letter of intent still hardcodes a state: ' + sheet.loi.slice(0, 120));
-      // The interchange export. The assertions are the two facts that vanish
+      // The interchange export. The assertions are the facts that vanish
       // the moment a record leaves the app: whether a price is an assessed
-      // value or an index estimate, and whether a point is the parcel or a ZIP
-      // centroid. The fixture happens to contain neither case, so the variants
-      // are constructed here — otherwise this would assert nothing.
+      // value or an index estimate, whether a point is the parcel or a ZIP
+      // centroid, and whether a recorded SALE (a stronger fact than the
+      // assessed price, and one this file used to drop silently) exists on
+      // the parcel. The fixture happens to contain none of these cases, so
+      // the variants are constructed here — otherwise this would assert
+      // nothing.
       const geo = await page.evaluate(() => {
         const base = LX.filtered()[0];
         if (!base) return null;
@@ -1832,24 +1835,31 @@ async function main() {
           base,
           Object.assign({}, base, {id: 't-est', est: true}),
           Object.assign({}, base, {id: 't-apx', approx: true}),
-          Object.assign({}, base, {id: 't-nog', lng: null, lat: null})
+          Object.assign({}, base, {id: 't-nog', lng: null, lat: null}),
+          Object.assign({}, base, {id: 't-sale', sale: 555000, saleDate: '2024-06'}),
+          Object.assign({}, base, {id: 't-nosale', sale: null, saleDate: null})
         ];
         const fc = LXGEO.featureCollection(rows, {derived: true});
         const csv = LXGEO.csv(rows, {derived: true});
+        const byId = id => fc.features.find(f => f.id === id);
         return {
           type: fc.type, features: fc.features.length, records: fc.lx.records,
           dropped: fc.lx.dropped_without_geometry,
           est: fc.lx.estimated_prices, approx: fc.lx.approximate_coordinates,
+          recordedSales: fc.lx.recorded_sales,
           bases: fc.features.map(f => f.properties['lx:price_basis']),
           geoms: fc.features.map(f => f.properties['lx:geometry_basis']),
           coords: fc.features[0].geometry.coordinates,
+          saleProps: byId('t-sale') ? byId('t-sale').properties : null,
+          nosaleProps: byId('t-nosale') ? byId('t-nosale').properties : null,
+          resoHasSale: fc.lx.reso_alias.sale_price === 'ClosePrice' && fc.lx.reso_alias.sale_date === 'CloseDate',
           csvCols: csv.split('\n')[0].split(','),
           csvRows: csv.split('\n').length
         };
       });
       if (geo) {
         if (geo.type !== 'FeatureCollection') errs.push('export is not a FeatureCollection');
-        if (geo.features !== 3 || geo.dropped !== 1) {
+        if (geo.features !== 5 || geo.dropped !== 1) {
           errs.push('a record with no coordinate was not dropped and counted: '
             + geo.features + ' features, ' + geo.dropped + ' dropped of ' + geo.records);
         }
@@ -1866,12 +1876,26 @@ async function main() {
         if (!(Array.isArray(geo.coords) && geo.coords.length === 2)) {
           errs.push('feature geometry is not a two-element position');
         }
+        // The recorded sale — a fact this file used to drop entirely.
+        if (!geo.saleProps || geo.saleProps.sale_price !== 555000 || geo.saleProps.sale_date !== '2024-06') {
+          errs.push('a record with a recorded sale did not export sale_price/sale_date: '
+            + JSON.stringify(geo.saleProps));
+        }
+        if (!geo.nosaleProps || geo.nosaleProps.sale_price !== null || geo.nosaleProps.sale_date !== null) {
+          errs.push('a record with NO recorded sale exported a non-null sale_price or sale_date — '
+            + 'a fabricated transaction: ' + JSON.stringify(geo.nosaleProps));
+        }
+        if (geo.recordedSales !== 1) {
+          errs.push('the export header counts ' + geo.recordedSales + ' recorded sale(s) among 6 '
+            + 'rows carrying exactly one');
+        }
+        if (!geo.resoHasSale) errs.push('the RESO alias map is missing ClosePrice/CloseDate');
         // CSV and GeoJSON must describe the same columns, or the two exports
         // can disagree about what a field means.
-        for (const need of ['lx:price_basis', 'lx:geometry_basis', 'lng', 'lat']) {
+        for (const need of ['lx:price_basis', 'lx:geometry_basis', 'lng', 'lat', 'sale_price', 'sale_date']) {
           if (geo.csvCols.indexOf(need) < 0) errs.push('CSV export is missing ' + need);
         }
-        if (geo.csvRows !== 5) errs.push('CSV rows: ' + geo.csvRows + ', expected 5 (header + 4)');
+        if (geo.csvRows !== 7) errs.push('CSV rows: ' + geo.csvRows + ', expected 7 (header + 6)');
       }
 
       await page.evaluate(() => LX.showView('mapview'));

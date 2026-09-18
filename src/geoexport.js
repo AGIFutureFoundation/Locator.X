@@ -7,9 +7,9 @@
  * columns flat as CSV.
  *
  * THE RULE THIS MODULE EXISTS TO KEEP (docs/INTEROP.md): a number must not
- * migrate to a stronger kind by being written into a file. Two facts about this
- * catalog get lost the moment a record leaves the app, and both are carried
- * explicitly on every feature rather than dropped:
+ * migrate to a stronger kind by being written into a file. Facts about this
+ * catalog used to get lost the moment a record left the app; each is now
+ * carried explicitly on every feature rather than dropped:
  *
  *   lx:price_basis     A price here is normally the POST-SALE ASSESSED VALUE
  *                      from a county roll. In counties that publish no assessed
@@ -21,6 +21,20 @@
  *                      parcel geometry. Silently shipping a centroid as a
  *                      point is how a fabricated coordinate enters someone
  *                      else's dataset.
+ *   sale_price/
+ *   sale_date          comps.js already names this app's own strongest fact
+ *                      type: an actual recorded transaction (l.sale +
+ *                      l.saleDate), populated only in disclosure-state
+ *                      editions and only on parcels that actually traded --
+ *                      distinct from `price`, which is present on every
+ *                      record and is not necessarily a sale at all. This
+ *                      file carried the weaker fact and silently dropped the
+ *                      stronger one whenever a record had both: a consumer
+ *                      taking this into QGIS or ArcGIS got the assessed value
+ *                      with no way to know a real closing price and date
+ *                      existed on the same parcel. Exported now, null where
+ *                      the record carries no sale -- which most records,
+ *                      honestly, do not.
  *
  * Derived numbers (cap rate, cash flow, DSCR) are exported under names that
  * begin lx:derived_ and the file's own header says they are arithmetic over
@@ -42,7 +56,8 @@ const RESO = {
   addr: 'UnparsedAddress', city: 'City', zip: 'PostalCode', state: 'StateOrProvince',
   county: 'CountyOrParish', lat: 'Latitude', lng: 'Longitude', apn: 'ParcelNumber',
   year: 'YearBuilt', sqft: 'LivingArea', lot: 'LotSizeSquareFeet',
-  beds: 'BedroomsTotal', baths: 'BathroomsTotalInteger', stories: 'Stories'
+  beds: 'BedroomsTotal', baths: 'BathroomsTotalInteger', stories: 'Stories',
+  sale_price: 'ClosePrice', sale_date: 'CloseDate'
 };
 
 function priceBasis(l){
@@ -68,6 +83,7 @@ function props(l, opts){
     sqft: l.sqft || null, lot: l.lot || null, year: l.year || null,
     stories: l.stories || null, zoning: l.zoning || null,
     price: l.price || null, price_date: l.priceDate || null,
+    sale_price: l.sale || null, sale_date: l.saleDate || null,
     assessed_land: l.land || null, assessed_improvements: l.imp || null,
     'lx:price_basis': priceBasis(l),
     'lx:geometry_basis': geometryBasis(l),
@@ -101,6 +117,10 @@ function meta(rows, opts){
     coordinate_reference_system: 'WGS 84 (EPSG:4326), as RFC 7946 requires — longitude first',
     approximate_coordinates: rows.filter(l => l.approx).length,
     estimated_prices: rows.filter(l => l.est).length,
+    /* Published for the same reason approximate_coordinates and
+       estimated_prices are: a consumer reading only sale_price should not
+       have to scan every feature to learn how few of them carry one. */
+    recorded_sales: rows.filter(l => l.sale != null && l.saleDate).length,
     /* A record with no coordinate cannot be a GeoJSON feature, so it is
        dropped — but the count is published rather than left as a silent gap
        between `records` and `features.length`. A consumer that reads only the
@@ -109,6 +129,7 @@ function meta(rows, opts){
       l => !(typeof l.lng === 'number' && typeof l.lat === 'number')).length,
     kinds_of_number: {
       'public record': 'price, assessed values, parcel attributes — re-pullable from the agency named in lx:source',
+      'recorded transaction': 'sale_price and sale_date — an actual closing, not an assessed value; null on any parcel that has not traded since the county last reassessed, which in a non-disclosure state is every parcel',
       derived: 'every lx:derived_ field — arithmetic over this app’s assumptions, not a measurement, and not a valuation'
     },
     reso_alias: RESO,
