@@ -82,14 +82,29 @@ function agentCash(l){ const X=L(); const r=D().analyze(l); const d=r.d, a=X.sta
   const rates=[a.rate-1, a.rate-0.5, a.rate, a.rate+0.5, a.rate+1]; const downs=[10,20,25,30,40,50]; const n=a.term*12; const rows=downs.map(dn=>{ const loan=d.P*(1-dn/100); return {dn, cells: rates.map(rt=>{ const m=rt/100/12; const pay=loan*m/(1-Math.pow(1+m,-n))*12; return (d.noi-pay)/12; })}; });
   const sens=`<table class="sens"><tr><th>Down ↓ / Rate →</th>${rates.map(r=>`<th>${r.toFixed(2)}%</th>`).join('')}</tr>${rows.map(r=>`<tr><td>${r.dn}%</td>${r.cells.map(c=>`<td class="${c>0?'pos':'neg'}">${(c>0?'+':'')+X.fmt$(c)}</td>`).join('')}</tr>`).join('')}</table><div style="font-size:11px;color:var(--muted);margin-top:4px">Monthly cash flow by down payment and rate, at the current rent estimate.</div>`;
   return {summary: `${D().CAT[r.cat].name} — score ${r.score}. ${r.rec}`, findings:f, html:sens, analysis:r}; }
-function agentComps(l){ const X=L(); const P=X.price(l); const km=(a,b)=>{ const R=6371, dLat=(b.lat-a.lat)*Math.PI/180, dLng=(b.lng-a.lng)*Math.PI/180; const s=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(s)); };
-  const multi=(l.units||1)>1; const pool=X.allListings().filter(x=>x!==l && x.id!==l.id && x.lat!=null).map(x=>({x, d:km(l,x)})).filter(o=>o.d<=3 && ((o.x.units||1)>1)===multi).sort((a,b)=>a.d-b.d).slice(0,8);
-  const f=[]; if(!pool.length) return {summary:'No comparable public-record sales within 3 km in this dataset — import recent sales or MLS solds for this area.', findings:[F('Comparable sales found','0','within 3 km, same unit type')]};
-  const pps=pool.filter(o=>o.x.sqft).map(o=>X.price(o.x)/o.x.sqft); const medP=X.median(pool.map(o=>X.price(o.x))); const medPps=pps.length? X.median(pps):null;
-  f.push(F('Comparable sales', String(pool.length), `within ${pool[pool.length-1].d.toFixed(1)} km · median ${X.fmt$(medP)} · ${medPps?'$'+X.fmtN(medPps)+'/sf':'no area data'}`));
-  if(medPps && l.sqft){ const sub=P/l.sqft; f.push(F('Subject $/sf vs comps', '$'+X.fmtN(sub)+' vs $'+X.fmtN(medPps), sub>medPps*1.15? 'priced above comparable sales — negotiate or justify with condition' : sub<medPps*0.85? 'priced below comparable sales — verify condition and tenancy' : 'in line with recent sales', sub>medPps*1.15?'bad':sub<medPps*0.85?'good':'warn')); f.push(F('Indicated value at comp $/sf', X.fmt$(medPps*l.sqft), 'median comp $/sf × subject area')); }
-  pool.slice(0,6).forEach(o=>f.push(F(o.x.addr+', '+o.x.city, X.fmt$(X.price(o.x)), `${o.d.toFixed(1)} km · ${o.x.kind}${o.x.sqft?' · '+X.fmtN(o.x.sqft)+' sf · $'+X.fmtN(X.price(o.x)/o.x.sqft)+'/sf':''} · ${o.x.priceDate||''}`)));
-  return {summary:`${pool.length} comparable ${multi?'multi-unit':'single-unit'} sales within 3 km, median ${X.fmt$(medP)}${medPps?' and $'+X.fmtN(medPps)+'/sf':''}${medPps&&l.sqft?`; subject at $${X.fmtN(P/l.sqft)}/sf`:''}.`, findings:f}; }
+/* This agent used to build its own comp pool straight off X.allListings() by
+   raw distance, with no basis check at all — a real recorded sale, a Prop 13
+   post-sale assessed value and a ZIP-level ZHVI estimate could all land in
+   the same "comparable sales" median. comps.js's own pool() exists to keep
+   the rule this violated: "Two bases exist in this catalogue and they are
+   NEVER mixed in one median." It now defers to comps.js's find(), the same
+   pipeline the Comps tab uses, instead of a second, divergent implementation
+   of the same idea — and reports honestly when a basis is assessed values,
+   not sales. */
+function agentComps(l){
+  const X=L(); const P=X.price(l);
+  const C=window.LXComps;
+  const res=C? C.find(l,{km:3}):null;
+  if(!res || !res.enough) return {summary:(res&&res.why)||'No comparable public-record sales within 3 km in this dataset — import recent sales or MLS solds for this area.',
+    findings:[F('Comparables found', String(res?res.n:0), res&&res.basisName? 'within 3 km, same class, '+res.basisName : 'within 3 km, same class')]};
+  const f=[]; const B=res.basis, isSale=B==='sale', noun=isSale?'sale':'assessed value';
+  const amtOf=c=>isSale?(c.sale||0):(c.price||0), dateOf=c=>isSale?c.saleDate:c.priceDate;
+  const medPps=res.ppsf.med;
+  f.push(F('Comparable '+noun+'s', String(res.n), `within ${res.km!=null?res.km.toFixed(1):'?'} km · ${res.basisName} · median ${medPps?'$'+X.fmtN(medPps)+'/sf':(res.ppu.med!=null?X.fmt$(res.ppu.med)+'/unit':'no area data')}`));
+  if(medPps && l.sqft){ const sub=P/l.sqft; f.push(F('Subject $/sf vs comps', '$'+X.fmtN(sub)+' vs $'+X.fmtN(medPps), sub>medPps*1.15? 'priced above comparable '+noun+'s — negotiate or justify with condition' : sub<medPps*0.85? 'priced below comparable '+noun+'s — verify condition and tenancy' : 'in line with recent records', sub>medPps*1.15?'bad':sub<medPps*0.85?'good':'warn')); f.push(F('Indicated value at comp $/sf', X.fmt$(medPps*l.sqft), 'median comp $/sf × subject area')); }
+  res.comps.slice(0,6).forEach(o=>{ const c=o.l; f.push(F(c.addr+', '+c.city, X.fmt$(amtOf(c)), `${o.km.toFixed(1)} km · ${c.kind}${c.sqft?' · '+X.fmtN(c.sqft)+' sf · $'+X.fmtN(amtOf(c)/c.sqft)+'/sf':''} · ${dateOf(c)||''}`)); });
+  return {summary:`${res.n} comparable ${noun}${res.n===1?'':'s'} within ${res.km!=null?res.km.toFixed(1):'?'} km (${res.basisName}), median${medPps?' $'+X.fmtN(medPps)+'/sf':''}${res.ppu.med!=null?' and '+X.fmt$(res.ppu.med)+'/unit':''}${medPps&&l.sqft?`; subject at $${X.fmtN(P/l.sqft)}/sf`:''}.`, findings:f};
+}
 function transferTax(P, city, county){ const c=(city||'').toLowerCase(); let local=0, note=''; if(c==='san francisco'){ const r = P<=250000?0.5: P<=999999?0.68 : P<=4999999?0.75 : P<=9999999?2.25 : P<=24999999?5.5 : 6; local=P*r/100; note=`SF transfer tax ${r}%`; } else if(c==='oakland'){ const r = P<=300000?1 : P<=2000000?1.5 : P<=5000000?1.75 : 2.5; local=P*r/100+P*0.0011; note=`Oakland ${r}% + county $1.10/1k`; } else if(c==='berkeley'){ local=P*0.015+P*0.0011; note='Berkeley 1.5% + county $1.10/1k'; } else if(c==='alameda'){ local=P/1000*12+P*0.0011; note='Alameda city $12/1k + county $1.10/1k'; } else if(c==='piedmont'){ local=P/1000*13+P*0.0011; note='Piedmont $13/1k + county'; } else if(c==='emeryville'){ local=P*0.012+P*0.0011; note='Emeryville 1.2% + county'; } else if(c==='san leandro'){ local=P/1000*11+P*0.0011; note='San Leandro $11/1k + county'; } else if(c==='hayward'){ local=P/1000*8.5+P*0.0011; note='Hayward $8.50/1k + county'; } else if(c==='san jose'){ local=P*0.0011 + (P>2000000? P*(P<=5000000?0.0075:P<=10000000?0.01:0.015) : 0)+P/1000*3.3; note='San Jose $3.30/1k + Measure E above $2M + county'; } else { local=P*0.0011; note='County documentary transfer tax $1.10 per $1,000 (city may add its own)'; } return {amt:local, note}; }
 function agentReg(l){ const X=L(); const rc=D().rentControl(l); const P=X.price(l); const tt=transferTax(P, l.city, l.county); const multi=(l.units||1)>1; const f=[
   F('Rent regulation', rc.reg, multi? 'applies to existing tenancies; verify current rents and any buyout/relocation exposure' : 'owner-occupied single-family and condos are exempt from AB 1482 when the notice is given', rc.level),
@@ -139,5 +154,5 @@ function renderLinks(){ const box=$('#rlinks'); if(!box) return; const l=subject
   links.push(['FEMA flood map','flood zone',`https://msc.fema.gov/portal/search?AddressQuery=${q}`],['CA seismic hazard zones','liquefaction & landslide','https://maps.conservation.ca.gov/cgs/EQZApp/app/'],['Walk Score','walk/transit/bike',`https://www.walkscore.com/score/${q}`],['GreatSchools','assigned schools',`https://www.greatschools.org/search/search.page?q=${l.zip||q}`],['Census Reporter','ZIP demographics', l.zip?`https://censusreporter.org/profiles/86000US${l.zip}-${l.zip}/`:'https://censusreporter.org/'],['HUD Fair Market Rent','rent floor by bedroom','https://www.huduser.gov/portal/datasets/fmr.html'],['Rentometer','rent comps','https://www.rentometer.com/'],['CrimeMapping','recent incidents',`https://www.crimemapping.com/map/location/${q}`],['Zillow Research','ZHVI / ZORI files','https://www.zillow.com/research/data/']);
   box.innerHTML=links.map(x=>`<a href="${x[2]}" target="_blank" rel="noopener">${x[0]}<small>${x[1]}</small></a>`).join(''); }
 
-window.LXResearch={subjectFrom, show, run, get subject(){ return subject; }};
+window.LXResearch={subjectFrom, show, run, agentComps, get subject(){ return subject; }};
 })();
