@@ -700,6 +700,49 @@ async function main() {
          One building's error is a fact about one building; a median from two is
          a decoration. So this drives it to floor-1 and to floor, and checks it
          refuses at one and reports with its denominator at the other. */
+      /* "SALE DATE" ON A RECORD THAT WAS NEVER SOLD, ANYWHERE THAT VALUE APPEARS.
+
+         Four places called LX.priceDate a "sale date": the map/list sort
+         dropdown, the Deals table column, the house-hack table column, and the
+         guide's worked-example sentence ("sold {priceDate}"). priceDate is the
+         assessor's recorded or reassessed value date - present on every record -
+         while l.sale/l.saleDate is a real transaction, populated only in
+         disclosure-state editions and only on the parcels that actually traded.
+         comps.js already names this distinction its own doctrine (basisOf():
+         'sale' vs the weaker 'postsale'); docs/PULL_RECIPE.md states the rule -
+         "Assessor values are NOT listing or sale prices." Every OTHER place that
+         shows this date already says "recorded" or "assessed"; these four did
+         not.
+
+         LX.recordDate() / LX.recordDateLabel() are the fix: prefer the real sale
+         date, fall back to the recorded date, and label honestly either way.
+         Checked both directions across every record sampled - a "sold" label
+         must never appear without a real saleDate, and "recorded" must never
+         appear when one exists, because a refusal that fires on the wrong side
+         is a new falsehood the same size as the one it replaced. */
+      /* And the labels THEMSELVES: a regression that reverted just the option
+         text (not the logic) would pass every check above. */
+      let dateLabels = null;
+      try {
+        const sortOpt = document.querySelector('#sort option[value="date"]');
+        dateLabels = {
+          sortText: sortOpt ? sortOpt.textContent.trim() : null,
+          sortOverclaims: sortOpt ? /^Sale date$/.test(sortOpt.textContent.trim()) : false
+        };
+      } catch (e) { dateLabels = {err: String(e)}; }
+
+      let dates = null;
+      try {
+        let bad = 0, sampled = 0;
+        for (const l of ls.slice(0, 400)) {
+          const lab = LX.recordDateLabel(l);
+          sampled++;
+          if (/^sold /.test(lab) && !l.saleDate) bad++;
+          if (/^recorded /.test(lab) && l.saleDate) bad++;
+        }
+        dates = {sampled, bad};
+      } catch (e) { dates = {err: String(e)}; }
+
       let acts = null;
       try {
         const A = window.LXActuals;
@@ -828,7 +871,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -940,6 +983,20 @@ async function main() {
         errs.push('only ' + rent.acad.noted + ' of ' + rent.acad.missions + ' Academy missions carry '
           + 'the rent notice in a wholly rent-blind edition');
       }
+    }
+    if (rent.dateLabels && rent.dateLabels.err) {
+      errs.push('the sort dropdown could not be read: ' + rent.dateLabels.err);
+    } else if (rent.dateLabels && rent.dateLabels.sortOverclaims) {
+      errs.push('the "date" sort option reads exactly "Sale date" — it sorts by priceDate, the '
+        + 'assessor\'s recorded value, on any record without a real sale; the label overclaims '
+        + 'again');
+    }
+    if (rent.dates && rent.dates.err) {
+      errs.push('the record-date labelling could not be exercised: ' + rent.dates.err);
+    } else if (rent.dates && rent.dates.bad) {
+      errs.push(rent.dates.bad + ' of ' + rent.dates.sampled + ' records carry a "sold" or '
+        + '"recorded" label that disagrees with whether they have a real sale date — a sale on a '
+        + 'record that was never sold, or the reverse');
     }
     if (rent.acts && rent.acts.err) {
       errs.push('the acquired ledger could not be exercised: ' + rent.acts.err);
