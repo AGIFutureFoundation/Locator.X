@@ -72,7 +72,7 @@ six either.
 
 | Capability | Category tools | Locator.X | Status |
 |---|---|---|---|
-| Disposition lists | DealMachine | `src/geoexport.js` (178) filtered set as an interchange file | **partial** |
+| Disposition lists | DealMachine | `src/geoexport.js` (199) filtered set as an interchange file | **partial** |
 | Investor-facing memo | *nobody* | `src/uwexport.js` (370) — self-contained PDF memorandum and a rendered video reel, no external libraries | **ships** |
 | Desk interoperability | *nobody* | `src/deskws.js` (91) + [`INTEROP.md`](../INTEROP.md), the worksheet JSON shape and the no-laundering rule | **ships** — no equivalent |
 
