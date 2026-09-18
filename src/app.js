@@ -198,6 +198,31 @@ function rentEstimate(l){
           how:'no rent source for this market — 0.4%/mo rule of thumb, not a measurement'+methodNote};
 }
 function price(l){ const o=state.overrides[l.id]||{}; return o.price||l.price||0; }
+/* THE DATE ON A RECORD IS NOT ALWAYS A SALE DATE, AND THE APP HAD BEEN CALLING
+   IT ONE IN FOUR PLACES.
+
+   Two distinct fields exist here on purpose. comps.js's own basisOf() names
+   them: l.sale + l.saleDate is a real transaction, the 'sale' basis; l.price +
+   l.priceDate is the assessor's recorded or reassessed value, the weaker
+   'postsale' basis - present on EVERY record, a real sale on none in a
+   non-disclosure market and on only the ones that actually traded elsewhere.
+   docs/PULL_RECIPE.md states the rule this exists to protect: "Assessor values
+   are NOT listing or sale prices."
+
+   Every other place that shows priceDate to a user already knows this -
+   academy.js says "recorded at", belowmarket.js says "recorded", recon.js
+   spells out "assessed after a change of ownership" versus a bare "assessed
+   value". Four places did not: the map/list sort dropdown, the Deals table
+   column, the house-hack table column, and one worked-example sentence all
+   read "Sale date" or "sold" over a value that is a sale on none of it in a
+   non-disclosure market and only some of it anywhere else.
+
+   recordDate() is what those four now call: the real sale date where the
+   record carries one, the assessor's date otherwise - the more specific fact
+   first, same as comps.js's own basis preference, and it is what the label
+   next to it has to say honestly. */
+function recordDate(l){ return (l && (l.saleDate || l.priceDate)) || null; }
+function recordDateLabel(l){ return (l && l.saleDate) ? 'sold '+l.saleDate : (l && l.priceDate) ? 'recorded '+l.priceDate : 'recorded (no date on record)'; }
 /* WHERE THIS RATE CAME FROM.
 
    CITY_TAX carries a published effective rate for ten counties. Every other
@@ -1129,7 +1154,7 @@ function sorted(ls){
   const n=ls.length;
   if(s==='date'){
     const idx=new Array(n); for(let i=0;i<n;i++) idx[i]=i;
-    idx.sort((x,y)=>(ls[y].priceDate||'').localeCompare(ls[x].priceDate||''));
+    idx.sort((x,y)=>(recordDate(ls[y])||'').localeCompare(recordDate(ls[x])||''));
     const out=new Array(n); for(let i=0;i<n;i++) out[i]=ls[idx[i]]; return out;
   }
   const key=new Float64Array(n);
@@ -1535,7 +1560,7 @@ $('#tourclose').addEventListener('click', closeTour);
 })();
 
 /* ---------------- deals page ---------------- */
-const DCOLS=[['addr','Property'],['city','City'],['kind','Type'],['P','Price','r'],['rentMo','Rent/mo','r'],['gross','Gross yield','r'],['cap','Cap rate','r'],['cfMo','Cash flow/mo','r'],['coc','Cash-on-cash','r'],['dscr','DSCR','r'],['ppsf','$/sf','r'],['grm','GRM','r'],['yoy','ZIP 1-yr','r'],['priceDate','Sale date']];
+const DCOLS=[['addr','Property'],['city','City'],['kind','Type'],['P','Price','r'],['rentMo','Rent/mo','r'],['gross','Gross yield','r'],['cap','Cap rate','r'],['cfMo','Cash flow/mo','r'],['coc','Cash-on-cash','r'],['dscr','DSCR','r'],['ppsf','$/sf','r'],['grm','GRM','r'],['yoy','ZIP 1-yr','r'],['dateAny','Sale/record']];
 let dsort={k:'cap',dir:-1};
 /* The table used to offer "Show all N rows", which wrote every row of the
    result set into the DOM in one go.  At 161,000 rows that hangs the tab and at
@@ -1556,7 +1581,7 @@ function dealRows(){
     if(s==='star'&&!state.stars.has(l.id)) continue;
     if(q && !`${l.addr} ${l.city} ${l.zip} ${l.nb||''} ${l.kind}`.toLowerCase().includes(q)) continue;
     const d=deal(l)||{};
-    d.l=l; d.yoy=d.mk?d.mk.yoy:null;
+    d.l=l; d.yoy=d.mk?d.mk.yoy:null; d.dateAny=recordDate(l);
     out.push(d);
   }
   return out;
@@ -1565,7 +1590,7 @@ function renderDeals(){
   const rows=dealRows(); const k=dsort.k; rows.sort((a,b)=>{ const va=k in a? a[k] : a.l[k], vb=k in b? b[k] : b.l[k]; if(va==null) return 1; if(vb==null) return -1; return (typeof va==='string'? va.localeCompare(vb) : va-vb)*dsort.dir; });
   $('#dealtable thead').innerHTML='<tr>'+DCOLS.map(c=>`<th class="${c[2]||''}" data-k="${c[0]}">${c[1]}${dsort.k===c[0]?(dsort.dir>0?' ↑':' ↓'):''}</th>`).join('')+'</tr>';
   const shown=rows.slice(0, Math.min(dealsShown, rows.length));
-  $('#dealtable tbody').innerHTML=shown.map(r=>`<tr class="clickable" data-id="${r.l.id}"><td>${state.stars.has(r.l.id)?'★ ':''}${esc(r.l.addr)}</td><td>${esc(r.l.city)}</td><td>${esc(r.l.kind)}</td><td class="r">${fmt$(r.P)}</td><td class="r">$${fmtN(r.rentMo)}</td><td class="r">${fmtPct(r.gross)}</td><td class="r">${fmtPct(r.cap)}</td><td class="r ${r.cfMo>0?'pos':'neg'}">${fmt$(r.cfMo)}</td><td class="r">${fmtPct(r.coc)}</td><td class="r">${r.dscr?r.dscr.toFixed(2):'—'}</td><td class="r">${r.ppsf?'$'+fmtN(r.ppsf):'—'}</td><td class="r">${r.grm?r.grm.toFixed(1):'—'}</td><td class="r ${r.yoy>0?'pos':r.yoy<0?'neg':''}">${r.yoy!=null?(r.yoy>0?'+':'')+r.yoy.toFixed(1)+'%':'—'}</td><td>${esc(r.l.priceDate||'')}</td></tr>`).join('') + (rows.length>shown.length
+  $('#dealtable tbody').innerHTML=shown.map(r=>`<tr class="clickable" data-id="${r.l.id}"><td>${state.stars.has(r.l.id)?'★ ':''}${esc(r.l.addr)}</td><td>${esc(r.l.city)}</td><td>${esc(r.l.kind)}</td><td class="r">${fmt$(r.P)}</td><td class="r">$${fmtN(r.rentMo)}</td><td class="r">${fmtPct(r.gross)}</td><td class="r">${fmtPct(r.cap)}</td><td class="r ${r.cfMo>0?'pos':'neg'}">${fmt$(r.cfMo)}</td><td class="r">${fmtPct(r.coc)}</td><td class="r">${r.dscr?r.dscr.toFixed(2):'—'}</td><td class="r">${r.ppsf?'$'+fmtN(r.ppsf):'—'}</td><td class="r">${r.grm?r.grm.toFixed(1):'—'}</td><td class="r ${r.yoy>0?'pos':r.yoy<0?'neg':''}">${r.yoy!=null?(r.yoy>0?'+':'')+r.yoy.toFixed(1)+'%':'—'}</td><td>${esc(r.dateAny||'')}</td></tr>`).join('') + (rows.length>shown.length
       ? `<tr><td colspan="14"><button class="btn" id="dealsmore">Show ${fmtN(Math.min(DEALS_PAGE, rows.length-shown.length))} more</button>`
         + `<span style="margin-left:10px;font-size:12px;color:var(--muted)">${fmtN(shown.length)} of ${fmtN(rows.length)} shown`
         + (shown.length>=DEALS_MAX_DOM ? ' — the table stops here to keep the page responsive; use Download CSV for the whole set.' : '')
@@ -1575,7 +1600,7 @@ function renderDeals(){
     if(shown.length>=DEALS_MAX_DOM){ dm.disabled=true; dm.title='Use Download CSV to take the full result set away with you.'; }
     else dm.addEventListener('click', ()=>{ dealsShown += DEALS_PAGE; renderDeals(); });
   }
-  $$('#dealtable th').forEach(th=>th.addEventListener('click', ()=>{ const kk=th.dataset.k; dsort = dsort.k===kk? {k:kk,dir:-dsort.dir} : {k:kk, dir: ['addr','city','kind','priceDate'].includes(kk)?1:-1}; renderDeals(); }));
+  $$('#dealtable th').forEach(th=>th.addEventListener('click', ()=>{ const kk=th.dataset.k; dsort = dsort.k===kk? {k:kk,dir:-dsort.dir} : {k:kk, dir: ['addr','city','kind','dateAny'].includes(kk)?1:-1}; renderDeals(); }));
   $$('#dealtable tbody tr').forEach(tr=>tr.addEventListener('click', ()=>select(tr.dataset.id, true)));
   /* The four summary tiles used to be built like this:
          const all = allListings().map(l => deal(l)).filter(Boolean);
@@ -1715,7 +1740,7 @@ function renderGuideLive(){
   const one=all.filter(x=>x.d.one>=1).length;
   $('#live3').innerHTML=`<b>Gross yield across ${zr.length} Bay Area ZIPs:</b> median <b>${fmtPct(med)}</b>; the 1% rule (12% gross) is met by <b>${fmtN(one)}</b> of the ${fmtN(all.length)} properties here. Highest-yield ZIPs in Zillow's files: ${zr.slice(0,6).map(x=>`<a href="#" data-zip="${x.k}">${x.k} ${esc(x.city||'')} (${x.y.toFixed(1)}%)</a>`).join(', ')}. Lowest: ${zr.slice(-3).map(x=>`${x.k} ${esc(x.city||'')} (${x.y.toFixed(1)}%)`).join(', ')}.`;
   const ex=all.filter(x=>(x.l.units||1)>1).sort((a,b)=>b.d.cap-a.d.cap)[0]||all.sort((a,b)=>b.d.cap-a.d.cap)[0];
-  if(ex){ const d=ex.d, l=ex.l; $('#live4').innerHTML=`<b>Worked example — <a href="#" data-sel="${l.id}">${esc(l.addr)}, ${esc(l.city)}</a></b> (${esc(l.kind)}, sold ${l.priceDate} for ${fmtFull(d.P)}). Estimated rent $${fmtN(d.rentMo)}/mo → gross ${fmtFull(d.rent)}; after ${a.vacancy}% vacancy, ${taxRate(l)}% tax, insurance, ${a.maint+a.capex}% upkeep and ${a.mgmt}% management, NOI is <b>${fmtFull(d.noi)}</b> — a <b>${fmtPct(d.cap)}</b> cap rate. A ${a.down}%-down loan at ${a.rate}% costs ${fmtFull(d.ds)} a year, so cash flow is <b class="${d.cf>0?'pos':'neg'}">${fmtFull(d.cf)}</b> (${fmtPct(d.coc)} cash-on-cash, DSCR ${d.dscr.toFixed(2)}). ${d.cf>0?'That is an asset by the Locator X definition: it pays its owner.':'To make this an asset you would need roughly $'+fmtN((d.ds+d.opex)/(1-a.vacancy/100)/12/(1-a.mgmt/100)-d.rentMo)+' more rent per month, or a bigger down payment.'}`; }
+  if(ex){ const d=ex.d, l=ex.l; $('#live4').innerHTML=`<b>Worked example — <a href="#" data-sel="${l.id}">${esc(l.addr)}, ${esc(l.city)}</a></b> (${esc(l.kind)}, ${recordDateLabel(l)} for ${fmtFull(d.P)}). Estimated rent $${fmtN(d.rentMo)}/mo → gross ${fmtFull(d.rent)}; after ${a.vacancy}% vacancy, ${taxRate(l)}% tax, insurance, ${a.maint+a.capex}% upkeep and ${a.mgmt}% management, NOI is <b>${fmtFull(d.noi)}</b> — a <b>${fmtPct(d.cap)}</b> cap rate. A ${a.down}%-down loan at ${a.rate}% costs ${fmtFull(d.ds)} a year, so cash flow is <b class="${d.cf>0?'pos':'neg'}">${fmtFull(d.cf)}</b> (${fmtPct(d.coc)} cash-on-cash, DSCR ${d.dscr.toFixed(2)}). ${d.cf>0?'That is an asset by the Locator X definition: it pays its owner.':'To make this an asset you would need roughly $'+fmtN((d.ds+d.opex)/(1-a.vacancy/100)/12/(1-a.mgmt/100)-d.rentMo)+' more rent per month, or a bigger down payment.'}`; }
   $$('#guide a[data-sel]').forEach(x=>x.addEventListener('click', e=>{ e.preventDefault(); select(x.dataset.sel, true); }));
   $$('#guide a[data-zip]').forEach(x=>x.addEventListener('click', e=>{ e.preventDefault(); showView('market'); $('#mq').value=x.dataset.zip; renderMarket(x.dataset.zip); }));
 }
@@ -1724,7 +1749,7 @@ $$('#toc a').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); con
 
 function updateZipsSource(){ if(USE_GL && mapReady && map.getSource && map.getSource('zips')) map.getSource('zips').setData(BA.geo.zips); else if(map && map.draw) map.draw(); }
 /* ---------------- public API for dashboard/research ---------------- */
-window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, rentEstimate, taxRate, taxBasis, TAX_DEFAULT, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine, EDITION_STATE, focusCity, focusDistrict, renderCityRail, renderDistrictRail, districtOf, NO_DISTRICT, editionFootprint, inFootprint, cityStats, CITY_LABEL_CAP};
+window.LX = {updateZipsSource, deal, dealBump, dealSync, opexOf, price, recordDate, recordDateLabel, rentEstimate, taxRate, taxBasis, TAX_DEFAULT, marketFor, allListings, filtered, select, showView, state, store, toast, esc, fmt$, fmtFull, fmtPct, fmtN, median, spark, last, at, M, BA, zipCentroid, refresh, saveAssump, mk, closeDrawer, fillCounties, hasTour, openTour, importText, sourceUrl, srcLine, EDITION_STATE, focusCity, focusDistrict, renderCityRail, renderDistrictRail, districtOf, NO_DISTRICT, editionFootprint, inFootprint, cityStats, CITY_LABEL_CAP};
 /* ---------------- boot ---------------- */
 fillCounties(); renderList(); initMap(); renderRentMarkets(); setTimeout(()=>{ try{ if(window.LXScout&&LXScout.autoStart) LXScout.autoStart(); }catch(e){} }, 800); setTimeout(()=>{ if(window.LXDash) window.LXDash.render(); },0); $('#impcount').textContent = state.imported.length? `${state.imported.length} imported in this browser` : '';
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !tour.open && state.sel) closeDrawer(); });
