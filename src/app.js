@@ -188,8 +188,14 @@ function rentEstimate(l){
   if(mk.ratio){ const prem = (l.units||1)>1 ? 1.2 : 1; return {rent: Math.round(price(l)*mk.ratio*prem), basis:'model', how:'ZIP rent-to-value ratio ('+(mk.ratio*100).toFixed(2)+'%/mo) × price'+(prem>1?' × 1.2 multi-unit premium':'')+methodNote}; }
   /* Nothing published reaches this property. The figure is a rule of thumb and
      says so in both its sentence and its basis; every scoring surface refuses it. */
+  /* The THIRD fall-through, and the one a rent-blind market actually reaches:
+     with no ZORI and no ratio, neither branch above returns, so a note appended
+     only to those two never appeared where it was most needed. CI caught this on
+     the no-rent edition — the twelfth of twelve — after the first two branches
+     had been covered. A caveat that is absent exactly where the method is least
+     applicable is worse than no caveat at all. */
   return {rent: Math.round(price(l)*0.004), basis:'none',
-          how:'no rent source for this market — 0.4%/mo rule of thumb, not a measurement'};
+          how:'no rent source for this market — 0.4%/mo rule of thumb, not a measurement'+methodNote};
 }
 function price(l){ const o=state.overrides[l.id]||{}; return o.price||l.price||0; }
 /* WHERE THIS RATE CAME FROM.
