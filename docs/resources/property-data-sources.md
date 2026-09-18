@@ -54,6 +54,16 @@ The record itself — where the L, O and A gates are actually answered.
 - **Clerk of court dockets** — foreclosure filings (judicial states), evictions, probate
   (pre-market inventory). *Failure mode:* PACER-style per-page costs in some states;
   name-keyed, not parcel-keyed.
+- **Federal bankruptcy courts (PACER)** — Chapter 7/11/13 trustee and debtor-in-possession
+  real property, sold under 11 U.S.C. §363 "free and clear" of liens once the court approves
+  a sale motion. A filed motion or "Notice of Sale of Estate Property" is often the earliest
+  public signal — weeks before the property reaches any listing portal. *Failure mode:*
+  PACER is federal, not county, and there is no single national feed — each of the 90+
+  district courts posts its own notices (search `<district> bankruptcy court notice of
+  sale`), and PACER itself charges per page viewed. Large Chapter 11 cases route notices
+  through a claims/noticing agent instead of the court's own site — Stretto, Kroll
+  Restructuring Administration, Epiq, KCC, Donlin Recano, Omni Agent Solutions — the same
+  "recognize the vendor" pattern as §7's county portals, one layer up the court system.
 - **Census TIGER + state parcel programs** — geometry to hang everything on.
 - **GIS open-data portals** (city/county ArcGIS hubs) — zoning, permits, code enforcement,
   STR licenses. Permits are the leading indicator the M1 course builds on.
@@ -81,6 +91,9 @@ Each channel's mechanics are state-set — always pair with the state entry.
 | State-centralized | AR Land Commissioner, NM T&R auctions, WV Auditor | The state entries flag each |
 | Probate / estate | Pre-market, motivated fiduciaries | Probate dockets; obituary-to-parcel joins |
 | HOA / municipal liens | NV super-priority hazard; code-lien foreclosures (FL) | County dockets |
+| Bankruptcy estate sale | Trustee/debtor-in-possession real property sold under §363, court-approved and often below market to move fast | PACER filings; the case's own claims/noticing agent site (see §2); a small group of brokers specialize in court-ordered sales and carry direct trustee relationships |
+| Receivership sale | State-court-appointed receiver liquidating a distressed commercial asset — a civil remedy, not bankruptcy, so it runs under state law (procedure varies by state) rather than federal §363 | The case docket naming the receiver; the receiver's own retained broker; a few national platforms specialize in receivership listings |
+| Government seized / surplus | Federal forfeiture and excess real property | GSA (realestatesales.gov, gsaauctions.gov), US Marshals Service real estate (auctioned via Bid4Assets), IRS/Treasury seized-property sales (~300 public auctions/yr) |
 
 **The evidence rule for auctions:** "sold" is not a fact until redemption/upset windows
 close — NC's upset bids, MI/MN redemption, TX/GA redemption premiums. The state entry gives
