@@ -743,6 +743,33 @@ async function main() {
         dates = {sampled, bad};
       } catch (e) { dates = {err: String(e)}; }
 
+      /* THE RESEARCH TAB'S OWN "COMPS AGENT" MIXED THE SAME TWO BASES comps.js
+         REFUSES TO MIX.
+
+         It built its pool straight off allListings() by raw distance, with no
+         basis check at all, and called whatever it found "comparable sales" -
+         a real recorded transaction, a Prop 13 post-sale assessed value and a
+         ZIP-level ZHVI estimate could all land in the same median under one
+         label neither doctrine nor the user was told about. comps.js's own
+         find() already keeps its pool pure by basis; the fix makes this agent
+         use it instead of a second, divergent implementation of the same
+         idea, and label the result by whichever basis it actually got. */
+      let comps2 = null;
+      try {
+        const R = window.LXResearch, C = window.LXComps;
+        const evalSubject = (l) => {
+          if (!l || !R.agentComps || !C) return null;
+          const f = C.find(l, {km: 3});
+          if (!f.enough) return {enough: false};
+          const r = R.agentComps(l);
+          return {enough: true, basis: f.basis, label: (r.findings[0] || {}).k};
+        };
+        comps2 = {
+          sale: evalSubject(ls.find(l => l.sale && l.saleDate)),
+          postsale: evalSubject(ls.find(l => !l.sale && l.price && l.priceDate && !l.est))
+        };
+      } catch (e) { comps2 = {err: String(e)}; }
+
       let acts = null;
       try {
         const A = window.LXActuals;
@@ -871,7 +898,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels, comps2,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -997,6 +1024,20 @@ async function main() {
       errs.push(rent.dates.bad + ' of ' + rent.dates.sampled + ' records carry a "sold" or '
         + '"recorded" label that disagrees with whether they have a real sale date — a sale on a '
         + 'record that was never sold, or the reverse');
+    }
+    if (rent.comps2 && rent.comps2.err) {
+      errs.push('the research tab\'s Comps agent could not be exercised: ' + rent.comps2.err);
+    } else if (rent.comps2) {
+      const s = rent.comps2.sale, p = rent.comps2.postsale;
+      if (s && s.enough && s.basis === 'sale' && s.label !== 'Comparable sales') {
+        errs.push('a subject with a real recorded sale gets a Comps agent finding labelled "'
+          + s.label + '" — a real transaction is not being called a sale');
+      }
+      if (p && p.enough && p.basis === 'postsale' && p.label !== 'Comparable assessed values') {
+        errs.push('a subject with only a post-sale assessed value gets a Comps agent finding '
+          + 'labelled "' + p.label + '" — an assessor opinion is being called a sale, the exact '
+          + 'mixing comps.js\'s own basisOf() exists to prevent');
+      }
     }
     if (rent.acts && rent.acts.err) {
       errs.push('the acquired ledger could not be exercised: ' + rent.acts.err);
