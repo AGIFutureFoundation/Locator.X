@@ -35,7 +35,7 @@ six either.
 
 | Capability | Category tools | Locator.X | Status |
 |---|---|---|---|
-| Deal underwriting (rental, flip, BRRRR, commercial) | DealCheck, BiggerPockets Pro | `src/underwrite.js` (595) buy box, auto pipeline, offer solver; `src/dev.js` (158) conversion math | **ships** |
+| Deal underwriting (rental, flip, BRRRR, commercial) | DealCheck, BiggerPockets Pro | `src/underwrite.js` (599) buy box, auto pipeline, offer solver; `src/dev.js` (158) conversion math | **ships** |
 | Comparable sales | PropStream, HouseCanary | `src/comps.js` (282) — a comparable is a **recorded sale with a date**, never a listing or an estimate | **ships** |
 | Rent estimates | Rentometer, Mashvisor, AirDNA | `src/conv.js` (111) and `src/rebuild.js` (335) produce **models, labelled as models** | **partial** — no licensed rent feed; the label is the point |
 | Market analytics and forecasts | Mashvisor, AirDNA, HouseCanary | `src/predict.js` (587) with a stated method and a **backtest that says whether to believe it**; `src/outlook.js` (225) | **ships** |
@@ -66,7 +66,7 @@ six either.
 | Capability | Category tools | Locator.X | Status |
 |---|---|---|---|
 | Property management, leasing, accounting | AppFolio, Buildium, Rentec, TenantCloud, RentRedi | — | **absent** — the report's "close the loop after acquisition" gap is real and unbuilt |
-| Post-acquisition feedback into underwriting | *nobody does this well* | `src/predict.js` backtest is the mechanism; nothing feeds it operating results yet | **partial** — the honest name for this is *not built* |
+| Post-acquisition feedback into underwriting | *nobody does this well* | `src/actuals.js` (231) — the pipeline gains an **Acquired** stage, you record what a building actually did, and the desk compares it against what it underwrites for that same property today. Per property that is a fact; across four or more it is the systematic bias in your own underwriting, reported with its denominator | **ships** — and it refuses to print a median below a stated four-property floor, because a tendency computed from two is a decoration. It names the assumption a bias would move and **does not touch it**: tuning the desk toward the last three buildings would replace a stated assumption with an unstated one |
 
 ### 6. Exit
 
