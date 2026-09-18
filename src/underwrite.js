@@ -5,7 +5,11 @@ const L=()=>window.LX, D=()=>window.LXDash;
 const $=(s,el=document)=>el.querySelector(s), $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const pct=(v,d=1)=>L().fmtPct(v,d);
-const STAGES=[['new','New','--stg-new'],['scr','Screened','--stg-scr'],['uw','Underwritten','--stg-uw'],['off','Offer drafted','--stg-off'],['pass','Passed','--stg-pass']];
+/* The pipeline stopped at the offer, so the desk never learned whether its own
+   arithmetic had been right about anything it screened. `own` is where a bought
+   building goes, and src/actuals.js measures what it actually did against what
+   this desk said it would — the one row docs/market/GAP.md called "not built". */
+const STAGES=[['new','New','--stg-new'],['scr','Screened','--stg-scr'],['uw','Underwritten','--stg-uw'],['off','Offer drafted','--stg-off'],['own','Acquired','--stg-own'],['pass','Passed','--stg-pass']];
 const STG=Object.fromEntries(STAGES.map(s=>[s[0],s]));
 const DEF_BB={maxPrice:2000000, minScore:35, minCap:3.5, minDscr:0.7, minUnits:1, city:'', county:'', minEvid:'any', cats:{asset:true,hack:true,value:true,growth:false,liab:false,unrated:false}, target:'dscr12'};
 const TARGETS=[['dscr12','DSCR ≥ 1.20 (lender-ready)'],['dscr10','Break even (DSCR 1.0)'],['coc6','Cash-on-cash ≥ 6%'],['cf200','Cash flow ≥ $200/mo']];
@@ -278,9 +282,9 @@ function render(){
   try{ if(window.LXUWX) LXUWX.panel(); }catch(e){}
 }
 function renderFunnel(ms){
-  const X=L(); const total=X.allListings().length; const counts={new:0,scr:0,uw:0,off:0,pass:0};
+  const X=L(); const total=X.allListings().length; const counts={new:0,scr:0,uw:0,off:0,own:0,pass:0};
   ms.forEach(r=>counts[S(r.l.id).stage]++);
-  const rowsF=[['Universe', total, '--muted'],['Buy-box matches', ms.length, '--bay'],['Screened', counts.scr+counts.uw+counts.off, '--stg-scr'],['Underwritten', counts.uw+counts.off, '--stg-uw'],['Offers drafted', counts.off, '--stg-off']];
+  const rowsF=[['Universe', total, '--muted'],['Buy-box matches', ms.length, '--bay'],['Screened', counts.scr+counts.uw+counts.off, '--stg-scr'],['Underwritten', counts.uw+counts.off, '--stg-uw'],['Offers drafted', counts.off+counts.own, '--stg-off'],['Acquired', counts.own, '--stg-own']];
   const max=total;
   /* A record excluded because this market publishes no rent is NOT the same as
      one that failed the floor, and the funnel must not let it look that way: a
@@ -328,7 +332,7 @@ function renderTable(ms){
   const shown=ms.slice(0,tblShown);
   $('#uwtable tbody').innerHTML=shown.map((r,i)=>{ const s=S(r.l.id); const st=STG[s.stage]; const c=D().CAT[r.cat]; return `<tr data-id="${r.l.id}"><td class="r">${i+1}</td><td><b>${X.esc(r.l.addr)}</b></td><td>${X.esc(r.l.city)}</td><td class="r"><b>${r.score}</b></td><td><span style="color:var(${c.c});font-weight:600;font-size:12px">●</span> ${c.name.split(' ')[0]}</td><td class="r">${X.fmt$(price0(r.l))}</td><td class="r">${pct(r.d.cap)}</td><td class="r ${r.d.cfMo>0?'pos':'neg'}">${X.fmt$(r.d.cfMo)}</td><td class="r">${r.d.dscr?r.d.dscr.toFixed(2):'—'}</td><td class="r">${s.maxOffer? X.fmt$(s.maxOffer):'—'}</td><td class="r" style="color:${gapColor(s.gap)}">${s.gap!=null? (s.gap>0?'+':'')+s.gap.toFixed(0)+'%':'—'}</td><td class="r">${(()=>{ const dv=window.LXDev.assess(r.l).best; return dv&&dv.profit>0? '<span class="pos">+'+X.fmt$(dv.profit)+'</span>' : '—'; })()}</td><td><select class="stagesel" data-id="${r.l.id}">${STAGES.map(x=>`<option value="${x[0]}" ${s.stage===x[0]?'selected':''}>${x[1]}</option>`).join('')}</select></td><td><button class="btn" data-act="sheet" data-id="${r.l.id}">Underwrite</button></td></tr>`; }).join('') + (ms.length>shown.length? `<tr><td colspan="14"><button class="btn" id="uwmore">Show all ${ms.length}</button></td></tr>`:'');
   const um=$('#uwmore'); if(um) um.onclick=()=>{ tblShown=ms.length; renderTable(ms); };
-  $$('#uwtable .stagesel').forEach(sel=>sel.addEventListener('change', ()=>{ S(sel.dataset.id).stage=sel.value; saveScen(); renderFunnel(matches()); }));
+  $$('#uwtable .stagesel').forEach(sel=>sel.addEventListener('change', ()=>{ S(sel.dataset.id).stage=sel.value; saveScen(); try{ if(window.LXActuals) LXActuals.markOwned(sel.dataset.id, sel.value==='own'); LXActuals&&LXActuals.render(); }catch(e){} renderFunnel(matches()); }));
   $$('#uwtable [data-act="sheet"]').forEach(b=>b.addEventListener('click', ()=>openSheet(b.dataset.id)));
 }
 function openSheet(id){ sheetId=id; renderSheet(); const el=$('#uwsheet'); if(el.firstChild) el.scrollIntoView({behavior:'smooth', block:'start'}); }

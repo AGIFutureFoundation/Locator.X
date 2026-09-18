@@ -687,6 +687,50 @@ async function main() {
          Both directions, as ever: a county without a table entry must say the
          method does not apply, and a county WITH one must return a real FMR
          figure and no such note. */
+      /* THE DESK NOW MEASURES ITSELF, AND MUST REFUSE TO BELOW ITS OWN FLOOR.
+
+         docs/market/GAP.md carried one row that named itself: "Post-acquisition
+         feedback into underwriting ... the honest name for this is *not built*."
+         The pipeline ran new → screened → underwritten → offer drafted → passed
+         and stopped, so the desk never learned whether its own arithmetic had
+         been right about anything it screened.
+
+         src/actuals.js is that row. What it must not do is the thing this
+         repository refuses everywhere else: print a rate below a sample floor.
+         One building's error is a fact about one building; a median from two is
+         a decoration. So this drives it to floor-1 and to floor, and checks it
+         refuses at one and reports with its denominator at the other. */
+      let acts = null;
+      try {
+        const A = window.LXActuals;
+        const el = () => (document.getElementById('actualsroot') || {}).innerText || '';
+        const keep = JSON.parse(JSON.stringify(A.book));
+        for (const k of Object.keys(A.book)) delete A.book[k];
+        A.render();
+        const zero = {chars: el().trim().length, says: /Nothing is marked acquired/.test(el())};
+        const load = n => {
+          for (const k of Object.keys(A.book)) delete A.book[k];
+          ls.slice(0, n).forEach((l, i) => {
+            A.markOwned(l.id, true);
+            const d = LX.deal(l);
+            A.book[l.id].paid = Math.round(LX.price(l));
+            A.book[l.id].rentMo = Math.round((d.rentMo || 1000) * 0.9);
+            A.book[l.id].opexYr = Math.round((d.opex || 1000) * 1.1);
+          });
+          A.render();
+        };
+        const F = A.BIAS_FLOOR;
+        load(F - 1);
+        const below = {owned: A.bias().owned, refuses: /below the/i.test(el()),
+                       median: /median error/i.test(el())};
+        load(F);
+        const at = {owned: A.bias().owned, refuses: /below the/i.test(el()),
+                    median: /median error/i.test(el()), saysN: /n=/i.test(el())};
+        for (const k of Object.keys(A.book)) delete A.book[k];
+        Object.assign(A.book, keep); A.render();
+        acts = {floor: F, zero, below, at};
+      } catch (e) { acts = {err: String(e)}; }
+
       let fmr = null;
       try {
         const l0 = ls[0], savedC = l0.county, savedM = LX.state.assump.rentMethod;
@@ -784,7 +828,7 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -895,6 +939,25 @@ async function main() {
       if (rent.none === rent.n && rent.acad.noted !== rent.acad.missions) {
         errs.push('only ' + rent.acad.noted + ' of ' + rent.acad.missions + ' Academy missions carry '
           + 'the rent notice in a wholly rent-blind edition');
+      }
+    }
+    if (rent.acts && rent.acts.err) {
+      errs.push('the acquired ledger could not be exercised: ' + rent.acts.err);
+    } else if (rent.acts) {
+      if (!(rent.acts.zero.chars > 200) || !rent.acts.zero.says) {
+        errs.push('with nothing acquired the feedback panel does not explain itself');
+      }
+      if (!rent.acts.below.refuses || rent.acts.below.median) {
+        errs.push('the underwriting feedback printed a median error from ' + rent.acts.below.owned
+          + ' properties, below its own ' + rent.acts.floor + '-property floor — a tendency computed '
+          + 'from that many is a decoration, which is what this repository refuses everywhere else');
+      }
+      if (!rent.acts.at.median || rent.acts.at.refuses) {
+        errs.push('the underwriting feedback still refuses at ' + rent.acts.at.owned
+          + ' properties, its own floor — the measurement never becomes available');
+      }
+      if (!rent.acts.at.saysN) {
+        errs.push('the underwriting feedback reports a median without its denominator');
       }
     }
     if (rent.fmr && rent.fmr.err) {
