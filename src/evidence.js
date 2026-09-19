@@ -21,6 +21,16 @@ const $$=(s,el=document)=>[...el.querySelectorAll(s)];
 const L=()=>window.LX, D=()=>window.LXDash;
 const esc=s=>L().esc(s);
 const N=v=>(typeof v==='number'&&isFinite(v))?v:null;
+/* comps.js's own basisOf() and uwexport.js's gap check both treat a sale
+   price with no recorded date as unusable — "a price whose year is unknown
+   cannot be used as a comparable" (uwexport.js) — and build_data_uswide.py
+   etc. genuinely ship that combination as l.saleUndated. This grade used to
+   award full credit for l.sale alone, calling an undated price "a recorded
+   sale price... the one figure here that is not an opinion" while the
+   underwriting export excluded the same record from every range in its
+   memorandum. A recorded sale needs its date, same as anywhere else in this
+   app the phrase is used. */
+const hasSale=l=>!!N(l.sale)&&!!l.saleDate;
 
 const ZONED=/^zoned\b/i, UNCL=/unclassified/i, APOINT=/address point/i;
 
@@ -36,8 +46,8 @@ const TESTS=[
    'a year built', 'Age drives condition, code path, rent regulation and conversion feasibility.'],
   ['lot',   9,  l=>!!N(l.lot),
    'a lot area', 'Needed for any density, subdivision or add-a-unit test.'],
-  ['sale',  12, l=>!!N(l.sale),
-   'a recorded sale price', 'A real transaction, only in disclosure states — the one figure here that is not an opinion.'],
+  ['sale',  12, hasSale,
+   'a recorded sale price', 'A real, dated transaction, only in disclosure states — the one figure here that is not an opinion.'],
   ['rooms', 6,  l=>!!(N(l.beds)||N(l.baths)||N(l.stories)),
    'building detail', 'Bedrooms, baths or storeys — the difference between a record and a description.']
 ];
@@ -85,7 +95,7 @@ function scorecard(){
     if(e.zoningOnly) g.zoned++; if(e.unclassified) g.uncl++;
     if(N(l.units)) g.units.push(l.units);
     if(N(l.price)) g.price.push(l.price);
-    if(N(l.sale)) g.sale++;
+    if(hasSale(l)) g.sale++;
     if(N(l.campKm)!=null){ g.campN++; if(l.campKm<=1.6) g.camp++; }
     if(N(l.projKm)!=null && l.projKm<=16) g.proj++;
     if((N(l.price)||0)>=5e6) g.big++;
@@ -172,7 +182,7 @@ function render(){
     + tile('Records graded', L().fmtN(n), 'every record in this edition')
     + tile('Underwritable from the record', Math.round((tot.A+tot.B)/n*100)+'%', 'grade A or B')
     + tile('A location and little else', Math.round(tot.D/n*100)+'%', 'grade D — real parcels, unusable paperwork')
-    + tile('Carry a recorded sale', L().fmtN(all.filter(l=>N(l.sale)).length), 'the only figure here that is not an opinion')
+    + tile('Carry a recorded sale', L().fmtN(all.filter(hasSale).length), 'the only figure here that is not an opinion')
     + '</div>';
 
   h+='<div class="chart"><p class="eyebrow">Evidence by area</p>'

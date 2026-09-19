@@ -10,8 +10,8 @@ way [`../market/GAP.md`](../market/GAP.md) measures everything else.
    own scope. No agent here is authorised to transact, offer, contact an owner, commit
    capital, or change a buy box.
 2. **Traceable.** Every output names its inputs and where each came from. The mechanisms
-   already exist and are not optional decoration: `src/evidence.js` (223) grades a
-   source, `src/sources.js` (176) says how it attaches, `src/comps.js` (282) refuses a
+   already exist and are not optional decoration: `src/evidence.js` (233) grades a
+   source, `src/sources.js` (176) says how it attaches, `src/comps.js` (297) refuses a
    comparable that is not a recorded sale with a date, `src/switchboard.js` (455) grades
    every strategy column by the facts it rests on, and `src/coverage.js` (340) states
    what the edition cannot answer at all.

@@ -1372,7 +1372,15 @@ function renderDrawer(){
   const l=allListings().find(x=>x.id===state.sel); const dr=$('#drawer'); if(!l){ dr.classList.remove('open'); return; }
   const d=deal(l), a=state.assump, mk=d.mk, o=state.overrides[l.id]||{};
   const verdict = d.cf>0 ? ['good','Asset — it pays you', `At these assumptions the property puts ${fmt$(d.cfMo)} a month in your pocket after the mortgage (DSCR ${d.dscr?d.dscr.toFixed(2):'—'}). The asset test is passed; now verify the rent with real comps.`] : d.dscr>=0.85 ? ['warn','Close — needs a lever', `Cash flow is ${fmt$(d.cfMo)} a month. A larger down payment, a seller carry, an ADU or a rent reset on turnover would flip it. Otherwise this is a bet on appreciation.`] : ['bad','Liability at this price', `The rent covers ${d.dscr?Math.round(d.dscr*100):0}% of the loan. You would feed it ${fmt$(-d.cfMo)} a month. Buy it only with a plan that changes the income, not the hope that rates fall.`];
-  const facts = [['Type', l.kind],['Units', l.units],['Beds / baths', l.beds!=null? `${l.beds} / ${l.baths}`:'—'],['Living area', l.sqft? fmtN(l.sqft)+' sf':'—'],['Lot', l.lot? fmtN(l.lot)+' sf':'—'],['Year built', l.year||'—'],['Stories', l.stories||'—'],['Zoning', l.zoning||'—'],['Neighborhood', l.nb||l.anb||'—'],['ZIP', l.zip||'—'],['APN', l.apn||'—'],['Sale recorded', l.priceDate||'—'],['Assessed land', l.land? fmt$(l.land):'—'],['Assessed improvements', l.imp? fmt$(l.imp):'—'],['Owner-occupied', l.ownerOcc===true?'yes (exemption)': l.ownerOcc===false?'no':'—'],['Status', l.status||'Sold (public record)']];
+  /* The most-viewed per-property panel in the app was still calling
+     priceDate — the assessor's recorded or reassessed value, present on
+     every record — "Sale recorded", and never showed l.sale/l.saleDate (a
+     real transaction) at all when a record carried one: the same gap #110
+     fixed in geoexport.js and recon.js's record-anatomy panel, missed here
+     in the file that documents the other eight fixes of this exact defect
+     (recordDate()/recordDateLabel(), a few hundred lines above). */
+  const saleFacts = (l.sale!=null && l.saleDate) ? [['Sale price', fmt$(l.sale)], ['Sale recorded', l.saleDate]] : [];
+  const facts = [['Type', l.kind],['Units', l.units],['Beds / baths', l.beds!=null? `${l.beds} / ${l.baths}`:'—'],['Living area', l.sqft? fmtN(l.sqft)+' sf':'—'],['Lot', l.lot? fmtN(l.lot)+' sf':'—'],['Year built', l.year||'—'],['Stories', l.stories||'—'],['Zoning', l.zoning||'—'],['Neighborhood', l.nb||l.anb||'—'],['ZIP', l.zip||'—'],['APN', l.apn||'—'], ...saleFacts, ['Assessed', l.priceDate||'—'],['Assessed land', l.land? fmt$(l.land):'—'],['Assessed improvements', l.imp? fmt$(l.imp):'—'],['Owner-occupied', l.ownerOcc===true?'yes (exemption)': l.ownerOcc===false?'no':'—'],['Status', l.status||'Sold (public record)']];
   const CT={'A':'A — steel frame','B':'B — reinforced concrete','C':'C — masonry','D':'D — wood frame'};
   try{ const bm=window.LXBM&&LXBM.assess(l);
     if(bm){ facts.push(['Below-market index', bm.idx+(bm.hard?' — backed by a sale or $/sf comps':' — assessed-basis signal only (tenure, not a discount)')]);

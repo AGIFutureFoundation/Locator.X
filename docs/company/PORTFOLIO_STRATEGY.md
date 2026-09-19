@@ -42,7 +42,7 @@ scorecard: there is no total, and a miss is not offset by a strength elsewhere.
 | 2 | Meets defined return, leverage, cash-flow, contingency and **downside-case** thresholds | `src/underwrite.js` stress block: break-even rent, break-even rate, rate headroom, DSCR at stress |
 | 3 | Has a written value-creation plan beyond general appreciation | `src/switchboard.js` (455) names which plays the record can support, and which it cannot |
 | 4 | Passes ownership, title, tax, lien, zoning, permit, physical-condition, insurance, financing and legal diligence | `src/records.js` (250) assembles the per-jurisdiction sources; **ownership, title and lien retrieval are user-side** — the platform links, it does not hold |
-| 5 | Has confidence-scored supporting data and clearly logged open questions | `src/evidence.js` (223) grades the inputs; `src/coverage.js` (340) states what the edition cannot answer at all |
+| 5 | Has confidence-scored supporting data and clearly logged open questions | `src/evidence.js` (233) grades the inputs; `src/coverage.js` (340) states what the edition cannot answer at all |
 | 6 | Has at least two credible exit paths where practical | `src/switchboard.js` — but note that where it reports **blocked**, that is a genuine absence of an exit analysis, not a pass |
 | 7 | Falls within diversification and concentration limits | **Not built.** There is no portfolio object above the property; Phase 1.4 of the premium roadmap |
 | 8 | Receives approval from the designated human investment committee | **Not built.** There is no approval workflow, no multi-user state and no audit trail; see `Locator.X Diligence Room` in [`POSITIONING.md`](POSITIONING.md) |

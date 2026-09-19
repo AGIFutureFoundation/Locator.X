@@ -112,10 +112,19 @@ function find(l, opt){
   const B=basisOf(l) || (DIAG&&DIAG.sale>=DIAG.post? 'sale':'postsale');
   const maxKm=opt.km||14, maxAge=opt.years||6, need=opt.min||5;
   const out=[]; let dropU=0, dropS=0;
-  const bucket=(POOL_BY_METRO&&POOL_BY_METRO[(l.nb||l.county)])||[];
+  /* A ZIP centroid (l.approx / c.approx — set only in src/app.js's mk(), for
+     a pasted listing whose import carried no coordinates) is not a distance.
+     Two records placed at the same centroid with a few hundred metres of
+     random jitter would read "0.1 km apart" while their real parcels could
+     sit on opposite sides of the ZIP. Neither side of the haversine call
+     below may be a guess: an approximate subject gets no comps at all
+     (its own distance to anything is fabricated), and an approximate
+     candidate is skipped the same way a wrong basis or class already is. */
+  const bucket = l.approx? [] : ((POOL_BY_METRO&&POOL_BY_METRO[(l.nb||l.county)])||[]);
   for(let i=0;i<bucket.length;i++){
     const c=bucket[i];
     if(c.id===l.id) continue;
+    if(c.approx) continue;
     if(cls(c)!==want) continue;
     if(basisOf(c)!==B) continue;                          // never mix the two bases
     const y=YR(when(c,B)); if(NOW-y>maxAge) continue;
@@ -151,16 +160,22 @@ function find(l, opt){
   res.enough = out.length>=need;
   /* Why there is nothing, when there is nothing — the useful half of the answer. */
   if(!res.enough){
-    const metro=(l.nb||l.county);
-    let inMetro=0, dated=0;
-    const all=L().allListings();
-    for(let i=0;i<all.length;i++){ const c=all[i]; if((c.nb||c.county)!==metro) continue; inMetro++;
-      if(basisOf(c)) dated++; }
-    res.why = dated===0
-      ? 'This county publishes no dated sale price at all, so no comparable in it can meet the standard this desk uses. '
-        +(inMetro? L().fmtN(inMetro)+' records here carry a value, but a value is an assessor opinion, not a transaction.' : '')
-      : 'Only '+L().fmtN(dated)+' of '+L().fmtN(inMetro)+' records in this market carry a dated sale, and '+out.length
-        +' of them are close enough in class, size and distance to compare. Widen the radius or the age window, or treat this as unpriced.';
+    if(l.approx){
+      res.why = 'This subject has no real coordinate — it was placed at a ZIP centroid because the import carried none. '
+        +'A distance measured from a guess is not a distance, so no comparable can meet the standard this desk uses. '
+        +'Re-import with the address’s real coordinates.';
+    } else {
+      const metro=(l.nb||l.county);
+      let inMetro=0, dated=0;
+      const all=L().allListings();
+      for(let i=0;i<all.length;i++){ const c=all[i]; if((c.nb||c.county)!==metro) continue; inMetro++;
+        if(basisOf(c) && !c.approx) dated++; }
+      res.why = dated===0
+        ? 'This county publishes no dated sale price at all, so no comparable in it can meet the standard this desk uses. '
+          +(inMetro? L().fmtN(inMetro)+' records here carry a value, but a value is an assessor opinion, not a transaction.' : '')
+        : 'Only '+L().fmtN(dated)+' of '+L().fmtN(inMetro)+' records in this market carry a dated sale, and '+out.length
+          +' of them are close enough in class, size and distance to compare. Widen the radius or the age window, or treat this as unpriced.';
+    }
   }
   return res;
 }
