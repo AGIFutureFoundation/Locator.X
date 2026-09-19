@@ -818,6 +818,105 @@ async function main() {
         basisLabels = {sale: evalOne(saleSubj), postsale: evalOne(postSubj)};
       } catch (e) { basisLabels = {err: String(e)}; }
 
+      /* A ZIP CENTROID IS NOT A DISTANCE, AND comps.js's find() NEVER CHECKED.
+
+         l.approx is set only in app.js's mk() importer, for a pasted listing
+         whose source carried no coordinates - it is placed at the ZIP
+         centroid with a few hundred metres of random jitter. comps.js's
+         find() ranks and medians candidates purely on hav(l.lat, l.lng,
+         c.lat, c.lng) and never once read .approx on either side, so two
+         records both guessed onto the same centroid could show as "0.1 km
+         apart" while their real parcels might sit on opposite sides of the
+         ZIP - and an approximate SUBJECT got real-looking comps at all,
+         every one of them a distance measured from a guess.
+
+         Checked directly on the live pool rather than by importing a
+         synthetic row (an import lands in a different POOL_BY_METRO bucket
+         than a native record with the same city/county, since only native
+         records carry `nb`, which would have made the test pass on a
+         bucket-key accident instead of the fix): take a real candidate
+         already inside one edition's own results, flip .approx on the SAME
+         object the pool holds a reference to, and confirm it drops out and
+         comes back. */
+      let approxComps = null;
+      try {
+        const C = window.LXComps;
+        const subj = ls.find(l => !(l.sale != null && l.saleDate) && l.price && l.priceDate && !l.est);
+        const out = {};
+        if (C && subj) {
+          const before = C.find(subj, {km: 3});
+          if (before.comps.length) {
+            const victim = before.comps[0].l;
+            victim.approx = true;
+            C.invalidate();
+            const during = C.find(subj, {km: 3});
+            out.victimExcludedWhileApprox = !during.comps.some(o => o.l.id === victim.id);
+            victim.approx = false;
+            C.invalidate();
+            const after = C.find(subj, {km: 3});
+            out.victimRestoredAfter = after.comps.some(o => o.l.id === victim.id);
+          } else {
+            out.noBaselineComps = true;
+          }
+          const approxSubj = Object.assign({}, subj, {approx: true});
+          const r = C.find(approxSubj, {km: 3});
+          out.approxSubjectEnough = r.enough;
+          out.approxSubjectWhy = r.why || '';
+        }
+        approxComps = out;
+      } catch (e) { approxComps = {err: String(e)}; }
+
+      /* THREE MORE SITES CALLED priceDate A SALE, OR A SALE WITH NO DATE A
+         RECORDED ONE — found by a fresh sweep after the first eight sites.
+
+         belowmarket.js's saleGap() (measure #3, weight 0.5, the highest of
+         three) ran on l.priceDate/L().price(l) and labelled the result
+         "Recorded sale... an actual transaction, the strongest evidence
+         here" - while its own measure #1 (basisGap, two lines up) computes
+         from the IDENTICAL field and correctly hedges it "Prop 13 tenure
+         signal... NOT a purchase discount". A record with no real sale at
+         all could earn the "hard" tier the below-market filter and its own
+         UI caveat both key on.
+
+         app.js's renderDrawer() - the single most-viewed per-property panel
+         - still read ['Sale recorded', l.priceDate||'—'] and never
+         showed l.sale/l.saleDate at all, in the same file whose own
+         recordDate()/recordDateLabel() doc comment names eight other sites
+         of this exact defect.
+
+         evidence.js's 'sale' grade test awarded full credit for l.sale
+         alone, no l.saleDate check - so a record with an undated sale price
+         (real data: build_data_uswide.py etc. ship exactly this as
+         l.saleUndated) scored "a recorded sale price... the one figure here
+         that is not an opinion", the same record uwexport.js explicitly
+         excludes from every comparable range for the same reason comps.js's
+         basisOf() excludes it from a basis: "a price whose year is unknown
+         cannot be used as a comparable." coverage.js reuses evidence.js's
+         TESTS array directly, so the fix covers both without a second
+         change. */
+      let recordHonesty = null;
+      try {
+        const BM = window.LXBM, EV = window.LXEvid;
+        const saleSubj = ls.find(l => l.sale != null && l.saleDate);
+        const postSubj = ls.find(l => !(l.sale != null && l.saleDate) && l.price && l.priceDate && !l.est);
+        const undatedSubj = ls.find(l => l.saleUndated || (l.sale != null && !l.saleDate));
+        // saleGap() only fires within a 42-month recency window (pre-existing,
+        // unrelated to this fix) - a subject for it needs a recent sale, not
+        // just any dated one, or a false failure here would blame the fix
+        // for a window the test itself ignored.
+        const recentSaleSubj = ls.find(l => l.sale != null && l.saleDate
+          && (Date.now() - new Date(l.saleDate).getTime()) / 2628e6 <= 42);
+        const out = {};
+        const evalBM = (l) => { if (!l || !BM) return null; const a = BM.assess(l); const p = a && a.parts.find(x => x.k === 'sale'); return {hasSalePart: !!p, strong: p ? p.strong : null}; };
+        out.bmSale = evalBM(recentSaleSubj);
+        out.bmPost = evalBM(postSubj);
+        const evalEV = (l) => { if (!l || !EV) return null; const g = EV.grade(l); return {hasSaleTest: g.has.some(t => t[0] === 'sale')}; };
+        out.evSale = evalEV(saleSubj);
+        out.evPost = evalEV(postSubj);
+        out.evUndated = evalEV(undatedSubj);
+        recordHonesty = out;
+      } catch (e) { recordHonesty = {err: String(e)}; }
+
       let acts = null;
       try {
         const A = window.LXActuals;
@@ -946,7 +1045,33 @@ async function main() {
                 O: at('O').v, Cnote: at('C').note || ''};
       } catch (e) { gate = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels, comps2, basisLabels,
+      /* Selecting a property with LX.select() also calls showView('mapview')
+         and flies the map there, which left a later, unrelated district-focus
+         assertion in this same suite looking at a torn-down map source. This
+         reads the drawer the same way every ordinary filter change already
+         does - set state.sel and call the same refresh() renderDrawer()
+         itself runs from - without switching views or moving the camera, so
+         it cannot disturb anything after it either. Still runs LAST, after
+         everything above it that reads app state, out of caution. */
+      let drawerHonesty = null;
+      try {
+        const saleSubj = ls.find(l => l.sale != null && l.saleDate);
+        const postSubj = ls.find(l => !(l.sale != null && l.saleDate) && l.price && l.priceDate && !l.est);
+        const savedSel = LX.state.sel;
+        const checkDrawer = (l) => {
+          if (!l) return null;
+          LX.state.sel = l.id;
+          LX.refresh();
+          const dr = document.getElementById('drawer');
+          const txt = dr ? dr.innerText : '';
+          return {hasSalePriceRow: /Sale price/.test(txt), hasSaleRecordedRow: /Sale recorded/.test(txt)};
+        };
+        drawerHonesty = {sale: checkDrawer(saleSubj), postsale: checkDrawer(postSubj)};
+        LX.state.sel = savedSel;
+        LX.refresh();
+      } catch (e) { drawerHonesty = {err: String(e)}; }
+
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels, comps2, basisLabels, approxComps, recordHonesty, drawerHonesty,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -1130,6 +1255,82 @@ async function main() {
             + '" for a record with no real sale — an assessed value is being called a sale in the '
             + 'app\'s own headline score');
         }
+      }
+    }
+    if (rent.approxComps && rent.approxComps.err) {
+      errs.push('the ZIP-centroid comp exclusion could not be exercised: ' + rent.approxComps.err);
+    } else if (rent.approxComps && !rent.approxComps.noBaselineComps) {
+      const a = rent.approxComps;
+      if (a.victimExcludedWhileApprox === false) {
+        errs.push('a comp candidate placed at a ZIP centroid (l.approx) still appears in Comps — '
+          + 'two records both guessed onto the same centroid can read "0.1 km apart" when their '
+          + 'real parcels could be on opposite sides of the ZIP');
+      }
+      if (a.victimRestoredAfter === false) {
+        errs.push('a comp candidate did not return after its ZIP-centroid flag was cleared — the '
+          + 'exclusion is not actually keyed on l.approx');
+      }
+      if (a.approxSubjectEnough === true) {
+        errs.push('a subject placed at a ZIP centroid still gets "enough" comps — every distance '
+          + 'from it is measured from a guess, not a parcel');
+      }
+      if (a.approxSubjectEnough === false && !/ZIP centroid|no real coordinate/i.test(a.approxSubjectWhy || '')) {
+        errs.push('a ZIP-centroid subject correctly gets no comps, but the reason given ("'
+          + a.approxSubjectWhy + '") does not say why — it reads like ordinary data sparsity');
+      }
+    }
+    if (rent.recordHonesty && rent.recordHonesty.err) {
+      errs.push('the belowmarket.js/evidence.js sale-honesty checks could not be exercised: '
+        + rent.recordHonesty.err);
+    } else if (rent.recordHonesty) {
+      const h = rent.recordHonesty;
+      if (h.bmSale && h.bmSale.hasSalePart === false) {
+        errs.push('the below-market index finds no "sale" evidence part for a record with a real '
+          + 'recorded sale — saleGap() is not reading l.sale/l.saleDate');
+      }
+      if (h.bmSale && h.bmSale.strong === false) {
+        errs.push('the below-market index\'s "sale" evidence part is not marked strong for a record '
+          + 'with a real recorded sale');
+      }
+      if (h.bmPost && h.bmPost.hasSalePart === true) {
+        errs.push('the below-market index finds a "sale" evidence part — the highest-weighted, '
+          + '"hard" tier — for a record with no real sale, only a post-sale assessed value');
+      }
+      if (h.evSale && h.evSale.hasSaleTest === false) {
+        errs.push('the evidence grade does not credit a record with a real, dated recorded sale for '
+          + 'carrying one');
+      }
+      if (h.evPost && h.evPost.hasSaleTest === true) {
+        errs.push('the evidence grade credits a record with no real sale — only a post-sale assessed '
+          + 'value — for "a recorded sale price"');
+      }
+      if (h.evUndated && h.evUndated.hasSaleTest === true) {
+        errs.push('the evidence grade credits a record with a sale price but no recorded date '
+          + '(l.saleUndated) for "a recorded sale price" — the same record uwexport.js excludes from '
+          + 'every comparable range because "a price whose year is unknown cannot be used as a '
+          + 'comparable"');
+      }
+    }
+    if (rent.drawerHonesty && rent.drawerHonesty.err) {
+      errs.push('the property drawer\'s sale-honesty check could not be exercised: '
+        + rent.drawerHonesty.err);
+    } else if (rent.drawerHonesty) {
+      const d1 = rent.drawerHonesty.sale, d2 = rent.drawerHonesty.postsale;
+      if (d1 && !d1.hasSalePriceRow) {
+        errs.push('the property drawer shows no Sale price row for a record with a real recorded '
+          + 'sale — the strongest fact on the record is invisible on its own most-viewed panel');
+      }
+      if (d1 && !d1.hasSaleRecordedRow) {
+        errs.push('the property drawer shows no Sale recorded row for a record with a real recorded '
+          + 'sale date');
+      }
+      if (d2 && d2.hasSalePriceRow) {
+        errs.push('the property drawer shows a Sale price row for a record with no real sale — a '
+          + 'fabricated transaction');
+      }
+      if (d2 && d2.hasSaleRecordedRow) {
+        errs.push('the property drawer still reads "Sale recorded" for a record with only a '
+          + 'post-sale assessed value — the label should say "Assessed", not a sale');
       }
     }
     if (rent.acts && rent.acts.err) {

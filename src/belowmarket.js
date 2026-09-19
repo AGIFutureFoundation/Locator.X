@@ -29,12 +29,22 @@ function ppsfGap(l){
   const ppsf=L().price(l)/l.sqft;
   return {pct: clamp((cp-ppsf)/cp*100, -80, 90), ppsf, cityPpsf:cp};
 }
-/* 3. An actual recent transaction that closed under the ZIP's typical value. */
+/* 3. An actual recorded transaction (l.sale + l.saleDate — comps.js's own
+   'sale' basis) that closed under the ZIP's typical value: the one figure
+   here that is not an assessor's opinion. This used to run on l.priceDate
+   and L().price(l) instead - the SAME assessed-value field measure #1
+   (basisGap, two lines up) already hedges honestly as "Prop 13 tenure
+   signal... NOT a purchase discount" - while this measure labelled the
+   identical number "Recorded sale... an actual transaction, the strongest
+   evidence here" and weighted it highest of the three. A record with no
+   real sale at all could earn the "hard" (transaction-backed) tier that
+   assess() computes and the UI both filters on and renders as a caveat,
+   on nothing but a reassessment date. */
 function saleGap(l){
-  if(l.est||!l.priceDate) return null;
-  const age=(Date.now()-new Date(l.priceDate).getTime())/2628e6; // months
+  if(l.est||!(l.sale!=null&&l.saleDate)) return null;
+  const age=(Date.now()-new Date(l.saleDate).getTime())/2628e6; // months
   if(age>42) return null;
-  const t=typicalFor(l), p=L().price(l);
+  const t=typicalFor(l), p=l.sale;
   if(!t||!p) return null;
   return {pct: clamp((t-p)/t*100, -60, 90), months:Math.round(age)};
 }
