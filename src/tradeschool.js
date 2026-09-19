@@ -170,24 +170,75 @@ const TRACKS=[
 
 function prog(){ return store('done')||{}; }
 function trackPct(t){ const d=prog()[t.id]||{}; return Math.round(100*t.modules.filter(m=>d[m.id]).length/t.modules.length); }
-async function sealCred(t){
+/* THE CREDENTIAL USED TO BE ONE CLICK PER MODULE, UNLIMITED FREE RETRIES.
+   Each module's drill was a single multiple-choice question with no lockout
+   and no penalty for a wrong guess — "Not yet. ... try again" — so clicking
+   every option in turn cleared any module in at most four tries with zero
+   understanding required, and "Seal the credential" fired the moment all
+   modules had been clicked through that way. That bar cannot support a
+   credential anyone is asked to pay for, or trust.
+
+   The per-module drill stays exactly as free-retry as it was — it is
+   formative, the place a learner is SUPPOSED to be able to guess, get it
+   wrong, and be told why — but it no longer gates the credential by
+   itself, and its own language no longer says "verified" for a state
+   unlimited guessing reaches. What gates sealCred() now is a distinct
+   certification check: every module's own drill question, once each, in
+   one pass, no retry — the same design academy.js's transfer check already
+   uses for exactly this reason. Reusing each module's existing drill
+   means no new content, only a new, harder way of asking it. */
+function certified(){ return store('certified')||{}; }
+function isCertified(t){ return !!certified()[t.id]; }
+function certifiedCount(){ return TRACKS.filter(isCertified).length; }
+async function sealCred(t, score){
   const payload={'@context':'https://www.w3.org/ns/credentials/v2', type:['VerifiableCredential','OpenBadgeCredential'], name:'Locator X Trade School — '+t.name,
     issuer:'locator.x Trade School (AGI Corp · AGI Future Foundation)', issuanceDate:new Date().toISOString(),
-    credentialSubject:{achievement:t.name+' track', modules:t.modules.map(m=>m.t)}};
+    credentialSubject:{type:'AchievementSubject', achievement:{type:'Achievement', name:t.name+' track',
+      description:'Certification check passed: every module’s drill question, one attempt each, no hints, no retries.',
+      criteria:{narrative:'First-attempt accuracy ≥ 75% across all '+t.modules.length+' modules in a single pass.'}},
+      resultsSummary:Math.round(score*100)+'% first-attempt, '+t.modules.length+' modules, '+new Date().toISOString().slice(0,10), modules:t.modules.map(m=>m.t)}};
   let hash=''; try{ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(payload))); hash=Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }catch(e){}
-  const creds=store('creds')||[]; creds.push({track:t.id, name:payload.name, at:payload.issuanceDate, hash}); save('creds',creds);
+  const creds=store('creds')||[]; creds.push({track:t.id, name:payload.name, at:payload.issuanceDate, hash, score}); save('creds',creds);
   L().toast('Credential sealed: '+t.name+' — hash '+hash.slice(0,12)+'…');
+}
+function startCheck(t){ render._check={t, qi:0, correct:0, total:t.modules.length}; render._mod=null; render(); }
+function renderCheck(){
+  const root=$('#tsroot'); const st=render._check; const t=st.t; const m=t.modules[st.qi];
+  root.innerHTML=`<div class="eyebrow">${t.name} certification check · question ${st.qi+1} of ${st.total} · one attempt each, no hints, no retries</div>
+  <div class="tile" style="margin-top:8px"><p style="font-size:13px;margin:0 0 8px">${m.drill.q}</p>
+  <div style="display:flex;flex-direction:column;gap:6px">${m.drill.opts.map((o,i)=>`<button class="btn" data-ans="${i}" style="text-align:left">${o}</button>`).join('')}</div>
+  <p id="ts_cfb" class="src" style="margin-top:8px"></p></div>`;
+  let answered=false;
+  root.querySelectorAll('[data-ans]').forEach(b=>b.addEventListener('click',()=>{
+    if(answered) return; answered=true;
+    const ok=+b.dataset.ans===m.drill.a; if(ok) st.correct++;
+    const fb=$('#ts_cfb'); fb.innerHTML=(ok?'<b style="color:var(--good)">Correct.</b> ':'<b style="color:var(--bad)">Missed — no retry in the check.</b> ')+m.drill.why
+      +'<br><button class="btn primary" style="margin-top:8px" id="ts_cnext">'+(st.qi+1<st.total?'Next':'Score the check')+'</button>';
+    $('#ts_cnext').addEventListener('click', ()=>{ if(st.qi+1<st.total){ st.qi++; renderCheck(); } else finishCheck(); });
+  }));
+}
+async function finishCheck(){
+  const st=render._check; const t=st.t; const score=st.correct/st.total; const pass=score>=0.75;
+  const root=$('#tsroot');
+  if(pass){ const c=certified(); c[t.id]={at:new Date().toISOString(), score}; save('certified', c); await sealCred(t, score);
+    try{ if(window.LXAcad && LXAcad.render) LXAcad.render(); }catch(e){} /* refreshes the comprehensive-certification banner without a tab switch */ }
+  root.innerHTML=`<div class="tile"><h3 style="margin:0 0 6px;font-family:var(--display)">${pass?'Certified':'Not yet'}</h3>
+  <p style="font-size:14px">${st.correct} of ${st.total} correct (${Math.round(score*100)}%), one attempt each, pass ≥ 75%. ${pass? 'The '+t.name+' credential is sealed on the credential wall below.' : 'The check draws from the same module pool every time — review what you missed on the track page, then take the check again.'}</p>
+  <button class="btn primary" id="ts_cback">Back to ${t.name}</button></div>`;
+  render._check=null;
+  $('#ts_cback').addEventListener('click', ()=>{ render._mod=null; render(); });
 }
 function render(){
   const root=$('#tsroot'); if(!root) return;
+  if(render._check){ renderCheck(); return; }
   const open=render._open;
   if(!open){
     root.innerHTML=`<div class="cards">${TRACKS.map(t=>`<div class="tile" style="cursor:pointer;border-top:3px solid var(${t.c})" data-ts="${t.id}">
       <div class="eyebrow">${t.who}</div><b style="font-size:16px">${t.name}</b>
       <div style="font-size:12px;color:var(--muted);margin:6px 0 8px">${t.blurb}</div>
       <div style="height:6px;background:var(--line);border-radius:99px;overflow:hidden"><div style="height:100%;width:${trackPct(t)}%;background:var(${t.c})"></div></div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">${trackPct(t)}% verified</div></div>`).join('')}</div>
-    <p class="src" style="margin-top:10px">Licensing summaries are educational, drawn from the California DRE, NMLS and BREA public pages (Sept 2026); verify every requirement with the regulator before enrolling or acting. Credentials sealed here are portable Open Badges-shaped records of in-app competency only.</p>`;
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">${trackPct(t)}% reviewed${isCertified(t)?' · <b style="color:var(--good)">certified</b>':''}</div></div>`).join('')}</div>
+    <p class="src" style="margin-top:10px">Licensing summaries are educational, drawn from the California DRE, NMLS and BREA public pages (Sept 2026); verify every requirement with the regulator before enrolling or acting. "Reviewed" means the module's own drill was answered correctly, with unlimited retries — formative, not the credential's basis. A track's credential seals only after its certification check: every module's question, once each, no retries, ≥ 75% first-attempt.</p>`;
     root.querySelectorAll('[data-ts]').forEach(el=>el.addEventListener('click',()=>{ render._open=el.dataset.ts; render._mod=null; render(); }));
     return;
   }
@@ -196,18 +247,18 @@ function render(){
   if(!mid){
     root.innerHTML=`<button class="btn" id="ts_back">← All tracks</button>
     <h3 style="margin:10px 0 2px">${t.name}</h3><p style="color:var(--muted);font-size:13px;margin:0 0 10px">${t.blurb}</p>
-    <div class="lessons">${t.modules.map((m,i)=>`<div class="tile" style="cursor:pointer" data-mod="${m.id}"><div class="eyebrow">Module ${i+1} ${d[m.id]?'· ✓ verified':''}</div><b>${m.t}</b></div>`).join('')}</div>
-    ${trackPct(t)===100? `<button class="btn primary" id="ts_cred" style="margin-top:10px">Seal the ${t.name} credential</button>`:''}`;
+    <div class="lessons">${t.modules.map((m,i)=>`<div class="tile" style="cursor:pointer" data-mod="${m.id}"><div class="eyebrow">Module ${i+1} ${d[m.id]?'· ✓ reviewed':''}</div><b>${m.t}</b></div>`).join('')}</div>
+    ${isCertified(t)? `<p class="src" style="margin-top:10px"><b style="color:var(--good)">Certified</b> — credential on the wall below.</p>` : trackPct(t)===100? `<button class="btn primary" id="ts_check" style="margin-top:10px">Take the ${t.name} certification check</button>`:''}`;
     $('#ts_back').onclick=()=>{ render._open=null; render(); };
     root.querySelectorAll('[data-mod]').forEach(el=>el.addEventListener('click',()=>{ render._mod=el.dataset.mod; render(); }));
-    const c=$('#ts_cred'); if(c) c.onclick=()=>sealCred(t);
+    const c=$('#ts_check'); if(c) c.onclick=()=>startCheck(t);
     return;
   }
   const m=t.modules.find(x=>x.id===mid);
   root.innerHTML=`<button class="btn" id="ts_back2">← ${t.name}</button>
   <div class="tile" style="margin-top:10px"><div class="eyebrow">${t.name} · ${m.t}</div>${m.body}
   <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px">
-    <b style="font-size:13px">Verify it (${d[m.id]?'verified':'unverified'})</b>
+    <b style="font-size:13px">Review it (${d[m.id]?'reviewed':'not yet'}) — unlimited tries, this is practice</b>
     <p style="font-size:13px;margin:6px 0">${m.drill.q}</p>
     <div style="display:flex;flex-direction:column;gap:6px">${m.drill.opts.map((o,i)=>`<button class="btn" data-ans="${i}" style="text-align:left">${o}</button>`).join('')}</div>
     <p id="ts_fb" class="src" style="margin-top:8px"></p>
@@ -217,7 +268,7 @@ function render(){
   if(m.live){ try{ m.live(root); }catch(e){} }
   root.querySelectorAll('[data-ans]').forEach(b=>b.addEventListener('click',()=>{
     const i=+b.dataset.ans; const fb=$('#ts_fb');
-    if(i===m.drill.a){ const dd=prog(); (dd[t.id]=dd[t.id]||{})[m.id]=1; save('done',dd); fb.innerHTML='<b style="color:var(--good)">Verified.</b> '+m.drill.why; }
+    if(i===m.drill.a){ const dd=prog(); (dd[t.id]=dd[t.id]||{})[m.id]=1; save('done',dd); fb.innerHTML='<b style="color:var(--good)">Reviewed.</b> '+m.drill.why; }
     else fb.innerHTML='<b style="color:var(--bad)">Not yet.</b> Think about which interest each option serves, and try again — the tutor never hands you the answer.';
   }));
   $('#ts_tutor').onclick=async()=>{
@@ -228,5 +279,5 @@ function render(){
     catch(e){ el.textContent='Tutor unavailable right now.'; }
   };
 }
-window.LXTS={render};
+window.LXTS={render, TRACKS, certifiedCount, isCertified};
 })();

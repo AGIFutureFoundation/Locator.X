@@ -8,7 +8,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const F$=n=>L().fmt$(n), FN=n=>L().fmtN(n), esc=s=>L().esc(s);
 
 /* ---------------- persistent learner state ---------------- */
-const P0={role:null, prof:{}, missions:{}, creds:[], srl:[], overrides:[], tel:{answers:0, correct:0, hints:0, ms:0}};
+const P0={role:null, prof:{}, missions:{}, creds:[], srl:[], overrides:[], certification:null, tel:{answers:0, correct:0, hints:0, ms:0}};
 let P=Object.assign({}, P0, L().store('academy')||{}); P.prof=P.prof||{}; P.missions=P.missions||{}; P.creds=P.creds||[]; P.srl=P.srl||[]; P.overrides=P.overrides||[]; P.tel=Object.assign({},P0.tel,P.tel||{});
 const save=()=>L().store('academy', P);
 function prof(track){ return P.prof[track]!=null? P.prof[track] : 0.45; }
@@ -360,16 +360,83 @@ function transferQs(role){
   while(picks.length<Math.min(4,m1.length)){ const m=m1[Math.floor(Math.random()*m1.length)]; if(used.has(m.id)) continue; used.add(m.id); const inst=m.make(); picks.push({m, inst, q:inst.qs[Math.floor(Math.random()*inst.qs.length)]}); }
   return picks;
 }
-async function issueCred(role, summary){
+/* THE CREDENTIAL USED TO LIE ABOUT ITS OWN BASIS.
+   issueCred() had one criteria.narrative, hardcoded: "Mixed novel-fault
+   check, no hints, tightened tolerance, first-attempt accuracy >= 75%." It
+   printed that sentence into the credential JSON whether the learner had
+   actually passed the check IT DESCRIBES, or had clicked the mentor
+   override button below with zero questions answered. A machine-readable
+   credential asserting a standard that was not applied is the same defect
+   this whole app refuses everywhere else — a number, or here a claim,
+   carrying a stronger basis than what actually happened. basis is now
+   required and the achievement's own type/criteria/description read
+   honestly for each: 'transfer' names the real check and its measured
+   score; 'override' names itself as exactly that, in the credential a
+   verifier would read, not just in a UI label a screenshot can crop out. */
+async function issueCred(role, summary, basis){
   const r=ROLE[role]; const now=new Date().toISOString();
+  const honest = basis==='transfer'
+    ? {type:['VerifiableCredential','OpenBadgeCredential'],
+       description:'Behavioral-transfer check passed on novel public-record properties: '+summary,
+       narrative:'Mixed novel-fault check, no hints, tightened tolerance, first-attempt accuracy ≥ 75%.'}
+    : {type:['VerifiableCredential'],
+       description:'Issued by mentor override, not a transfer check: '+summary,
+       narrative:'No behavioral-transfer check was administered. A human mentor asserted competency directly and the override is logged in this credential and in the learner’s local override log.'};
   const cred={'@context':['https://www.w3.org/ns/credentials/v2','https://purl.imsglobal.org/spec/ob/v3p0/context-3.0.3.json'],
-    type:['VerifiableCredential','OpenBadgeCredential'], issuer:{id:'urn:locatorx:academy', type:'Profile', name:'locator.x Academy (AGI Corp)'},
-    validFrom:now, name:r.name+' — verified competency',
-    credentialSubject:{type:'AchievementSubject', achievement:{type:'Achievement', name:r.name, description:'Behavioral-transfer check passed on novel public-record properties: '+summary, criteria:{narrative:'Mixed novel-fault check, no hints, tightened tolerance, first-attempt accuracy ≥ 75%.'}}, resultsSummary:summary}};
+    type:honest.type, issuer:{id:'urn:locatorx:academy', type:'Profile', name:'locator.x Academy (AGI Corp)'},
+    validFrom:now, name:r.name+(basis==='transfer'?' — verified competency':' — mentor-asserted competency'),
+    credentialSubject:{type:'AchievementSubject', achievement:{type:'Achievement', name:r.name, description:honest.description, criteria:{narrative:honest.narrative}}, resultsSummary:summary}};
   let digest='';
   try{ const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(cred))); digest=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }catch(e){ digest='unavailable'; }
   cred.proof={type:'DataIntegrityProof', cryptosuite:'sha256-digest', created:now, proofValue:digest};
-  P.creds.push({role, at:now, digest, cred}); save(); return cred;
+  P.creds.push({role, at:now, digest, basis, cred}); save(); return cred;
+}
+/* A role counts toward the comprehensive certification only on its
+   strongest genuine transfer-check credential — override-issued credentials
+   never qualify, and an old credential from before this fix (no `basis`
+   field at all) is treated as unverified rather than assumed to be either,
+   since neither can be proven from a record that never recorded it. */
+function rolesCertified(){ return ROLES.filter(r=>P.creds.some(c=>c.role===r.id && c.basis==='transfer')).length; }
+/* ---------------- the comprehensive certification ----------------
+   Locator.X Certified Practitioner exists only when every graded surface
+   in the training system has been passed on its own stated terms: all
+   five Academy roles by a genuine transfer check (never an override —
+   rolesCertified() already excludes those), and every Trade School track
+   by its own certification check (src/tradeschool.js — first-attempt
+   accuracy across the whole module pool in one pass, no retries). Neither
+   half is trusted by name; both are re-read live from the same state the
+   two subsystems already keep, so this can never say "certified" on a
+   count that has not actually been reached. */
+function tsStatus(){ const ts=window.LXTS; if(!ts) return {have:0, total:0}; return {have:ts.certifiedCount(), total:ts.TRACKS.length}; }
+function certificationEligible(){ const ts=tsStatus(); return rolesCertified()>=ROLES.length && ts.total>0 && ts.have>=ts.total; }
+async function issueCertification(){
+  if(P.certification) return P.certification;
+  if(!certificationEligible()) return null;
+  const now=new Date().toISOString(); const ts=tsStatus();
+  const cred={'@context':['https://www.w3.org/ns/credentials/v2','https://purl.imsglobal.org/spec/ob/v3p0/context-3.0.3.json'],
+    type:['VerifiableCredential','OpenBadgeCredential'], issuer:{id:'urn:locatorx:academy', type:'Profile', name:'locator.x Academy (AGI Corp)'},
+    validFrom:now, name:'Locator.X Certified Practitioner',
+    credentialSubject:{type:'AchievementSubject', achievement:{type:'Achievement', name:'Locator.X Certified Practitioner',
+      description:'All '+ROLES.length+' Academy role transfer checks passed genuinely (mentor overrides do not count), and all '+ts.total+' Trade School track certification checks passed — first-attempt accuracy ≥ 75% each, no hints, no retries.',
+      criteria:{narrative:'Every graded surface in the locator.x training system, passed on its own stated terms.'}},
+      resultsSummary:'Academy '+rolesCertified()+'/'+ROLES.length+' roles; Trade School '+ts.have+'/'+ts.total+' tracks; issued '+now.slice(0,10)}};
+  let digest='';
+  try{ const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(cred))); digest=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }catch(e){ digest='unavailable'; }
+  cred.proof={type:'DataIntegrityProof', cryptosuite:'sha256-digest', created:now, proofValue:digest};
+  P.certification={at:now, digest, cred}; save(); return P.certification;
+}
+function renderCertification(){
+  const box=$('#acadcert'); if(!box) return;
+  const ts=tsStatus(); const rc=rolesCertified();
+  if(P.certification){
+    const c=P.certification;
+    box.innerHTML=`<div class="cred" style="--c:var(--cat1);max-width:420px"><div class="seal">★</div><b>Locator.X Certified Practitioner</b><div class="meta">issued ${c.at.slice(0,10)}<br>sha-256 ${String(c.digest).slice(0,18)}…<br>Open Badges 3.0 / W3C VC shape</div><button class="btn" id="certcp">Copy credential JSON</button></div>`;
+    const b=$('#certcp'); if(b) b.addEventListener('click', async()=>{ try{ await navigator.clipboard.writeText(JSON.stringify(c.cred, null, 1)); L().toast('Credential JSON copied — hash-sealed and portable'); }catch(e){ L().toast('Clipboard blocked in this host'); } });
+    return;
+  }
+  const eligible=certificationEligible();
+  box.innerHTML=`<div class="transfer"><b>Locator.X Certified Practitioner.</b> Requires every genuine Academy role transfer check (${rc}/${ROLES.length}) and every Trade School track certification check (${ts.have}/${ts.total||'?'}). ${eligible? 'Both are complete.' : 'Not yet — progress above.'} <button class="btn primary" id="startCert" ${eligible?'':'disabled'}>Issue the certification</button></div>`;
+  const b=$('#startCert'); if(b) b.addEventListener('click', async()=>{ await issueCertification(); L().toast('Locator.X Certified Practitioner issued'); renderCertification(); });
 }
 
 /* ---------------- rendering ---------------- */
@@ -381,7 +448,7 @@ function render(){
     ['Reflect','Evening · 10 min','A self-regulated-learning log: what broke, which hint unlocked it, what transfers to a live client tomorrow.','--cat3'],
     ['Verify','Weekly','A behavioral-transfer check on a novel property, no hints, tighter tolerance. Pass → a portable machine-verifiable credential.','--cat4']]
     .map(x=>`<div class="dayphase" style="--c:var(${x[3]})"><div class="t">${x[0]}</div><b>${x[1]}</b><p>${x[2]}</p></div>`).join('');
-  renderRoles(); renderMain(); renderLib(); renderPillars(); renderSRL(); renderMentor(); renderCreds();
+  renderRoles(); renderMain(); renderLib(); renderPillars(); renderSRL(); renderMentor(); renderCreds(); renderCertification();
 }
 function mastery(role){ const ms=MISSIONS.filter(m=>m.role===role); const done=ms.filter(m=>(P.missions[m.id]||{}).stars>0).length; return {done, total:ms.length, pct: done/ms.length*100, cred: P.creds.some(c=>c.role===role)}; }
 function renderRoles(){
@@ -477,13 +544,13 @@ function renderTransfer(box){
 async function finishTransfer(){
   const n=view.transfer.length; const acc=view.firstTry/n; const pass=acc>=0.75;
   const box=$('#acadmain'); const r=ROLE[P.role];
-  if(pass){ const summary=`${Math.round(acc*100)}% first-attempt on ${n} novel faults, ${new Date().toISOString().slice(0,10)}`; await issueCred(P.role, summary); }
+  if(pass){ const summary=`${Math.round(acc*100)}% first-attempt on ${n} novel faults, ${new Date().toISOString().slice(0,10)}`; await issueCred(P.role, summary, 'transfer'); }
   box.innerHTML=`<div class="player" style="--c:var(${r.c})"><h3 style="font-family:var(--display)">${pass?'Competency verified':'Not yet — and that is fine'}</h3>
   <p style="font-size:14px">First-attempt accuracy <b class="num">${Math.round(acc*100)}%</b> on ${n} novel faults (pass ≥ 75%). ${pass? 'The credential is on your wall below — machine-readable, portable, hash-sealed. Show the JSON to anyone; the hash verifies it wasn\'t edited.' : 'The check regenerates with different properties every attempt. Re-run the weakest mission once, then come back — mastery-batched means the check waits for you, not the calendar.'}</p>
   <div class="toolbar"><button class="btn primary" id="tback">Back to the map</button></div></div>`;
   view.transfer=null; view.transferMode=false;
   $('#tback').addEventListener('click', ()=>render());
-  renderCreds(); renderRoles(); renderMentor();
+  renderCreds(); renderRoles(); renderMentor(); renderCertification();
 }
 /* tutor (Claude via sample; hint-ladder fallback) */
 let sampleFn;
@@ -538,12 +605,12 @@ function renderMentor(){
   <div class="telem" style="margin-top:10px"><span>Lifetime accuracy <b>${acc==null?'—':acc+'%'}</b></span><span>Answers <b>${P.tel.answers}</b></span><span>Hints <b>${P.tel.hints}</b></span><span>Reflections <b>${P.srl.length}</b></span></div>
   <div class="toolbar" style="margin-top:10px"><button class="btn" id="ovr">Mentor override: mark current chair verified</button></div>
   ${P.overrides.length? `<div style="font-size:11px;color:var(--muted);margin-top:6px">Override log: ${P.overrides.map(o=>`${o.d} — ${esc(o.what)}`).join(' · ')}</div>`:''}`;
-  $('#ovr').addEventListener('click', async()=>{ if(!P.role){ L().toast('Pick a chair first'); return; } const r=ROLE[P.role]; P.overrides.push({d:new Date().toISOString().slice(0,10), what:'verified '+r.name+' by mentor authority'}); await issueCred(P.role, 'Mentor override — human authority, logged '+new Date().toISOString().slice(0,10)); save(); L().toast('Override logged and credential issued — the human outranks the engine'); render(); });
+  $('#ovr').addEventListener('click', async()=>{ if(!P.role){ L().toast('Pick a chair first'); return; } const r=ROLE[P.role]; P.overrides.push({d:new Date().toISOString().slice(0,10), what:'verified '+r.name+' by mentor authority'}); await issueCred(P.role, 'Mentor override — human authority, logged '+new Date().toISOString().slice(0,10), 'override'); save(); L().toast('Override logged and credential issued — labelled as an override, not a transfer check'); render(); });
 }
 function renderCreds(){
   const box=$('#acadcreds'); if(!P.creds.length){ box.innerHTML='<p style="font-size:13px;color:var(--muted)">No credentials yet. They are earned in the weekly verify — or granted by mentor override, which is logged as exactly that.</p>'; return; }
-  box.innerHTML='<div class="badgewall">'+P.creds.map((c,i)=>{ const r=ROLE[c.role]; return `<div class="cred" style="--c:var(${r.c})"><div class="seal">${r.ic}</div><b>${r.name}</b><div class="meta">issued ${c.at.slice(0,10)}<br>sha-256 ${String(c.digest).slice(0,18)}…<br>Open Badges 3.0 / W3C VC shape</div><button class="btn" data-cp="${i}">Copy credential JSON</button></div>`; }).join('')+'</div>';
+  box.innerHTML='<div class="badgewall">'+P.creds.map((c,i)=>{ const r=ROLE[c.role]; const b=c.basis||'unrecorded'; const label=b==='transfer'?'transfer check, verified':b==='override'?'mentor override — not a transfer check':'issued before basis was recorded — unverified'; return `<div class="cred" style="--c:var(${r.c})"><div class="seal">${r.ic}</div><b>${r.name}</b><div class="meta">issued ${c.at.slice(0,10)} · <b>${label}</b><br>sha-256 ${String(c.digest).slice(0,18)}…<br>Open Badges 3.0 / W3C VC shape</div><button class="btn" data-cp="${i}">Copy credential JSON</button></div>`; }).join('')+'</div>';
   $$('#acadcreds [data-cp]').forEach(b=>b.addEventListener('click', async()=>{ try{ await navigator.clipboard.writeText(JSON.stringify(P.creds[+b.dataset.cp].cred, null, 1)); L().toast('Credential JSON copied — hash-sealed and portable'); }catch(e){ L().toast('Clipboard blocked in this host'); } }));
 }
-window.LXAcad={render, rentSourced, rentBlindNote, pick, MISSIONS};
+window.LXAcad={render, rentSourced, rentBlindNote, pick, MISSIONS, rolesCertified, certificationEligible, issueCertification};
 })();
