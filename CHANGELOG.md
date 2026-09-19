@@ -24,11 +24,7 @@ such.
   `lxbuild.py`'s `read()` can't find `dist/maplibre-gl.js` because it no
   longer exists at any v6 version — the sanitizer fix and the distribution-format
   break landed in the same major version, so picking a newer patch can't get
-  one without the other. Verified by installing 6.10.0, confirming
-  `npm audit` goes clean, then confirming `scripts/build_fleet_demo.py` throws
-  `FileNotFoundError` on the same path every time; reverted rather than shipped,
-  because a build that cannot produce an edition is worse than a documented,
-  open finding.
+  one without the other.
 
   Exposure check: the advisory's path is `Popup.setHTML()` rendering
   attacker-controlled HTML through the bypassed sanitizer. `grep -rn
@@ -40,17 +36,66 @@ such.
   "we don't call the vulnerable method today" is not a fix a scanner — or a
   future change to this file — can see.
 
-  **What actually fixing this takes**, next: either (a) build a UMD bundle
-  from the v6 ESM source at build time (esbuild/rollup, added to the
-  toolchain) and keep inlining that, or (b) move `initMap()`'s MapLibre path
-  to a `<script type="module">` load with an explicit `workerUrl`, which the
-  network-off, single-file property may or may not survive — worker
-  instantiation from an inlined module is untested here. Either path needs
-  the full `fleet-smoke` sweep (all eleven editions, both the WebGL and
-  Canvas-fallback renderers, zero page errors) before it can replace this
-  entry with a shipped fix. Not attempted in this session: it is a real
-  build-toolchain change, not a version bump, and doctrine says a half-tested
-  fix is not a fix.
+  **A second session went further and built the real fix, then found why it
+  can't ship yet.** `esbuild` (added as a build-only dependency, not shipped
+  in any edition) bundles `maplibre-gl@6.10.0`'s ESM source into a global
+  IIFE that drops straight into `lxbuild.py`'s existing inline-`<script>`
+  slot with zero call-site changes — verified in headless Chromium: the
+  global loads, `typeof maplibregl.{Map,Marker,NavigationControl,
+  setWorkerUrl}` are all `"function"`, zero page errors. That half works.
+
+  The worker does not. MapLibre v6's worker loader checks whether the
+  worker's URL is same-origin with `location` before it will hand the
+  browser a plain script URL; on anything else it wraps the URL in a
+  `Blob([\`import ${...}\`], {type:'text/javascript'})` re-export shim and
+  loads *that* as an ES module worker instead — its cross-origin escape
+  hatch. Measured directly in-page: a blob URL's `.origin` is the literal
+  string `"null"`; a `file://` page's `location.origin` is the literal
+  string `"file://"`. Those never compare equal, so **every worker this
+  library creates gets the cross-origin treatment on a `file://` page**,
+  module-wrapped, no exceptions — confirmed by intercepting `window.Worker`
+  and logging exactly what URL and `{type}` reached it. Loading that
+  module-wrapped worker then fails *silently* — a `WorkerGlobalScope`
+  `error` event with every field (`message`, `filename`, `lineno`) blank,
+  which is the browser spec's mandated behavior for a script it has decided
+  to treat as cross-origin: no message leaks across an origin boundary, real
+  or, as here, spuriously detected. Proof the failure really is the opaque
+  `file://` origin and nothing else in the bundle: the identical build,
+  wiring and worker, served over `http://localhost` instead of opening as a
+  file, loads clean — `load` and `idle` both fire, the test polygon queries
+  back with all four vertices. Forcing a classic (non-module) worker via the
+  same `window.Worker` interception did not help either: the library's own
+  cross-origin wrapper intercepts the URL *before* the classic-vs-module
+  choice is made, so the override never sees the request it would have
+  fixed.
+
+  This is worse than "no fix yet" for this platform specifically. `USE_GL`'s
+  own capability probe (`src/app.js`) spins up a throwaway *classic* worker
+  to test whether workers work at all, which is unaffected by this bug and
+  reports success — so a `file://` edition would confidently pick the GL
+  renderer, and the real map worker would then fail without throwing
+  anything `fleet_smoke.js`'s `pageerror` listener or `map.on('error',...)`
+  would ever see: no tiles, no vector layers, no thrown error, nothing in
+  the map-tools UI to point at why. Shipping the naive upgrade would have
+  traded one measured, contained CVE for an unmeasured, silent blank map on
+  every downloaded edition — strictly worse. Reverted again; `package.json`
+  and `package-lock.json` carry no trace of either attempt.
+
+  **What is actually left, precisely named now:** the library's internal
+  cross-origin check needs to be defeated, not routed around from the
+  outside — `setWorkerUrl()` and a `Worker` override are both applied too
+  late, after the library has already decided to wrap. Doing that means
+  patching the *bundled* output (the same-named internal functions do not
+  survive esbuild's bundling with stable names, so the patch has to target
+  bundled-output text, string-matched and asserted present or the build
+  fails loudly rather than silently doing nothing) to make that same-origin
+  check always pass. That is a real, fragile, version-pinned patch against
+  vendored third-party internals — not a task for a version bump, and not
+  attempted here: it needs its own review, needs `maplibre-gl` pinned exact
+  rather than `^`, and needs the full `fleet-smoke` sweep (all eleven
+  editions, both renderers, and this time a real assertion that the map
+  actually finished loading — `fleet_smoke.js` today does not check for
+  that) passing before it replaces this entry with a shipped fix.
 
 - **Generative video, bounded before it was built** — the boundary is decided
   once in [`GENERATIVE_VIDEO.md`](docs/GENERATIVE_VIDEO.md) and enforced by a
