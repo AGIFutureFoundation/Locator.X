@@ -1408,6 +1408,129 @@ async function main() {
       }
     }
 
+    /* A CREDENTIAL MUST NOT CLAIM A STANDARD THAT WAS NEVER APPLIED TO IT,
+       AND A MODULE "VERIFIED" BY UNLIMITED FREE GUESSING IS NOT VERIFIED.
+
+       academy.js's mentor-override button used to call the exact same
+       issueCred() a genuine transfer-check pass called, with the exact same
+       hardcoded criteria.narrative ("Mixed novel-fault check, no hints,
+       tightened tolerance, first-attempt accuracy >= 75%") printed into the
+       credential JSON regardless of whether any check had actually run.
+       Fixed by requiring a basis ('transfer' | 'override') that changes the
+       credential's own type/description/criteria, and by excluding override
+       credentials from rolesCertified() - the count the comprehensive
+       Locator.X Certified Practitioner credential is gated on.
+
+       tradeschool.js's 30 modules were "verified" by a single multiple-choice
+       question with unlimited retries and no penalty - four clicks cleared
+       any module with zero understanding, and 100% of modules clicked that
+       way used to be enough to seal a track's credential outright. Fixed by
+       adding a separate certification check per track: every module's own
+       drill question, once each, no retries, and only >=75% first-attempt
+       seals the credential - checked here in both directions, on the real
+       UI, on this edition's own module content. */
+    const cred = await page.evaluate(async () => {
+      const out = {};
+      try {
+        LX.showView('academy');
+        await new Promise(r => setTimeout(r, 200));
+        const A = window.LXAcad;
+        const roleCard = document.querySelector('#acadroles .rolecard[data-r="analyst"]');
+        if (roleCard) roleCard.click();
+        const ovrBtn = document.getElementById('ovr');
+        if (ovrBtn) ovrBtn.click();
+        await new Promise(r => setTimeout(r, 400));
+        const acadState = JSON.parse(localStorage.getItem('bayledger.academy') || '{}');
+        const last = (acadState.creds || [])[(acadState.creds || []).length - 1];
+        out.override = last ? {
+          basis: last.basis,
+          hasOpenBadge: (last.cred.type || []).includes('OpenBadgeCredential'),
+          narrativeClaimsCheck: /Mixed novel-fault check/.test(last.cred.credentialSubject.achievement.criteria.narrative),
+          narrativeSaysOverride: /mentor override/i.test(last.cred.credentialSubject.achievement.criteria.narrative)
+            || /mentor override/i.test(last.cred.credentialSubject.achievement.description),
+          countsTowardCert: A.rolesCertified() > 0
+        } : { err: 'no override credential produced' };
+      } catch (e) { out.override = { err: String(e) }; }
+
+      try {
+        const TS = window.LXTS;
+        const t = TS.TRACKS[0];
+        LX.showView('academy');
+        await new Promise(r => setTimeout(r, 150));
+        document.querySelector(`#tsroot [data-ts="${t.id}"]`).click();
+        await new Promise(r => setTimeout(r, 100));
+        for (let i = 0; i < t.modules.length; i++) {
+          document.querySelectorAll('#tsroot [data-mod]')[i].click();
+          await new Promise(r => setTimeout(r, 60));
+          document.querySelectorAll('#tsroot [data-ans]')[t.modules[i].drill.a].click();
+          await new Promise(r => setTimeout(r, 60));
+          document.getElementById('ts_back2').click();
+          await new Promise(r => setTimeout(r, 60));
+        }
+        // Fail the check on purpose: always pick option 0.
+        document.getElementById('ts_check').click();
+        await new Promise(r => setTimeout(r, 100));
+        for (let i = 0; i < t.modules.length; i++) {
+          document.querySelectorAll('#tsroot [data-ans]')[0].click();
+          await new Promise(r => setTimeout(r, 60));
+          const nextBtn = document.getElementById('ts_cnext');
+          if (nextBtn) nextBtn.click();
+          await new Promise(r => setTimeout(r, 60));
+        }
+        const failedCertified = TS.isCertified(t);
+        // Retake and pass on purpose: every first attempt correct.
+        document.getElementById('ts_cback').click();
+        await new Promise(r => setTimeout(r, 100));
+        document.getElementById('ts_check').click();
+        await new Promise(r => setTimeout(r, 100));
+        for (let i = 0; i < t.modules.length; i++) {
+          document.querySelectorAll('#tsroot [data-ans]')[t.modules[i].drill.a].click();
+          await new Promise(r => setTimeout(r, 60));
+          const nextBtn = document.getElementById('ts_cnext');
+          if (nextBtn) nextBtn.click();
+          await new Promise(r => setTimeout(r, 60));
+        }
+        out.trade = { modules: t.modules.length, failedCertified, passedCertified: TS.isCertified(t) };
+      } catch (e) { out.trade = { err: String(e) }; }
+      return out;
+    });
+    if (cred.override && cred.override.err) {
+      errs.push('the mentor-override credential honesty check could not be exercised: ' + cred.override.err);
+    } else if (cred.override) {
+      const o = cred.override;
+      if (o.basis !== 'override') {
+        errs.push('a mentor-override credential is not recorded with basis "override" (got "' + o.basis + '")');
+      }
+      if (o.hasOpenBadge) {
+        errs.push('a mentor-override credential still claims the OpenBadgeCredential type — an unearned '
+          + 'credential is asserting conformance to a standard it did not meet');
+      }
+      if (o.narrativeClaimsCheck) {
+        errs.push('a mentor-override credential’s own criteria.narrative still claims "Mixed novel-fault '
+          + 'check... first-attempt accuracy >= 75%" — a check that was never administered');
+      }
+      if (!o.narrativeSaysOverride) {
+        errs.push('a mentor-override credential does not say, anywhere in its own JSON, that it was issued '
+          + 'by override rather than a transfer check');
+      }
+      if (o.countsTowardCert) {
+        errs.push('rolesCertified() counts a mentor-override credential — the comprehensive Locator.X '
+          + 'Certified Practitioner credential could be earned without a single genuine transfer check');
+      }
+    }
+    if (cred.trade && cred.trade.err) {
+      errs.push('the Trade School certification-check gating could not be exercised: ' + cred.trade.err);
+    } else if (cred.trade) {
+      if (cred.trade.failedCertified) {
+        errs.push('a Trade School track certified after every certification-check question was answered '
+          + 'wrong — the >=75% first-attempt gate is not enforced');
+      }
+      if (!cred.trade.passedCertified) {
+        errs.push('a Trade School track did not certify after every certification-check question was '
+          + 'answered correctly on the first attempt — the gate is refusing a real pass');
+      }
+    }
+
     /* EVERY MAP LENS, on every edition.
 
        A lens that leaves every property dim draws a uniformly grey map, and the

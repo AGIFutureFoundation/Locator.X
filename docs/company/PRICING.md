@@ -29,6 +29,27 @@ and strategy modules; API and enterprise data integrations; implementation, migr
 and configuration services; and internal AGI Corp use of the platform as the operating
 system for company-owned real estate.
 
+## Academy certification
+
+| Credential | Price | What it certifies | Label |
+|---|---|---|---|
+| **Locator.X Certified Practitioner** | $500 one-time | Every graded surface in the training system, genuinely passed: all five Academy role transfer checks (`src/academy.js` — no hints, first-attempt accuracy ≥ 75%, mentor overrides excluded) and all eight Trade School track certification checks (`src/tradeschool.js` — every module's question once each, no retries, ≥ 75% first-attempt) | management-set |
+
+The training itself stays free — every mission, drill and check that leads to the
+credential is open in the app today; there is no license gate on any of it (`src/home.js`
+and the investor deck both already say so of the platform generally). $500 prices the
+comprehensive credential once it is genuinely earned, not access to earn it.
+
+**What this figure cannot honestly claim.** This is a static, no-server, no-accounts
+application by design — there is no payment processor, no checkout flow and no
+server-side record of who paid, anywhere in this repository. $500 is a management-set
+price for a credential this repository has no way to collect payment for yet; selling
+it for real needs a payment integration this repository does not build. The credential
+mechanics were hardened before this price was written down: both checks used to be
+gameable (a one-click self-issued credential with no assessment, and a multiple-choice
+question with unlimited free retries) — fixed and guarded in `tests/fleet_smoke.js`
+before this row existed.
+
 ## What is deliberately not on this page
 
 **No comparison to another vendor's price.** Not one figure in
