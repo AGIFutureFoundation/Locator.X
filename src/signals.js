@@ -81,7 +81,32 @@ const SIGNALS=[
  score(r){ const X=L(); const t={'San Francisco':3604,'San Mateo':3604,'Santa Clara':3483,'Alameda':2912,'Orleans':1350,'Humboldt':1350}[r.l.county]; if(!t||!r.d.rentMo) return null;
    const per=r.d.rentMo/Math.max(1,r.l.units||1); const spread=(t-per)/per; return Math.max(0, Math.min(100, Math.round(50+spread*120))); },
  note(r){ const t={'San Francisco':3604,'San Mateo':3604,'Santa Clara':3483,'Alameda':2912,'Orleans':1350,'Humboldt':1350}[r.l.county]; if(!t||!r.d.rentMo) return ''; const per=Math.round(r.d.rentMo/Math.max(1,r.l.units||1)); return 'FMR 2BR $'+t.toLocaleString()+' vs ~$'+per.toLocaleString()+'/unit market'; },
- src:'HUD FY2026 FMR (huduser.gov) · CA source-of-income law'}
+ src:'HUD FY2026 FMR (huduser.gov) · CA source-of-income law'},
+/* THIS CARD EXISTS TO BE HONEST ABOUT A GAP, NOT TO SCORE ONE.
+   Every other signal above either runs on live data or scores every record
+   from what the county roll already reveals - score() never returns a
+   number this app cannot source. A bankruptcy-estate distress signal would
+   be exactly that kind of real, researched channel (Chapter 7/11/13
+   trustee sales under 11 U.S.C. §363, documented with sources in
+   docs/resources/property-data-sources.md §2-3, added there after a
+   session-level review found the app had no bankruptcy-court entry at all)
+   - but there is no bulk, parcel-keyed bankruptcy feed this container can
+   pull: PACER and each district court's own notice-of-sale page are read
+   one filing at a time, this build environment has no egress at all (see
+   CLAUDE.md's environment note), and wiring it for real needs the same
+   desktop-browser pull protocol docs/PULL_RECIPE.md already ships for
+   county data, pointed at a district court's notices instead of an
+   assessor site. score() returns null unconditionally - not a modeled
+   placeholder, not a national estimate, nothing - because "no bulk feed
+   exists yet" and "a quiet zero" are opposite findings, and this repository
+   does not fabricate a row to hide the difference. Remove this card, or
+   wire it for real, the day a pull actually lands. */
+{id:'bankruptcy', name:'Bankruptcy-estate pipeline', tag:'not yet wired — see how',
+ body:`Chapter 7/11/13 trustees sell estate real property under 11 U.S.C. §363 "free and clear" of liens once a court approves the sale — comps.js's own basisOf() calls a recorded sale "the one figure here that is not an opinion", and a bankruptcy sale is exactly that kind of fact, often moving below market and fast. It is a real, sourced channel — docs/resources/property-data-sources.md names the federal courts and the claims/noticing agents that post the notices — that this signal has deliberately NOT been wired to.`,
+ how:'No score, on purpose. PACER and each district bankruptcy court publish filings one case at a time, never a bulk parcel-keyed export a script can pull — and this build container has no network egress at all to try. Wiring this for real needs the desktop-browser pull protocol (docs/PULL_RECIPE.md) pointed at a district court\'s own notice-of-sale page instead of an assessor site. Until that pull runs and lands real rows, this card stays here empty rather than guessing.',
+ score(r){ return null; },
+ note(r){ return ''; },
+ src:'Not yet pulled — docs/resources/property-data-sources.md §2 (federal bankruptcy courts) §3 (bankruptcy estate sale)'}
 ];
 
 function coverageChart(scoredBySig, total){
@@ -128,7 +153,7 @@ function render(){
     SIGNALS.forEach(sg=>{ try{ scoredBySig[sg.id]=rows.map(r=>({r, s:sg.score(r)})).filter(x=>x.s!=null).sort((a,b)=>b.s-a.s); }catch(e){ scoredBySig[sg.id]=[]; } });
     _scoredCache={rowsRef:rows, val:scoredBySig};
   }
-  root.innerHTML=`<p class="lede" style="margin-top:0">Ten cross-signals researched Sept 2026 — forces outside the rent roll that move prices and future listings. Five run on live public data pulled into this build (lien foreclosures, code-enforcement cases, permits, STR licenses, federal HUD-REO inventory); the rest score every record from what the county rolls already reveal. Click any property to open it.</p>
+  root.innerHTML=`<p class="lede" style="margin-top:0">Eleven cross-signals researched Sept 2026 — forces outside the rent roll that move prices and future listings. Five run on live public data pulled into this build (lien foreclosures, code-enforcement cases, permits, STR licenses, federal HUD-REO inventory); most of the rest score every record from what the county rolls already reveal. One — bankruptcy-estate sales — is a documented gap that scores nothing yet, on purpose: no bulk feed exists for this container to pull, and a quiet zero is a different finding from "broken," so it says so instead of guessing. Click any property to open it.</p>
   ${coverageChart(scoredBySig, rows.length)}
   <div class="grid2">${SIGNALS.map(sg=>{
     const top=(scoredBySig[sg.id]||[]).slice(0,6);

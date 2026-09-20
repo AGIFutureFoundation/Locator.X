@@ -795,6 +795,26 @@ async function main() {
          Checked directly against LX.recordDate()'s own definition (prefer
          the real sale, fall back to the assessor's date) rather than by
          re-deriving it, so a regression in either side shows up here. */
+      /* THE BANKRUPTCY-ESTATE SIGNAL EXISTS TO SCORE NOTHING, ON PURPOSE - no
+         bulk bankruptcy-court feed reaches this container, so signals.js
+         says so instead of guessing. That only stays honest if score()
+         really does return null on every record forever; a future edit
+         that "helpfully" wired in a heuristic (county, price band, anything
+         not an actual pulled filing) would fabricate exactly the match
+         this card's own doctrine comment refuses. Cheap to check, no UI
+         needed: call it on a sample and confirm every result is null. */
+      let bankruptcySignal = null;
+      try {
+        const sg = window.LXSig && LXSig.SIGNALS.find(s => s.id === 'bankruptcy');
+        if (sg) {
+          let nonNull = 0;
+          for (const l of ls.slice(0, 300)) { if (sg.score({l, d: {}}) != null) nonNull++; }
+          bankruptcySignal = { found: true, nonNull };
+        } else {
+          bankruptcySignal = { found: false };
+        }
+      } catch (e) { bankruptcySignal = { err: String(e) }; }
+
       let basisLabels = null;
       try {
         const Sig = window.LXSig, Pat = window.LXPat, Recon = window.LXRecon;
@@ -1071,7 +1091,7 @@ async function main() {
         LX.refresh();
       } catch (e) { drawerHonesty = {err: String(e)}; }
 
-      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels, comps2, basisLabels, approxComps, recordHonesty, drawerHonesty,
+      return {n: ls.length, none, leaked, saysBlind, open, floor: low, gate, tally, acad, tax, ins, ship, cls, catTally, sbRent, fmr, acts, dates, dateLabels, comps2, basisLabels, approxComps, recordHonesty, drawerHonesty, bankruptcySignal,
               basisOfFirst: (LX.deal(ls[0]) || {}).rentBasis};
     });
     if (rent.leaked > 0) {
@@ -1211,6 +1231,15 @@ async function main() {
           + 'labelled "' + p.label + '" — an assessor opinion is being called a sale, the exact '
           + 'mixing comps.js\'s own basisOf() exists to prevent');
       }
+    }
+    if (rent.bankruptcySignal && rent.bankruptcySignal.err) {
+      errs.push('the bankruptcy-estate signal could not be exercised: ' + rent.bankruptcySignal.err);
+    } else if (rent.bankruptcySignal && !rent.bankruptcySignal.found) {
+      errs.push('the bankruptcy-estate signal is missing from SIGNALS entirely');
+    } else if (rent.bankruptcySignal && rent.bankruptcySignal.nonNull > 0) {
+      errs.push('the bankruptcy-estate signal scored ' + rent.bankruptcySignal.nonNull + ' record(s) — it exists '
+        + 'specifically to score nothing until a real bankruptcy-court pull lands; a non-null score here is a '
+        + 'fabricated match, no bulk feed reaches this container');
     }
     if (rent.basisLabels && rent.basisLabels.err) {
       errs.push('the priceDate-vs-sale labelling could not be exercised across signals.js, '
