@@ -2488,7 +2488,15 @@ async function main() {
       CATS_EXPECTED.map(k => k + ':' + (catTotal[k] || 0)).join(' '));
   }
 
-  const deadClasses = Object.keys(clsTotal).filter(k => !clsTotal[k]);
+  /* Fixed universe, like CATS_EXPECTED above — NOT derived from clsTotal's own
+     accumulated keys. Deriving the universe from what accumulated made this check
+     vacuously true if the class list itself failed to load (window.LXView renamed,
+     LXView.CLASSES emptied, or the property misread): cls would collect as {},
+     clsTotal would stay {} forever, deadClasses.length would be 0, and neither a
+     FAIL nor an ok line would print — total silent loss of the guarantee this
+     check exists for. */
+  const CLS_EXPECTED = ['mf', 'apt', 'hotel', 'comm', 'ind', 'condo', 'sfr', 'conv', 'land'];
+  const deadClasses = CLS_EXPECTED.filter(k => !clsTotal[k]);
   if (deadClasses.length) {
     failures++;
     console.log('FAIL %s  asset class(es) match NOTHING across the whole fleet: %s',
@@ -2496,11 +2504,12 @@ async function main() {
     console.log('     ERR: a filter that can only ever return an empty set is a filter nobody has '
       + 'tested. Either the fixture carries no stock of that kind, or the class is gated on '
       + 'something the records do not carry — which is how the Conversion class stayed dead on '
-      + 'the `l.cv` builder flag after conv.js had already been fixed to read the record.');
-  } else if (Object.keys(clsTotal).length) {
+      + 'the `l.cv` builder flag after conv.js had already been fixed to read the record. If '
+      + 'every class in the list above is dead at once, LXView.CLASSES itself failed to load.');
+  } else {
     console.log('ok   %s  all %d asset classes match records somewhere in the fleet (%s)',
-      'asset-classes'.padEnd(13), Object.keys(clsTotal).length,
-      Object.keys(clsTotal).map(k => k + ':' + clsTotal[k]).join(' '));
+      'asset-classes'.padEnd(13), CLS_EXPECTED.length,
+      CLS_EXPECTED.map(k => k + ':' + clsTotal[k]).join(' '));
   }
 
   console.log(failures ? failures + ' EDITION(S) FAILED' : 'FLEET SMOKE CLEAN — every edition ran with zero page errors');

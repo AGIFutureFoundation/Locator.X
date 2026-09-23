@@ -84,7 +84,7 @@ function props(l, opts){
     stories: l.stories || null, zoning: l.zoning || null,
     price: l.price || null, price_date: l.priceDate || null,
     sale_price: l.sale || null, sale_date: l.saleDate || null,
-    assessed_land: l.land || null, assessed_improvements: l.imp || null,
+    assessed_land: l.land != null ? l.land : null, assessed_improvements: l.imp != null ? l.imp : null,
     'lx:price_basis': priceBasis(l),
     'lx:geometry_basis': geometryBasis(l),
     'lx:source': l.src || null

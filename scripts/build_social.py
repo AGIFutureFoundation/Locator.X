@@ -67,14 +67,18 @@ def render_one(path, figs):
     body = re.sub(r'\{\{(\w+)\}\}', sub, raw)
     body = '\n'.join(l for l in body.split('\n') if not HEAD.match(l.strip())).strip()
 
-    md = re.search(r'\*\*[^*]+\*\*|(?<!\w)_[^_]+_(?!\w)', body)
+    md = re.search(r'\*\*[^*]+\*\*|(?<!\w)_[^_]+_(?!\w)|(?<!\*)\*[^*]+\*(?!\*)', body)
     if md:
         die('%s uses markdown emphasis (%r). LinkedIn and X render the asterisks '
             'literally, so the emphasis lands as punctuation on the one word meant to '
             'carry weight. Use capitals or rewrite the sentence.' % (name, md.group(0)[:40]))
 
-    limit = LIMITS.get(name)
-    if limit and len(body) > limit:
+    if name not in LIMITS:
+        die('%s has no character limit in LIMITS — add the platform\'s real limit before '
+            'shipping it; skipping the check would let it ship with no truncation guard '
+            'at all.' % name)
+    limit = LIMITS[name]
+    if len(body) > limit:
         die('%s renders to %d characters, over the %d-character limit. The feed would '
             'truncate it mid-sentence, and the sentence it truncates is usually the '
             'qualifier.' % (name, len(body), limit))

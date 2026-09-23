@@ -6,7 +6,7 @@
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const L=()=>window.LX;
-let tmap=null, ready=false, bldGeo=null, catAll=null, walking=false, keys={}, raf=0, satOn=false, sel=null, failedGL=false;
+let tmap=null, ready=false, bldGeo=null, bldN=-1, bldAsOf=undefined, catAll=null, walking=false, keys={}, raf=0, satOn=false, sel=null, failedGL=false;
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
 /* ---------- procedural buildings ---------- */
@@ -26,8 +26,17 @@ function footprint(l){
   return {poly:[pts], h: st*3.4+1.5, st};
 }
 function buildAll(){
-  if(bldGeo) return bldGeo;
-  const rows=L().allListings().filter(l=>l.lat&&l.lng&&!l.approx);
+  /* Cached, but the cache must not outlive the data it was built from. Two
+     things can change under it while the Twin tab stays closed: the catalog
+     (import adds records — allListings().length changes) and the replay
+     clock (window.__lxAsOf, which towers.js already re-extrudes against on
+     every drag — dashboard.js's analyze() -> deal() reads it too, so catAll's
+     score/category/value-add/rent-control fields go stale exactly the way
+     the massing itself would if it were cached against a moved catalog). */
+  const rows0=L().allListings(), asOf=window.__lxAsOf;
+  if(bldGeo && bldN===rows0.length && bldAsOf===asOf) return bldGeo;
+  bldN=rows0.length; bldAsOf=asOf;
+  const rows=rows0.filter(l=>l.lat&&l.lng&&!l.approx);
   catAll={};
   const feats=rows.map(l=>{
     let a=null; try{ a=window.LXDash? LXDash.analyze(l):null; }catch(e){}
@@ -257,7 +266,17 @@ function render(){
   const canGL=typeof maplibregl!=='undefined' && (typeof USE_GL==='undefined'||USE_GL) && !failedGL;
   if(!canGL){ $('#twinfallback').hidden=false; return; }
   if(!tmap){ failedGL=false; $('#twinfallback').hidden=true; L().toast('Building the twin — extruding 128,319 sites…'); setTimeout(()=>{ initMap(); if(failedGL) $('#twinfallback').hidden=false; },30); }
-  else setTimeout(()=>tmap.resize(),30);
+  else {
+    setTimeout(()=>tmap.resize(),30);
+    /* Reopening the tab is the one moment it is safe (and necessary) to check
+       whether the catalog or the replay clock moved while it was closed —
+       see buildAll()'s own comment for why a stale twin was a real bug, not
+       a theoretical one. buildAll() is cheap to call every time: it returns
+       the SAME object when nothing changed, so this only pushes to the map
+       when there is something new to push. */
+    const prevGeo=bldGeo, freshGeo=buildAll();
+    if(freshGeo!==prevGeo && tmap.getSource('bld')) tmap.getSource('bld').setData(freshGeo);
+  }
 }
 window.LXTwin={render, openCatalog, twinView, get map(){return tmap;}};
 })();
