@@ -18,6 +18,59 @@
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function trades(){ return (window.LX_TRADES && window.LX_TRADES.divisions) || []; }
 
+/* verificationRecord — the matching desk's record as JSON, in the shape
+   docs/INTEROP.md calls `kind: 'verification-record'`. It is NOT the worksheet
+   shape (no `worksheet` marker, no asset class, no arithmetic), so every
+   worksheet consumer rejects it out loud instead of rendering a guess. It obeys
+   the same no-laundering rule: every check the owner has not performed is
+   `null` — unknown, never confirmed — and is named in `missing_required`;
+   `provenance` says how each field was derived; the taxonomy's own sentence
+   travels as the provenance of the pattern, with its source and review month.
+   The document asserts no fact about any licensee. Pure function of its
+   arguments; stores nothing. */
+function verificationRecord(hits, words){
+  const T=window.LX_TRADES||{}, vocab=T.status_vocabulary||{};
+  const reviewed=(typeof T.reviewed==='string')?T.reviewed:null;
+  const trades=(hits||[]).map(x=>{
+    const t=x.t||{}, d=x.div||{};
+    const checks=(t.verify||[]).map(String); const to_verify={}; checks.forEach(c=>{ to_verify[c]=null; });
+    const status=(typeof t.licence_status==='string')?t.licence_status:null;
+    return {
+      id:String(t.id==null?'':t.id), name:String(t.name==null?'':t.name),
+      division:{code:String(d.code==null?'':d.code), name:String(d.name==null?'':d.name)},
+      matched_by:Array.isArray(x.matched_by)?x.matched_by:[],
+      licence_status:status,
+      licence_status_meaning:(status&&typeof vocab[status]==='string')?vocab[status]:null,
+      licence_pattern:(typeof t.licence_pattern==='string')?t.licence_pattern:null,
+      source:(typeof t.source==='string')?t.source:null,
+      to_verify:to_verify, date_confirmed:null,
+      missing_required:checks.concat(['date confirmed'])
+    };
+  });
+  const unverified=trades.reduce((n,t)=>n+t.missing_required.length,0);
+  return {
+    kind:'verification-record',
+    record:'Locator.X contractor verification record',
+    version:1,
+    generated:new Date().toISOString(),
+    source:'crosswalk/trades.json',
+    reviewed:reviewed,
+    asserts:'No verified fact about any licensee. This is a checklist of what remains to be verified: every null is a lookup not yet performed, and a date is written only by the person who performed it.',
+    scope_keywords_typed:(words||[]).map(String),
+    trades:trades,
+    unverified:unverified,
+    provenance:{
+      'licence_pattern':'the taxonomy\u2019s own sentence from crosswalk/trades.json'+(reviewed?' (reviewed '+reviewed+')':'')+' \u2014 a pattern across most US states, never a state\u2019s rule; the state\u2019s rule is the lookup this record leaves blank',
+      'licence_status':'the taxonomy\u2019s status tag; its meaning is quoted in licence_status_meaning from the same file\u2019s status_vocabulary',
+      'source':'the KIND of public source that answers the checks, from the taxonomy \u2014 not a lookup performed',
+      'matched_by':'how the desk selected the trade: ticked by the owner, or a scope keyword the owner typed matched the taxonomy\u2019s scope words',
+      'to_verify':'LEFT BLANK on purpose \u2014 the desk performed no lookup; null means unknown, never confirmed and never zero',
+      'date_confirmed':'LEFT BLANK on purpose \u2014 written by the person who performs the lookups, on the day they perform them'
+    },
+    disclaimer:'Education, not advice; not a licence check and not a statement about any contractor. The desk stores nothing and asserts no state\u2019s rule; every box is filled at the state board, the recorder and the insurer, and dated by the person who filled it. Unknown means unknown.'
+  };
+}
+
 const TRACK={id:'contractor', name:'Contractors — scope, matching and delivery', who:'Owners, developers and managers who hire trades', c:'--cat5',
  blurb:'The owner’s side of the build: writing a scope that can be priced, splitting it into trades, verifying licence and insurance at the state board, levelling bids, choosing the contract form, paying against inspected work, holding the schedule as a cost line, and closing out into the binder the manager inherits. Ends with a matching desk that turns a scope into a verification record.',
  modules:[
@@ -108,7 +161,10 @@ const TRACK={id:'contractor', name:'Contractors — scope, matching and delivery
     host.querySelector('#ts_cgo').onclick=()=>{ try{
       const words=host.querySelector('#ts_ckw').value.toLowerCase().split(/[^a-z0-9]+/).filter(w=>w.length>2);
       const picked=new Set([...host.querySelectorAll('[data-tr]:checked')].map(i=>i.dataset.tr));
-      const hits=all.filter(x=>picked.has(x.t.id)||(x.t.scope_keywords||[]).some(k=>words.some(w=>String(k).toLowerCase().includes(w))));
+      const hits=all.filter(x=>picked.has(x.t.id)||(x.t.scope_keywords||[]).some(k=>words.some(w=>String(k).toLowerCase().includes(w))))
+        .map(x=>{ const by=[]; if(picked.has(x.t.id)) by.push('ticked');
+          words.forEach(w=>{ if((x.t.scope_keywords||[]).some(k=>String(k).toLowerCase().includes(w))) by.push('keyword: '+w); });
+          return {div:x.div,t:x.t,matched_by:by}; });
       const out=host.querySelector('#ts_cout');
       if(!hits.length){ out.innerHTML='<p class="src">No trade selected or matched. Tick a trade or type a word from the scope.</p>'; return; }
       out.innerHTML=hits.map(x=>`<div style="border-top:1px solid var(--line);padding:8px 0"><div class="eyebrow">${esc(x.div.name||'')}</div><b>${esc(x.t.name)}</b>
@@ -116,8 +172,18 @@ const TRACK={id:'contractor', name:'Contractors — scope, matching and delivery
         <ul style="font-size:13px;margin:4px 0 0 18px;padding:0">${(x.t.verify||[]).map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div>`).join('')
        +`<div style="border-top:1px solid var(--line);padding-top:8px"><div class="eyebrow">Verification record — copy into the file</div>
         <pre id="ts_crec" style="white-space:pre-wrap;font-size:12px;margin:6px 0">${hits.map(x=>esc(x.t.name)+' — licence status: ☐ — classification: ☐ — bond: ☐ — insurance COI: ☐ — complaints checked: ☐ — date: ____').join('\n')}</pre>
-        <button class="btn" id="ts_ccopy">Copy record</button> <span class="src" id="ts_cmsg"></span></div>`;
+        <button class="btn" id="ts_ccopy">Copy record</button> <button class="btn" id="ts_cjson">Export record (JSON)</button> <span class="src" id="ts_cmsg"></span>
+        <div id="ts_cjsonout"></div></div>`;
       out.querySelector('#ts_ccopy').onclick=()=>{ try{ const txt=out.querySelector('#ts_crec').textContent, msg=out.querySelector('#ts_cmsg'); navigator.clipboard.writeText(txt).then(()=>{ msg.textContent='Copied.'; },()=>{ msg.textContent='Select the text and copy it.'; }); }catch(e){ try{ out.querySelector('#ts_cmsg').textContent='Select the text and copy it.'; }catch(_){} } };
+      // Export record (JSON): rendered into a <pre> to copy, never a silent download. Shape: docs/INTEROP.md, "The verification record".
+      out.querySelector('#ts_cjson').onclick=()=>{ try{
+        const jo=out.querySelector('#ts_cjsonout'); if(!jo) return;
+        const json=JSON.stringify(verificationRecord(hits,words),null,1);
+        jo.innerHTML=`<p class="src" style="margin:8px 0 4px">JSON record — <code>kind: verification-record</code>; every <code>null</code> is a lookup not yet performed. It asserts no fact about any licensee.</p>
+          <pre id="ts_cjsonpre" style="white-space:pre-wrap;font-size:11.5px;margin:4px 0;max-height:320px;overflow:auto">${esc(json)}</pre>
+          <button class="btn" id="ts_cjsoncopy">Copy JSON</button> <span class="src" id="ts_cjsonmsg"></span>`;
+        jo.querySelector('#ts_cjsoncopy').onclick=()=>{ try{ const msg=jo.querySelector('#ts_cjsonmsg'); navigator.clipboard.writeText(json).then(()=>{ msg.textContent='Copied.'; },()=>{ msg.textContent='Select the text and copy it.'; }); }catch(e){ try{ jo.querySelector('#ts_cjsonmsg').textContent='Select the text and copy it.'; }catch(_){} } };
+      }catch(e){} };
     }catch(e){} };
    }catch(e){} },
    drill:{q:'The matching desk lists a trade’s licence pattern and a verification checklist. What does the completed verification record prove on its own?', opts:['That the contractor is licensed and insured on the date of the record, as the ticked boxes attest','Nothing about the contractor — only which lookups the owner performed, what each showed, and the date','That the bid is fair, since a licensed and insured bidder has priced the work within the board’s rules','That no lien can be filed, because the verification record stands in for the waiver chain'], a:1, why:'The desk stores nothing and asserts no state’s rule. The record is the owner’s dated log of lookups; its evidential weight comes from the board and insurer records it cites, which is why each line carries a date.'}}
@@ -126,5 +192,5 @@ const TRACK={id:'contractor', name:'Contractors — scope, matching and delivery
 function register(){ if(!window.LXTS||!window.LXTS.TRACKS) return false; if(window.LXTS.TRACKS.some(t=>t.id===TRACK.id)) return true; window.LXTS.TRACKS.push(TRACK); return true; }
 register();
 document.addEventListener('DOMContentLoaded', register);
-window.LXTSContractor={register, TRACK};
+window.LXTSContractor={register, TRACK, verificationRecord};
 })();

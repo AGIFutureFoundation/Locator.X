@@ -236,3 +236,19 @@ screen and the same open property with nothing reported; and a link naming three
 absent things must report all three, apply none, and put the sentence in front
 of the reader.
 
+---
+
+# The verification record — a checklist that asserts no fact
+
+The contractor matching desk (`c10` in [`src/ts_contractor.js`](../src/ts_contractor.js))
+exports its verification record as JSON with **`kind: "verification-record"`**. It is
+deliberately **not** the worksheet shape — no `worksheet` marker, no `asset_class`, no
+arithmetic — so every worksheet consumer rejects it out loud rather than rendering a guess.
+It carries `generated`, `source: "crosswalk/trades.json"` and that file's `reviewed` month,
+and per trade the taxonomy's `licence_status` tag (its meaning quoted from `status_vocabulary`)
+with the `licence_pattern` sentence as the provenance of the pattern — a pattern across most
+US states, never a state's rule. Every check in `to_verify` and `date_confirmed` is `null`:
+unknown, never confirmed, and named in `missing_required`; `unverified` counts them;
+`provenance` says why each field is blank, and `disclaimer` travels. The document states
+**no verified fact about any licensee** — it is the list of lookups the owner still has to
+perform, and a consumer must never render a `null` as a check that passed.
