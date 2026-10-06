@@ -21,11 +21,13 @@ function must(cond, msg){ if(!cond) problems.push(msg); }
 /* Drill gates from the 2026-10 review of the any-state tracks.
    (a) The correct option may not be longer than the longest distractor by more than
        MARGIN_MAX characters — the reviewer found the right answer was the longest option in
-       27 of 30 deep-track drills. Scoped to DEEP tracks (ts_*.js): the base California tracks in
-       tradeschool.js fail it in 21 of 30 drills (measured 2026-10-06; margins 22–106, e.g.
-       principles/w2 +106, playbooks/p8 +85, playbooks/p2 +83) and are not rewritten here.
-       MARGIN_EXEMPT names a deep track that is measured as failing and not yet reviewed; the
-       gate checks the exemption is still earned and fails if it has gone stale.
+       27 of 30 deep-track drills. Applies to ALL tracks: first scoped to the deep tracks
+       (ts_*.js) because the base California tracks in tradeschool.js failed it in 21 of 30
+       drills (measured 2026-10-06; margins 22–106, e.g. principles/w2 +106, playbooks/p8 +85,
+       playbooks/p2 +83); those 21 were rewritten the same day (re-measured: every base drill
+       now within −2…+20) and the scope widened. MARGIN_EXEMPT names a track that is measured
+       as failing and not yet reviewed; the gate checks the exemption is still earned and fails
+       if it has gone stale.
    (b) No drill q, option or why in a deep track contains the word "should" — drills ask
        questions, they do not prescribe. Bodies are out of scope because ts_license.js l6
        quotes the pattern descriptively ("advertising language that describes who should
@@ -91,15 +93,15 @@ T.forEach(function(t, ti){
       must(/class="src"/.test(body), mt + ': deep-track module has no class="src" source paragraph');
       must(!/you should/i.test(body), mt + ': body says "you should" — the no-advice rule');
     }
-    if(deep && d && Array.isArray(d.opts) && d.opts.length === 4 && Number.isInteger(d.a) && d.a >= 0 && d.a <= 3){
+    if(d && Array.isArray(d.opts) && d.opts.length === 4 && Number.isInteger(d.a) && d.a >= 0 && d.a <= 3){
       drillChecked++;
       var str = function(x){ return typeof x === 'string' ? x : ''; };
-      /* (b) no "should" anywhere in the drill */
-      [str(d.q)].concat(d.opts.map(str), [str(d.why)]).forEach(function(s, k){
+      /* (b) no "should" anywhere in the drill — deep tracks only */
+      if(deep) [str(d.q)].concat(d.opts.map(str), [str(d.why)]).forEach(function(s, k){
         var where = k === 0 ? 'q' : k === 5 ? 'why' : 'opt ' + (k - 1);
         must(!/\bshould\b/i.test(s), mt + ': drill ' + where + ' says "should" — drills ask, they do not prescribe');
       });
-      /* (a) correct option not longer than the longest distractor by more than MARGIN_MAX */
+      /* (a) correct option not longer than the longest distractor by more than MARGIN_MAX — all tracks */
       var correctLen = str(d.opts[d.a]).length;
       var longestOther = Math.max.apply(null, d.opts.filter(function(_, i){ return i !== d.a; }).map(function(o){ return str(o).length; }));
       var margin = correctLen - longestOther;
@@ -144,5 +146,5 @@ if(problems.length){
   process.exit(1);
 }
 lines.forEach(function(l){ console.log(l); });
-if(drillChecked) console.log('drill checks: longest-option margin ≤ ' + MARGIN_MAX + ' (deep tracks' + exemptNote + ') · no "should" in deep-track drills ✓');
+if(drillChecked) console.log('drill checks: longest-option margin ≤ ' + MARGIN_MAX + ' (all tracks' + exemptNote + ') · no "should" in deep-track drills ✓');
 console.log('trade school: ' + T.length + ' tracks · ' + moduleTotal + ' modules · ' + tradeTotal + ' trades ✓');

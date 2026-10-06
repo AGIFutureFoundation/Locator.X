@@ -45,7 +45,9 @@ such.
   three tracks made 71 edits (prescriptions rewritten as the discipline a professional
   applies, unmeasured frequency claims removed, federal facts citing their statute inline,
   drills rebalanced); two of its findings are now gates: the correct option may not outrun
-  the longest distractor by more than 20 characters, and no any-state drill says "should".
+  the longest distractor by more than 20 characters (now enforced on all twelve tracks:
+  the 21 base drills and 10 developer drills that failed it were rebalanced, margins re-measured
+  at -11 to +20), and no any-state drill says "should".
   The property-management track ends in an **owner↔manager matching desk** (the building's
   facts become the questions to put to a candidate manager, the KPI definitions to request
   monthly, and a verification record); the contractor desk exports its record as the
