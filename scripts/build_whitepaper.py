@@ -164,6 +164,20 @@ def render(figs):
     all_figs = dict(figs)
     all_figs.update(charts(figs))
     body, used = resolve(raw, all_figs)
+
+    # resolve() only confirms every PRESENT placeholder resolved - it says
+    # nothing if a chart placeholder itself went missing from the source
+    # (the body-level '<svg' in page check in main() used to accept this:
+    # one surviving chart satisfies "at least one <svg exists" even if the
+    # other chart's placeholder was deleted). Check the exact set here,
+    # where "which charts are expected" is still known.
+    missing_charts = CHART_KEYS - used
+    if missing_charts:
+        die('the whitepaper is missing its chart(s): %s — a {{chart_*}} placeholder was '
+            'removed from the source. Either restore it or remove the chart from '
+            'charts() too; a page with one of two charts ships silently incomplete.'
+            % ', '.join(sorted(missing_charts)))
+
     return body, used - CHART_KEYS
 
 
@@ -253,13 +267,18 @@ def main():
     body, used = render(figs)
 
     page = to_html(body)
-    # Raw SVG markup contains digits (bar values, viewBox numbers) by
-    # construction — the typed-number check already ran against the SOURCE
-    # markdown before any chart or figure was substituted in, so this is not
-    # a second pass of that check, just confirming the charts actually landed.
-    if '<svg' not in page:
-        die('the rendered page carries no chart — chart_coverage/chart_academy failed to '
-            'substitute')
+    # render() already confirmed both chart placeholders resolved in the
+    # SOURCE. This only catches a <figure> tag being dropped or duplicated
+    # outright during to_html's own markdown pass — NOT a chart surviving
+    # with its opening tag intact but its later lines scattered into stray
+    # <p> elements by a bug upstream (verified: an embedded newline inside
+    # a chart's own CSS once did exactly that, and this count-based check
+    # does not catch it — the Playwright screenshot pass that originally
+    # caught it is still the real guard against that failure class).
+    n_figures = page.count('<figure')
+    if n_figures != len(CHART_KEYS):
+        die('the rendered page carries %d chart(s), expected %d — a chart tag was lost or '
+            'duplicated during HTML rendering.' % (n_figures, len(CHART_KEYS)))
 
     if check:
         print('  · whitepaper: %d placeholders, %d charts, %d bytes rendered'
