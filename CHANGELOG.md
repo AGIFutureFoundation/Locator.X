@@ -9,9 +9,9 @@ such.
 
 - **Trade School: three any-state tracks, a trade taxonomy and an eval gate.**
   Licensing was taught for one state and property management and contracting were
-  one lesson each. Three new tracks register onto `window.LXTS.TRACKS`
-  (`src/ts_license.js`, `src/ts_pmdeep.js`, `src/ts_contractor.js`, ten modules
-  each, measured by `tests/trade_school_check.js`): **Licensing navigator — any
+  one lesson each. Four new tracks register onto `window.LXTS.TRACKS`
+  (`src/ts_license.js`, `src/ts_pmdeep.js`, `src/ts_contractor.js`,
+  `src/ts_developer.js`, ten modules each, measured by `tests/trade_school_check.js`): **Licensing navigator — any
   state** teaches the regulator as a system (what every regulator publishes and the
   order to read it in, the salesperson→broker ladder as a pattern, four portability
   categories, the licence question in adjacent roles, fiduciary duty, fair housing,
@@ -21,7 +21,10 @@ such.
   listing in the edition; **Contractors — scope, matching and delivery** runs from
   scope writing through closeout and ends in a live **matching desk** that turns
   ticked trades or typed scope words into licence patterns and a per-trade
-  verification record. No state's hours, fees or deadlines are stated anywhere:
+  verification record; **The developer’s permission and professional stack** follows the
+  permission stack as a public record from the pre-application meeting through bonds,
+  impact fees, the draw inspector, inspections, the hearing and the dated permission
+  notebook. No state's hours, fees or deadlines are stated anywhere:
   this environment cannot open a regulator page, and the repo's rule is that no
   factual row ships without a source and date, so every pattern ends with the
   instruction to confirm it on the regulator's page and record the date.

@@ -171,8 +171,9 @@ The catalog is complete at 50; growth means depth, not count inflation:
   state archetypes. In-app per-state checkpoint content follows the instructor-notes
   supply workflow once wave states reach `pulled`.
 - **Trade School, any state** — the licensing navigator, the property-management operating
-  discipline and the contractor track with its scope-to-trades matching desk
-  (`src/ts_license.js`, `src/ts_pmdeep.js`, `src/ts_contractor.js`; taxonomy in
+  discipline, the contractor track with its scope-to-trades matching desk and the
+  developer’s permission stack (`src/ts_license.js`, `src/ts_pmdeep.js`,
+  `src/ts_contractor.js`, `src/ts_developer.js`; taxonomy in
   `crosswalk/trades.json`, generated into the app by `scripts/gen_trades_js.py`).
 
   *Status:* shipped 2026-10 behind `tests/trade_school_check.js` (shape, unique ids,
