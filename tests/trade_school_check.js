@@ -31,9 +31,7 @@ function must(cond, msg){ if(!cond) problems.push(msg); }
        quotes the pattern descriptively ("advertising language that describes who should
        live somewhere"). */
 var MARGIN_MAX = 20;
-var MARGIN_EXEMPT = {
-  developer: 'measured 2026-10-06: correct option longer than the longest distractor by 36–139 chars in all 10 drills; not part of the review that added this gate'
-};
+var MARGIN_EXEMPT = {};
 var drillChecked = 0, exemptSeen = {};
 
 require(R + 'tradeschool.js');                       // defines window.LXTS.TRACKS
