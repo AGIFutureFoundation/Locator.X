@@ -18,6 +18,24 @@ var problems = [];
 
 function must(cond, msg){ if(!cond) problems.push(msg); }
 
+/* Drill gates from the 2026-10 review of the any-state tracks.
+   (a) The correct option may not be longer than the longest distractor by more than
+       MARGIN_MAX characters — the reviewer found the right answer was the longest option in
+       27 of 30 deep-track drills. Scoped to DEEP tracks (ts_*.js): the base California tracks in
+       tradeschool.js fail it in 21 of 30 drills (measured 2026-10-06; margins 22–106, e.g.
+       principles/w2 +106, playbooks/p8 +85, playbooks/p2 +83) and are not rewritten here.
+       MARGIN_EXEMPT names a deep track that is measured as failing and not yet reviewed; the
+       gate checks the exemption is still earned and fails if it has gone stale.
+   (b) No drill q, option or why in a deep track contains the word "should" — drills ask
+       questions, they do not prescribe. Bodies are out of scope because ts_license.js l6
+       quotes the pattern descriptively ("advertising language that describes who should
+       live somewhere"). */
+var MARGIN_MAX = 20;
+var MARGIN_EXEMPT = {
+  developer: 'measured 2026-10-06: correct option longer than the longest distractor by 36–139 chars in all 10 drills; not part of the review that added this gate'
+};
+var drillChecked = 0, exemptSeen = {};
+
 require(R + 'tradeschool.js');                       // defines window.LXTS.TRACKS
 var baseIds = {};
 ((window.LXTS && window.LXTS.TRACKS) || []).forEach(function(t){ baseIds[t.id] = true; });
@@ -75,10 +93,35 @@ T.forEach(function(t, ti){
       must(/class="src"/.test(body), mt + ': deep-track module has no class="src" source paragraph');
       must(!/you should/i.test(body), mt + ': body says "you should" — the no-advice rule');
     }
+    if(deep && d && Array.isArray(d.opts) && d.opts.length === 4 && Number.isInteger(d.a) && d.a >= 0 && d.a <= 3){
+      drillChecked++;
+      var str = function(x){ return typeof x === 'string' ? x : ''; };
+      /* (b) no "should" anywhere in the drill */
+      [str(d.q)].concat(d.opts.map(str), [str(d.why)]).forEach(function(s, k){
+        var where = k === 0 ? 'q' : k === 5 ? 'why' : 'opt ' + (k - 1);
+        must(!/\bshould\b/i.test(s), mt + ': drill ' + where + ' says "should" — drills ask, they do not prescribe');
+      });
+      /* (a) correct option not longer than the longest distractor by more than MARGIN_MAX */
+      var correctLen = str(d.opts[d.a]).length;
+      var longestOther = Math.max.apply(null, d.opts.filter(function(_, i){ return i !== d.a; }).map(function(o){ return str(o).length; }));
+      var margin = correctLen - longestOther;
+      if(MARGIN_EXEMPT[t.id]){
+        exemptSeen[t.id] = exemptSeen[t.id] || { drills: 0, failing: 0 };
+        exemptSeen[t.id].drills++; if(margin > MARGIN_MAX) exemptSeen[t.id].failing++;
+      } else {
+        must(margin <= MARGIN_MAX, mt + ': correct drill option is ' + margin + ' chars longer than the longest distractor (limit ' + MARGIN_MAX + ')');
+      }
+    }
   });
   moduleTotal += mods.length;
   lines.push('track ' + t.id + ' · ' + mods.length + ' modules');
 });
+/* an exemption is a measured gap, not a permanent pass: when the track comes right, remove it */
+Object.keys(MARGIN_EXEMPT).forEach(function(id){
+  if(!exemptSeen[id]) return;                          // track not shipped in this tree — nothing to check
+  must(exemptSeen[id].failing > 0, 'MARGIN_EXEMPT.' + id + ' is stale — every drill now passes the margin rule; remove the exemption');
+});
+var exemptNote = Object.keys(exemptSeen).length ? '; exempt: ' + Object.keys(exemptSeen).join(', ') : '';
 
 /* the generated taxonomy */
 var X = window.LX_TRADES;
@@ -103,4 +146,5 @@ if(problems.length){
   process.exit(1);
 }
 lines.forEach(function(l){ console.log(l); });
+if(drillChecked) console.log('drill checks: longest-option margin ≤ ' + MARGIN_MAX + ' (deep tracks' + exemptNote + ') · no "should" in deep-track drills ✓');
 console.log('trade school: ' + T.length + ' tracks · ' + moduleTotal + ' modules · ' + tradeTotal + ' trades ✓');

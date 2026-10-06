@@ -28,8 +28,9 @@ cannot silently un-enforce them:
      committed under pages/; and every article
      figure and chart resolves from the committed measured data.
  12. The Trade School eval holds: every track and module has its shape, every deep
-     module cites a source and gives no advice, and src/trades_data.js is exactly
-     what crosswalk/trades.json generates.
+     module cites a source and gives no advice, src/trades_data.js is exactly
+     what crosswalk/trades.json generates, and curriculum/TRADE_SCHOOL.md is exactly
+     the catalog the shipped modules generate.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -669,6 +670,8 @@ def main():
     # edit breaks first). src/trades_data.js is a derived file from
     # crosswalk/trades.json; gen_trades_js.py --check regenerates and diffs it,
     # the same regenerate-and-diff check every other generated file here gets.
+    # curriculum/TRADE_SCHOOL.md is the docs-side catalog of the same tracks,
+    # measured from the loaded modules by gen_tradeschool.py; --check diffs it too.
     if not node:
         FAILURES.append("node is not on PATH, so the Trade School eval could not run - "
                         "it is the only thing checking the shipped tracks have the "
@@ -684,6 +687,10 @@ def main():
     check("matches crosswalk/trades.json" in out,
           "src/trades_data.js is not what crosswalk/trades.json generates - regenerate, "
           "never patch", out)
+    out = run(["curriculum/gen_tradeschool.py", "--check"])
+    check("matches the shipped modules" in out,
+          "curriculum/TRADE_SCHOOL.md is not what the shipped Trade School modules generate - "
+          "regenerate, never patch", out)
 
     if FAILURES:
         print("FAIL — %d problem(s):" % len(FAILURES))

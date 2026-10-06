@@ -38,8 +38,19 @@ such.
   contractor licensing categories, the three federal baselines, a
   verification-record template) and says plainly that a sourced 50-state table
   waits for the browser-pane session that can open and date each page.
-  `tests/run.py` gains section 12c: the Trade School shape and no-advice check and
-  the taxonomy derivation check. Every added track raises the bar for the
+  `tests/run.py` gains section 12c: the Trade School shape and no-advice check, the
+  taxonomy derivation check, and the catalog check — `curriculum/TRADE_SCHOOL.md` is
+  **generated** from the shipped modules by `curriculum/gen_tradeschool.py` (12 tracks,
+  71 modules, 6 with live components) and fails on drift. A reviewer pass over the first
+  three tracks made 71 edits (prescriptions rewritten as the discipline a professional
+  applies, unmeasured frequency claims removed, federal facts citing their statute inline,
+  drills rebalanced); two of its findings are now gates: the correct option may not outrun
+  the longest distractor by more than 20 characters, and no any-state drill says "should".
+  The property-management track ends in an **owner↔manager matching desk** (the building's
+  facts become the questions to put to a candidate manager, the KPI definitions to request
+  monthly, and a verification record); the contractor desk exports its record as the
+  `verification-record` kind in `docs/INTEROP.md`, every unverified field an explicit
+  unknown and the document asserting no fact about any licensee. Every added track raises the bar for the
   comprehensive credential, which already requires every Trade School track.
 
 - **`crm/`: a contacts list generated from the organisations the docs name**

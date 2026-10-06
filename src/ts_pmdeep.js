@@ -6,6 +6,21 @@
 (function(){
 'use strict';
 const L=()=>window.LX;
+/* KPI definitions, word for word as module pd10 states them — pd11's desk lists these so the
+   page the owner asks for on day one is the page pd10 teaches both sides to read. */
+const KPIS=[
+ ['Economic occupancy','rent collected ÷ gross potential rent for the month'],
+ ['Physical occupancy','occupied units ÷ total units, shown beside it so that the gap between the two is the first thing seen'],
+ ['Collections rate','rent collected in the month ÷ rent billed in the month, excluding prior balances'],
+ ['Delinquency','balances owed, aged in buckets, as an amount and as a share of monthly billing'],
+ ['Average turn days','for turns completed this month and trailing twelve'],
+ ['Turn cost per turn','make-ready plus leasing fee, excluding capital items'],
+ ['Renewal rate','renewals ÷ expirations, trailing twelve'],
+ ['Maintenance cost per unit','routine repairs and upkeep for the month and trailing twelve, per door'],
+ ['Open work orders','count by class, with the oldest in each class'],
+ ['Reserve balance','in the account, against the component inventory’s target'],
+ ['Net operating income','the month and trailing twelve, beside the underwriting NOI the purchase was based on']];
+const PM_RECORD='Manager — licence category for this state (broker required / separate PM licence / none): ☐ — licensee lookup done: ☐ — trust account confirmed: ☐ — insurance certificate: ☐ — references on comparable buildings: ☐ — date: ____';
 
 const TRACK={id:'pmdeep', name:'Property management — the operating discipline', who:'Owner-operators, managers and anyone hiring one', c:'--cat3',
  blurb:'What a manager actually controls, written down and measured: screening in order of receipt, the lease as a working document, the delinquency ladder, maintenance triage, the turn, reserves, trust accounting, the management agreement and the licence question. National in scope — every legal clock is a category you look up.',
@@ -87,7 +102,78 @@ const TRACK={id:'pmdeep', name:'Property management — the operating discipline
    <p>How to read it: the dashboard is not a report card, it is an agenda. Each number that moved against its trailing twelve gets one sentence from the manager explaining why and one decision from the owner on what, if anything, changes. A dashboard nobody discusses is decoration. A dashboard where every number is green every month is either a very good building or a very good story, and the reconciliation from the trust-accounting module is how you tell which.</p>
    <p class="src">Source to check: the property’s own owner statements and work-order log, from which every figure on the page is derived — never a figure typed in from memory.</p>
    <p><b>What this app does with it.</b> The rent roll and actuals views hold the collected side of these definitions; the underwriting desk holds the modelled side; the reserve line and the decision memo close the loop by recording the target and the decision, so that both parties see one page built from the same records.</p>`,
-   drill:{q:'The owner notices that the collections rate on the dashboard has improved for three months while the delinquency balance has barely moved. The most useful question is:', opts:['Why has the delinquency balance not been written off yet, since the collections rate shows the month is being collected in full?','Has the definition of collections changed — say, to include catch-up payments on prior balances — so the rate improved while the position did not?','Should the manager be paid a bonus for the improved rate, as the agreement contemplates for three months of sustained improvement?','Can the delinquency bucket be removed from the dashboard, since the collections rate now carries the same information more clearly?'], a:1, why:'A KPI that improves while the thing it measures does not is usually a definition that moved. Collections should count the month’s billing only; the dashboard records its definitions so a drift like this is caught, not rewarded.'}}
+   drill:{q:'The owner notices that the collections rate on the dashboard has improved for three months while the delinquency balance has barely moved. The most useful question is:', opts:['Why has the delinquency balance not been written off yet, since the collections rate shows the month is being collected in full?','Has the definition of collections changed — say, to include catch-up payments on prior balances — so the rate improved while the position did not?','Is the manager owed a bonus for the improved rate, as the agreement contemplates for three months of sustained improvement?','Can the delinquency bucket be removed from the dashboard, since the collections rate now carries the same information more clearly?'], a:1, why:'A KPI that improves while the thing it measures does not is usually a definition that moved. Collections counts the month’s billing only; the dashboard records its definitions so a drift like this is caught, not rewarded.'}},
+  {id:'pd11', t:'Hiring a manager — the matching desk', body:`
+   <p>This desk turns the modules above into the interview. Describe the building — how many units, what kind, who runs it today, and whether tenants, program tenancies or commercial leases are already in place — and press <b>Build the questions</b>. The desk returns three things: the agreement questions that follow from that description, written as questions to put to a candidate manager rather than as answers to accept; the KPI definitions from the dashboard module, so that the page the owner asks for on day one is the page both sides read every month afterwards; and a verification record for the licence question, with a box for each lookup and a space for the date it was done.</p>
+   <p>What the desk does not do matters as much. It stores nothing — close the page and the description is gone. It recommends nobody, names no firm and ranks no proposal; the questions are the owner’s to ask, the answers are the candidate’s to give, and the file is where both are kept with a date. A question the candidate cannot answer is itself an answer, and the desk is built so that the silence shows.</p>
+   <div id="ts_pmmatch"></div>
+   <p class="src">Source to check: the state real-estate regulator’s licence requirements for property management and its public licensee search, on the date you write in the record; the candidate’s own proposed agreement, read against the clauses in the management-agreement module.</p>`,
+   live:el=>{ try{
+    const host=el.querySelector('#ts_pmmatch'); if(!host) return;
+    const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const field='width:100%;box-sizing:border-box;padding:6px;font-size:13px;margin-top:2px';
+    host.innerHTML=`<div class="tile" style="margin-top:8px">
+      <div class="eyebrow">The building</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 14px;font-size:13px;margin:6px 0 10px">
+        <label>Unit count<input id="ts_pmunits" type="number" min="1" step="1" value="1" style="${field}"></label>
+        <label>Building type<select id="ts_pmtype" style="${field}"><option value="sfr">Single-family</option><option value="small">2–4 units</option><option value="multi">5+ units</option><option value="mixed">Mixed-use</option><option value="str">Short-term</option></select></label>
+        <label>Who manages today<select id="ts_pmwho" style="${field}"><option value="owner">Owner</option><option value="third">Third party</option><option value="none">None yet</option></select></label>
+      </div>
+      <div style="font-size:13px;margin:0 0 10px">
+        <label style="display:block;cursor:pointer"><input type="checkbox" id="ts_pmten"> Tenants in place</label>
+        <label style="display:block;cursor:pointer"><input type="checkbox" id="ts_pmprog"> Any Section 8 or program tenancies</label>
+        <label style="display:block;cursor:pointer"><input type="checkbox" id="ts_pmcom"> Any commercial tenants</label>
+      </div>
+      <button class="btn primary" id="ts_pmgo">Build the questions</button>
+      <div id="ts_pmout" style="margin-top:10px"></div></div>`;
+    host.querySelector('#ts_pmgo').onclick=()=>{ try{
+      const val=id=>{ const n=host.querySelector('#'+id); return n?n.value:''; };
+      const chk=id=>{ const n=host.querySelector('#'+id); return !!(n&&n.checked); };
+      const units=parseInt(val('ts_pmunits'),10), type=val('ts_pmtype'), who=val('ts_pmwho');
+      const qs=[
+        'Is the management fee a percentage of rent collected or of rent scheduled, and can the month’s fee be rebuilt from the owner statement alone?',
+        'What spending amount needs the owner’s approval, who may sign a lease and at what rent, and who may start the delinquency ladder or file?',
+        'Where are client funds held, how often is the trust account reconciled three ways, and does the owner see the reconciliation with the statement?',
+        'What is the term, how does it renew, what notice ends it, and how do deposits, records, keys and open work orders transfer at exit?',
+        'What insurance does the manager carry, what must the owner carry, and who is named on whose policy?'];
+      const byType={
+        sfr:'When the one unit is dark, what is billed — a minimum monthly fee, nothing, or a percentage of scheduled rent — and how is a single vacancy reported?',
+        small:'How are shared systems and exterior items logged across the units, and if one unit is owner-occupied, is it inside or outside the agreement?',
+        multi:'How does the manager report economic occupancy against physical occupancy, and how are concessions and credit loss shown on the statement?',
+        mixed:'How are the residential and commercial sides kept apart on the statement, and does the fee basis differ between them?',
+        str:'Which platform fees are passed through and which are kept, how often are turnovers expected, where is the local registration or permit looked up, and who files any occupancy tax?'};
+      const byWho={
+        owner:'How do the existing leases, deposit ledger, condition reports and work-order history move from the owner’s own records into the manager’s, and who confirms the deposit balances on day one?',
+        third:'How are deposits, records, keys and open work orders taken over from the outgoing manager, and who reconciles the deposit ledger to the bank before the first statement?',
+        none:'In the first month, in what order are the component inventory, the written screening criteria and the move-in condition reports produced, and when does the owner see the first statement?'};
+      if(byType[type]) qs.push(byType[type]);
+      if(Number.isFinite(units)&&units>0){
+        const fits=type==='sfr'?units===1:type==='small'?(units>=2&&units<=4):type==='multi'?units>=5:true;
+        if(!fits) qs.push('The unit count ('+units+') and the building type do not describe the same building — which one is the agreement to cover?');
+      } else qs.push('The unit count is blank — how many doors does the agreement cover, and does the fee schedule change with the count?');
+      if(byWho[who]) qs.push(byWho[who]);
+      if(chk('ts_pmten')) qs.push('How are the existing leases abstracted — due date, grace period, late-fee pattern, entry notice, renewal terms — and how is a move-in condition report obtained or reconstructed for a tenant already in place?');
+      if(chk('ts_pmprog')) qs.push('Who handles program inspections and payment-standard changes, how is the program portion of rent reconciled against the tenant portion on the statement, and who tracks recertification dates?');
+      if(chk('ts_pmcom')) qs.push('How is CAM reconciled each year, who abstracts the commercial leases — options, escalations, exclusives — and how are commercial collections shown apart from residential?');
+      const out=host.querySelector('#ts_pmout'); if(!out) return;
+      out.innerHTML=`<div style="border-top:1px solid var(--line);padding:8px 0"><div class="eyebrow">Questions to put to the candidate</div>
+        <ol style="font-size:13px;margin:4px 0 0 18px;padding:0">${qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ol>
+        <p class="src">Questions, not answers to accept: what the candidate says goes in the file with a date, beside the lookups below.</p></div>
+        <div style="border-top:1px solid var(--line);padding:8px 0"><div class="eyebrow">KPI definitions to request monthly — the page both sides read</div>
+        <ul style="font-size:13px;margin:4px 0 0 18px;padding:0">${KPIS.map(k=>`<li><b>${esc(k[0])}</b>: ${esc(k[1])}</li>`).join('')}</ul>
+        <p class="src">Definitions are written down once and do not drift; a change to any of them is itself an entry with a date.</p></div>
+        <div style="border-top:1px solid var(--line);padding-top:8px"><div class="eyebrow">Verification record — copy into the file</div>
+        <pre id="ts_pmrec" style="white-space:pre-wrap;font-size:12px;margin:6px 0">${esc(PM_RECORD)}</pre>
+        <button class="btn" id="ts_pmcopy">Copy record</button> <span class="src" id="ts_pmmsg"></span></div>`;
+      const copyBtn=out.querySelector('#ts_pmcopy'); if(!copyBtn) return;
+      copyBtn.onclick=()=>{ const say=s=>{ try{ const m=out.querySelector('#ts_pmmsg'); if(m) m.textContent=s; }catch(_){} };
+        try{ const rec=out.querySelector('#ts_pmrec'); const txt=rec?rec.textContent:PM_RECORD;
+          if(typeof navigator==='undefined'||!navigator.clipboard||!navigator.clipboard.writeText){ say('Select the text and copy it.'); return; }
+          navigator.clipboard.writeText(txt).then(()=>say('Copied.'),()=>say('Select the text and copy it.'));
+        }catch(e){ say('Select the text and copy it.'); } };
+    }catch(e){} };
+   }catch(e){} },
+   drill:{q:'An owner runs the matching desk for a mixed-use building with program tenancies and receives a list of questions, the KPI definitions and a verification record. What has the desk decided?', opts:['Which of the candidate managers is the better fit, since the questions were generated from the owner’s own building and a candidate who answers every one of them has met the standard','Nothing — it has turned the building into questions to ask and lookups to date; the answers and the choice stay with the owner','That the building needs a licensed broker as its manager, because mixed-use with program tenancies is the case in which every state requires one','That the KPI definitions it lists are the ones the agreement must adopt, since they were taken from the dashboard module and are therefore binding on both sides'], a:1, why:'The desk stores nothing and recommends nobody; its output is a set of questions, a set of definitions to request and a record of lookups still to be done. Which manager, on which terms, is the owner’s decision, written in the decision memo with the regulator lookup dated beside it.'}}
  ]};
 
 function register(){

@@ -145,6 +145,9 @@ through.
 
 The catalog, separated by pillar with prerequisite flows and level-by-level detail, is in
 [`../curriculum/courses/`](../curriculum/courses/README.md).
+The Trade School — the role-by-role tracks beside the curriculum, each with its own certification
+check — is catalogued the same way, measured from the shipped modules, in
+[`../curriculum/TRADE_SCHOOL.md`](../curriculum/TRADE_SCHOOL.md).
 
 ## 8. The evidence doctrine
 
