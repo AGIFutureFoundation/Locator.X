@@ -502,6 +502,17 @@ def main():
     # solicitation in a PUBLIC post fails the build twice over.
     run(["scripts/build_social.py", "--check"])
 
+    # ---- 11b9. the product whitepaper states no figure it did not measure --
+    # content/whitepaper/WHITEPAPER.md reuses the same deck_figures.py the
+    # investor deck does, but on purpose does not require every measured
+    # figure to be quoted here - it intentionally omits the company/entity
+    # figures (entities, risks, products, agents) to keep the platform
+    # description separate from the investor ask. build_deck.py's own
+    # unused-figure check is what still catches a figure nobody quotes
+    # ANYWHERE across investor/social/whitepaper; this call is the
+    # no-typed-digit and placeholder-resolves guarantee for this file alone.
+    run(["scripts/build_whitepaper.py", "--check"])
+
     # ---- 11b6. the feasibility map cannot overstate a market ---------------
     # scripts/standard_feasibility.py reports how many of the Investment
     # Standard's requirements a market's public record can answer AT ALL. Its

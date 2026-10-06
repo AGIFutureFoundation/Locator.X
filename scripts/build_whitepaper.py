@@ -45,10 +45,15 @@ def fmt(v):
 
 
 def check_no_typed_numbers(body):
-    """A digit in the whitepaper body must have come from a placeholder."""
+    """A digit in the whitepaper body must have come from a placeholder.
+
+    Unlike build_deck.py, this file has no page-numbering headings to exempt
+    — every heading here is plain prose, so a digit in one is checked exactly
+    like a digit anywhere else: a heading is the most visible place a typed
+    figure could hide."""
     for i, line in enumerate(body.split('\n'), start=1):
         s = line.strip()
-        if s.startswith('<!--') or s.startswith('#'):
+        if s.startswith('<!--'):
             continue
         if re.search(r'\d', line):
             return i, line

@@ -47,6 +47,8 @@ jobs:
         run: python3 scripts/validate_company.py
       - name: Investor deck states no unmeasured figure
         run: python3 scripts/build_deck.py --check
+      - name: Product whitepaper states no unmeasured figure
+        run: python3 scripts/build_whitepaper.py --check
       - name: Criteria feasibility — no market ceiling overstated
         run: python3 scripts/standard_feasibility.py --check
       - name: Coverage inventory and crosswalk agree
