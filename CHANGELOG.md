@@ -7,6 +7,42 @@ such.
 
 ## [Unreleased]
 
+- **Trade School: three any-state tracks, a trade taxonomy and an eval gate.**
+  Licensing was taught for one state and property management and contracting were
+  one lesson each. Three new tracks register onto `window.LXTS.TRACKS`
+  (`src/ts_license.js`, `src/ts_pmdeep.js`, `src/ts_contractor.js`, ten modules
+  each, measured by `tests/trade_school_check.js`): **Licensing navigator — any
+  state** teaches the regulator as a system (what every regulator publishes and the
+  order to read it in, the salesperson→broker ladder as a pattern, four portability
+  categories, the licence question in adjacent roles, fiduciary duty, fair housing,
+  trust accounting, verifying any licensee, the developer's professional stack);
+  **Property management — the operating discipline** covers what a manager
+  controls through the KPI set, with one live module computing a turn cost from a
+  listing in the edition; **Contractors — scope, matching and delivery** runs from
+  scope writing through closeout and ends in a live **matching desk** that turns
+  ticked trades or typed scope words into licence patterns and a per-trade
+  verification record. No state's hours, fees or deadlines are stated anywhere:
+  this environment cannot open a regulator page, and the repo's rule is that no
+  factual row ships without a source and date, so every pattern ends with the
+  instruction to confirm it on the regulator's page and record the date.
+
+  The taxonomy the desk reads is one file, `crosswalk/trades.json` (18 divisions,
+  47 trades, each with scope keywords, a digit-free licence pattern tagged
+  `pattern` / `state-specific` / `federal`, and a verification checklist);
+  `scripts/gen_trades_js.py` generates `src/trades_data.js` from it and `--check`
+  fails on a hand edit. `docs/resources/licensing-regulators.md` is the docs-side
+  companion (search recipes, the five regulator publications in order, the PM and
+  contractor licensing categories, the three federal baselines, a
+  verification-record template) and says plainly that a sourced 50-state table
+  waits for the browser-pane session that can open and date each page.
+  `tests/run.py` gains section 12c: the Trade School shape and no-advice check and
+  the taxonomy derivation check. Every added track raises the bar for the
+  comprehensive credential, which already requires every Trade School track.
+
+- **`crm/`: a contacts list generated from the organisations the docs name**
+  (`crm/build_crm.py` → `crm/contacts.csv`, 221 rows, each with its source file;
+  no email or phone is invented because the docs name none).
+
 - **Five system films, over live footage** — `scripts/make_system_films.js`.
   Where the short promos carry one claim over one still, these run 38 seconds
   each with **the application running inside the frame** while the mechanism is

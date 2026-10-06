@@ -170,6 +170,18 @@ The catalog is complete at 50; growth means depth, not count inflation:
   against the state guides (phase names taken from the in-app guide's §9), with four
   state archetypes. In-app per-state checkpoint content follows the instructor-notes
   supply workflow once wave states reach `pulled`.
+- **Trade School, any state** — the licensing navigator, the property-management operating
+  discipline and the contractor track with its scope-to-trades matching desk
+  (`src/ts_license.js`, `src/ts_pmdeep.js`, `src/ts_contractor.js`; taxonomy in
+  `crosswalk/trades.json`, generated into the app by `scripts/gen_trades_js.py`).
+
+  *Status:* shipped 2026-10 behind `tests/trade_school_check.js` (shape, unique ids,
+  four-option drills, a source paragraph per lesson, the no-advice rule). What it
+  deliberately does not contain: any state's hours, fees or deadlines. The follow-up is
+  a **sourced 50-state licensing-regulator table** in
+  [`resources/licensing-regulators.md`](resources/licensing-regulators.md), one row per
+  regulator opened over the browser pane and dated — the same discipline as the
+  [state administrators table](resources/state-administrators.md).
 - Case-study additions to the record layer, each claim still marked documented / reported /
   disputed.
 

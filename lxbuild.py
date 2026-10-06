@@ -65,7 +65,7 @@ MODULES = [
   'src/secure.js', 'src/bubbles3d.js', 'src/palette.js', 'src/voice.js', 'src/canvasmap.js', 'src/app.js',
   'src/dashboard.js', 'src/research.js', 'src/dev.js', 'src/underwrite.js', 'src/actuals.js', 'src/locator.js', 'src/hacks.js',
   'src/scout.js', 'node_modules/d3-delaunay/dist/d3-delaunay.min.js', 'src/vis.js', 'src/twin.js',
-  'src/academy.js', 'src/tradeschool.js', 'src/conv.js', 'src/signals.js', 'src/uwviz.js',
+  'src/academy.js', 'src/tradeschool.js', 'src/trades_data.js', 'src/ts_license.js', 'src/ts_pmdeep.js', 'src/ts_contractor.js', 'src/conv.js', 'src/signals.js', 'src/uwviz.js',
   'src/rag.js', 'src/uwexport.js', 'src/program.js', 'src/views.js', 'src/belowmarket.js',
   'src/dash3d.js', 'src/towers.js', 'src/sectors.js', 'src/panels.js', 'src/corp.js',
   'src/patterns.js', 'src/campus.js', 'src/records.js', 'src/recon.js', 'src/walk.js',

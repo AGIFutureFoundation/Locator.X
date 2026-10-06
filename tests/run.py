@@ -27,6 +27,9 @@ cannot silently un-enforce them:
  11. The synthetic fixture builds reproducibly; no deploy-generated page is also
      committed under pages/; and every article
      figure and chart resolves from the committed measured data.
+ 12. The Trade School eval holds: every track and module has its shape, every deep
+     module cites a source and gives no advice, and src/trades_data.js is exactly
+     what crosswalk/trades.json generates.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -656,6 +659,31 @@ def main():
           "stale twin" % (", ".join(both), "is" if len(both) == 1 else "are"))
     shutil.rmtree(gendir, ignore_errors=True)
     shutil.rmtree(mtree, ignore_errors=True)
+
+    # ---- 12c. the Trade School eval, and the trade taxonomy stays derived -----
+    # tests/trade_school_check.js loads the real Trade School modules under the
+    # same stub curriculum/extract_tracks.js uses and asserts the shape every
+    # track, module and drill must have - and two doctrine rules on the deep
+    # tracks: every module body carries a class="src" source paragraph, and
+    # none says "you should" (the no-advice rule, which a well-meaning lesson
+    # edit breaks first). src/trades_data.js is a derived file from
+    # crosswalk/trades.json; gen_trades_js.py --check regenerates and diffs it,
+    # the same regenerate-and-diff check every other generated file here gets.
+    if not node:
+        FAILURES.append("node is not on PATH, so the Trade School eval could not run - "
+                        "it is the only thing checking the shipped tracks have the "
+                        "shape the app renders and that deep modules cite a source")
+    else:
+        r = subprocess.run([node, "tests/trade_school_check.js"],
+                           capture_output=True, text=True, cwd=ROOT)
+        out = r.stdout + r.stderr
+        check(r.returncode == 0, "tests/trade_school_check.js failed", out[-2000:])
+        check("trade school:" in out and "✓" in out,
+              "tests/trade_school_check.js printed no summary line", out[-800:])
+    out = run(["scripts/gen_trades_js.py", "--check"])
+    check("matches crosswalk/trades.json" in out,
+          "src/trades_data.js is not what crosswalk/trades.json generates - regenerate, "
+          "never patch", out)
 
     if FAILURES:
         print("FAIL — %d problem(s):" % len(FAILURES))
