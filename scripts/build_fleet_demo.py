@@ -306,6 +306,24 @@ def make_ba(seed, count, wide, tall, campus):
                       else max(1, (units + i % 3) - (i % 2))),
             "stories": None if bare or vacant or i % 12 < 6 else 1 + (i % 3),
         })
+        # ---- ZIP-centroid placement: the record whose coordinate is a guess --
+        # l.approx was never true anywhere in this fleet before this line: no
+        # fixture record was ever imported without a real parcel point, so the
+        # whole honesty chain src/app.js's mk() builds for exactly this case —
+        # the import-time centroid jitter itself, geoexport.js's geometry_basis
+        # label, recon.js's coordinate provenance line, uwexport.js's LOCATION
+        # gap, twin.js excluding the record from 3D massing, and comps.js's
+        # "an approximate subject gets no comps at all, a candidate is skipped
+        # the same way a wrong basis is" branch — ran against zero records in
+        # any test. One in twenty now lands at its ZIP's centroid with the same
+        # jitter src/app.js:1701 applies on a real import (+/-0.006 lng,
+        # +/-0.005 lat), not the street-level point pick_in_cell() already gave
+        # it above, so every one of those paths finally executes.
+        if i % 20 == 13:
+            cx0, cy0 = x0 + cell_w / 2, y0 + cell_h / 2
+            listings[-1]["lng"] = cx0 + (rng.random() - 0.5) * 0.006
+            listings[-1]["lat"] = cy0 + (rng.random() - 0.5) * 0.005
+            listings[-1]["approx"] = True
     region = {"center": [W / 2, H / 2], "zoom": 11.0,
               "maxBounds": [[-0.2, -0.18], [W + 0.25, H + 0.22]], "pois": []}
     if campus:

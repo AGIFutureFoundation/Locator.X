@@ -131,7 +131,11 @@
     // only mount campuses that are actually near tracked inventory
     const B40=boxes(40);
     const near=C.filter((c,ci)=>{ const b=B40[ci];
-      for(let i=0;i<L.length;i+=7){ const l=L[i]; if(!l||l.lat==null) continue;
+      /* every listing, not a 1-in-7 sample — the bounding-box check above
+         already keeps this cheap, and a campus whose only nearby inventory
+         happened to fall on a skipped index lost its marker entirely even
+         though real tracked inventory sat within the stated 40km. */
+      for(let i=0;i<L.length;i++){ const l=L[i]; if(!l||l.lat==null) continue;
         if(Math.abs(l.lat-b.lat)>b.dLat || Math.abs(l.lng-b.lng)>b.dLng) continue;
         if(dist(l.lat,l.lng,c.lat,c.lng)<40) return true; }
       return false; });

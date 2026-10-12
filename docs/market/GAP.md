@@ -39,7 +39,7 @@ six either.
 | Comparable sales | PropStream, HouseCanary | `src/comps.js` (297) — a comparable is a **recorded sale with a date**, never a listing or an estimate | **ships** |
 | Rent estimates | Rentometer, Mashvisor, AirDNA | `src/conv.js` (111) and `src/rebuild.js` (335) produce **models, labelled as models** | **partial** — no licensed rent feed; the label is the point |
 | Market analytics and forecasts | Mashvisor, AirDNA, HouseCanary | `src/predict.js` (587) with a stated method and a **backtest that says whether to believe it**; `src/outlook.js` (225) | **ships** |
-| STR-specific revenue modelling | AirDNA | `src/conv.js`, `src/campus.js` (250) student-housing demand | **partial** — lodging expansion scoped in [`HOTEL_EXPANSION.md`](../HOTEL_EXPANSION.md) |
+| STR-specific revenue modelling | AirDNA | `src/conv.js`, `src/campus.js` (254) student-housing demand | **partial** — lodging expansion scoped in [`HOTEL_EXPANSION.md`](../HOTEL_EXPANSION.md) |
 | Source quality shown to the user | *nobody in the register* | `src/evidence.js` (233) grades every county feed; `src/sources.js` (176) catalogues how each source attaches; the **evidence lens** in `src/app.js` (1764) maps the grade across a whole market and names the field that market is missing most | **ships** — this has no equivalent in the category, and it is now spatial rather than per-property |
 | Asset-class normalisation across jurisdictions | *nobody in the register* | [`crosswalk/usecodes.json`](../../crosswalk/usecodes.json), 48 codes across 8 jurisdictions, each with source + date | **ships** — no equivalent |
 
