@@ -49,9 +49,16 @@ function overrideNote(l){
      claiming an adjustment the computation actually ignored. */
   if(!o || (!o.price && !o.rent)) return '';
   var what = o.price && o.rent ? 'price and rent' : o.price ? 'price' : 'rent';
+  /* val/rent (SERIES above) read d.mk, from marketFor(l) — ZIP/city/neighborhood
+     lookups with no override dependence at all, so those two lines are still
+     published market data regardless of this override. Only cf, cap and score
+     run through deal(l)/analyze(l), which DO read the override — saying "every
+     month above" without that split would make the unaffected market lines
+     look adjusted too. */
   return '<p style="font-size:11.5px;color:var(--warn);margin:4px 0 0"><b>Adjusted for your ' + what
-    + ' override on this property.</b> Every month above is re-derived at your override, not the assessed '
-    + 'value on record — this is a what-if curve, not recorded history.</p>';
+    + ' override on this property.</b> The value and rent lines above are still published market data. '
+    + 'Cash flow, cap rate and score are re-derived at your override, not the assessed value on record '
+    + '— those three are a what-if curve, not recorded history.</p>';
 }
 
 var CACHE = {};
