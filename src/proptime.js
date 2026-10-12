@@ -34,6 +34,21 @@ var SERIES = [
    get:function(d, a){ return a ? N(a.score) : null; }}
 ];
 
+/* The cache-key fix means an override now correctly reshapes every month in
+   this history, not just the current one — which is right (the computation
+   always read the override; it just used to lie about it), but a reader who
+   does not notice can mistake an override-adjusted curve for the property's
+   actual recorded history. Name the input plainly wherever the override is
+   live, the same way the rest of this panel names what it cannot answer. */
+function overrideNote(l){
+  var o = L().state.overrides[l.id];
+  if(!o || (o.price == null && o.rent == null)) return '';
+  var what = o.price != null && o.rent != null ? 'price and rent' : o.price != null ? 'price' : 'rent';
+  return '<p style="font-size:11.5px;color:var(--warn);margin:4px 0 0"><b>Adjusted for your ' + what
+    + ' override on this property.</b> Every month above is re-derived at your override, not the assessed '
+    + 'value on record — this is a what-if curve, not recorded history.</p>';
+}
+
 var CACHE = {};
 function history(l, wantScore){
   /* app.js's own dealSync() fingerprints state.assump AND state.overrides
@@ -127,7 +142,8 @@ function drawer(l, opt){
     + ' at your current assumptions &mdash; nothing is smoothed or projected. '
     + '<b>This is the history of an index applied to one parcel, not the history of the parcel.</b> '
     + 'Two identical buildings in the same ZIP produce the same curves, because the only thing moving is '
-    + 'the market series. It shows how exposed this property is to its market; it is not evidence about the building.</p></div>';
+    + 'the market series. It shows how exposed this property is to its market; it is not evidence about the building.</p>'
+    + overrideNote(l) + '</div>';
 }
 
 /* the fuller panel used inside the underwriting sheet, with the derived read */
@@ -171,7 +187,8 @@ function sheet(l){
     + 'from the published index at your current assumptions. <b>It is the history of an index applied to this parcel, '
     + 'not the parcel’s own history</b> — there is no transaction history here beyond the single recorded sale on the '
     + 'record, and any two properties in the same ZIP will trace the same shape. Read it as market exposure, never as '
-    + 'evidence about the building.</p></div>';
+    + 'evidence about the building.</p>'
+    + overrideNote(l) + '</div>';
 }
 
 window.LXPropTime = {drawer:drawer, sheet:sheet, history:history, invalidate:invalidate, SERIES:SERIES};
