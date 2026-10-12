@@ -27,8 +27,13 @@ row for every state currently reads `not yet sourced`, honestly, because it is.
 Locator.X's Academy teaches people to evaluate and underwrite real estate as investors. This
 track is a different audience: people who want to **practice** in the industry — sell,
 broker, or manage, under their state's license. The two audiences overlap (most agents and
-brokers also invest), which is exactly why the existing Academy content — the asset test, the
-numbers pillar, the evidence discipline — is assumed knowledge here rather than repeated.
+brokers also invest), which is why this track assumes the Academy's foundational content
+rather than re-teaching it — stated explicitly, the same way §6 names the recommended
+E-pillar items, so the assumption is not left implicit: **F1/F2** (how a building pays, the
+asset-or-liability test), **N1** (NOI, the number every valuation rests on), and **A1/A2**
+(who does what in the industry, the five commercial classes) are recommended before or
+alongside this track. A reader who has not touched the Academy's F and N pillars will meet
+unexplained terms in the module topics below.
 
 ## 1. Who needs a license, and for what
 
@@ -163,3 +168,9 @@ is a `docs/company/PRICING.md` decision, not a line added here.
 3. Decide where this track's lessons live in the app (a new track module under `src/`,
    parallel to how `equity`/`found`/etc. back the existing Academy) — out of scope for this
    outline, which exists to define the shape before any code commits to it.
+4. Revisit `real-estate-licensing.md`'s placement in `docs/resources/` if a second
+   non-gate resource file shows up there, or once real per-state content actually ships in
+   it. `docs/resources/README.md` defines a resource as something that feeds a LOCATOR gate;
+   this file is a named, visible exception to that, correct for a single not-yet-sourced
+   scaffold but not meant to become the template for a second one. A `docs/licensing/`
+   directory is the likely destination if and when that happens.
