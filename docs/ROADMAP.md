@@ -152,7 +152,7 @@ allocator + SHPO + state credit per state, routing patterns for the rest).
 
 ## 6. v1.3 — Curriculum growth
 
-The catalog is complete at 50; growth means depth, not count inflation:
+The catalog is complete at 51; growth means depth, not count inflation:
 
 - **Instructor notes** — the layer exists (`check 8` validates anchors) and deliberately
   renders nothing until notes are supplied. Fill the first tier: one note per Level-1 course.
@@ -290,7 +290,7 @@ Stated so they do not creep back in:
 - **No server, no accounts, no tracking.** The single-file, network-off property is the
   product.
 - **No committed data mirrors** — PII history cannot be cleaned; this is settled.
-- **No course-count inflation.** 50 items is the catalog; depth grows, the number does not
+- **No course-count inflation.** 51 items is the catalog; depth grows, the number does not
   (a change here is a doctrine change, not a backlog item).
 - **No advice.** Nothing in scope makes the platform legal, tax, securities or investment
   advice; the state and resource layers are navigation aids to the public record, not

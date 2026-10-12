@@ -2,9 +2,9 @@
 
 A learning track for the people who want to practice professionally — real-estate
 salesperson/agent, broker, property manager — rather than only invest through the platform.
-This is **new, separate content**, not an addition to the Academy's fifty-item curriculum:
+This is **new, separate content**, not an addition to the Academy's 51-item curriculum:
 [the roadmap's v1.3 note](ROADMAP.md#6-v13--curriculum-growth) deliberately froze that catalog
-at its current count (*"The catalog is complete at 50; growth means depth, not count
+at its current count (*"The catalog is complete at 51; growth means depth, not count
 inflation"*), and nothing in this track is written into `curriculum/curriculum.py`. It lives
 here as an outline until it is built, the same honest "designed, not shipped" distance
 `status_of()` already marks for an Academy item with no backing lesson content — just without

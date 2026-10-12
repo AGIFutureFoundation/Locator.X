@@ -137,10 +137,10 @@ Same mechanics as a county parcel pull, pointed at a different kind of source:
 
 ## Where this connects in the product
 
-Nothing yet — this is a documentation-only scaffold. The Academy's "50-item curriculum"
+Nothing yet — this is a documentation-only scaffold. The Academy's "51-item curriculum"
 (`curriculum/curriculum.py`) is deliberately frozen at its current count per
 [the roadmap's v1.3 note](../ROADMAP.md#6-v13--curriculum-growth): *"The catalog is complete
-at 50; growth means depth, not count inflation."* A licensing-and-professional-practice
+at 51; growth means depth, not count inflation."* A licensing-and-professional-practice
 learning track is therefore scoped as separate content, not an addition to that catalog —
 see [`docs/LICENSING_TRACK.md`](../LICENSING_TRACK.md) for the outline, which routes every
 state-specific claim back to this file rather than typing one inline.
