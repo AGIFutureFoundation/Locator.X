@@ -1,6 +1,6 @@
 # Emotional equity & relationships
 
-> Pillar 01 of 8 · **8 items** (7 courses, 1 guides) · **40 modules** · all 8 live
+> Pillar 01 of 8 · **8 items** (7 courses, 1 guides) · **40 modules** · 8 of 8 live
 
 The slab under everything else, not a pillar you finish. Trust is treated as a capital account: deposited, drawn down, compounding or not. Every other pillar assumes you can get a seller to talk, a lender to stretch, and a contractor to tell you bad news early — this is where those abilities are built.
 

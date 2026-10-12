@@ -1,6 +1,6 @@
 # Market, practice & the long game
 
-> Pillar 08 of 8 · **3 items** (2 courses, 1 guides) · **12 modules** · all 3 live
+> Pillar 08 of 8 · **3 items** (2 courses, 1 guides) · **12 modules** · 3 of 3 live
 
 From a jobs announcement to a rent, disruption in how space is used and priced, and the hold-tax-exit arithmetic that decides what you actually keep.
 

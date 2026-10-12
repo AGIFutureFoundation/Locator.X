@@ -1,6 +1,6 @@
 # Capital & structure
 
-> Pillar 05 of 8 · **7 items** (6 courses, 1 guides) · **28 modules** · all 7 live
+> Pillar 05 of 8 · **7 items** (6 courses, 1 guides) · **28 modules** · 7 of 7 live
 
 Where the money comes from and what it really costs. Coverage as the only leverage test that matters, the loan beyond the rate, the lender's triangle, seller financing, equity waterfalls, and the capital-markets plumbing that prices your exit.
 

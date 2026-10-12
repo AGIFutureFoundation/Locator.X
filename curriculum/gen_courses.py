@@ -23,6 +23,17 @@ by from BACKS, and Title / Kind / Prereqs / Promise / Lands on from the item
 tuple itself."""
 import csv, os, sys
 
+_WORDS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
+          7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve"}
+
+
+def spell(n):
+    """Small-number spellout for prose headings ('the eight pillars'), so a
+    pillar count that changes doesn't leave a numeral where the rest of this
+    file's prose spells out small numbers."""
+    return _WORDS.get(n, str(n))
+
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV = os.path.join(ROOT, "curriculum", "curriculum-50.csv")
 OUT = os.path.join(ROOT, "curriculum", "courses")
@@ -132,11 +143,12 @@ def main():
         courses = sum(1 for r in items if r["Kind"] == "course")
         guides = len(items) - courses
         modules = sum(int(r["Modules"]) for r in items)
+        live = sum(1 for r in items if r["Status"] == "live")
         lines = []
         lines.append(f"# {pillar}")
         lines.append("")
-        lines.append(f"> Pillar {slug[:2]} of 8 · **{len(items)} items** ({courses} courses, {guides} guides) · "
-                     f"**{modules} modules** · all {len(items)} live")
+        lines.append(f"> Pillar {slug[:2]} of {len(PILLARS)} · **{len(items)} items** ({courses} courses, {guides} guides) · "
+                     f"**{modules} modules** · {live} of {len(items)} live")
         lines.append("")
         lines.append(intro)
         lines.append("")
@@ -215,8 +227,10 @@ def main():
     lines.append("")
     total_mod = sum(int(r["Modules"]) for r in rows)
     n_courses = sum(1 for r in rows if r["Kind"] == "course")
+    n_live = sum(1 for r in rows if r["Status"] == "live")
     lines.append(f"**{len(rows)} curriculum items** ({n_courses} courses, {len(rows)-n_courses} guides) · "
-                 f"**{total_mod} modules** · **8 pillars** · **4 levels** · all {len(rows)} live.")
+                 f"**{total_mod} modules** · **{len(PILLARS)} pillars** · **4 levels** · "
+                 f"{n_live} of {len(rows)} live.")
     lines.append("")
     lines.append("This directory splits the single-file curriculum into one readable document per "
                  "pillar. It is a **generated view**, and so is "
@@ -227,7 +241,7 @@ def main():
                  "they agreed; it is now derived, and CI diffs it. If anything here disagrees with "
                  "curriculum.py, curriculum.py wins and the disagreement is a regeneration nobody ran.")
     lines.append("")
-    lines.append("## The eight pillars")
+    lines.append(f"## The {spell(len(PILLARS))} pillars")
     lines.append("")
     lines.append("| # | Pillar | Items | Modules | Levels covered |")
     lines.append("|---|--------|-------|---------|----------------|")

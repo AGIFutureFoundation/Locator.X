@@ -1,6 +1,6 @@
 # Foundations & the Locator.X doctrine
 
-> Pillar 02 of 8 · **6 items** (4 courses, 2 guides) · **24 modules** · all 6 live
+> Pillar 02 of 8 · **6 items** (4 courses, 2 guides) · **24 modules** · 6 of 6 live
 
 How a building pays you, the asset-or-liability test, and how to read every number the platform shows — including the ones it refuses to show. This pillar is the doctrine the product is built on: the buy box, the evidence grade, and the 90-day path from curiosity to a written offer.
 
