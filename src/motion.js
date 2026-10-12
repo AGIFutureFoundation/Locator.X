@@ -146,7 +146,11 @@
         const _cap=median(caps);
         row.push({key:g.key, n:g.n, mix:g.mix,
           cf: median(cfs), score: median(sc), val, rent, yoy,
-          cap: (_cap!=null&&isFinite(_cap))? _cap*100 : null,
+          /* d.cap (app.js dealCompute) is already a percent (noi/P*100, e.g.
+             7.5 for 7.5%) — caps[] holds that value directly, so median(caps)
+             needs no further scaling. A *100 here double-scaled every cap
+             rate the Motion Field ever plotted or labelled. */
+          cap: (_cap!=null&&isFinite(_cap))? _cap : null,
           dscr: median(dsc), ppsf: median(pps), units: median(uns), bmkt: median(bms),
           yield: (val&&rent)? rent*12/val*100 : null});
       }

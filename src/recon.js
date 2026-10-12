@@ -53,10 +53,17 @@
        reset it too, with no sale at all (comps.js's own basisOf() caveat). */
     if(l.sale!=null && l.saleDate) add('Sale price', '$'+fmtN(l.sale), P.REC, 'a recorded transaction — this record’s strongest fact');
     if(l.saleDate) add('Sale recorded', l.saleDate, P.REC);
-    add('Value on record', l.price? ('$'+fmtN(l.price)) : '—', P.REC,
+    /* every other optional field above conditions its provenance badge on
+       whether the record actually carries the value (l.zip? P.REC : P.DER,
+       same for units/sqft/lot/year/stories/zoning) — this one didn't, so a
+       listing with no l.price at all still showed the green "recorded"
+       badge next to "—", and a ZIP-index l.est price (never a jurisdiction
+       figure — see geoexport.js/standards.js/uwexport.js, which all exclude
+       it from "recorded") showed it too. */
+    add('Value on record', l.price? ('$'+fmtN(l.price)) : '—', (l.price!=null && !l.est)? P.REC : P.DER,
         l.est? 'ZIP-index ESTIMATE — this jurisdiction publishes no assessed value'
         : LA_COUNTIES.test(l.county) && l.county==='East Baton Rouge' ? 'assessor’s fair market value; this roll carries no sale date'
-        : l.priceDate? 'assessed value — the reassessment date below is not necessarily a sale' : 'assessed value');
+        : l.priceDate? 'assessed value — the reassessment date below is not necessarily a sale' : l.price!=null ? 'assessed value' : 'not published');
     if(l.priceDate) add('Assessed', l.priceDate, P.REC);
     if(l.land!=null) add('Land / improvement split', '$'+fmtN(l.land)+' / $'+fmtN(l.imp||0), P.REC, 'the assessor’s allocation');
     if(l.adj) add('Adjudicated', 'yes — taken by the parish for unpaid taxes', P.REC, 'a distress record, not a discount');

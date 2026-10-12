@@ -27,14 +27,21 @@ var SERIES = [
   {id:'cf',    name:'Cash flow after the mortgage',   unit:'$/mo', slot:'value',
    get:function(d, a){ return d ? N(d.cfMo) : null; }},
   {id:'cap',   name:'Cap rate',                       unit:'%',    slot:'growth',
-   get:function(d, a){ return d && isFinite(d.cap) ? d.cap * 100 : null; }},
+   /* d.cap (app.js dealCompute) is already a percent (noi/P*100) — fmtPct
+      and every other reader take it as-is. The *100 here double-scaled it. */
+   get:function(d, a){ return d && isFinite(d.cap) ? d.cap : null; }},
   {id:'score', name:'Locator X score',                unit:'',     slot:'liab',
    get:function(d, a){ return a ? N(a.score) : null; }}
 ];
 
 var CACHE = {};
 function history(l, wantScore){
-  var key = l.id + '|' + (wantScore ? 's' : '') + '|' + JSON.stringify(L().state.assump);
+  /* app.js's own dealSync() fingerprints state.assump AND state.overrides
+     together, because deal(l) reads both (price()/rentEstimate() check
+     state.overrides[l.id] first) — a key built from assump alone goes stale
+     the moment a per-listing price/rent override changes, and nothing ever
+     calls invalidate() to catch that. */
+  var key = l.id + '|' + (wantScore ? 's' : '') + '|' + JSON.stringify(L().state.assump) + '|' + JSON.stringify(L().state.overrides);
   if(CACHE[key]) return CACHE[key];
   var months = [];
   try{ months = L().M.months || []; }catch(e){}
