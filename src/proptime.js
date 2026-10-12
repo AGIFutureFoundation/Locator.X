@@ -42,8 +42,13 @@ var SERIES = [
    live, the same way the rest of this panel names what it cannot answer. */
 function overrideNote(l){
   var o = L().state.overrides[l.id];
-  if(!o || (o.price == null && o.rent == null)) return '';
-  var what = o.price != null && o.rent != null ? 'price and rent' : o.price != null ? 'price' : 'rent';
+  /* price()/rentEstimate() (app.js) both read the override with a truthy
+     test (o.price||l.price||0; if(o.rent) ...), so an explicit 0 override
+     falls through to the listing's own value and is NOT what the curve
+     used — matching that here, not a !=null test, keeps this note from
+     claiming an adjustment the computation actually ignored. */
+  if(!o || (!o.price && !o.rent)) return '';
+  var what = o.price && o.rent ? 'price and rent' : o.price ? 'price' : 'rent';
   return '<p style="font-size:11.5px;color:var(--warn);margin:4px 0 0"><b>Adjusted for your ' + what
     + ' override on this property.</b> Every month above is re-derived at your override, not the assessed '
     + 'value on record — this is a what-if curve, not recorded history.</p>';
