@@ -60,10 +60,17 @@
        badge next to "—", and a ZIP-index l.est price (never a jurisdiction
        figure — see geoexport.js/standards.js/uwexport.js, which all exclude
        it from "recorded") showed it too. */
-    add('Value on record', l.price? ('$'+fmtN(l.price)) : '—', (l.price!=null && !l.est)? P.REC : P.DER,
-        l.est? 'ZIP-index ESTIMATE — this jurisdiction publishes no assessed value'
+    /* value, badge and note all key off the same l.price!=null test now — a
+       real $0 (an adjudicated or gift-transfer record) is a value on record,
+       not a missing one, so it renders "$0" under the green badge rather than
+       "—" under it; and l.price==null is checked FIRST in the note so a
+       record with no price but a stray priceDate can't fall through to an
+       "assessed value" note that contradicts the "—" shown above it. */
+    add('Value on record', l.price!=null? ('$'+fmtN(l.price)) : '—', (l.price!=null && !l.est)? P.REC : P.DER,
+        l.price==null? 'not published'
+        : l.est? 'ZIP-index ESTIMATE — this jurisdiction publishes no assessed value'
         : LA_COUNTIES.test(l.county) && l.county==='East Baton Rouge' ? 'assessor’s fair market value; this roll carries no sale date'
-        : l.priceDate? 'assessed value — the reassessment date below is not necessarily a sale' : l.price!=null ? 'assessed value' : 'not published');
+        : l.priceDate? 'assessed value — the reassessment date below is not necessarily a sale' : 'assessed value');
     if(l.priceDate) add('Assessed', l.priceDate, P.REC);
     if(l.land!=null) add('Land / improvement split', '$'+fmtN(l.land)+' / $'+fmtN(l.imp||0), P.REC, 'the assessor’s allocation');
     if(l.adj) add('Adjudicated', 'yes — taken by the parish for unpaid taxes', P.REC, 'a distress record, not a discount');

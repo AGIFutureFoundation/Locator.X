@@ -24,7 +24,11 @@ const num=v=>(typeof v==='number'&&isFinite(v))?v:null;
 const MET=[
  ['score','Locator X score', l=>{ try{ const a=D().analyze(l); return a?a.score:null; }catch(e){ return null; } }, 26, '', 'The whole scoring ensemble, recomputed at the replay month.'],
  ['cf','Cash flow after the mortgage', l=>{ try{ const d=L().deal(l); return d?Math.max(-2500,Math.min(6000,d.cfMo)):null; }catch(e){ return null; } }, 0.55, '$/mo', 'Monthly cash flow at your assumptions. Towers below the plate are negative.'],
- ['cap','Cap rate', l=>{ try{ const d=L().deal(l); return d&&isFinite(d.cap)?Math.max(0,Math.min(20,d.cap*100)):null; }catch(e){ return null; } }, 130, '%', 'Net operating income over price, before financing.'],
+ /* d.cap (app.js dealCompute) is already a percent (noi/P*100) — the *100
+    here double-scaled every realistic cap rate (4-10%) to 400-1000, which
+    the clamp below then saturated at 20, so every cap-rate tower rendered
+    at identical maximum height and the layer carried no information. */
+ ['cap','Cap rate', l=>{ try{ const d=L().deal(l); return d&&isFinite(d.cap)?Math.max(0,Math.min(20,d.cap)):null; }catch(e){ return null; } }, 130, '%', 'Net operating income over price, before financing.'],
  ['dscr','Debt service coverage', l=>{ try{ const d=L().deal(l); return d&&d.dscr?Math.max(0,Math.min(4,d.dscr)):null; }catch(e){ return null; } }, 620, '×', 'NOI over annual debt service. Below 1.20 most lenders decline.'],
  ['bmkt','Below-market index', l=>{ try{ const a=window.LXBM&&LXBM.assess(l); return a?a.idx:null; }catch(e){ return null; } }, 26, '', 'Evidence of a gap to market — recorded sale, price per foot and basis kept separate.'],
  ['units','Units', l=>num(l.units), 90, 'units', 'Where the source publishes a unit count. Band lower bounds are marked as such on the record.'],
