@@ -71,7 +71,8 @@ that shape are exactly what is not yet sourced here:
    state.
 
 **Module topics (not yet written):**
-- Walking the five stages against your own state once §[state table] is sourced for it
+- Walking the five stages against your own state once [its row](resources/real-estate-licensing.md#per-state-table)
+  is sourced
 - Reading a candidate handbook: what it actually promises versus what a test-prep vendor
   implies
 - The cost stack: course fees, exam fees, license fees, E&O insurance, MLS/association dues
