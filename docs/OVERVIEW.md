@@ -138,7 +138,7 @@ documented, reported or disputed); the theory and the mind; and six applied arcs
 equity is drawn as the slab under the rest rather than as a pillar, because it is not a subject
 you finish.
 
-The curriculum is **data**: `curriculum/curriculum.py` is the single source of truth (50 items,
+The curriculum is **data**: `curriculum/curriculum.py` is the single source of truth (51 items,
 8 pillars, 4 levels, 4 frameworks, 6 doctrine principles); an item's status is derived, never
 stored; `curriculum/validate.py` runs eight checks — four of which exist because a real bug got
 through.

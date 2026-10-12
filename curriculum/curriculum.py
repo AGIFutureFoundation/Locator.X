@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Locator.X Learning Environment — the 50-item curriculum.
+"""Locator.X Learning Environment — the 51-item curriculum.
 Pillars, courses, guides, prerequisites, doctrine mapping.
 Original Locator.X material. Topic coverage is standard subject matter in this
 field; nothing is adapted from any provider's syllabus."""
