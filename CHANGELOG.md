@@ -26,7 +26,15 @@ such.
   real-place gate still fails the build on a named place. `src/lessonmap.js` gives any
   live lesson that names a listing up to four chips — open on the map, in the 3D twin,
   as the room program, in AR — each feature-detected per edition and each saying it
-  opens procedural massing, not the building. Registry: 96 modules.
+  opens procedural massing, not the building. A thirteenth Trade School track, **Reading
+  the map — layers, signals and what they cannot say** (`src/ts_maplit.js`, ten lessons,
+  seven live on a listing with the chips), teaches each layer by quoting its own module's
+  disclaimer. The hive console measures at runtime which of each persona's mechanisms are
+  loaded and lets Scout and Underwriting read one real, cited output aloud, nothing added;
+  `docs/ENVIRONMENTS.md` records what is drawn, derived and rendered elsewhere, and
+  `tests/env_check.js` (run.py 12e) asserts the layer's honesty strings and that it makes
+  no network call. Registry: 97 source modules (typed counts in CLAUDE.md and OVERVIEW.md
+  corrected from 86/85).
 
 - **Trade School: three any-state tracks, a trade taxonomy and an eval gate.**
   Licensing was taught for one state and property management and contracting were

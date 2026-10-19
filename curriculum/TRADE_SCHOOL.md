@@ -5,9 +5,9 @@
 
 The Trade School is the Academy's second body of lessons, beside the 51-item curriculum in [`curriculum.py`](curriculum.py) and its catalog in [`courses/`](courses/README.md). The curriculum teaches the subject by pillar and level; the Trade School teaches the **trade** by role — career tracks for the people a deal runs through (agents, lenders, managers, appraisers, contractors, developers, investors) and the counterparts they face. Each track has its own certification check, drawn from the modules' own drill questions, and seals a per-track credential in the app on a pass. Nothing here is accredited: no track confers a licence, a degree, continuing-education credit or standing with any regulator. It is education and navigation of the public record — what a requirement is, where it is published and how to verify it — never a recommendation, and never a substitute for the regulator's own page on the day you read it.
 
-**12 tracks · 71 modules · 6 with live components (drawn from the edition's own listings) · trade taxonomy: 18 divisions, 47 trades (6 pattern, 38 state-specific, 3 federal).**
+**13 tracks · 81 modules · 13 with live components (drawn from the edition's own listings) · trade taxonomy: 18 divisions, 47 trades (6 pattern, 38 state-specific, 3 federal).**
 
-Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds them after every module has loaded, which is the order the app renders. 8 register in `src/tradeschool.js`; 4 are deep tracks, each in its own `src/ts_*.js` file. "Live" marks a module that reads the running edition's listings into its lesson; the count of such modules is measured, not promised.
+Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds them after every module has loaded, which is the order the app renders. 8 register in `src/tradeschool.js`; 5 are deep tracks, each in its own `src/ts_*.js` file. "Live" marks a module that reads the running edition's listings into its lesson; the count of such modules is measured, not promised.
 
 ## Tracks
 
@@ -24,7 +24,8 @@ Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds the
 | 9 | [Contractors — scope, matching and delivery](#contractor) | Owners, developers and managers who hire trades | 10 | 1 | `src/ts_contractor.js` |
 | 10 | [The developer’s permission and professional stack](#developer) | Developers, owner-builders and the teams around them | 10 | — | `src/ts_developer.js` |
 | 11 | [Licensing navigator — any state](#license) | Anyone entering the trade, in any state | 10 | — | `src/ts_license.js` |
-| 12 | [Property management — the operating discipline](#pmdeep) | Owner-operators, managers and anyone hiring one | 11 | 2 | `src/ts_pmdeep.js` |
+| 12 | [Reading the map — layers, signals and what they cannot say](#maplit) | Anyone who opens an edition and has to decide what a picture means | 10 | 7 | `src/ts_maplit.js` |
+| 13 | [Property management — the operating discipline](#pmdeep) | Owner-operators, managers and anyone hiring one | 11 | 2 | `src/ts_pmdeep.js` |
 
 <a id="playbooks"></a>
 
@@ -207,6 +208,27 @@ Licensing taught as a system, not a state. How every regulator is built, what it
 
 Certification: every module's drill question once, one attempt, no retries, ≥ 75% first-attempt.
 
+<a id="maplit"></a>
+
+## Reading the map — layers, signals and what they cannot say
+
+*For:* Anyone who opens an edition and has to decide what a picture means · *Track id:* `maplit` · *Source:* [`src/ts_maplit.js`](../src/ts_maplit.js)
+
+A map is a claim, and every layer on it is one of three kinds: recorded from a public source, derived from a recorded figure by a stated rule, or schematic — drawn to a convention so that something can be seen at all. This track teaches the legend before the picture: the massing block, the room program, the tower field, the corridor and campus layers, the walk measure, the cross-signals, the below-market index, the comparables, the coverage panel and the replay slider — each in the words its own module uses to say what it is not.
+
+1. A map is a claim — recorded, derived or schematic, and the legend comes first
+2. The record point and the massing block — area over storeys, and why it is not the building · live
+3. The room program — recorded, derived, schematic, and the sentence the county does not publish · live
+4. Towers and the metric you pick — height is a choice, colour is a category, and the legend counts · live
+5. Corridors and campus demand — a hypothesis is not a premium, and a headcount has a term
+6. Walkable destinations — centroid to centroid, and what a freeway does to that number · live
+7. Signals and outside forces — a filing on a date is what is shown; motivation is never inferred
+8. The below-market index and comps — a comparable is a recorded sale with a date, or it is not one · live
+9. Coverage — what this edition cannot answer at all, and why the unknown count travels with every score · live
+10. The replay slider and time — the as-of month, what re-extrudes, and writing the date you looked · live
+
+Certification: every module's drill question once, one attempt, no retries, ≥ 75% first-attempt.
+
 <a id="pmdeep"></a>
 
 ## Property management — the operating discipline
@@ -240,7 +262,7 @@ Every module carries one 4-option drill question. On the track page that drill i
 
   > Licensing summaries in the California tracks are educational, drawn from the California DRE, NMLS and BREA public pages (Sept 2026). The any-state tracks (licensing navigator, property management, contractors) state patterns only and no state’s numbers; verify every requirement with your own regulator before enrolling or acting, and record the date you looked. "Reviewed" means the module's own drill was answered correctly, with unlimited retries — formative, not the credential's basis. A track's credential seals only after its certification check: every module's question, once each, no retries, ≥ 75% first-attempt.
 
-- **The any-state tracks** (`contractor` in `src/ts_contractor.js`, `developer` in `src/ts_developer.js`, `license` in `src/ts_license.js`, `pmdeep` in `src/ts_pmdeep.js`) state patterns — how a regulator is built, what every licence shares, how a scope is decomposed, where each approval in the permission stack is recorded — and **no state's numbers**: no hour count, fee, bond amount, window or deadline. Each such figure is named as a category the learner looks up with the issuing authority and records with the date. `tests/trade_school_check.js` requires every module in these tracks to carry a source paragraph and to contain no advice.
+- **The any-state tracks** (`contractor` in `src/ts_contractor.js`, `developer` in `src/ts_developer.js`, `license` in `src/ts_license.js`, `maplit` in `src/ts_maplit.js`, `pmdeep` in `src/ts_pmdeep.js`) state patterns — how a regulator is built, what every licence shares, how a scope is decomposed, where each approval in the permission stack is recorded — and **no state's numbers**: no hour count, fee, bond amount, window or deadline. Each such figure is named as a category the learner looks up with the issuing authority and records with the date. `tests/trade_school_check.js` requires every module in these tracks to carry a source paragraph and to contain no advice.
 - **The trade taxonomy** the contractor track's matching desk reads has one source, [`crosswalk/trades.json`](../crosswalk/trades.json). `src/trades_data.js` is generated from it by `scripts/gen_trades_js.py`, which also refuses any licence pattern containing a digit; the 18 divisions and 47 trades counted above are that file's, loaded through the app.
 
 ## Regenerating
