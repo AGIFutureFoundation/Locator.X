@@ -2540,6 +2540,30 @@ async function main() {
       if (addr && !/\[STATE/.test(addr)) {
         errs.push('records.js fullAddr() guessed a state with none on record: ' + addr);
       }
+      // ...and the positive case: this fleet never exercises a real
+      // single-state edition (none set EDITION_STATE), so construct the
+      // three resolution paths directly — this is the only way to prove
+      // fullAddr() actually RESOLVES a correct state, not just that it
+      // declines to guess one when it has nothing.
+      const addrResolved = await page.evaluate(() => {
+        if (!window.LXRec) return null;
+        const l = LX.allListings()[0];
+        const out = { lState: LXRec.fullAddr(Object.assign({}, l, {state: 'Arizona'})) };
+        const prevRegion = window.BA && window.BA.region;
+        if (window.BA) window.BA.region = Object.assign({}, prevRegion, {state: 'Ohio'});
+        out.regionState = LXRec.fullAddr(Object.assign({}, l, {state: undefined}));
+        if (window.BA) window.BA.region = prevRegion;
+        const prevEd = LX.EDITION_STATE;
+        LX.EDITION_STATE = 'Georgia';
+        out.editionState = LXRec.fullAddr(Object.assign({}, l, {state: undefined}));
+        LX.EDITION_STATE = prevEd;
+        return out;
+      });
+      if (addrResolved) {
+        if (!/Arizona/.test(addrResolved.lState)) errs.push('records.js fullAddr() did not use l.state: ' + addrResolved.lState);
+        if (!/Ohio/.test(addrResolved.regionState)) errs.push('records.js fullAddr() did not fall back to BA.region.state: ' + addrResolved.regionState);
+        if (!/Georgia/.test(addrResolved.editionState)) errs.push('records.js fullAddr() did not fall back to LX.EDITION_STATE: ' + addrResolved.editionState);
+      }
 
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);

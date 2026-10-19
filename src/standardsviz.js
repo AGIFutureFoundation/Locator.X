@@ -121,7 +121,11 @@ function render(){
   });
   h += '</tbody></table></div>'
     + '<p class="src">Green meets, red fails, grey is a requirement this county’s published record cannot answer '
-    + 'either way. The three always sum to the assessed count.</p></div>';
+    + 'either way. The three always sum to the assessed count.</p>'
+    + '<p class="src">Cap rate and break-even occupancy here are computed at the <b>default scenario</b> &mdash; '
+    + 'no rehab budget, your current down payment and rate &mdash; the same basis the underwriting sheet opens on. '
+    + 'A property where you have set a rehab budget or a different financing option in its own sheet can show a '
+    + 'different cap rate there than it counts here; the sheet is always the one to trust for that property.</p></div>';
 
   h += '<div class="chart" style="margin-top:14px"><p class="eyebrow">The standard itself</p>'
     + '<h3 style="margin:2px 0 8px">Written down so it can be argued with</h3>'
