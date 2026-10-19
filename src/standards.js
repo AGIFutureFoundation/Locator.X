@@ -176,7 +176,11 @@ function rollup(){
   try{ rows = window.LXDash && LXDash.rows && LXDash.rows.length ? LXDash.rows : null; }catch(e){ rows = null; }
   if(!rows){ try{ LXDash.render(); rows = LXDash.rows; }catch(e){ return null; } }
   if(!rows || !rows.length) return null;
-  var sig = rows.length + ':' + VERSION;
+  /* rows[i].d is a cheap deal() object, re-fingerprinted here because assess()
+     reads it -- a stale sig (row count + version alone, as this used to read)
+     ignores every assumption/override that actually drives deal()'s output,
+     the same staleness this session already fixed in proptime.js/motion.js. */
+  var sig = rows.length + ':' + VERSION + ':' + JSON.stringify(X.state.assump) + ':' + JSON.stringify(X.state.overrides);
   if(ROLL && ROLLSIG === sig) return ROLL;
   var cap = Math.min(rows.length, 6000);
   var step = Math.max(1, Math.floor(rows.length / cap));
@@ -188,7 +192,24 @@ function rollup(){
   REQS.forEach(function(r){ per[r.id] = {meets:0, fails:0, unknown:0}; });
   for(var i = 0; i < rows.length && n < cap; i += step){
     var a;
-    try{ a = assess(rows[i].l, rows[i].d); }catch(e){ continue; }
+    try{
+      /* rows[i].d is deal()'s output, which has no capCost/beOcc -- those
+         exist only on underwrite()'s return object. Calling the real
+         underwrite() for up to 6000 rows here would be the heavier sheet
+         (5-year IRR bisection included) that autoUW() deliberately batches
+         across animation frames for far fewer rows, so derive the two
+         fields instead: at the drawer's own default scenario (rehab 0,
+         state.assump's down/rate, which is exactly what deal() already
+         assumes), capCost === noi/(P+0)*100 === d.cap, and beOcc is the
+         same (opex+ds)/rent formula underwrite.js uses, computed from
+         fields deal() already carries. */
+      var d = rows[i].d;
+      var uw = d ? Object.assign({}, d, {
+        capCost: d.cap,
+        beOcc: d.rent > 0 ? Math.min(200, Math.max(0, (d.opex + d.ds) / d.rent * 100)) : null
+      }) : null;
+      a = assess(rows[i].l, uw);
+    }catch(e){ continue; }
     n++; confSum += a.confidence;
     if(a.fails === 0 && a.meets > 0) full++;
     dist[a.fails] = (dist[a.fails] || 0) + 1;

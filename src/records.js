@@ -24,10 +24,26 @@
   let KB=(function(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ return {}; } })();
   const saveKB=()=>{ try{ localStorage.setItem(KEY, JSON.stringify(KB)); }catch(e){} };
 
-  /* full mailing-style address, used for the search pastes and FEMA */
+  /* full mailing-style address, used for the search pastes and FEMA.
+     Every edition this ships in is not Bay Area or Louisiana — the Growth
+     Corridor editions (uscorridor, usnew5, uswide) cover Phoenix, Columbus,
+     Savannah, Syracuse, Reno and more, none of which this used to recognise:
+     a hardcoded LA-parish check, CA for everything else, stamped the wrong
+     state onto every corridor property's FEMA query and "Copy address" text.
+     Same resolution order as packet.js's stateName() (the record's own
+     field first, then the data module's region, then the per-edition
+     constant build_state.py rewrites) and the same honesty rule as its
+     addressLine(): never invent a state the record does not carry. */
+  function stateOf(l){
+    if(l && l.state) return l.state;
+    try{ if(window.BA && BA.region && BA.region.state) return BA.region.state; }catch(e){}
+    try{ const X = window.LX; if(X && X.EDITION_STATE) return X.EDITION_STATE; }catch(e){}
+    return null;
+  }
   function fullAddr(l){
-    const st = /^(Orleans|Jefferson|East Baton Rouge)$/.test(l.county||'') ? 'LA' : 'CA';
-    return [l.addr, l.city, st + (l.zip? ' '+l.zip : '')].filter(Boolean).join(', ');
+    const st = stateOf(l);
+    const tail = (st ? st : '[STATE — not in this record]') + (l.zip? ' '+l.zip : '');
+    return [l.addr, l.city, tail.trim()].filter(Boolean).join(', ');
   }
 
   /* ---- jurisdiction source tables -------------------------------------

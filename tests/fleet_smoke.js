@@ -2467,6 +2467,80 @@ async function main() {
         if (badge.estimated === 'recorded') errs.push('a ZIP-index ESTIMATE price is badged "recorded" — not a jurisdiction figure');
       }
 
+      // standards.js rollup() used to pass rows[i].d (a deal() object, no
+      // capCost/beOcc field) straight through as the "uw" assess() reads —
+      // the cap-rate and break-even-occupancy requirements silently resolved
+      // to "unknown" for every property in every edition. Assert both are
+      // actually known somewhere (not the 100%-unknown signature of the
+      // wrong-field bug), and that the rollup recomputes after an assumption
+      // change instead of serving the stale cached aggregate.
+      const std = await page.evaluate(() => {
+        if (!window.LXStd) return null;
+        const before = LXStd.rollup();
+        if (!before) return {empty: true};
+        const prevDown = LX.state.assump.down;
+        LX.state.assump.down = Math.min(90, prevDown + 15);
+        LX.dealBump();
+        LXDash.render();
+        const after = LXStd.rollup();
+        LX.state.assump.down = prevDown;
+        return {
+          empty: false,
+          capKnown: before.per.cap.meets + before.per.cap.fails,
+          beoccKnown: before.per.beocc.meets + before.per.beocc.fails,
+          sampled: before.n,
+          busted: JSON.stringify(before.per) !== JSON.stringify(after.per),
+        };
+      });
+      if (std && !std.empty) {
+        if (!(std.capKnown > 0)) errs.push('standards rollup: cap rate requirement is "unknown" for all ' + std.sampled + ' sampled properties — the wrong field is being read from the row');
+        if (!(std.beoccKnown > 0)) errs.push('standards rollup: break-even occupancy requirement is "unknown" for all ' + std.sampled + ' sampled properties — the wrong field is being read from the row');
+        if (!std.busted) errs.push('standards rollup did not change after an assumption change — cache key ignores state.assump');
+      }
+
+      // underwrite.js cached s.maxOffer/s.gap only ever got filled once and
+      // was never invalidated when the buy-box target changed, so the solver
+      // tile could show a stale max-offer number under the CURRENT target's
+      // name. Switch the target and confirm the solved number actually moves.
+      const uwStale = await page.evaluate(async () => {
+        if (!window.LXUW) return null;
+        const l = LX.allListings().find(x => x.price > 0 && (x.units || 1) <= 4);
+        if (!l) return {skip: true};
+        LXUW.openSheet(l.id);
+        await new Promise(r => setTimeout(r, 500));
+        const chip = document.querySelector('#bbtarget .chip');
+        const otherChip = [...document.querySelectorAll('#bbtarget .chip')].find(c => c.dataset.t !== LXUW.bb.target);
+        if (!otherChip) return {skip: true};
+        const readMo = () => { const v = document.querySelector('.solver .v'); return v ? v.textContent : null; };
+        const before = readMo();
+        otherChip.click();
+        await new Promise(r => setTimeout(r, 300));
+        LXUW.openSheet(l.id);
+        await new Promise(r => setTimeout(r, 500));
+        const after = readMo();
+        return {skip: false, before, after};
+      });
+      if (uwStale && !uwStale.skip) {
+        if (uwStale.before === uwStale.after) {
+          errs.push('underwriting sheet: max offer did not change after switching the buy-box target — ' +
+            'stale scenario cache (' + uwStale.before + ')');
+        }
+      }
+
+      // records.js's fullAddr() used to hardcode CA for every county outside
+      // three Louisiana parishes — every Growth Corridor property (Phoenix,
+      // Columbus, Savannah, ...) got a fabricated state. None of this fleet's
+      // synthetic editions set l.state/BA.region.state/EDITION_STATE, so the
+      // honest result is the placeholder, never a guessed state.
+      const addr = await page.evaluate(() => {
+        if (!window.LXRec) return null;
+        const l = LX.allListings()[0];
+        return LXRec.fullAddr(Object.assign({}, l, {state: undefined}));
+      });
+      if (addr && !/\[STATE/.test(addr)) {
+        errs.push('records.js fullAddr() guessed a state with none on record: ' + addr);
+      }
+
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
     }

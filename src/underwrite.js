@@ -170,6 +170,18 @@ function underwrite(l, u){ // returns full sheet numbers for financing option u.
     breakevenRent, rentCushion, breakevenRate, rateHeadroom, maxLoan125, loanGap, stress, stressPass};
 }
 function targetTest(uw){ switch(bb.target){ case 'dscr12': return uw.dscr!=null && uw.dscr>=1.2; case 'dscr10': return uw.dscr!=null && uw.dscr>=1.0; case 'coc6': return uw.coc!=null && uw.coc>=6; default: return uw.cfMo>=200; } }
+/* Fingerprints everything maxOffer()/targetTest() actually read: the scenario
+   underwrite() runs on, the buy-box target the bisection tests against, and
+   state.assump (read inside underwrite() itself, not carried on u). s.maxOffer/
+   s.gap are cached per scenario below and were never invalidated when the
+   target chip, a rehab preset, a financing option or an assumption changed —
+   the solver tile could show a stale number under a different target's name
+   while the live PASS/FAIL badge next to it (recomputed fresh every render)
+   disagreed. Matches the cache-key fix already applied to proptime.js/motion.js
+   this session for the same reason: a derived value cached without every input
+   that can move it goes stale silently. */
+function moSig(u){ return [u.offer, u.rehab, u.cont, u.rentMo, u.fin, u.selfManage?1:0, u.hoa, u.util, u.arv,
+  u.rehabPreset, u.finOpt&&u.finOpt.id, bb.target, JSON.stringify(L().state.assump)].join('~'); }
 function maxOffer(l, base){ // bisection on offer price; rent fixed
   const lo0=50000, hi0=Math.max(price0(l)*1.6, 400000); let lo=lo0, hi=hi0;
   const mk=u=>underwrite(l, Object.assign({}, base, {offer:u}));
@@ -178,9 +190,14 @@ function maxOffer(l, base){ // bisection on offer price; rent fixed
   return lo;
 }
 function price0(l){ return L().price(l); }
-function baseInputs(l, s){ const X=L(); const r=D().analyze(l); const rentMo=(s&&s.rentMo)|| r.d.rentMo; const rp=(s&&s.rehabPreset)||'none'; const rate=REHAB.find(x=>x[0]===rp)[2]; const rehab=(s&&s.rehab!=null)? s.rehab : Math.round((l.sqft||1200)*rate); const uplift = rp==='none'?1: rp==='cosmetic'?1.08: rp==='medium'?1.15:1.25;
+function baseInputs(l, s){ const X=L(); const r=D().analyze(l);
+  /* same class of bug fixed in proptime.js/recon.js this session: a truthy
+     test drops an explicitly-typed 0 (a deliberately rent-free scenario -
+     vacant, owner-occupied, a non-income unit) and silently substitutes the
+     modeled rent instead. */
+  const rentMo=(s&&s.rentMo!=null)? s.rentMo : r.d.rentMo; const rp=(s&&s.rehabPreset)||'none'; const rate=REHAB.find(x=>x[0]===rp)[2]; const rehab=(s&&s.rehab!=null)? s.rehab : Math.round((l.sqft||1200)*rate); const uplift = rp==='none'?1: rp==='cosmetic'?1.08: rp==='medium'?1.15:1.25;
   const fin=(s&&s.fin)||'conv';
-  return {offer:(s&&s.offer)||price0(l), rehab, cont:(s&&s.cont!=null)?s.cont:10, rentMo:Math.round(rentMo*((s&&s.rentMo)?1:uplift)), rentBasis:(s&&s.rentMo)? 'given' : (r.d.rentBasis||'model'), rehabPreset:rp, fin, finOpt:null, selfManage:!!(s&&s.selfManage), hoa:s&&s.hoa, util:s&&s.util, arv:s&&s.arv, analysis:r};
+  return {offer:(s&&s.offer)||price0(l), rehab, cont:(s&&s.cont!=null)?s.cont:10, rentMo:Math.round(rentMo*((s&&s.rentMo!=null)?1:uplift)), rentBasis:(s&&s.rentMo!=null)? 'given' : (r.d.rentBasis||'model'), rehabPreset:rp, fin, finOpt:null, selfManage:!!(s&&s.selfManage), hoa:s&&s.hoa, util:s&&s.util, arv:s&&s.arv, analysis:r};
 }
 function withFin(l, u){ const opts=financeOptions(l,u); u.finOpt=opts.find(o=>o.id===u.fin&&!o.disabled)||opts[0]; u.opts=opts; return u; }
 
@@ -307,7 +324,7 @@ function renderFunnel(ms){
 function autoUW(ms){
   const X=L(); const btn=$('#autouw'); btn.disabled=true; const prog=$('#autoprog'); prog.innerHTML='<div class="uwprog"><i style="width:0%"></i></div><span id="uwpct"></span>';
   const bar=prog.querySelector('i'); let i=0; const todo=ms.slice(0, 400);
-  const step=()=>{ const batch=todo.slice(i, i+25); batch.forEach(r=>{ const s=S(r.l.id); const base=withFin(r.l, baseInputs(r.l, s)); const mo=maxOffer(r.l, base); s.maxOffer=mo? Math.round(mo):null; s.gap= mo? (mo/price0(r.l)-1)*100 : null; if(s.stage==='new') s.stage= 'scr'; }); i+=batch.length; bar.style.width=(i/todo.length*100).toFixed(0)+'%'; prog.querySelector('#uwpct').textContent=` ${i}/${todo.length} screened`; if(i<todo.length) setTimeout(step, 10); else { saveScen(); btn.disabled=false; X.toast(`${todo.length} properties screened against ${TARGETS.find(t=>t[0]===bb.target)[1]}`); render(); } };
+  const step=()=>{ const batch=todo.slice(i, i+25); batch.forEach(r=>{ const s=S(r.l.id); const base=withFin(r.l, baseInputs(r.l, s)); const mo=maxOffer(r.l, base); s.maxOffer=mo? Math.round(mo):null; s.gap= mo? (mo/price0(r.l)-1)*100 : null; s.moSig=moSig(base); if(s.stage==='new') s.stage= 'scr'; }); i+=batch.length; bar.style.width=(i/todo.length*100).toFixed(0)+'%'; prog.querySelector('#uwpct').textContent=` ${i}/${todo.length} screened`; if(i<todo.length) setTimeout(step, 10); else { saveScen(); btn.disabled=false; X.toast(`${todo.length} properties screened against ${TARGETS.find(t=>t[0]===bb.target)[1]}`); render(); } };
   step();
 }
 function gapColor(g){ return g==null? 'var(--muted)' : g>=0? 'var(--good)' : 'var(--cat3)'; }
@@ -346,7 +363,8 @@ function renderSheet(){
   const uwAfter = applied.length? underwrite(l, Object.assign({},u,{rehab:u.rehab+devCapex, rentMo:u.rentMo+devRent, arv: uw.arv+devValue})) : null;
   let _bestFin=null,_bestCf=-1e18; u.opts.forEach(o=>{ if(o.disabled) return; const t=underwrite(l, Object.assign({},u,{finOpt:o})); if(t.cfMo>_bestCf){ _bestCf=t.cfMo; _bestFin=o.id; } });
   const finCards=u.opts.map(o=>{ if(o.disabled) return `<div class="fincard" style="opacity:.45"><b>${o.name}</b><div class="d">${o.note}</div><div class="cf">n/a</div></div>`; const t=underwrite(l, Object.assign({},u,{finOpt:o})); return `<div class="fincard" role="button" tabindex="0" aria-pressed="${u.finOpt.id===o.id}" data-fin="${o.id}"><b>${o.name}${o.id===_bestFin?' <span style="color:var(--good);font-size:10px">★ best cash flow</span>':''}</b><div class="d">${o.note} · ${o.rate.toFixed(2)}%</div><div class="cf ${t.cfMo>0?'pos':'neg'}">${(t.cfMo>0?'+':'')+X.fmt$(t.cfMo)}/mo · ${t.dscr?t.dscr.toFixed(2):'—'}</div></div>`; }).join('');
-  const mo=s.maxOffer!=null? s.maxOffer : (()=>{ const v=maxOffer(l,u); if(v){ s.maxOffer=Math.round(v); s.gap=(v/price0(l)-1)*100; saveScen(); } return s.maxOffer; })();
+  const _moSig=moSig(u);
+  const mo=(s.maxOffer!=null && s.moSig===_moSig)? s.maxOffer : (()=>{ const v=maxOffer(l,u); s.maxOffer=v? Math.round(v):null; s.gap=v? (v/price0(l)-1)*100 : null; s.moSig=_moSig; saveScen(); return s.maxOffer; })();
   const tname=TARGETS.find(t=>t[0]===bb.target)[1];
   const ok=targetTest(uw);
   /* The due-diligence list used to be twelve hardcoded strings, written for San
@@ -483,7 +501,12 @@ function renderSheet(){
   </div></div>`;
   const upd=(k,v)=>{ s[k]=v; saveScen(); renderSheet(); };
   $('#u_offer').addEventListener('change', e=>upd('offer', +e.target.value||price0(l)));
-  $('#u_rent').addEventListener('change', e=>upd('rentMo', +e.target.value||u.rentMo));
+  /* +e.target.value||u.rentMo silently rejected a typed 0: the user cannot
+     model a deliberately rent-free scenario (vacant, owner-occupied, a
+     non-income unit) because typing "0" and committing just restores the
+     previous rent with no indication anything was rejected. Matches the
+     empty-string pattern #u_arv/#u_hoa/#u_util already use correctly below. */
+  $('#u_rent').addEventListener('change', e=>{ const t=e.target.value.trim(); upd('rentMo', t!==''&&isFinite(+t)? +t : u.rentMo); });
   $('#u_rehab').addEventListener('change', e=>upd('rehab', +e.target.value||0));
   $('#u_cont').addEventListener('change', e=>upd('cont', +e.target.value||0));
   $('#u_arv').addEventListener('change', e=>upd('arv', e.target.value===''? null : +e.target.value));
