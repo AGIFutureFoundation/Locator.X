@@ -31,6 +31,11 @@ cannot silently un-enforce them:
      module cites a source and gives no advice, src/trades_data.js is exactly
      what crosswalk/trades.json generates, and curriculum/TRADE_SCHOOL.md is exactly
      the catalog the shipped modules generate.
+ 13. The hive personas are bounded by AGENTS.md: each agent persona's scope,
+     boundary and status are the agent table's cells verbatim, no persona's
+     voice uses the vocabulary of a pitch, only the guide carries an external
+     preset voice id, and src/personas.js loads under a stub window with all
+     seven and speaks nothing where there is no engine.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -702,6 +707,46 @@ def main():
     check("matches the shipped modules" in out,
           "curriculum/TRADE_SCHOOL.md is not what the shipped Trade School modules generate - "
           "regenerate, never patch", out)
+
+    # ---- 12d. the hive personas are bounded by the words in AGENTS.md ---------
+    # content/agents/personas.json gives the six agents (and the app guide) a
+    # voice: rate, pitch, tone, an opening line that states the boundary, and
+    # the phrases it never says. scripts/validate_personas.py holds every
+    # persona's scope, boundary and status to the AGENTS.md table verbatim, bans
+    # the vocabulary of a pitch from role/tone/opening line, keeps the external
+    # preset voice id to the guide alone, bounds rate and pitch, and diffs the
+    # copy embedded in src/personas.js against the JSON (one source of truth,
+    # checked). The node smoke then loads voice.js and personas.js under the
+    # same stub window the other module checks use and asserts the console
+    # carries all seven, speaks nothing without an engine, rejects an unknown
+    # persona and round-trips the selection through a stub localStorage.
+    out = run(["scripts/validate_personas.py"])
+    check("personas:" in out and "✓" in out,
+          "scripts/validate_personas.py printed no summary line", out)
+    if not node:
+        FAILURES.append("node is not on PATH, so the personas module smoke could not run - "
+                        "it is the only thing checking src/personas.js loads with all "
+                        "seven personas and speaks nothing where there is no engine")
+    else:
+        smoke = (
+            "global.window={};global.document={addEventListener(){}};"
+            "var store={};global.localStorage={getItem(k){return k in store?store[k]:null},"
+            "setItem(k,v){store[k]=String(v)}};"
+            "var path=require('path');"
+            "require(path.resolve('src/voice.js'));require(path.resolve('src/personas.js'));"
+            "var P=window.LXPersonas;if(!P)throw new Error('window.LXPersonas missing');"
+            "var n=P.list().length;if(n!==7)throw new Error('expected 7 personas, got '+n);"
+            "if(!P.get('scout')||!P.get('scout').boundary)throw new Error('scout has no boundary');"
+            "if(P.speak('scout','x')!==false)throw new Error('speak must return false with no engine');"
+            "if(!P.set('diligence')||P.current()!=='diligence')throw new Error('set/current round trip');"
+            "if(P.set('nobody'))throw new Error('unknown persona accepted');"
+            "console.log('personas smoke: '+n+' loaded under a stub window, no engine, nothing spoken ✓');"
+        )
+        r = subprocess.run([node, "-e", smoke], capture_output=True, text=True, cwd=ROOT)
+        out = r.stdout + r.stderr
+        check(r.returncode == 0, "src/personas.js node smoke failed", out[-2000:])
+        check("personas smoke:" in out and "✓" in out,
+              "src/personas.js node smoke printed no summary line", out[-800:])
 
     if FAILURES:
         print("FAIL — %d problem(s):" % len(FAILURES))

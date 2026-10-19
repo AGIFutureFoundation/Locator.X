@@ -7,6 +7,27 @@ such.
 
 ## [Unreleased]
 
+- **The environment layer: scenes, the hive, and lessons that open the map.**
+  `content/agents/personas.json` is a register of seven personas — the six bounded
+  agents of `docs/company/AGENTS.md` plus the guide — each with scope and boundary
+  quoted verbatim from that page, three traits, a tone, browser-voice rate and pitch,
+  an opening line that states its boundary, and the phrases it never says.
+  `scripts/validate_personas.py` fails the build on any drift from `AGENTS.md`, any
+  banned phrase ("good deal", "you should", "motivated"), or an external voice id on
+  anything but the guide; `src/personas.js` renders the hive console on Home with a
+  "Hear the boundary" button (the only line a persona speaks unprompted) and drives the
+  browser's own speech engine at the persona's rate and pitch — nothing simulated, as
+  `src/voice.js` already insists. `tests/run.py` section 12d carries both.
+
+  `content/academy_scenes.json` grows from 5 to 17 prompt pairs — four exteriors, five
+  interiors and three avatar presences that show no face — each tagged with the Trade
+  School track or persona it backs; `scripts/build_scenes.py` now requires a kind, a
+  `for` on every non-title scene and the no-face phrase on every avatar scene, and the
+  real-place gate still fails the build on a named place. `src/lessonmap.js` gives any
+  live lesson that names a listing up to four chips — open on the map, in the 3D twin,
+  as the room program, in AR — each feature-detected per edition and each saying it
+  opens procedural massing, not the building. Registry: 96 modules.
+
 - **Trade School: three any-state tracks, a trade taxonomy and an eval gate.**
   Licensing was taught for one state and property management and contracting were
   one lesson each. Four new tracks register onto `window.LXTS.TRACKS`
