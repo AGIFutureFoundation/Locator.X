@@ -2607,13 +2607,31 @@ async function main() {
         field.dispatchEvent(new Event('change', {bubbles: true}));
         await new Promise(r => setTimeout(r, 400));
         const labeled = /You set this to \$0/.test(document.getElementById('uwsheet').innerHTML);
+        const draftEl = document.getElementById('offerdraft');
+        const draftLabeled = draftEl ? /your figure, not a published rent/.test(draftEl.textContent) : null;
         field.value = prevVal;
         field.dispatchEvent(new Event('change', {bubbles: true}));
         await new Promise(r => setTimeout(r, 300));
-        return {skip: false, labeled};
+        return {skip: false, labeled, draftLabeled};
       });
-      if (rentZero && !rentZero.skip && !rentZero.labeled) {
-        errs.push('underwriting sheet: a user-set $0 rent is not labeled as such — indistinguishable from a published $0 rent');
+      if (rentZero && !rentZero.skip) {
+        if (!rentZero.labeled) errs.push('underwriting sheet: a user-set $0 rent is not labeled as such — indistinguishable from a published $0 rent');
+        // draftLabeled is null only if #offerdraft isn't in the DOM at all,
+        // which is its own problem the existing closing-packet check already covers.
+        if (rentZero.draftLabeled === false) errs.push('LOI draft text does not label a user-set rent — a shared memo could print it as if it were sourced');
+      }
+
+      // records.js: the FEMA query omits the state entirely when none is on
+      // record (a real partial search beats a dead one — see fullAddr(l,
+      // true)), but a reader who gets a thin or empty result needs to know
+      // why rather than reading it as a flood finding.
+      const femaNote = await page.evaluate(() => {
+        if (!window.LXRec) return null;
+        const l = LX.allListings()[0];
+        return LXRec.lockerHTML(Object.assign({}, l, {state: undefined}));
+      });
+      if (femaNote && !/carries no state, so the search above has no state/.test(femaNote)) {
+        errs.push('record locker: the FEMA entry has no gap note when the state is unresolvable');
       }
 
       await page.evaluate(() => LX.showView('mapview'));

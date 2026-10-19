@@ -210,11 +210,19 @@
         <div style="display:grid;gap:6px">${groups[g].map(s=>{
           let href=''; try{ href=s.u(l)||''; }catch(err){ href=''; }
           if(!href) return '';
+          /* the FEMA query omits the state entirely when none is on record
+             (fullAddr(l, true) — see the comment there), which leaves a real
+             but weaker address+ZIP search rather than a dead one. That is the
+             right call, but a reader who gets an empty or wrong-city result
+             needs to know WHY rather than reading it as a flood finding. */
+          const why = (s.n === 'FEMA Flood Map Service Center' && !stateOf(l))
+            ? s.why + ' This record carries no state, so the search above has no state to narrow it — a thin or empty result is a gap in the record, not a flood determination.'
+            : s.why;
           return `<div style="display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:7px 9px">
             <span style="flex:none;font-size:9.5px;font-weight:700;letter-spacing:.04em;padding:2px 5px;border-radius:4px;background:${s.deep?'rgba(46,134,193,.15)':'rgba(140,140,140,.15)'};color:${s.deep?'#1f6391':'var(--muted)'}">${s.deep?'DIRECT':'SEARCH'}</span>
             <span style="flex:1;min-width:0">
               <a href="${esc(href)}" target="_blank" rel="noopener"><b>${esc(s.n)}</b> &#8599;</a>
-              <span style="display:block;font-size:11.5px;color:var(--ink2);margin-top:2px">${s.why}</span>
+              <span style="display:block;font-size:11.5px;color:var(--ink2);margin-top:2px">${why}</span>
             </span>
             <button class="btn" data-kbadd="${esc(href)}" data-kblabel="${esc(s.n)}" style="flex:none;padding:2px 8px;font-size:11px">Save</button>
           </div>`; }).join('')}</div>`).join('')}
