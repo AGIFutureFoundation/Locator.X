@@ -396,6 +396,7 @@ function renderSheet(){
     <div class="in"><h4>Inputs</h4>
       <div class="inrow"><span>Offer price $</span><input type="number" id="u_offer" value="${u.offer}" step="10000"></div>
       <div class="inrow"><span>Rent (all units) $/mo</span><input type="number" id="u_rent" value="${u.rentMo}"></div>
+      ${u.rentMo===0 && u.rentBasis==='given'? '<p style="font-size:11px;color:var(--warn);margin:2px 0 0">You set this to $0 — not a published figure. DSCR, cash-on-cash and cap rate below are computed at zero rent, the same as any other number here.</p>' : ''}
       <h4 style="margin-top:12px">Rehab</h4>
       <div class="presets">${REHAB.map(rp=>`<button data-rp="${rp[0]}" aria-pressed="${u.rehabPreset===rp[0]}">${rp[1]}</button>`).join('')}</div>
       <div class="inrow"><span>Rehab budget $</span><input type="number" id="u_rehab" value="${u.rehab}" step="5000"></div>

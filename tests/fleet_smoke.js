@@ -2576,6 +2576,46 @@ async function main() {
         if (!/Georgia/.test(addrResolved.editionState)) errs.push('records.js fullAddr() did not fall back to LX.EDITION_STATE: ' + addrResolved.editionState);
       }
 
+      // Prelint's follow-up: the honest placeholder is right for a person
+      // reading "Copy address", but feeding it into the live FEMA query
+      // guarantees a dead search a user could misread as "no flood risk"
+      // rather than "state unknown" — fullAddr(l, true) must omit the state
+      // there instead of embedding the bracketed text.
+      const addrQuery = await page.evaluate(() => {
+        if (!window.LXRec) return null;
+        const l = LX.allListings()[0];
+        return LXRec.fullAddr(Object.assign({}, l, {state: undefined}), true);
+      });
+      if (addrQuery && /\[STATE/.test(addrQuery)) {
+        errs.push('records.js fullAddr(l, true) (the FEMA query form) embeds the human-readable placeholder: ' + addrQuery);
+      }
+
+      // underwrite.js: typing an explicit 0 rent is now allowed (previously
+      // silently reverted), but a $0 modeled scenario must not be visually
+      // indistinguishable from a true $0 published rent — confirm the sheet
+      // labels a user-set zero rent explicitly.
+      const rentZero = await page.evaluate(async () => {
+        if (!window.LXUW) return null;
+        const l = LX.allListings().find(x => x.price > 0 && (x.units || 1) <= 4);
+        if (!l) return {skip: true};
+        LXUW.openSheet(l.id);
+        await new Promise(r => setTimeout(r, 500));
+        const field = document.getElementById('u_rent');
+        if (!field) return {skip: true};
+        const prevVal = field.value;
+        field.value = '0';
+        field.dispatchEvent(new Event('change', {bubbles: true}));
+        await new Promise(r => setTimeout(r, 400));
+        const labeled = /You set this to \$0/.test(document.getElementById('uwsheet').innerHTML);
+        field.value = prevVal;
+        field.dispatchEvent(new Event('change', {bubbles: true}));
+        await new Promise(r => setTimeout(r, 300));
+        return {skip: false, labeled};
+      });
+      if (rentZero && !rentZero.skip && !rentZero.labeled) {
+        errs.push('underwriting sheet: a user-set $0 rent is not labeled as such — indistinguishable from a published $0 rent');
+      }
+
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
     }

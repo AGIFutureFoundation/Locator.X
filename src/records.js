@@ -40,9 +40,16 @@
     try{ const X = window.LX; if(X && X.EDITION_STATE) return X.EDITION_STATE; }catch(e){}
     return null;
   }
-  function fullAddr(l){
+  /* forQuery:true is for a string handed to an external search (FEMA below) --
+     there, the bracketed placeholder would be a literal part of the query, not
+     a note a person reads: it guarantees a dead search that a user could read
+     as "no flood risk" rather than "state unknown". Omitting the state leaves
+     a real, if partial, address+ZIP search instead of one certain to fail.
+     The default (false) keeps the placeholder, because the "Copy address"
+     button's text IS read by a person, who needs to see the gap to fill it. */
+  function fullAddr(l, forQuery){
     const st = stateOf(l);
-    const tail = (st ? st : '[STATE — not in this record]') + (l.zip? ' '+l.zip : '');
+    const tail = (st ? st : forQuery ? '' : '[STATE — not in this record]') + (l.zip? ' '+l.zip : '');
     return [l.addr, l.city, tail.trim()].filter(Boolean).join(', ');
   }
 
@@ -61,7 +68,7 @@
     {g:'Imagery', n:'OpenStreetMap (building footprints)', deep:true, why:'Community-mapped footprints, building tags and address points; often carries a building:levels tag the assessor does not publish.',
      u:l=>`https://www.openstreetmap.org/#map=19/${l.lat}/${l.lng}`},
     {g:'Hazard', n:'FEMA Flood Map Service Center', deep:true, why:'Opens with the address pre-filled and a pin dropped. The effective FIRM panel is the document that governs the flood-insurance requirement — not any zone label carried in a parcel file.',
-     u:l=>`https://msc.fema.gov/portal/search?AddressQuery=${enc(fullAddr(l))}#searchresultsanchor`},
+     u:l=>`https://msc.fema.gov/portal/search?AddressQuery=${enc(fullAddr(l, true))}#searchresultsanchor`},
     {g:'Hazard', n:'USGS National Map viewer', deep:true, why:'Topography, hydrography and elevation at the parcel.',
      u:l=>`https://apps.nationalmap.gov/viewer/?extent=${(+l.lng-0.004).toFixed(4)},${(+l.lat-0.003).toFixed(4)},${(+l.lng+0.004).toFixed(4)},${(+l.lat+0.003).toFixed(4)}`},
     {g:'Context', n:'Census geography for this point', deep:true, why:'Returns the tract, block group and block containing the parcel — the key for pulling ACS income, tenure and vacancy for the immediate neighborhood.',
