@@ -5,7 +5,7 @@
 
 The Trade School is the Academy's second body of lessons, beside the 51-item curriculum in [`curriculum.py`](curriculum.py) and its catalog in [`courses/`](courses/README.md). The curriculum teaches the subject by pillar and level; the Trade School teaches the **trade** by role — career tracks for the people a deal runs through (agents, lenders, managers, appraisers, contractors, developers, investors) and the counterparts they face. Each track has its own certification check, drawn from the modules' own drill questions, and seals a per-track credential in the app on a pass. Nothing here is accredited: no track confers a licence, a degree, continuing-education credit or standing with any regulator. It is education and navigation of the public record — what a requirement is, where it is published and how to verify it — never a recommendation, and never a substitute for the regulator's own page on the day you read it.
 
-**13 tracks · 81 modules · 13 with live components (drawn from the edition's own listings) · trade taxonomy: 18 divisions, 47 trades (6 pattern, 38 state-specific, 3 federal).**
+**13 tracks · 81 modules · 13 with live components (drawn from the edition's own listings) · trade taxonomy: 18 divisions, 47 trades (6 pattern, 38 state-specific, 3 federal) · 5 pathways · 57 steps (10 of them into a track not yet on disk).**
 
 Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds them after every module has loaded, which is the order the app renders. 8 register in `src/tradeschool.js`; 5 are deep tracks, each in its own `src/ts_*.js` file. "Live" marks a module that reads the running edition's listings into its lesson; the count of such modules is measured, not promised.
 
@@ -26,6 +26,124 @@ Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds the
 | 11 | [Licensing navigator — any state](#license) | Anyone entering the trade, in any state | 10 | — | `src/ts_license.js` |
 | 12 | [Reading the map — layers, signals and what they cannot say](#maplit) | Anyone who opens an edition and has to decide what a picture means | 10 | 7 | `src/ts_maplit.js` |
 | 13 | [Property management — the operating discipline](#pmdeep) | Owner-operators, managers and anyone hiring one | 11 | 2 | `src/ts_pmdeep.js` |
+
+## Pathways
+
+A pathway is an ordered walk across tracks for one kind of learner, ending in one named deliverable. The 5 below are written in [`content/tradeschool_paths.json`](../content/tradeschool_paths.json) (reviewed 2026-10) and nowhere else; every step was resolved against the modules loaded above, so a step naming a track or module that is not on disk fails the build with the id named. Titles are the modules' own. A pathway orders lessons; it recommends nothing, and finishing one seals no credential — the certification check belongs to each track.
+
+**Pending:** 10 step(s) walk into `hive`, listed under `pending_tracks` because the track is written but not yet registered on `window.LXTS.TRACKS`. Those steps show a module id, not a title. The allowance expires on its own: the generator fails the build the moment a track named there exists, so the field cannot outlive the gap it covers.
+
+<a id="path-licensed-professional"></a>
+
+### The licensed professional
+
+*For:* Someone entering the trade under a licence — agent, loan originator or manager — in any state · *Path id:* `licensed-professional` · 11 steps
+
+Starts with the regulator as a system, so every state's page reads the same way; then the California agent ladder as the worked example, the money side and the NMLS path, the landlord-tenant rulebook an agent is asked about weekly, and finally the hive — which agent does what, and what none of them may do in a licensee's name.
+
+1. [`license`](#license) · The regulator map — what every state publishes, and the order to read it
+2. [`license`](#license) · The ladder — salesperson to broker as a pattern, not a number
+3. [`license`](#license) · Fiduciary and disclosure duties — the spine every licence shares
+4. [`license`](#license) · Verifying any licensee before relying on them — and recording that you did
+5. [`agent`](#agent) · The licensing map (California DRE)
+6. [`agent`](#agent) · The transaction, end to end, on live records
+7. [`lending`](#lending) · The MLO path (NMLS / SAFE Act)
+8. [`lending`](#lending) · How underwriters read your buyer
+9. [`pm`](#pm) · The California rulebook in one page
+10. [`pm`](#pm) · Operations: the numbers a manager actually moves
+11. `hive` · `h1` (pending)
+
+*Ends in:* A dated verification record for every licence the learner will hold or rely on, read from the issuing regulator's own register.
+
+<a id="path-owner-operator"></a>
+
+### The owner-operator
+
+*For:* An owner who runs the building and hires the trades, rather than paying someone else to · *Path id:* `owner-operator` · 12 steps
+
+The operating discipline first — what a manager controls, screening in order of receipt, the delinquency ladder, the turn, reserves, and the matching desk for the day the owner stops self-managing; then the contractor's side of the same building, from a scope that can be priced to the matching desk that turns it into a verification record; then the coverage panel, so the owner knows what the edition cannot say about their own block; and the hive, read as a set of boundaries.
+
+1. [`pmdeep`](#pmdeep) · What a manager actually controls
+2. [`pmdeep`](#pmdeep) · Written screening criteria, applied in order of receipt
+3. [`pmdeep`](#pmdeep) · The delinquency ladder
+4. [`pmdeep`](#pmdeep) · The turn — the manager’s most controllable number
+5. [`pmdeep`](#pmdeep) · Reserves and capital planning
+6. [`pmdeep`](#pmdeep) · Hiring a manager — the matching desk
+7. [`contractor`](#contractor) · The scope of work is the contract
+8. [`contractor`](#contractor) · Licence classes as a pattern — and how to verify one
+9. [`contractor`](#contractor) · Payment mechanics — draws, retention and waivers
+10. [`contractor`](#contractor) · The matching desk — scope to trades to verification record
+11. [`maplit`](#maplit) · Coverage — what this edition cannot answer at all, and why the unknown count travels with every score
+12. `hive` · `h1` (pending)
+
+*Ends in:* An owner's operating binder: written screening criteria, a reserve schedule, one priced scope with its trade verification record, and the manager-matching sheet.
+
+<a id="path-developer"></a>
+
+### The developer
+
+*For:* A developer or owner-builder carrying a parcel from permit history to occupancy · *Path id:* `developer` · 12 steps
+
+The permission stack as a public record, the pre-application meeting and the notebook that records what the city did not say, fees as sourced lines, inspections as gates; then the scope, the bid level and the draw mechanics the lender will inspect; then the two map layers a developer stares at most — the massing block and the room program — in the words that say what each is not; the pro forma; and the hive agent that carries the development file, with its boundary.
+
+1. [`developer`](#developer) · The permission stack as a public record — where each approval lives, and pulling a parcel’s history before buying
+2. [`developer`](#developer) · The pre-application meeting — what to bring, what to ask, and how to record what the city did not say
+3. [`developer`](#developer) · Impact fees, exactions and conditions of approval — where they are published, when they fix, and why each is a sourced line
+4. [`developer`](#developer) · Inspections as gates — the sequence, the failed inspection as a schedule event, correction notices, the final, and temporary versus final occupancy
+5. [`developer`](#developer) · The dated permission notebook — every approval, who issued it, the date, where it was verified, and what remains open
+6. [`contractor`](#contractor) · The scope of work is the contract
+7. [`contractor`](#contractor) · Bid levelling — the low bid with the most exclusions is the high bid
+8. [`maplit`](#maplit) · The record point and the massing block — area over storeys, and why it is not the building
+9. [`maplit`](#maplit) · The room program — recorded, derived, schematic, and the sentence the county does not publish
+10. [`dev`](#dev) · Entitlements: the permission stack
+11. [`dev`](#dev) · The development pro forma
+12. `hive` · `h1` (pending)
+
+*Ends in:* A dated permission notebook for one parcel beside a pro forma whose every cost line names the published source it came from.
+
+<a id="path-map-reader"></a>
+
+### The analyst who reads the map
+
+*For:* Anyone who has to defend a number drawn from an edition — to a lender, a partner or themselves · *Path id:* `map-reader` · 12 steps
+
+The whole legend before any picture: every layer as recorded, derived or schematic, the massing block, the room program, the tower metric, corridors as hypotheses, the walk measure, signals without inferred motive, the below-market index and what a comparable is, the coverage panel's unknown count and the replay slider's as-of month; then three approaches to one opinion of value; then the hive agent that reads the record the same way, and what it refuses to infer.
+
+1. [`maplit`](#maplit) · A map is a claim — recorded, derived or schematic, and the legend comes first
+2. [`maplit`](#maplit) · The record point and the massing block — area over storeys, and why it is not the building
+3. [`maplit`](#maplit) · The room program — recorded, derived, schematic, and the sentence the county does not publish
+4. [`maplit`](#maplit) · Towers and the metric you pick — height is a choice, colour is a category, and the legend counts
+5. [`maplit`](#maplit) · Corridors and campus demand — a hypothesis is not a premium, and a headcount has a term
+6. [`maplit`](#maplit) · Walkable destinations — centroid to centroid, and what a freeway does to that number
+7. [`maplit`](#maplit) · Signals and outside forces — a filing on a date is what is shown; motivation is never inferred
+8. [`maplit`](#maplit) · The below-market index and comps — a comparable is a recorded sale with a date, or it is not one
+9. [`maplit`](#maplit) · Coverage — what this edition cannot answer at all, and why the unknown count travels with every score
+10. [`maplit`](#maplit) · The replay slider and time — the as-of month, what re-extrudes, and writing the date you looked
+11. [`valuation`](#valuation) · Three approaches, one opinion
+12. `hive` · `h2` (pending)
+
+*Ends in:* One written opinion of value for one parcel, each input labelled recorded, derived or schematic, with the edition's unknown count and as-of date copied beside it.
+
+<a id="path-hires-the-hive"></a>
+
+### The person who hires the hive
+
+*For:* Someone who will put the agents to work on a search and has to know what each one may and may not do · *Path id:* `hires-the-hive` · 10 steps
+
+The hive first, agent by agent, each as a scope and a boundary rather than a capability; then the two map lessons every agent's output rests on — coverage, so an unknown count is read as an answer, and the replay slider, so the as-of month travels with every figure; then the principles the protocols were written under, so the person reading an agent's output knows which test it was built to pass.
+
+1. `hive` · `h1` (pending)
+2. `hive` · `h2` (pending)
+3. `hive` · `h3` (pending)
+4. `hive` · `h4` (pending)
+5. `hive` · `h5` (pending)
+6. `hive` · `h6` (pending)
+7. [`maplit`](#maplit) · Coverage — what this edition cannot answer at all, and why the unknown count travels with every score
+8. [`maplit`](#maplit) · The replay slider and time — the as-of month, what re-extrudes, and writing the date you looked
+9. [`principles`](#principles) · Buy what pays you — the asset test
+10. [`principles`](#principles) · Build the system, then the team, then the portfolio
+
+*Ends in:* A one-page brief stating, for each agent in the hive, what it was asked, what it may not do, and the unknown count and as-of date its output carried.
 
 <a id="playbooks"></a>
 
@@ -267,4 +385,4 @@ Every module carries one 4-option drill question. On the track page that drill i
 
 ## Regenerating
 
-`python3 curriculum/gen_tradeschool.py` rewrites this page from the modules; `python3 curriculum/gen_tradeschool.py --check` (run by `tests/run.py`, so by CI) regenerates it to a string and fails on any difference from the committed copy. A module added, renamed or removed in `src/` without a regeneration is a red build, not a quiet drift.
+`python3 curriculum/gen_tradeschool.py` rewrites this page from the modules; `python3 curriculum/gen_tradeschool.py --check` (run by `tests/run.py`, so by CI) regenerates it to a string and fails on any difference from the committed copy. A module added, renamed or removed in `src/` without a regeneration is a red build, not a quiet drift; so is a pathway edited in `content/tradeschool_paths.json` without one, and so is a pathway step that names a module no track carries.

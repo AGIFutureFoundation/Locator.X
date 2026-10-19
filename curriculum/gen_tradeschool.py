@@ -21,9 +21,19 @@ what the app shows.
     python3 curriculum/gen_tradeschool.py --check  # regenerate to a string, exit 1 with a
                                                    # diff summary if the committed file differs
 
+PATHWAYS. content/tradeschool_paths.json is the one place a learning pathway (an
+ordered walk across tracks for one kind of learner, ending in a named deliverable) is
+written. This script validates every step against the modules the extractor loaded:
+a step naming a track or module that is not on disk fails the build with the id
+named. A path may list a track under "pending_tracks" while that track is written but
+not yet shipped; its steps then render the module id marked "(pending)" and a warning
+is printed. The allowance is temporary by construction: the generator FAILS the moment
+a pending track exists, so the field has to be removed when the track ships.
+
 Raises - never warns - when node is missing, the extractor fails, a track has no
-source file, or src/tradeschool.js no longer carries the certification wording and
-the sourcing footnote this page quotes.
+source file, src/tradeschool.js no longer carries the certification wording and
+the sourcing footnote this page quotes, or a pathway step names anything that was
+not loaded.
 """
 import difflib
 import html
@@ -38,6 +48,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXTRACT = os.path.join(ROOT, "curriculum", "extract_tradeschool.js")
 TS_SRC = os.path.join(ROOT, "src", "tradeschool.js")
 OUT = os.path.join(ROOT, "curriculum", "TRADE_SCHOOL.md")
+PATHS = os.path.join(ROOT, "content", "tradeschool_paths.json")
+PATH_STEPS = (8, 12)        # a pathway is a walk, not a track and not a module list
+PATH_ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+MODULE_ID_RE = re.compile(r"^[a-z]+[0-9]+$")
 
 sys.path.insert(0, os.path.join(ROOT, "curriculum"))
 import curriculum as K  # noqa: E402  (the curriculum's item count is measured, not typed)
@@ -96,7 +110,100 @@ def clean(s):
     return html.unescape(re.sub(r"\s+", " ", s)).strip()
 
 
-def render(data, footnote):
+def one_sentence(s):
+    """True for a non-empty string that ends in one terminator and holds no other."""
+    s = s.strip()
+    return bool(s) and s[-1] in ".!?" and len(re.findall(r"[.!?](?:\s|$)", s)) == 1
+
+
+def load_paths(data):
+    """Read content/tradeschool_paths.json and hold every step to the extracted
+    modules. Returns the paths with each step resolved to {track, module, title,
+    pending}; raises on any step that names something not loaded."""
+    if not os.path.exists(PATHS):
+        die("%s is missing; the Pathways section is read from it, never typed"
+            % os.path.relpath(PATHS, ROOT))
+    with open(PATHS, encoding="utf-8") as fh:
+        doc = json.load(fh)
+    for key in ("_about", "reviewed", "paths"):
+        if key not in doc:
+            die("%s lacks %r" % (os.path.relpath(PATHS, ROOT), key))
+    if not re.fullmatch(r"\d{4}-\d{2}", str(doc["reviewed"])):
+        die("tradeschool_paths.json 'reviewed' must be YYYY-MM, got %r" % doc["reviewed"])
+    paths = doc["paths"]
+    if not isinstance(paths, list) or not paths:
+        die("tradeschool_paths.json 'paths' must be a non-empty list")
+
+    on_disk = {t["id"]: {m["id"]: m for m in t["modules"]} for t in data["tracks"]}
+    seen_ids = set()
+    out = []
+    for i, p in enumerate(paths):
+        where = "path #%d (%r)" % (i + 1, p.get("id"))
+        for key in ("id", "name", "who", "blurb", "steps", "ends_in"):
+            if not p.get(key):
+                die("%s lacks %r" % (where, key))
+        if not PATH_ID_RE.match(p["id"]):
+            die("%s: id must be a lowercase slug" % where)
+        if p["id"] in seen_ids:
+            die("%s: duplicate path id" % where)
+        seen_ids.add(p["id"])
+        if not one_sentence(p["ends_in"]):
+            die("%s: ends_in must be exactly one sentence naming the deliverable, got %r"
+                % (where, p["ends_in"]))
+        pending = p.get("pending_tracks", [])
+        if not isinstance(pending, list) or not all(isinstance(x, str) for x in pending):
+            die("%s: pending_tracks must be a list of track ids" % where)
+        for tid in pending:
+            if tid in on_disk:
+                die("%s: pending_tracks names %r, but that track exists on disk (registered "
+                    "with %d modules). The allowance is for a track that has not shipped; "
+                    "remove %r from pending_tracks in %s - the field is temporary, never "
+                    "permanent" % (where, tid, len(on_disk[tid]), tid, os.path.relpath(PATHS, ROOT)))
+        steps = p["steps"]
+        if not isinstance(steps, list) or not (PATH_STEPS[0] <= len(steps) <= PATH_STEPS[1]):
+            die("%s: a pathway has %d-%d steps, this one has %s"
+                % (where, PATH_STEPS[0], PATH_STEPS[1],
+                   len(steps) if isinstance(steps, list) else "no list"))
+        resolved, used_pending, seen_steps = [], set(), set()
+        for n, s in enumerate(steps, 1):
+            tid, mid = s.get("track") if isinstance(s, dict) else None, s.get("module") if isinstance(s, dict) else None
+            if not tid or not mid:
+                die("%s step %d: every step is {track, module}, got %r" % (where, n, s))
+            if (tid, mid) in seen_steps:
+                die("%s step %d: %s/%s is already a step of this path" % (where, n, tid, mid))
+            seen_steps.add((tid, mid))
+            if tid in on_disk:
+                if mid not in on_disk[tid]:
+                    die("%s step %d: track %r has no module %r (it has: %s)"
+                        % (where, n, tid, mid, ", ".join(on_disk[tid])))
+                resolved.append({"track": tid, "module": mid,
+                                 "title": clean(on_disk[tid][mid]["t"]), "pending": False})
+            elif tid in pending:
+                if not MODULE_ID_RE.match(mid):
+                    die("%s step %d: pending module id %r is not of the form letters+digits"
+                        % (where, n, mid))
+                used_pending.add(tid)
+                resolved.append({"track": tid, "module": mid, "title": None, "pending": True})
+            else:
+                die("%s step %d: track %r is not registered on window.LXTS.TRACKS (registered: %s)"
+                    % (where, n, tid, ", ".join(on_disk)))
+        unused = sorted(set(pending) - used_pending)
+        if unused:
+            die("%s: pending_tracks names %s but no step uses it; a pending track is listed "
+                "only while a step walks into it" % (where, ", ".join(map(repr, unused))))
+        for tid in sorted(used_pending):
+            print("gen_tradeschool: WARNING %s steps into pending track %r, which is not on disk; "
+                  "its %d step(s) render as '(pending)'. Remove it from pending_tracks in %s once "
+                  "src/ts_%s.js ships - the generator will fail until you do."
+                  % (where, tid, sum(1 for r in resolved if r["track"] == tid),
+                     os.path.relpath(PATHS, ROOT), tid), file=sys.stderr)
+        out.append({"id": p["id"], "name": p["name"], "who": p["who"], "blurb": p["blurb"],
+                    "steps": resolved, "ends_in": p["ends_in"].strip(),
+                    "pending": sorted(used_pending)})
+    return {"reviewed": doc["reviewed"], "paths": out}
+
+
+def render(data, footnote, pathways):
     tracks = data["tracks"]
     trades = data["trades"]
     n_tracks = len(tracks)
@@ -109,6 +216,14 @@ def render(data, footnote):
         status_bits += ", " + ", ".join("%d %s" % (by[k], k) for k in extra)
     base = [t for t in tracks if t["source"] == "src/tradeschool.js"]
     deep = [t for t in tracks if t["source"] != "src/tradeschool.js"]
+    paths = pathways["paths"]
+    n_paths = len(paths)
+    n_steps = sum(len(p["steps"]) for p in paths)
+    n_pending = sum(1 for p in paths for s in p["steps"] if s["pending"])
+    pending_tracks = sorted({t for p in paths for t in p["pending"]})
+    steps_bit = "%d steps" % n_steps
+    if n_pending:
+        steps_bit += " (%d of them into a track not yet on disk)" % n_pending
 
     L = []
     L.append("<!-- GENERATED by curriculum/gen_tradeschool.py from the shipped Trade School modules "
@@ -135,8 +250,9 @@ def render(data, footnote):
              "regulator's own page on the day you read it." % len(K.C))
     L.append("")
     L.append("**%d tracks · %d modules · %d with live components (drawn from the edition's own listings) · "
-             "trade taxonomy: %d divisions, %d trades (%s).**"
-             % (n_tracks, n_mod, n_live, trades["divisions"], trades["trades"], status_bits))
+             "trade taxonomy: %d divisions, %d trades (%s) · %d pathways · %s.**"
+             % (n_tracks, n_mod, n_live, trades["divisions"], trades["trades"], status_bits,
+                n_paths, steps_bit))
     L.append("")
     L.append("Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds them after every "
              "module has loaded, which is the order the app renders. %d register in `src/tradeschool.js`; "
@@ -154,6 +270,41 @@ def render(data, footnote):
                  % (i, clean(t["name"]), t["id"], clean(t["who"]), len(t["modules"]),
                     str(live) if live else "—", t["source"]))
     L.append("")
+    L.append("## Pathways")
+    L.append("")
+    L.append("A pathway is an ordered walk across tracks for one kind of learner, ending in one named "
+             "deliverable. The %d below are written in "
+             "[`content/tradeschool_paths.json`](../content/tradeschool_paths.json) (reviewed %s) and "
+             "nowhere else; every step was resolved against the modules loaded above, so a step naming "
+             "a track or module that is not on disk fails the build with the id named. Titles are the "
+             "modules' own. A pathway orders lessons; it recommends nothing, and finishing one seals no "
+             "credential — the certification check belongs to each track."
+             % (n_paths, pathways["reviewed"]))
+    if pending_tracks:
+        L.append("")
+        L.append("**Pending:** %d step(s) walk into %s, listed under `pending_tracks` because the track "
+                 "is written but not yet registered on `window.LXTS.TRACKS`. Those steps show a module "
+                 "id, not a title. The allowance expires on its own: the generator fails the build the "
+                 "moment a track named there exists, so the field cannot outlive the gap it covers."
+                 % (n_pending, ", ".join("`%s`" % t for t in pending_tracks)))
+    L.append("")
+    for p in paths:
+        L.append('<a id="path-%s"></a>' % p["id"])
+        L.append("")
+        L.append("### %s" % clean(p["name"]))
+        L.append("")
+        L.append("*For:* %s · *Path id:* `%s` · %d steps" % (clean(p["who"]), p["id"], len(p["steps"])))
+        L.append("")
+        L.append(clean(p["blurb"]))
+        L.append("")
+        for n, s in enumerate(p["steps"], 1):
+            if s["pending"]:
+                L.append("%d. `%s` · `%s` (pending)" % (n, s["track"], s["module"]))
+            else:
+                L.append("%d. [`%s`](#%s) · %s" % (n, s["track"], s["track"], s["title"]))
+        L.append("")
+        L.append("*Ends in:* %s" % clean(p["ends_in"]))
+        L.append("")
     for t in tracks:
         L.append('<a id="%s"></a>' % t["id"])
         L.append("")
@@ -216,16 +367,20 @@ def render(data, footnote):
              "`python3 curriculum/gen_tradeschool.py --check` (run by `tests/run.py`, so by CI) "
              "regenerates it to a string and fails on any difference from the committed copy. A module "
              "added, renamed or removed in `src/` without a regeneration is a red build, not a quiet "
-             "drift.")
+             "drift; so is a pathway edited in `content/tradeschool_paths.json` without one, and so is "
+             "a pathway step that names a module no track carries.")
     return "\n".join(L) + "\n"
 
 
 def main(argv):
     data = measure()
     footnote = source_text()
-    md = render(data, footnote)
+    pathways = load_paths(data)
+    md = render(data, footnote, pathways)
     n_tracks = len(data["tracks"])
     n_mod = sum(len(t["modules"]) for t in data["tracks"])
+    n_paths = len(pathways["paths"])
+    n_steps = sum(len(p["steps"]) for p in pathways["paths"])
     if "--check" in argv:
         if not os.path.exists(OUT):
             print("gen_tradeschool --check: %s does not exist; run without --check"
@@ -246,11 +401,12 @@ def main(argv):
                 print("  ... %d more" % (len(changed) - 20))
             return 1
         print("gen_tradeschool --check: curriculum/TRADE_SCHOOL.md matches the shipped modules "
-              "(%d tracks, %d modules)" % (n_tracks, n_mod))
+              "(%d tracks, %d modules, %d pathways, %d steps)" % (n_tracks, n_mod, n_paths, n_steps))
         return 0
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write(md)
-    print("wrote %s (%d tracks, %d modules)" % (os.path.relpath(OUT, ROOT), n_tracks, n_mod))
+    print("wrote %s (%d tracks, %d modules, %d pathways, %d steps)"
+          % (os.path.relpath(OUT, ROOT), n_tracks, n_mod, n_paths, n_steps))
     return 0
 
 
