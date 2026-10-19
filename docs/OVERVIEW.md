@@ -52,6 +52,11 @@ The layers are deliberately coupled: the Academy teaches the numbers the platfor
 platform refuses to show numbers the evidence layer cannot defend, and the level gates
 (`src/gate.js`) grade curriculum levels as **capabilities on a real parcel**, not quiz scores.
 
+Everything that *looks* like a place — the 3D massing, the room program, the block in AR, the
+Academy's scene library, the voices in the hive — is drawn over these same layers and labelled
+**recorded**, **derived** or **schematic**; [`ENVIRONMENTS.md`](ENVIRONMENTS.md) says of each
+what it is, what it is not, and what checks it.
+
 ## 3. The LOCATOR framework
 
 The seven-gate deal screen. It spells the platform because it *is* the platform:
@@ -100,7 +105,7 @@ applied-courses catalog, the cohort review, the Louisiana developer deck and the
 There is no bundler, no framework and no build server.
 
 ```
-src/ (85 modules) ──┐
+src/ (97 modules) ──┐
 curriculum/ ────────┤──▶ lxbuild.py ──▶ one self-contained HTML file per edition
 data modules ───────┘      (module registry, minify, gzip + base64 pack)
 ```
@@ -170,7 +175,7 @@ is lossy.
 ## 9. Repository map
 
 ```
-src/                 85 modules — app, Academy, underwriting, evidence layers
+src/                 97 modules — app, Academy, Trade School, environment, underwriting, evidence layers
 curriculum/          curriculum-as-data, validator, per-pillar course catalogs (courses/)
 build*.py            33 builders — data modules, then one per edition
 lxbuild.py           shared build library (module registry, minify, pack)

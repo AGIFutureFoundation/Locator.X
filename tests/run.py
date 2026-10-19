@@ -36,6 +36,12 @@ cannot silently un-enforce them:
      voice uses the vocabulary of a pitch, only the guide carries an external
      preset voice id, and src/personas.js loads under a stub window with all
      seven and speaks nothing where there is no engine.
+ 14. The environment layer says what it draws: every lesson chip that opens a
+     3D, AR or room view says "massing" or "derived", the shipped scene count is
+     the library's, every avatar scene shows no face, every persona has a
+     non-empty never-says list and no pitch phrase in its opening line, the
+     scene card names the no-real-place boundary, and personas.js, lessonmap.js
+     and scenecards.js contain no network call.
 
 Run: python3 tests/run.py    (CI runs it on every push and PR)
 Everything writes only to a temp dir; fixtures are generated, obviously synthetic
@@ -759,6 +765,30 @@ def main():
     check("matches content/academy_scenes.json" in out,
           "src/scenes_data.js is not what content/academy_scenes.json generates - regenerate, "
           "never patch", out)
+
+    # ---- 12e. the environment layer says what it draws ------------------------
+    # docs/ENVIRONMENTS.md states the rules for everything on screen that looks
+    # like a place: a drawn view is massing or derived and says so, a scene
+    # shows no face, a persona speaks its boundary and never a pitch, a scene
+    # card carries the no-real-place line, and none of it reaches a network.
+    # tests/env_check.js loads voice.js, personas.js, lessonmap.js,
+    # scenes_data.js and scenecards.js under the same stub window as 12c/12d
+    # and asserts each of those against the shipped exports - the chip labels
+    # and titles (LXLessonMap.CHIPS), the shipped scene count against
+    # content/academy_scenes.json, every avatar pair, every persona's
+    # never_says and opening_line, LXSceneCards.note(), and a source scan of
+    # the three modules for fetch( / XMLHttpRequest / WebSocket.
+    if not node:
+        FAILURES.append("node is not on PATH, so the environment-layer eval could not run - "
+                        "it is the only thing checking a drawn view says it is massing "
+                        "or derived and that no avatar scene shows a face")
+    else:
+        r = subprocess.run([node, "tests/env_check.js"],
+                           capture_output=True, text=True, cwd=ROOT)
+        out = r.stdout + r.stderr
+        check(r.returncode == 0, "tests/env_check.js failed", out[-2000:])
+        check("environment:" in out and "no network ✓" in out,
+              "tests/env_check.js printed no summary line", out[-800:])
 
     if FAILURES:
         print("FAIL — %d problem(s):" % len(FAILURES))
