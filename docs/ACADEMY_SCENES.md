@@ -9,7 +9,7 @@
 
 **Credential.** None is stored in this repository. Running these against the model needs a Reactor JWT the platform owner supplies at runtime; the library is text and is useful, reviewable and diffable without one.
 
-Model: `visko-orbis-stable`. Library version 2, last reviewed 2026-10. **17 scenes.**
+Model: `visko-orbis-stable`. Library version 2, last reviewed 2026-10. **21 scenes.**
 
 ## How these are written
 
@@ -206,7 +206,7 @@ backs (`for`).
 
 > The same long lecture room, the same long pale table and empty chairs, the same projected map of lot lines on the end wall, the same slow forward drift down the length of the table. The projected image is slowly zooming: the lattice of outlines grows and spreads across the wall until a single irregular outline fills it, its edges softening as the beam widens and the blue light swells across the table and the chairs. Photorealistic, hushed — continuous slow forward motion, no cuts, a single unbroken take.
 
-## Avatar scenes (3)
+## Avatar scenes (7)
 
 ### Scout
 
@@ -243,6 +243,54 @@ backs (`for`).
 **Evolution**
 
 > The same flat roof deck above the same open framed-out floor of studs and beams, the same single figure at the parapet seen from behind as a dark silhouette, the same slow rise from behind the figure's shoulder. The haze is thinning: the white sky breaks to pale blue, hard sunlight comes across the framed floor and throws the grid of studs into long parallel shadows, and the figure's edge catches a thin rim of light. No face is shown. Photorealistic, pale and dusty — continuous slow upward motion, no cuts, a single unbroken take.
+
+### Underwriting
+
+*Personas — the agent register* — `avatar-underwriting` — for `underwriting`
+
+**Initial**
+
+> A standing desk in a bare grey room, three sheets of paper stacked one upon another under a single lamp on a long arm, and a single figure standing at the desk seen from behind, shoulders square, one hand flat on the top sheet and the other holding a pen that is finishing a short written line at the head of the page, the sentence that must stand before any number beneath it. No face is shown; the sheets carry no legible text, no logo and no name, and the space below the written line is empty. The camera holds at the figure's shoulder height and pushes in slowly over the shoulder toward the lamp and the top sheet. Photorealistic, grey and warm, hard-edged lamplight — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same standing desk in the same bare grey room, the same three stacked sheets under the same single lamp, the same figure seen from behind with the pen in hand, the same slow push in over the shoulder. The lamp's light is narrowing: its circle tightens from the whole desk to the top sheet alone, so the written line at the head of the page stays lit while the empty space below it, where the numbers would go, sinks slowly into grey. No face is shown. Photorealistic, grey and warm — continuous slow forward motion, no cuts, a single unbroken take.
+
+### Acquisitions
+
+*Personas — the agent register* — `avatar-acquisitions` — for `acquisitions`
+
+**Initial**
+
+> A plain desk pushed against a tall window in a quiet office late in the day, flat white daylight falling across a sheet of paper, a small unlit lamp at the desk's edge and a telephone lying face-down beside the page, and a single figure seated at the desk seen from behind, bent slightly over the sheet, writing by hand in slow even lines. No face is shown; the page carries no legible words, the phone's screen is against the desk and stays dark, and nothing on the desk is lifted, folded or sent. The camera holds behind the figure's chair at seated height and pushes in slowly toward the window and the writing hand. Photorealistic, soft white and pale wood — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same plain desk against the same tall window in the same quiet office, the same sheet of paper and the same telephone lying face-down beside it, the same single figure seated and seen from behind, writing, the same slow push in toward the window. The daylight is going: the flat white outside the glass cools to a dusk blue, the small lamp at the desk's edge comes on and throws its glow across the page and the shape of the figure's back, and the phone stays face-down and dark where it was, untouched. No face is shown. Photorealistic, soft and quiet — continuous slow forward motion, no cuts, a single unbroken take.
+
+### Portfolio Learning
+
+*Personas — the agent register* — `avatar-portfolio` — for `portfolio`
+
+**Initial**
+
+> A long narrow archive room lined floor to ceiling with empty shelves, bare timber boards with nothing on them, lit by a row of small ceiling lamps that run away down the aisle, and a single figure standing at a reading stand midway along seen from behind, head bowed over one open ledger whose pages are ruled and blank. No face is shown; the shelves hold nothing, the ledger carries no legible entries, and the emptiness is the subject of the shot. The camera holds low at the near end of the aisle and drifts slowly forward between the shelves toward the figure's back. Photorealistic, dust-grey and pale amber — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same long narrow archive room of empty shelves, the same row of small ceiling lamps down the aisle, the same single figure at the reading stand seen from behind over the same open blank ledger, the same slow forward drift between the shelves. The lamps are going out from the far end: one after another they dim and darken along the aisle toward the figure, until only the lamp above the reading stand remains lit, the empty shelves on either side fall back into the dark, and the open ledger stays blank beneath it. No face is shown. Photorealistic, dust-grey and amber — continuous slow forward motion, no cuts, a single unbroken take.
+
+### The guide
+
+*Personas — the agent register* — `avatar-guide` — for `guide`
+
+**Initial**
+
+> The doorway of a vast empty hall of pale limestone at dawn, seen from just outside across the threshold, tall rectangular openings along the far wall letting long bars of cold blue morning light across the polished stone floor, and a single figure standing at the door seen from behind, one arm extended to hold the heavy door open, waiting, as if for someone behind the camera to go in first. No face is shown; the figure is a shape against the lit hall, still, and says nothing. The camera holds at the figure's shoulder height a few paces back and drifts slowly forward toward the open door and the hall beyond. Architectural, photorealistic, cool and quiet — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same doorway into the same vast limestone hall, the same tall openings and the same bars of morning light across the stone, the same single figure holding the heavy door open seen from behind, the same slow forward drift toward the threshold. The light inside is turning: the cold blue warms through amber into a deep gold that floods the floor and runs out across the threshold to the figure's feet, and the figure eases aside against the door to let the camera pass. No face is shown. Architectural, photorealistic — continuous slow forward motion, no cuts, a single unbroken take.
 
 ## What is deliberately absent
 
