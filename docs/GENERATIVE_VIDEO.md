@@ -25,8 +25,9 @@ a rendering of the record, not an imagining of the asset.
 
 ## What is built
 
-[`content/academy_scenes.json`](../content/academy_scenes.json) holds five scene
-pairs for Academy title sequences, rendered to
+[`content/academy_scenes.json`](../content/academy_scenes.json) holds seventeen scene
+pairs — five Academy title sequences, four exteriors, five interiors and three avatar
+presences that show no face — rendered to
 [`ACADEMY_SCENES.md`](ACADEMY_SCENES.md) by
 [`scripts/build_scenes.py`](../scripts/build_scenes.py). Each pair is an
 **initial** prompt and an **evolution** sent mid-run, written to the model's own

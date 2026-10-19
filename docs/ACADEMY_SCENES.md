@@ -9,7 +9,7 @@
 
 **Credential.** None is stored in this repository. Running these against the model needs a Reactor JWT the platform owner supplies at runtime; the library is text and is useful, reviewable and diffable without one.
 
-Model: `visko-orbis-stable`. Library version 1, last reviewed 2026-09-12. **5 scenes.**
+Model: `visko-orbis-stable`. Library version 2, last reviewed 2026-10. **17 scenes.**
 
 ## How these are written
 
@@ -26,7 +26,15 @@ Each scene is a pair. The **initial** prompt opens the shot; the
    thing** — same setting, same camera, then the light or the weather
    turns. That restatement is what makes the morph read as cinematography.
 
-## Foundations
+Scenes are grouped by **kind**: `title` sequences open an Academy pillar;
+`exterior` and `interior` scenes back a Trade School track or a pillar;
+`avatar` scenes are figure-presences for the personas — a silhouette or a
+back, never a face, and each prompt says so. Each scene names what it
+backs (`for`).
+
+## Title scenes (5)
+
+### Foundations
 
 *Foundations & the Locator.X doctrine* — `foundations`
 
@@ -38,7 +46,7 @@ Each scene is a pair. The **initial** prompt opens the shot; the
 
 > The same vast limestone hall, the same tall openings, the same slow forward drift down the centre at walking pace. The light is turning: the cold blue morning warms through amber into a deep gold that floods the floor and throws the openings into long soft rectangles, and the drifting dust catches fire in the beams. Architectural, photorealistic — continuous slow forward motion, no cuts, a single unbroken take.
 
-## The numbers
+### The numbers
 
 *The numbers* — `numbers`
 
@@ -50,7 +58,7 @@ Each scene is a pair. The **initial** prompt opens the shot; the
 
 > The same dark reading room of wooden drawers and brass handles, the same low green lamps, the same slow sideways track along the central table. The room is filling with a pale mist that pools around the table legs and softens the far drawers into grey, until only the nearest handles still catch the lamplight. Photorealistic, hushed — continuous slow lateral motion, no cuts, a single unbroken take.
 
-## The asset
+### The asset
 
 *The asset* — `asset`
 
@@ -62,7 +70,7 @@ Each scene is a pair. The **initial** prompt opens the shot; the
 
 > The same lone concrete structure on the same flat plain of dry grass, the same slow low orbit holding it centred. Rain is arriving — the overcast darkens to slate, the grass flattens and silvers, and water begins to sheet down the board-marked concrete until every surface is black and reflective. Photorealistic, brutalist — continuous slow orbital motion, no cuts, a single unbroken take.
 
-## Capital & structure
+### Capital & structure
 
 *Capital & structure* — `capital`
 
@@ -74,7 +82,7 @@ Each scene is a pair. The **initial** prompt opens the shot; the
 
 > The same immense steel lattice seen from directly beneath, the same slow rise straight up into the geometry. Fog is rolling in off the flat water below and climbing through the members, swallowing the far span first until only the nearest joints remain sharp and the rest is a soft grey repetition. Photorealistic, pale and geometric — continuous slow upward motion, no cuts, a single unbroken take.
 
-## Evidence & judgment
+### Evidence & judgment
 
 *Evidence, data & judgment* — `evidence`
 
@@ -86,10 +94,162 @@ Each scene is a pair. The **initial** prompt opens the shot; the
 
 > The same still black pool in the same empty courtyard of dark stone, the same low level glide just above the surface. A single slow ripple has begun to travel outward across the water, breaking the reflected sky into moving fragments and then letting it knit back together behind the wave. Photorealistic, minimal, near-monochrome — continuous slow forward glide, no cuts, a single unbroken take.
 
+## Exterior scenes (4)
+
+### The courtyard block
+
+*Trade School — Property management, the operating discipline* — `pm-courtyard` — for `pmdeep`
+
+**Initial**
+
+> A plain three-storey courtyard apartment block at dusk, its open stairways and walkways wrapping an inner court of cracked paving and one thin tree, every door identical and shut, a few windows beginning to glow amber against the cooling blue of the evening. A hose lies coiled beneath the nearest stair. No signage, no numbers on the doors, nobody on the walkways. The camera drifts slowly across the court at chest height toward the far stair, steady and level. Photorealistic, ordinary and quiet, blue hour — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same plain courtyard apartment block, the same open stairways wrapping the same cracked inner court and thin tree, the same slow drift across the court at chest height toward the far stair. The dusk is deepening: the blue drains to near black, one window after another comes alight until the walkways are lit from below by a loose grid of warm rectangles, and the court fills with soft overlapping shadows. Photorealistic, ordinary and quiet — continuous slow forward motion, no cuts, a single unbroken take.
+
+### The main-street frontage
+
+*Trade School — Licensing navigator* — `license-frontage` — for `license`
+
+**Initial**
+
+> A short run of two-storey mixed-use frontage along an empty main street in the first grey light of early morning, brick above and plate glass below, metal shutters half-raised over every shopfront so that each shows a dark strip of interior beneath a band of steel. The awnings are blank, the windows unlettered, the pavement still damp. No vehicles, no people, no readable text anywhere. The camera tracks slowly sideways along the kerb, the shutters sliding past one by one. Photorealistic, grey and still, early — continuous slow lateral motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same two-storey mixed-use frontage along the same empty main street, the same metal shutters half-raised over every shopfront, the same slow sideways track along the kerb. The morning is arriving: the grey warms as low sun clears the rooftops opposite and lays a long band of gold across the brick, the plate glass begins to mirror the street, and the damp pavement brightens and starts to dry. Photorealistic, still — continuous slow lateral motion, no cuts, a single unbroken take.
+
+### The loading apron
+
+*Trade School — Contractors: scope, matching and delivery* — `contractor-apron` — for `contractor`
+
+**Initial**
+
+> A wide concrete loading apron in front of a long corrugated warehouse at night, four roller doors shut, a row of rubber dock bumpers, puddles standing in the worn ruts, the whole yard washed in the flat orange of sodium lamps on tall poles. Pallets are stacked against the fence at the edge of the light. No trucks, no logos, no people. The camera drifts slowly forward across the apron toward the centre door, low and level. Photorealistic, industrial, orange and black — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same wide concrete loading apron, the same long corrugated warehouse with its four roller doors shut, the same sodium lamps on tall poles, the same slow forward drift toward the centre door. A fine rain has started: it hatches the orange light into visible lines, the puddles in the ruts begin to shiver and spread, and the corrugated wall darkens and starts to shine. Photorealistic, industrial — continuous slow forward motion, no cuts, a single unbroken take.
+
+### The idle crane
+
+*Trade School — The developer’s permission and professional stack* — `developer-crane` — for `developer`
+
+**Initial**
+
+> A mid-rise concrete frame under construction behind a continuous green safety fence at dawn, seven storeys of bare slab and column with no walls yet, orange netting along every open edge, a single tower crane standing idle above it with its jib pointed into the wind. The sky is pale and clear and the site lights are still on. No workers, no signboards, no company names. The camera rises slowly from the fence line up the face of the frame toward the crane. Photorealistic, pale and exact, early — continuous slow upward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same mid-rise concrete frame behind the same green safety fence, the same idle tower crane above it, the same slow rise up the face of the frame. First light is reaching the site: the top slab catches a thin line of pink, then each floor below it in turn, the orange netting starts to glow, and the site lights go out one by one as the sky brightens behind the crane. Photorealistic, pale and exact — continuous slow upward motion, no cuts, a single unbroken take.
+
+## Interior scenes (5)
+
+### The unit mid-turn
+
+*Trade School — Property management, the operating discipline* — `pm-turn` — for `pmdeep`
+
+**Initial**
+
+> An emptied apartment unit midway through a turn in the flat light of mid-afternoon, drop cloths taped across the floor, a stepladder standing open in the middle of the main room, a paint tray and a roller resting on its top step, bare picture hooks in the walls and a single window with no blind letting in a square of white light. No furniture, no people, nothing written anywhere. The camera drifts slowly forward from the doorway toward the window, steady and low. Photorealistic, plain and bright, patient — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same emptied apartment unit midway through its turn, the same drop cloths across the floor and the same stepladder open in the middle of the main room, the same slow forward drift from the doorway toward the window. The afternoon is moving: the square of white light slides across the floor and climbs the far wall, warming toward amber and stretching the ladder's shadow long across the drop cloths. Photorealistic, plain and bright — continuous slow forward motion, no cuts, a single unbroken take.
+
+### The plan-check counter
+
+*Trade School — The developer’s permission and professional stack* — `developer-plancheck` — for `developer`
+
+**Initial**
+
+> A long plan-check counter in a civic building under even fluorescent light, a row of empty numbered stools on the public side, a ticket dispenser with its paper tongue hanging out, rolled drawings standing in bins behind the counter, a wall clock, a water cooler, the floor a polished grey terrazzo. The number display above the counter is dark. No staff, no visitors, no legible text on any form. The camera tracks slowly sideways along the public side of the counter. Photorealistic, institutional, flat and cool — continuous slow lateral motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same long plan-check counter in the same civic building, the same numbered stools and ticket dispenser and rolled drawings in their bins, the same slow sideways track along the public side. The fluorescent tubes are beginning to flicker, one bank and then the next, so that the terrazzo floor and the standing drawings pulse between flat cool light and a soft greyed dusk, and the dark number display above the counter blinks faintly to life. Photorealistic, institutional — continuous slow lateral motion, no cuts, a single unbroken take.
+
+### The mechanical room
+
+*Trade School — Contractors: scope, matching and delivery* — `contractor-mechanical` — for `contractor`
+
+**Initial**
+
+> A low mechanical room in a basement, a cast-iron boiler squat in the centre, labelled pipes in red and blue and yellow running overhead and down the walls with their colour bands and flow arrows visible but no words legible, a single caged work lamp hung from a pipe throwing hard shadows across the concrete. Gauges glint on the boiler face. No people, no company names, no paper. The camera drifts slowly forward between the pipes toward the boiler, low and steady. Photorealistic, close and hot, deep shadow — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same low basement mechanical room, the same cast-iron boiler in the centre, the same labelled pipes running overhead, the same single caged work lamp, the same slow forward drift between the pipes toward the boiler. The lamp is beginning to swing gently on its cord, so that the hard shadows of the pipes sweep slowly back and forth across the concrete and the gauges flash and dim in turn. Photorealistic, close and hot — continuous slow forward motion, no cuts, a single unbroken take.
+
+### The trust-account ledger room
+
+*Trade School — Licensing navigator* — `license-ledger` — for `license`
+
+**Initial**
+
+> A plain small office at night with rain running down its one window, two dark monitors side by side on a laminate desk, a thick bound ledger closed beside them, a desk lamp with a green shade the only light, a filing cabinet in the corner and a coat on a hook. Nothing on the screens, nothing written on any visible page, no nameplate. The camera drifts slowly in from the doorway toward the desk and the window beyond. Photorealistic, quiet, warm lamp and cold rain — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same plain small office at night, the same rain running down the same one window, the same two dark monitors and bound ledger on the laminate desk, the same green-shaded lamp, the same slow drift from the doorway toward the desk. The rain is strengthening: it thickens into sheets that blur the window entirely, the streetlight beyond it smears into a moving orange field, and the lamp's reflection in the dark monitors steadies and brightens. Photorealistic, quiet — continuous slow forward motion, no cuts, a single unbroken take.
+
+### The lecture room
+
+*Foundations & the Locator.X doctrine* — `foundations-lecture` — for `F`
+
+**Initial**
+
+> A long lecture room with one long pale table running its length, a dozen empty chairs tucked in, blinds half-drawn against a grey afternoon, and a projected map of lot lines filling the end wall — a lattice of irregular outlines in thin white on dark blue, no labels, no numbers, no text legible anywhere. The projector hums in the ceiling and its beam shows faintly in the air. No people, no papers. The camera drifts slowly forward down the length of the table toward the projected map. Photorealistic, hushed, blue-lit — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same long lecture room, the same long pale table and empty chairs, the same projected map of lot lines on the end wall, the same slow forward drift down the length of the table. The projected image is slowly zooming: the lattice of outlines grows and spreads across the wall until a single irregular outline fills it, its edges softening as the beam widens and the blue light swells across the table and the chairs. Photorealistic, hushed — continuous slow forward motion, no cuts, a single unbroken take.
+
+## Avatar scenes (3)
+
+### Scout
+
+*Personas — the agent register* — `avatar-scout` — for `scout`
+
+**Initial**
+
+> A tall dark window at night in an unlit upper room, and a single figure standing before it seen from behind, a plain silhouette against a grid of distant lights spread across a flat landscape below — thousands of small points in rough rows, none bright enough to read as any one place. No face is shown; the figure is a shape, still, hands at its sides. The camera holds low and slowly pushes in toward the figure's back and the window beyond. Photorealistic, near-monochrome, cold blue and far amber — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same tall dark window in the same unlit upper room, the same single figure seen from behind as a plain silhouette against the grid of distant lights, the same slow push in toward the figure's back. The lights below are beginning to shift: a band of them along the horizon dims and goes dark while a new scatter comes on nearer the window, so the grid seems to breathe, and the figure's outline sharpens against it. No face is shown. Photorealistic, near-monochrome — continuous slow forward motion, no cuts, a single unbroken take.
+
+### Diligence
+
+*Personas — the agent register* — `avatar-diligence` — for `diligence`
+
+**Initial**
+
+> A long table in a dark room covered end to end with closed folders in uneven stacks, and a single figure seated at the far end seen from behind, a shape bent slightly forward under the one reading lamp, whose pool of warm light falls on the nearest folders and leaves the rest in shadow. No face is shown and no page is open; the folders are blank, unlabelled, without text. The camera drifts slowly forward along the table toward the figure's back and the lamp. Photorealistic, hushed, amber and black — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same long table of closed folders in the same dark room, the same single figure seated at the far end seen from behind under the same reading lamp, the same slow forward drift along the table. The lamp is slowly dimming: its pool of warm light tightens toward the figure's hands until only the nearest folders and the figure's shoulders remain lit, and the stacks along the table sink one by one into the dark. No face is shown. Photorealistic, hushed — continuous slow forward motion, no cuts, a single unbroken take.
+
+### Development
+
+*Personas — the agent register* — `avatar-development` — for `development`
+
+**Initial**
+
+> A flat roof deck at the edge of an open framed-out floor, bare timber studs and steel beams laid out in a grid below with no walls or glazing yet, and a single figure standing at the parapet seen from behind, a dark silhouette against a hazy white sky, one hand resting on the rail. No face is shown; no logos, no signboards, no other person. The camera rises slowly from behind the figure's shoulder to look down over the framed floor. Photorealistic, pale and dusty, overexposed sky — continuous slow upward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same flat roof deck above the same open framed-out floor of studs and beams, the same single figure at the parapet seen from behind as a dark silhouette, the same slow rise from behind the figure's shoulder. The haze is thinning: the white sky breaks to pale blue, hard sunlight comes across the framed floor and throws the grid of studs into long parallel shadows, and the figure's edge catches a thin rim of light. No face is shown. Photorealistic, pale and dusty — continuous slow upward motion, no cuts, a single unbroken take.
+
 ## What is deliberately absent
 
 No real place, no real building, no real person, no address, no property.
-Every scene is abstract architecture, light and landscape. The generator
+Every scene is abstract architecture, light and landscape; an avatar scene
+is a figure-presence with no face shown, and the generator fails the build
+if its prompt does not say so. The generator
 checks each prompt against the place vocabulary this repository already
 holds — the state table, the county and parish names in the coverage
 files, and the city list the app ships — and fails the build on a match,

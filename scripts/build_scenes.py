@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""build_scenes — validate the Academy title-sequence prompts, and render them.
+"""build_scenes — validate the Academy scene-library prompts, and render them.
 
 Two jobs, and the first matters more than the second.
 
@@ -17,6 +17,8 @@ Two jobs, and the first matters more than the second.
      - each prompt is ONE continuous take: no cuts, no montage, no scene lists
      - each evolution re-establishes the SAME setting verbatim before changing
        one thing, which is what makes the mid-run morph smooth
+   and one rule of this platform's own: an `avatar` scene (a figure-presence
+   for a persona) must say "no face is shown" or "seen from behind".
 
 The re-establishment check looks for the "the same ..." idiom twice (setting
 and camera) plus a real overlap of distinctive words with the opening sentence.
@@ -58,6 +60,13 @@ MIN_WORDS = 45          # a paragraph, not a tagline
 # from that example.
 MIN_SAME_ANCHORS = 2    # "the same ..." restatements: the setting and the camera
 MIN_SHARED_NOUNS = 3    # distinctive content words carried over from the opening
+# What a scene backs. "title" scenes open an Academy pillar; the rest back a
+# Trade School track, a pillar or a persona, named in the scene's `for` field.
+KINDS = ('title', 'exterior', 'interior', 'avatar')
+# The platform depicts no person. An avatar scene is a figure-presence only —
+# a silhouette or a back — and must say so in the prompt itself, because the
+# prompt is the only instruction the model receives.
+AVATAR_PHRASES = ('no face is shown', 'seen from behind')
 
 
 def die(msg):
@@ -102,10 +111,16 @@ def place_vocabulary():
 
 def check_scene(sc, places, problems):
     sid = sc.get('id') or '(unnamed)'
-    for field in ('id', 'title', 'pillar', 'initial', 'evolution'):
+    for field in ('id', 'title', 'pillar', 'kind', 'initial', 'evolution'):
         if not sc.get(field):
             problems.append('%s: missing %s' % (sid, field))
             return
+    if sc['kind'] not in KINDS:
+        problems.append('%s: unknown kind %r (one of %s)' % (sid, sc['kind'], ', '.join(KINDS)))
+        return
+    if sc['kind'] != 'title' and not sc.get('for'):
+        problems.append('%s: a non-title scene (%s) must say what it backs '
+                        '(`for`: a track, pillar or persona id)' % (sid, sc['kind']))
     for field in ('initial', 'evolution'):
         text = sc[field]
         low = text.lower()
@@ -132,6 +147,10 @@ def check_scene(sc, places, problems):
         if 'single unbroken take' not in low:
             problems.append('%s.%s does not state that it is a single unbroken '
                             'take' % (sid, field))
+        if sc['kind'] == 'avatar' and not any(p in low for p in AVATAR_PHRASES):
+            problems.append('%s.%s is an avatar scene and does not say %s. The '
+                            'platform depicts no person.'
+                            % (sid, field, ' or '.join(repr(p) for p in AVATAR_PHRASES)))
     # 3. the evolution must re-establish the world before changing anything
     first = re.split(r'(?<=[.!?])\s', sc['initial'])[0].lower()
     ev = sc['evolution'].lower()
@@ -153,6 +172,24 @@ def check_scene(sc, places, problems):
             'sentence (%s); it needs at least %d, or it is describing a '
             'different place.' % (sid, len(carried), ', '.join(carried) or 'none',
                                   MIN_SHARED_NOUNS))
+
+
+def render_scene(sc, A):
+    A('### %s' % sc['title'])
+    A('')
+    tag = '*%s* — `%s`' % (sc['pillar'], sc['id'])
+    if sc.get('for'):
+        tag += ' — for `%s`' % sc['for']
+    A(tag)
+    A('')
+    A('**Initial**')
+    A('')
+    A('> ' + sc['initial'])
+    A('')
+    A('**Evolution**')
+    A('')
+    A('> ' + sc['evolution'])
+    A('')
 
 
 def render(lib):
@@ -187,23 +224,26 @@ def render(lib):
     A('   thing** — same setting, same camera, then the light or the weather')
     A('   turns. That restatement is what makes the morph read as cinematography.')
     A('')
-    for sc in lib['scenes']:
-        A('## %s' % sc['title'])
+    A('Scenes are grouped by **kind**: `title` sequences open an Academy pillar;')
+    A('`exterior` and `interior` scenes back a Trade School track or a pillar;')
+    A('`avatar` scenes are figure-presences for the personas — a silhouette or a')
+    A('back, never a face, and each prompt says so. Each scene names what it')
+    A('backs (`for`).')
+    A('')
+    for kind in KINDS:
+        group = [sc for sc in lib['scenes'] if sc['kind'] == kind]
+        if not group:
+            continue
+        A('## %s scenes (%d)' % (kind.capitalize(), len(group)))
         A('')
-        A('*%s* — `%s`' % (sc['pillar'], sc['id']))
-        A('')
-        A('**Initial**')
-        A('')
-        A('> ' + sc['initial'])
-        A('')
-        A('**Evolution**')
-        A('')
-        A('> ' + sc['evolution'])
-        A('')
+        for sc in group:
+            render_scene(sc, A)
     A('## What is deliberately absent')
     A('')
     A('No real place, no real building, no real person, no address, no property.')
-    A('Every scene is abstract architecture, light and landscape. The generator')
+    A('Every scene is abstract architecture, light and landscape; an avatar scene')
+    A('is a figure-presence with no face shown, and the generator fails the build')
+    A('if its prompt does not say so. The generator')
     A('checks each prompt against the place vocabulary this repository already')
     A('holds — the state table, the county and parish names in the coverage')
     A('files, and the city list the app ships — and fails the build on a match,')
