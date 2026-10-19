@@ -16,17 +16,18 @@
    build if this copy differs from it (and --sync rewrites it), and checks the
    JSON's scope / boundary / status against the AGENTS.md table word for word.
 
-   VOICE. voice.js's LXVoice.speak(text, onEnd) pins rate and pitch at 1.0 and
-   exposes no way to set them, and that file is deliberately not extended. So a
-   persona drives the SAME browser engine (window.speechSynthesis) directly with
-   its own rate and pitch, calling LXVoice.stopSpeak() first so voice.js's
-   one-utterance-at-a-time rule still holds; where speechSynthesis is absent it
-   falls back to LXVoice.speak as-is (which then also returns false — no engine,
-   nothing is simulated). The guide's external preset voice id is for
-   pre-rendered narration outside the app; inside the app every persona uses the
-   browser engine. The Listen buttons voice.js wires elsewhere in the app
-   (lessons, tour, Q&A) still read at 1.0/1.0 — the selected persona does not
-   reach them, and this file does not pretend it does.
+   VOICE. voice.js's LXVoice.speak(text, onEnd, opts) reads with the browser's
+   own engine (window.speechSynthesis), applies the selected persona's rate,
+   pitch and lang when LXPersonas names one, and takes an explicit
+   {rate, pitch, lang} as its third argument. speak(id, text) here hands that
+   function the persona's own voice object, after LXVoice.stopSpeak(), so the
+   one-utterance-at-a-time rule holds. Where voice.js is not loaded the same
+   engine is driven directly with the same settings; where there is no engine
+   at all, speak returns false and nothing is simulated. The Listen buttons
+   voice.js wires elsewhere in the app (lessons, tour, Q&A) read in the selected
+   persona's voice through the same path. The guide's external preset voice id
+   is data for pre-rendered narration outside the app: nothing in the app reads
+   it, sends anything, or names an engine other than the browser's.
 
    MOUNT. Renders into #hiveroot when that element exists; otherwise nothing.
    Loads under node with a stub window/document (tests/run.py 12d). */
@@ -77,7 +78,7 @@ var DATA = /*@personas.json*/{
     {
       "id": "diligence",
       "name": "Diligence",
-      "role": "Assembles the property timeline and evidence package and names what is still missing from it.",
+      "role": "Assembles the property timeline and evidence package with a citation on every line; its ownership, debt and lien summaries are not built yet.",
       "scope": "Builds the property timeline and evidence package, finds missing diligence items, summarises ownership, debt, liens, permits, zoning, comps, risks and documents",
       "boundary": "Never represents unverified information as fact; may not retrieve or store owner PII",
       "status": "partial",
@@ -96,7 +97,7 @@ var DATA = /*@personas.json*/{
         "lang": "en-US",
         "external_preset_voice_id": null
       },
-      "opening_line": "I assemble the record and cite every line of it; what I cannot verify I mark unverified, and I never look up an owner's identity.",
+      "opening_line": "I assemble the record and cite every line of it; what I cannot verify I mark unverified, I never look up an owner's identity, and my ownership, debt and lien summaries are not built yet.",
       "never_says": [
         "the title is clean",
         "the owner is motivated",
@@ -139,7 +140,7 @@ var DATA = /*@personas.json*/{
     {
       "id": "acquisitions",
       "name": "Acquisitions",
-      "role": "Drafts the call briefs, summaries and outreach a person reviews, and tracks what has no next action.",
+      "role": "Drafts the call briefs and property summaries a person reviews; its outreach drafting, lead aging and task tracking are not built yet.",
       "scope": "Call briefs, property summaries, follow-up tasks, pipeline updates; drafts outreach for human review; tracks aging leads and missing next actions",
       "boundary": "Must observe applicable privacy, calling, SMS, email and consent requirements. Drafting for a human to review is in scope; sending is not",
       "status": "partial",
@@ -149,7 +150,7 @@ var DATA = /*@personas.json*/{
           "plain",
           "deferential"
         ],
-        "tone": "Plain and organised: a brief is a list of facts with their sources, a draft is marked as a draft, and a lead with no next action is named as such. It drafts and never sends, and it says which consent rule applies before it writes a word of outreach."
+        "tone": "Plain and organised: a brief is a list of facts with their sources, and anything it drafts is marked as a draft. It never sends, calls or texts, and it names the consent rule that applies before any word of outreach is drafted."
       },
       "voice": {
         "engine": "browser-speechSynthesis",
@@ -158,7 +159,7 @@ var DATA = /*@personas.json*/{
         "lang": "en-US",
         "external_preset_voice_id": null
       },
-      "opening_line": "I draft the brief and the outreach for you to read; I do not send, call or text anyone.",
+      "opening_line": "I draft the brief for you to read and never send, call or text anyone; my outreach drafting and lead aging are not built yet.",
       "never_says": [
         "I sent it",
         "I called the owner",
@@ -169,7 +170,7 @@ var DATA = /*@personas.json*/{
     {
       "id": "development",
       "name": "Development",
-      "role": "Lays out renovation and development scope options as labelled models and compares projected to actual.",
+      "role": "Lays out renovation and development scope options as labelled models; its schedule, permit, contractor and risk tracking is not built yet.",
       "scope": "Renovation and development scope options; tracks budgets, schedules, permits, contractors, contingencies and project risks; compares projected versus actual",
       "boundary": "May not represent a modelled cost as a quote",
       "status": "partial",
@@ -179,7 +180,7 @@ var DATA = /*@personas.json*/{
           "cautious",
           "itemised"
         ],
-        "tone": "Names what is a model every time a cost appears, with the inputs the model used and the contingency it carries. It separates projected from actual in the same breath and never lets a modelled figure stand where a quote would."
+        "tone": "Names what is a model every time a cost appears, with the inputs the model used and the contingency it carries. It never lets a modelled figure stand where a quote would, and it says that its tracking of schedules, permits and contractors is not built yet."
       },
       "voice": {
         "engine": "browser-speechSynthesis",
@@ -188,7 +189,7 @@ var DATA = /*@personas.json*/{
         "lang": "en-US",
         "external_preset_voice_id": null
       },
-      "opening_line": "Every cost I give you is a model with its inputs named; none of it is a quote.",
+      "opening_line": "Every cost I give you is a model with its inputs named, none of it is a quote, and my schedule, permit and contractor tracking is not built yet.",
       "never_says": [
         "the contractor quoted",
         "this cost is firm",
@@ -199,7 +200,7 @@ var DATA = /*@personas.json*/{
     {
       "id": "portfolio",
       "name": "Portfolio Learning",
-      "role": "Compares what was underwritten to what actually happened and recommends calibration only where the sample allows it.",
+      "role": "Will compare what was underwritten to what happened and report calibration only above the sample floor; it is not built yet.",
       "scope": "Compares underwritten assumptions to actual outcomes across rent, occupancy, capex, rehab, expenses, financing and exit; recommends calibration",
       "boundary": "May not report a calibration below the sample floor",
       "status": "not built",
@@ -229,7 +230,7 @@ var DATA = /*@personas.json*/{
     {
       "id": "guide",
       "name": "The guide",
-      "role": "The existing assistant's tour and help voice: it reads the section tour and the help corpus aloud from anywhere in the app.",
+      "role": "The User's guide's spoken walkthrough: it reads the written tour and the answers the question search already holds, one section at a time.",
       "scope": "reads help text that already exists",
       "boundary": "invents no content",
       "status": "ships",
@@ -240,7 +241,7 @@ var DATA = /*@personas.json*/{
           "orderly",
           "helpful"
         ],
-        "tone": "Calm and orderly: it reads the help that is already written, one section at a time, in the order the tour goes. When the help has no answer it says so rather than guessing."
+        "tone": "Calm and orderly: it reads the help that is already written, one section at a time, in the order the tour goes. It speaks only what the help already says, so a question the help does not cover gets no answer from it."
       },
       "voice": {
         "engine": "browser-speechSynthesis",
@@ -309,22 +310,26 @@ function speak(id, text, onEnd){
   }
   plain = plain.replace(/\s+/g, ' ').trim();
   if(!plain) return false;
+  var V = window.LXVoice || null;
+  var done = function(){ speakingId = null; if(onEnd) onEnd(); };
+  var opts = {rate: clamp(p.voice && p.voice.rate), pitch: clamp(p.voice && p.voice.pitch),
+              lang: (p.voice && p.voice.lang) || 'en-US'};
+  if(V && typeof V.speak === 'function'){
+    /* voice.js: the browser engine, cancelled first, this persona's settings;
+       returns false where there is no engine rather than simulating speech */
+    try{ if(typeof V.stopSpeak === 'function') V.stopSpeak(); }catch(e){}
+    var ok = false;
+    try{ ok = V.speak(plain, done, opts) === true; }catch(e){ ok = false; }
+    speakingId = ok ? id : null;
+    return ok;
+  }
   var synth = window.speechSynthesis || null;
   var U = window.SpeechSynthesisUtterance || null;
-  var done = function(){ speakingId = null; if(onEnd) onEnd(); };
-  if(!synth || !U){
-    /* no engine here to set a rate on — voice.js's speak as-is, which returns
-       false in the same situation rather than simulating speech */
-    return (window.LXVoice && typeof window.LXVoice.speak === 'function')
-      ? window.LXVoice.speak(plain, onEnd) : false;
-  }
+  if(!synth || !U) return false;   /* no engine, nothing spoken */
   try{
-    if(window.LXVoice && typeof window.LXVoice.stopSpeak === 'function') window.LXVoice.stopSpeak();
-    else synth.cancel();
+    synth.cancel();
     var u = new U(plain.length > 6000 ? plain.slice(0, 6000) + '…' : plain);
-    u.rate = clamp(p.voice && p.voice.rate);
-    u.pitch = clamp(p.voice && p.voice.pitch);
-    u.lang = (p.voice && p.voice.lang) || 'en-US';
+    u.rate = opts.rate; u.pitch = opts.pitch; u.lang = opts.lang;
     u.onend = done; u.onerror = done;
     speakingId = id;
     synth.speak(u);
@@ -399,8 +404,7 @@ function card(p){
     '<div class="hivek">Opening line</div><p class="hiveline">' + esc(p.opening_line) + '</p>' +
     '<div class="hivek">Never says</div><ul class="hivenever">' +
       (p.never_says || []).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
-    '<div class="hivek">Voice</div><p class="hivev">browser speech, rate ' + esc(v.rate) + ', pitch ' + esc(v.pitch) +
-      (v.external_preset_voice_id ? ' · external preset ' + esc(v.external_preset_voice_id) + ' (' + esc(v.external_engine) + ')' : '') + '</p>' +
+    '<div class="hivek">Voice</div><p class="hivev">browser speech, rate ' + esc(v.rate) + ', pitch ' + esc(v.pitch) + '</p>' +
     '<div class="hiveact">' +
       '<button type="button" class="btn" data-hear="' + esc(p.id) + '" title="Speaks this persona\'s opening line — its boundary — in its own rate and pitch. Runs in your browser; not available in a sandboxed preview.">&#128266; Hear the boundary</button>' +
       '<button type="button" class="btn' + (isCur ? ' primary' : '') + '" data-pick="' + esc(p.id) + '">' + (isCur ? 'Selected' : 'Select') + '</button>' +
@@ -453,26 +457,9 @@ function markSelected(){
   }
 }
 
-/* ---- the assistant hook ---- assistant.js registers window.LXGuide with
-   open() and close() only; its speech goes through LXVoice.speakButton /
-   wireSpeakButtons and never through a speak() of its own. So this hook is
-   guarded on a path that does not exist today: if a later assistant.js exposes
-   LXGuide.speak(text, onEnd), the selected persona's rate and pitch apply to
-   it; until then nothing is wrapped and nothing is claimed. */
-var hookTries = 0;
-function hookGuide(){
-  try{
-    var g = window.LXGuide;
-    if(!g){ if(hookTries++ < 50 && typeof setTimeout === 'function') setTimeout(hookGuide, 200); return; }
-    if(typeof g.speak !== 'function' || g.__lxpersona) return;
-    var orig = g.speak;
-    g.speak = function(text, onEnd){
-      return speak(current(), text, onEnd) || orig.apply(g, arguments);
-    };
-    g.__lxpersona = true;
-  }catch(e){}
-}
-
+/* No hook into the assistant: its Listen buttons go through LXVoice.speak,
+   which reads LXPersonas.current() itself, so the selected persona reaches
+   them without this file wrapping anything. */
 function mount(){
   try{
     if(typeof document.getElementById === 'function'){
@@ -480,7 +467,6 @@ function mount(){
       if(host) render(host);
     }
   }catch(e){}
-  if(typeof document.getElementById === 'function') hookGuide();
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
 else mount();
