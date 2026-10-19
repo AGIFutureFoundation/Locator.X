@@ -5,9 +5,9 @@
 
 The Trade School is the Academy's second body of lessons, beside the 51-item curriculum in [`curriculum.py`](curriculum.py) and its catalog in [`courses/`](courses/README.md). The curriculum teaches the subject by pillar and level; the Trade School teaches the **trade** by role — career tracks for the people a deal runs through (agents, lenders, managers, appraisers, contractors, developers, investors) and the counterparts they face. Each track has its own certification check, drawn from the modules' own drill questions, and seals a per-track credential in the app on a pass. Nothing here is accredited: no track confers a licence, a degree, continuing-education credit or standing with any regulator. It is education and navigation of the public record — what a requirement is, where it is published and how to verify it — never a recommendation, and never a substitute for the regulator's own page on the day you read it.
 
-**13 tracks · 81 modules · 13 with live components (drawn from the edition's own listings) · trade taxonomy: 18 divisions, 47 trades (6 pattern, 38 state-specific, 3 federal) · 5 pathways · 57 steps (10 of them into a track not yet on disk).**
+**14 tracks · 91 modules · 17 with live components (drawn from the edition's own listings) · trade taxonomy: 18 divisions, 47 trades (6 pattern, 38 state-specific, 3 federal) · 5 pathways · 57 steps.**
 
-Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds them after every module has loaded, which is the order the app renders. 8 register in `src/tradeschool.js`; 5 are deep tracks, each in its own `src/ts_*.js` file. "Live" marks a module that reads the running edition's listings into its lesson; the count of such modules is measured, not promised.
+Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds them after every module has loaded, which is the order the app renders. 8 register in `src/tradeschool.js`; 6 are deep tracks, each in its own `src/ts_*.js` file. "Live" marks a module that reads the running edition's listings into its lesson; the count of such modules is measured, not promised.
 
 ## Tracks
 
@@ -23,15 +23,14 @@ Tracks are listed in registry order — the order `window.LXTS.TRACKS` holds the
 | 8 | [Development & construction](#dev) | Value-add and ground-up builders | 2 | — | `src/tradeschool.js` |
 | 9 | [Contractors — scope, matching and delivery](#contractor) | Owners, developers and managers who hire trades | 10 | 1 | `src/ts_contractor.js` |
 | 10 | [The developer’s permission and professional stack](#developer) | Developers, owner-builders and the teams around them | 10 | — | `src/ts_developer.js` |
-| 11 | [Licensing navigator — any state](#license) | Anyone entering the trade, in any state | 10 | — | `src/ts_license.js` |
-| 12 | [Reading the map — layers, signals and what they cannot say](#maplit) | Anyone who opens an edition and has to decide what a picture means | 10 | 7 | `src/ts_maplit.js` |
-| 13 | [Property management — the operating discipline](#pmdeep) | Owner-operators, managers and anyone hiring one | 11 | 2 | `src/ts_pmdeep.js` |
+| 11 | [Working with the hive — six bounded agents and the person who decides](#hive) | Anyone who will use an agent’s output and sign their own name to the decision | 10 | 4 | `src/ts_hive.js` |
+| 12 | [Licensing navigator — any state](#license) | Anyone entering the trade, in any state | 10 | — | `src/ts_license.js` |
+| 13 | [Reading the map — layers, signals and what they cannot say](#maplit) | Anyone who opens an edition and has to decide what a picture means | 10 | 7 | `src/ts_maplit.js` |
+| 14 | [Property management — the operating discipline](#pmdeep) | Owner-operators, managers and anyone hiring one | 11 | 2 | `src/ts_pmdeep.js` |
 
 ## Pathways
 
 A pathway is an ordered walk across tracks for one kind of learner, ending in one named deliverable. The 5 below are written in [`content/tradeschool_paths.json`](../content/tradeschool_paths.json) (reviewed 2026-10) and nowhere else; every step was resolved against the modules loaded above, so a step naming a track or module that is not on disk fails the build with the id named. Titles are the modules' own. A pathway orders lessons; it recommends nothing, and finishing one seals no credential — the certification check belongs to each track.
-
-**Pending:** 10 step(s) walk into `hive`, listed under `pending_tracks` because the track is written but not yet registered on `window.LXTS.TRACKS`. Those steps show a module id, not a title. The allowance expires on its own: the generator fails the build the moment a track named there exists, so the field cannot outlive the gap it covers.
 
 <a id="path-licensed-professional"></a>
 
@@ -51,7 +50,7 @@ Starts with the regulator as a system, so every state's page reads the same way;
 8. [`lending`](#lending) · How underwriters read your buyer
 9. [`pm`](#pm) · The California rulebook in one page
 10. [`pm`](#pm) · Operations: the numbers a manager actually moves
-11. `hive` · `h1` (pending)
+11. [`hive`](#hive) · What a bounded agent is — it proposes, it cites, it never decides
 
 *Ends in:* A dated verification record for every licence the learner will hold or rely on, read from the issuing regulator's own register.
 
@@ -74,7 +73,7 @@ The operating discipline first — what a manager controls, screening in order o
 9. [`contractor`](#contractor) · Payment mechanics — draws, retention and waivers
 10. [`contractor`](#contractor) · The matching desk — scope to trades to verification record
 11. [`maplit`](#maplit) · Coverage — what this edition cannot answer at all, and why the unknown count travels with every score
-12. `hive` · `h1` (pending)
+12. [`hive`](#hive) · What a bounded agent is — it proposes, it cites, it never decides
 
 *Ends in:* An owner's operating binder: written screening criteria, a reserve schedule, one priced scope with its trade verification record, and the manager-matching sheet.
 
@@ -97,7 +96,7 @@ The permission stack as a public record, the pre-application meeting and the not
 9. [`maplit`](#maplit) · The room program — recorded, derived, schematic, and the sentence the county does not publish
 10. [`dev`](#dev) · Entitlements: the permission stack
 11. [`dev`](#dev) · The development pro forma
-12. `hive` · `h1` (pending)
+12. [`hive`](#hive) · What a bounded agent is — it proposes, it cites, it never decides
 
 *Ends in:* A dated permission notebook for one parcel beside a pro forma whose every cost line names the published source it came from.
 
@@ -120,7 +119,7 @@ The whole legend before any picture: every layer as recorded, derived or schemat
 9. [`maplit`](#maplit) · Coverage — what this edition cannot answer at all, and why the unknown count travels with every score
 10. [`maplit`](#maplit) · The replay slider and time — the as-of month, what re-extrudes, and writing the date you looked
 11. [`valuation`](#valuation) · Three approaches, one opinion
-12. `hive` · `h2` (pending)
+12. [`hive`](#hive) · Traceability as a habit — an output names its inputs, and their grades
 
 *Ends in:* One written opinion of value for one parcel, each input labelled recorded, derived or schematic, with the edition's unknown count and as-of date copied beside it.
 
@@ -132,12 +131,12 @@ The whole legend before any picture: every layer as recorded, derived or schemat
 
 The hive first, agent by agent, each as a scope and a boundary rather than a capability; then the two map lessons every agent's output rests on — coverage, so an unknown count is read as an answer, and the replay slider, so the as-of month travels with every figure; then the principles the protocols were written under, so the person reading an agent's output knows which test it was built to pass.
 
-1. `hive` · `h1` (pending)
-2. `hive` · `h2` (pending)
-3. `hive` · `h3` (pending)
-4. `hive` · `h4` (pending)
-5. `hive` · `h5` (pending)
-6. `hive` · `h6` (pending)
+1. [`hive`](#hive) · What a bounded agent is — it proposes, it cites, it never decides
+2. [`hive`](#hive) · Traceability as a habit — an output names its inputs, and their grades
+3. [`hive`](#hive) · Scout — what entering the pipeline means, and the box it cannot widen
+4. [`hive`](#hive) · Diligence — the evidence package, the owner rule, and the half that is not built
+5. [`hive`](#hive) · Underwriting — assumptions before numbers; scenarios, not forecasts
+6. [`hive`](#hive) · Acquisitions — drafting for a person to review, and why sending is not in scope
 7. [`maplit`](#maplit) · Coverage — what this edition cannot answer at all, and why the unknown count travels with every score
 8. [`maplit`](#maplit) · The replay slider and time — the as-of month, what re-extrudes, and writing the date you looked
 9. [`principles`](#principles) · Buy what pays you — the asset test
@@ -305,6 +304,27 @@ The permission stack read as a public record: where each approval lives and how 
 
 Certification: every module's drill question once, one attempt, no retries, ≥ 75% first-attempt.
 
+<a id="hive"></a>
+
+## Working with the hive — six bounded agents and the person who decides
+
+*For:* Anyone who will use an agent’s output and sign their own name to the decision · *Track id:* `hive` · *Source:* [`src/ts_hive.js`](../src/ts_hive.js)
+
+Six agents are specified for this platform. Each one proposes, cites its inputs and stops short of deciding; a person reads, checks what was not checked, and signs. This track teaches that reading: the three rules every agent is bound by, traceability as a daily habit, what each of the six does and refuses, what is built and what is not, and the approval step where the decision becomes yours. Nothing here tells you what to decide.
+
+1. What a bounded agent is — it proposes, it cites, it never decides
+2. Traceability as a habit — an output names its inputs, and their grades
+3. Scout — what entering the pipeline means, and the box it cannot widen · live
+4. Diligence — the evidence package, the owner rule, and the half that is not built · live
+5. Underwriting — assumptions before numbers; scenarios, not forecasts · live
+6. Acquisitions — drafting for a person to review, and why sending is not in scope
+7. Development — a modelled cost is never a quote
+8. Portfolio Learning — the sample floor, and what “not built” means for every number
+9. The approval step — the memo, the signature, and the record of what was not checked
+10. The hive console as a reading exercise — the status line, present and not loaded · live
+
+Certification: every module's drill question once, one attempt, no retries, ≥ 75% first-attempt.
+
 <a id="license"></a>
 
 ## Licensing navigator — any state
@@ -380,7 +400,7 @@ Every module carries one 4-option drill question. On the track page that drill i
 
   > Licensing summaries in the California tracks are educational, drawn from the California DRE, NMLS and BREA public pages (Sept 2026). The any-state tracks (licensing navigator, property management, contractors) state patterns only and no state’s numbers; verify every requirement with your own regulator before enrolling or acting, and record the date you looked. "Reviewed" means the module's own drill was answered correctly, with unlimited retries — formative, not the credential's basis. A track's credential seals only after its certification check: every module's question, once each, no retries, ≥ 75% first-attempt.
 
-- **The any-state tracks** (`contractor` in `src/ts_contractor.js`, `developer` in `src/ts_developer.js`, `license` in `src/ts_license.js`, `maplit` in `src/ts_maplit.js`, `pmdeep` in `src/ts_pmdeep.js`) state patterns — how a regulator is built, what every licence shares, how a scope is decomposed, where each approval in the permission stack is recorded — and **no state's numbers**: no hour count, fee, bond amount, window or deadline. Each such figure is named as a category the learner looks up with the issuing authority and records with the date. `tests/trade_school_check.js` requires every module in these tracks to carry a source paragraph and to contain no advice.
+- **The any-state tracks** (`contractor` in `src/ts_contractor.js`, `developer` in `src/ts_developer.js`, `hive` in `src/ts_hive.js`, `license` in `src/ts_license.js`, `maplit` in `src/ts_maplit.js`, `pmdeep` in `src/ts_pmdeep.js`) state patterns — how a regulator is built, what every licence shares, how a scope is decomposed, where each approval in the permission stack is recorded — and **no state's numbers**: no hour count, fee, bond amount, window or deadline. Each such figure is named as a category the learner looks up with the issuing authority and records with the date. `tests/trade_school_check.js` requires every module in these tracks to carry a source paragraph and to contain no advice.
 - **The trade taxonomy** the contractor track's matching desk reads has one source, [`crosswalk/trades.json`](../crosswalk/trades.json). `src/trades_data.js` is generated from it by `scripts/gen_trades_js.py`, which also refuses any licence pattern containing a digit; the 18 divisions and 47 trades counted above are that file's, loaded through the app.
 
 ## Regenerating

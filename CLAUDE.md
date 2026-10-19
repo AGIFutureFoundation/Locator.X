@@ -72,7 +72,7 @@ real — the validator has no flake mode.
 
 | Thing | Place |
 |---|---|
-| App + Academy modules (97) | `src/` (shared shell: `src/head.html`, `src/body.html`) |
+| App + Academy modules (98) | `src/` (shared shell: `src/head.html`, `src/body.html`) |
 | Builders | `build_*.py`; shared lib `lxbuild.py`; parameterised `build_state.py` (`--dry-run` verifies pairs against source) |
 | Curriculum source of truth | `curriculum/curriculum.py` — **the only one**; `curriculum-50.csv` and `curriculum/courses/` are generated from it by `gen_courses.py` |
 | State layer | `docs/states/` (guides, `coverage/` inventories, `ninety-day-path.md`) |

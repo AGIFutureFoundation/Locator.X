@@ -1,113 +1,279 @@
 {
- "_about": "Learning pathways through the Trade School: an ordered walk across tracks for one kind of learner, ending in one named deliverable. This file is the only place a pathway is written; curriculum/gen_tradeschool.py reads it, validates every step against the modules actually registered on window.LXTS.TRACKS (a step naming a track or module that does not exist fails the build, with the id named), and renders the Pathways section of curriculum/TRADE_SCHOOL.md from it. A pathway is navigation of the catalog, not advice: it orders lessons, it recommends nothing. pending_tracks is a temporary allowance for a track that is written but not yet on disk: a step into such a track renders its module id marked pending, and the generator FAILS once the track exists, so the field has to be removed the week the track ships and cannot become permanent.",
- "reviewed": "2026-10",
- "paths": [
-  {
-   "id": "licensed-professional",
-   "name": "The licensed professional",
-   "who": "Someone entering the trade under a licence — agent, loan originator or manager — in any state",
-   "blurb": "Starts with the regulator as a system, so every state's page reads the same way; then the California agent ladder as the worked example, the money side and the NMLS path, the landlord-tenant rulebook an agent is asked about weekly, and finally the hive — which agent does what, and what none of them may do in a licensee's name.",
-   "steps": [
-    {"track": "license", "module": "l1"},
-    {"track": "license", "module": "l2"},
-    {"track": "license", "module": "l5"},
-    {"track": "license", "module": "l8"},
-    {"track": "agent", "module": "a1"},
-    {"track": "agent", "module": "a4"},
-    {"track": "lending", "module": "f1"},
-    {"track": "lending", "module": "f2"},
-    {"track": "pm", "module": "p1"},
-    {"track": "pm", "module": "p2"},
-    {"track": "hive", "module": "h1"}
-   ],
-   "pending_tracks": ["hive"],
-   "ends_in": "A dated verification record for every licence the learner will hold or rely on, read from the issuing regulator's own register."
-  },
-  {
-   "id": "owner-operator",
-   "name": "The owner-operator",
-   "who": "An owner who runs the building and hires the trades, rather than paying someone else to",
-   "blurb": "The operating discipline first — what a manager controls, screening in order of receipt, the delinquency ladder, the turn, reserves, and the matching desk for the day the owner stops self-managing; then the contractor's side of the same building, from a scope that can be priced to the matching desk that turns it into a verification record; then the coverage panel, so the owner knows what the edition cannot say about their own block; and the hive, read as a set of boundaries.",
-   "steps": [
-    {"track": "pmdeep", "module": "pd1"},
-    {"track": "pmdeep", "module": "pd2"},
-    {"track": "pmdeep", "module": "pd4"},
-    {"track": "pmdeep", "module": "pd6"},
-    {"track": "pmdeep", "module": "pd7"},
-    {"track": "pmdeep", "module": "pd11"},
-    {"track": "contractor", "module": "c1"},
-    {"track": "contractor", "module": "c3"},
-    {"track": "contractor", "module": "c7"},
-    {"track": "contractor", "module": "c10"},
-    {"track": "maplit", "module": "m9"},
-    {"track": "hive", "module": "h1"}
-   ],
-   "pending_tracks": ["hive"],
-   "ends_in": "An owner's operating binder: written screening criteria, a reserve schedule, one priced scope with its trade verification record, and the manager-matching sheet."
-  },
-  {
-   "id": "developer",
-   "name": "The developer",
-   "who": "A developer or owner-builder carrying a parcel from permit history to occupancy",
-   "blurb": "The permission stack as a public record, the pre-application meeting and the notebook that records what the city did not say, fees as sourced lines, inspections as gates; then the scope, the bid level and the draw mechanics the lender will inspect; then the two map layers a developer stares at most — the massing block and the room program — in the words that say what each is not; the pro forma; and the hive agent that carries the development file, with its boundary.",
-   "steps": [
-    {"track": "developer", "module": "dp1"},
-    {"track": "developer", "module": "dp2"},
-    {"track": "developer", "module": "dp6"},
-    {"track": "developer", "module": "dp8"},
-    {"track": "developer", "module": "dp10"},
-    {"track": "contractor", "module": "c1"},
-    {"track": "contractor", "module": "c5"},
-    {"track": "maplit", "module": "m2"},
-    {"track": "maplit", "module": "m3"},
-    {"track": "dev", "module": "d1"},
-    {"track": "dev", "module": "d2"},
-    {"track": "hive", "module": "h1"}
-   ],
-   "pending_tracks": ["hive"],
-   "ends_in": "A dated permission notebook for one parcel beside a pro forma whose every cost line names the published source it came from."
-  },
-  {
-   "id": "map-reader",
-   "name": "The analyst who reads the map",
-   "who": "Anyone who has to defend a number drawn from an edition — to a lender, a partner or themselves",
-   "blurb": "The whole legend before any picture: every layer as recorded, derived or schematic, the massing block, the room program, the tower metric, corridors as hypotheses, the walk measure, signals without inferred motive, the below-market index and what a comparable is, the coverage panel's unknown count and the replay slider's as-of month; then three approaches to one opinion of value; then the hive agent that reads the record the same way, and what it refuses to infer.",
-   "steps": [
-    {"track": "maplit", "module": "m1"},
-    {"track": "maplit", "module": "m2"},
-    {"track": "maplit", "module": "m3"},
-    {"track": "maplit", "module": "m4"},
-    {"track": "maplit", "module": "m5"},
-    {"track": "maplit", "module": "m6"},
-    {"track": "maplit", "module": "m7"},
-    {"track": "maplit", "module": "m8"},
-    {"track": "maplit", "module": "m9"},
-    {"track": "maplit", "module": "m10"},
-    {"track": "valuation", "module": "v1"},
-    {"track": "hive", "module": "h2"}
-   ],
-   "pending_tracks": ["hive"],
-   "ends_in": "One written opinion of value for one parcel, each input labelled recorded, derived or schematic, with the edition's unknown count and as-of date copied beside it."
-  },
-  {
-   "id": "hires-the-hive",
-   "name": "The person who hires the hive",
-   "who": "Someone who will put the agents to work on a search and has to know what each one may and may not do",
-   "blurb": "The hive first, agent by agent, each as a scope and a boundary rather than a capability; then the two map lessons every agent's output rests on — coverage, so an unknown count is read as an answer, and the replay slider, so the as-of month travels with every figure; then the principles the protocols were written under, so the person reading an agent's output knows which test it was built to pass.",
-   "steps": [
-    {"track": "hive", "module": "h1"},
-    {"track": "hive", "module": "h2"},
-    {"track": "hive", "module": "h3"},
-    {"track": "hive", "module": "h4"},
-    {"track": "hive", "module": "h5"},
-    {"track": "hive", "module": "h6"},
-    {"track": "maplit", "module": "m9"},
-    {"track": "maplit", "module": "m10"},
-    {"track": "principles", "module": "w1"},
-    {"track": "principles", "module": "w5"}
-   ],
-   "pending_tracks": ["hive"],
-   "ends_in": "A one-page brief stating, for each agent in the hive, what it was asked, what it may not do, and the unknown count and as-of date its output carried."
-  }
- ]
+  "_about": "Learning pathways through the Trade School: an ordered walk across tracks for one kind of learner, ending in one named deliverable. This file is the only place a pathway is written; curriculum/gen_tradeschool.py reads it, validates every step against the modules actually registered on window.LXTS.TRACKS (a step naming a track or module that does not exist fails the build, with the id named), and renders the Pathways section of curriculum/TRADE_SCHOOL.md from it. A pathway is navigation of the catalog, not advice: it orders lessons, it recommends nothing. pending_tracks is a temporary allowance for a track that is written but not yet on disk: a step into such a track renders its module id marked pending, and the generator FAILS once the track exists, so the field has to be removed the week the track ships and cannot become permanent.",
+  "reviewed": "2026-10",
+  "paths": [
+    {
+      "id": "licensed-professional",
+      "name": "The licensed professional",
+      "who": "Someone entering the trade under a licence — agent, loan originator or manager — in any state",
+      "blurb": "Starts with the regulator as a system, so every state's page reads the same way; then the California agent ladder as the worked example, the money side and the NMLS path, the landlord-tenant rulebook an agent is asked about weekly, and finally the hive — which agent does what, and what none of them may do in a licensee's name.",
+      "steps": [
+        {
+          "track": "license",
+          "module": "l1"
+        },
+        {
+          "track": "license",
+          "module": "l2"
+        },
+        {
+          "track": "license",
+          "module": "l5"
+        },
+        {
+          "track": "license",
+          "module": "l8"
+        },
+        {
+          "track": "agent",
+          "module": "a1"
+        },
+        {
+          "track": "agent",
+          "module": "a4"
+        },
+        {
+          "track": "lending",
+          "module": "f1"
+        },
+        {
+          "track": "lending",
+          "module": "f2"
+        },
+        {
+          "track": "pm",
+          "module": "p1"
+        },
+        {
+          "track": "pm",
+          "module": "p2"
+        },
+        {
+          "track": "hive",
+          "module": "h1"
+        }
+      ],
+      "ends_in": "A dated verification record for every licence the learner will hold or rely on, read from the issuing regulator's own register."
+    },
+    {
+      "id": "owner-operator",
+      "name": "The owner-operator",
+      "who": "An owner who runs the building and hires the trades, rather than paying someone else to",
+      "blurb": "The operating discipline first — what a manager controls, screening in order of receipt, the delinquency ladder, the turn, reserves, and the matching desk for the day the owner stops self-managing; then the contractor's side of the same building, from a scope that can be priced to the matching desk that turns it into a verification record; then the coverage panel, so the owner knows what the edition cannot say about their own block; and the hive, read as a set of boundaries.",
+      "steps": [
+        {
+          "track": "pmdeep",
+          "module": "pd1"
+        },
+        {
+          "track": "pmdeep",
+          "module": "pd2"
+        },
+        {
+          "track": "pmdeep",
+          "module": "pd4"
+        },
+        {
+          "track": "pmdeep",
+          "module": "pd6"
+        },
+        {
+          "track": "pmdeep",
+          "module": "pd7"
+        },
+        {
+          "track": "pmdeep",
+          "module": "pd11"
+        },
+        {
+          "track": "contractor",
+          "module": "c1"
+        },
+        {
+          "track": "contractor",
+          "module": "c3"
+        },
+        {
+          "track": "contractor",
+          "module": "c7"
+        },
+        {
+          "track": "contractor",
+          "module": "c10"
+        },
+        {
+          "track": "maplit",
+          "module": "m9"
+        },
+        {
+          "track": "hive",
+          "module": "h1"
+        }
+      ],
+      "ends_in": "An owner's operating binder: written screening criteria, a reserve schedule, one priced scope with its trade verification record, and the manager-matching sheet."
+    },
+    {
+      "id": "developer",
+      "name": "The developer",
+      "who": "A developer or owner-builder carrying a parcel from permit history to occupancy",
+      "blurb": "The permission stack as a public record, the pre-application meeting and the notebook that records what the city did not say, fees as sourced lines, inspections as gates; then the scope, the bid level and the draw mechanics the lender will inspect; then the two map layers a developer stares at most — the massing block and the room program — in the words that say what each is not; the pro forma; and the hive agent that carries the development file, with its boundary.",
+      "steps": [
+        {
+          "track": "developer",
+          "module": "dp1"
+        },
+        {
+          "track": "developer",
+          "module": "dp2"
+        },
+        {
+          "track": "developer",
+          "module": "dp6"
+        },
+        {
+          "track": "developer",
+          "module": "dp8"
+        },
+        {
+          "track": "developer",
+          "module": "dp10"
+        },
+        {
+          "track": "contractor",
+          "module": "c1"
+        },
+        {
+          "track": "contractor",
+          "module": "c5"
+        },
+        {
+          "track": "maplit",
+          "module": "m2"
+        },
+        {
+          "track": "maplit",
+          "module": "m3"
+        },
+        {
+          "track": "dev",
+          "module": "d1"
+        },
+        {
+          "track": "dev",
+          "module": "d2"
+        },
+        {
+          "track": "hive",
+          "module": "h1"
+        }
+      ],
+      "ends_in": "A dated permission notebook for one parcel beside a pro forma whose every cost line names the published source it came from."
+    },
+    {
+      "id": "map-reader",
+      "name": "The analyst who reads the map",
+      "who": "Anyone who has to defend a number drawn from an edition — to a lender, a partner or themselves",
+      "blurb": "The whole legend before any picture: every layer as recorded, derived or schematic, the massing block, the room program, the tower metric, corridors as hypotheses, the walk measure, signals without inferred motive, the below-market index and what a comparable is, the coverage panel's unknown count and the replay slider's as-of month; then three approaches to one opinion of value; then the hive agent that reads the record the same way, and what it refuses to infer.",
+      "steps": [
+        {
+          "track": "maplit",
+          "module": "m1"
+        },
+        {
+          "track": "maplit",
+          "module": "m2"
+        },
+        {
+          "track": "maplit",
+          "module": "m3"
+        },
+        {
+          "track": "maplit",
+          "module": "m4"
+        },
+        {
+          "track": "maplit",
+          "module": "m5"
+        },
+        {
+          "track": "maplit",
+          "module": "m6"
+        },
+        {
+          "track": "maplit",
+          "module": "m7"
+        },
+        {
+          "track": "maplit",
+          "module": "m8"
+        },
+        {
+          "track": "maplit",
+          "module": "m9"
+        },
+        {
+          "track": "maplit",
+          "module": "m10"
+        },
+        {
+          "track": "valuation",
+          "module": "v1"
+        },
+        {
+          "track": "hive",
+          "module": "h2"
+        }
+      ],
+      "ends_in": "One written opinion of value for one parcel, each input labelled recorded, derived or schematic, with the edition's unknown count and as-of date copied beside it."
+    },
+    {
+      "id": "hires-the-hive",
+      "name": "The person who hires the hive",
+      "who": "Someone who will put the agents to work on a search and has to know what each one may and may not do",
+      "blurb": "The hive first, agent by agent, each as a scope and a boundary rather than a capability; then the two map lessons every agent's output rests on — coverage, so an unknown count is read as an answer, and the replay slider, so the as-of month travels with every figure; then the principles the protocols were written under, so the person reading an agent's output knows which test it was built to pass.",
+      "steps": [
+        {
+          "track": "hive",
+          "module": "h1"
+        },
+        {
+          "track": "hive",
+          "module": "h2"
+        },
+        {
+          "track": "hive",
+          "module": "h3"
+        },
+        {
+          "track": "hive",
+          "module": "h4"
+        },
+        {
+          "track": "hive",
+          "module": "h5"
+        },
+        {
+          "track": "hive",
+          "module": "h6"
+        },
+        {
+          "track": "maplit",
+          "module": "m9"
+        },
+        {
+          "track": "maplit",
+          "module": "m10"
+        },
+        {
+          "track": "principles",
+          "module": "w1"
+        },
+        {
+          "track": "principles",
+          "module": "w5"
+        }
+      ],
+      "ends_in": "A one-page brief stating, for each agent in the hive, what it was asked, what it may not do, and the unknown count and as-of date its output carried."
+    }
+  ]
 }

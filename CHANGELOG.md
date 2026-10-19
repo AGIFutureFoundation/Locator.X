@@ -33,8 +33,12 @@ such.
   loaded and lets Scout and Underwriting read one real, cited output aloud, nothing added;
   `docs/ENVIRONMENTS.md` records what is drawn, derived and rendered elsewhere, and
   `tests/env_check.js` (run.py 12e) asserts the layer's honesty strings and that it makes
-  no network call. Registry: 97 source modules (typed counts in CLAUDE.md and OVERVIEW.md
-  corrected from 86/85).
+  no network call. A fourteenth track, **Working with the hive — six bounded agents and
+  the person who decides** (`src/ts_hive.js`, ten lessons, four live through
+  `LXPersonas`, speaking only an opening line or a real readout), teaches what each
+  agent proposes and what the person signs; `content/tradeschool_paths.json` names five
+  validated pathways through the tracks (57 steps), rendered into the catalog. Registry:
+  98 source modules (typed counts in CLAUDE.md and OVERVIEW.md corrected from 86/85).
 
 - **Trade School: three any-state tracks, a trade taxonomy and an eval gate.**
   Licensing was taught for one state and property management and contracting were
