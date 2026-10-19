@@ -720,6 +720,11 @@ def main():
     # same stub window the other module checks use and asserts the console
     # carries all seven, speaks nothing without an engine, rejects an unknown
     # persona and round-trips the selection through a stub localStorage.
+    # The same smoke then loads scenes_data.js + scenecards.js (the Academy
+    # scene library shown beside tracks and personas) and asserts the
+    # property-management track has at least one scene behind it; the data
+    # file is derived from content/academy_scenes.json and gen_scenes_js.py
+    # --check regenerates and diffs it, like every other generated file here.
     out = run(["scripts/validate_personas.py"])
     check("personas:" in out and "✓" in out,
           "scripts/validate_personas.py printed no summary line", out)
@@ -740,13 +745,20 @@ def main():
             "if(P.speak('scout','x')!==false)throw new Error('speak must return false with no engine');"
             "if(!P.set('diligence')||P.current()!=='diligence')throw new Error('set/current round trip');"
             "if(P.set('nobody'))throw new Error('unknown persona accepted');"
-            "console.log('personas smoke: '+n+' loaded under a stub window, no engine, nothing spoken ✓');"
+            "require(path.resolve('src/scenes_data.js'));require(path.resolve('src/scenecards.js'));"
+            "var S=window.LXSceneCards;if(!S)throw new Error('window.LXSceneCards missing');"
+            "var ns=S.forTrack('pmdeep').length;if(ns<1)throw new Error('no scene behind the pmdeep track');"
+            "console.log('personas smoke: '+n+' loaded under a stub window, no engine, nothing spoken; '+ns+' scene(s) behind pmdeep ✓');"
         )
         r = subprocess.run([node, "-e", smoke], capture_output=True, text=True, cwd=ROOT)
         out = r.stdout + r.stderr
         check(r.returncode == 0, "src/personas.js node smoke failed", out[-2000:])
         check("personas smoke:" in out and "✓" in out,
               "src/personas.js node smoke printed no summary line", out[-800:])
+    out = run(["scripts/gen_scenes_js.py", "--check"])
+    check("matches content/academy_scenes.json" in out,
+          "src/scenes_data.js is not what content/academy_scenes.json generates - regenerate, "
+          "never patch", out)
 
     if FAILURES:
         print("FAIL — %d problem(s):" % len(FAILURES))
