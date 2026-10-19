@@ -1,6 +1,6 @@
 # Development & delivery
 
-> Pillar 06 of 8 · **7 items** (7 courses, 0 guides) · **29 modules** · all 7 live
+> Pillar 06 of 8 · **7 items** (7 courses, 0 guides) · **29 modules** · 7 of 7 live
 
 Eight actors, six gates, and the discipline of sequencing cheap reversible steps ahead of expensive irreversible ones. Zoning as three separate limits, entitlement risk, feasibility as a gate with kill criteria, construction cost and contingency, value engineering, and a lab that carries one parcel start to finish.
 

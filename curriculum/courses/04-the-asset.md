@@ -1,6 +1,6 @@
 # The asset
 
-> Pillar 04 of 8 · **7 items** (6 courses, 1 guides) · **28 modules** · all 7 live
+> Pillar 04 of 8 · **7 items** (6 courses, 1 guides) · **28 modules** · 7 of 7 live
 
 The physical and legal thing you are buying: the five commercial classes as five different businesses, valuation approaches and when each fails, the lease clause by clause, the rent roll you actually inherit, and conversion stock whose recorded use is not its best use.
 

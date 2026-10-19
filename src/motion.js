@@ -72,7 +72,11 @@
   function cacheKey(){
     const VW=(window.LXView&&window.LXView.active())? JSON.stringify(LXView.state) : '';
     let n=0; try{ n=L().allListings().length; }catch(e){}
-    return [S.by, S.classes.slice().sort().join("|"), VW, n, (S.x==="score"||S.y==="score")?"sc":"", (S.x==="bmkt"||S.y==="bmkt")?"bm":"", JSON.stringify(L().state.assump)].join("~");
+    /* the cached frames embed deal() output (cap, cf, dscr, ...), which reads
+       a per-listing price/rent override through price()/rentEstimate() — the
+       same pairing app.js's own dealSync() fingerprints together, and the
+       exact gap proptime.js's history() cache had until this change set. */
+    return [S.by, S.classes.slice().sort().join("|"), VW, n, (S.x==="score"||S.y==="score")?"sc":"", (S.x==="bmkt"||S.y==="bmkt")?"bm":"", JSON.stringify(L().state.assump), JSON.stringify(L().state.overrides)].join("~");
   }
   function build(){
     const X=L(); if(!X) return null;
@@ -146,7 +150,11 @@
         const _cap=median(caps);
         row.push({key:g.key, n:g.n, mix:g.mix,
           cf: median(cfs), score: median(sc), val, rent, yoy,
-          cap: (_cap!=null&&isFinite(_cap))? _cap*100 : null,
+          /* d.cap (app.js dealCompute) is already a percent (noi/P*100, e.g.
+             7.5 for 7.5%) — caps[] holds that value directly, so median(caps)
+             needs no further scaling. A *100 here double-scaled every cap
+             rate the Motion Field ever plotted or labelled. */
+          cap: (_cap!=null&&isFinite(_cap))? _cap : null,
           dscr: median(dsc), ppsf: median(pps), units: median(uns), bmkt: median(bms),
           yield: (val&&rent)? rent*12/val*100 : null});
       }

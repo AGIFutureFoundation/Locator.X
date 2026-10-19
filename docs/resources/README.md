@@ -13,7 +13,7 @@ which states it applies in.*
 > 2026-09. The [roadmap's v1.2](../ROADMAP.md#5-v12--the-resource-graph) adds a quarterly
 > link-rot sweep with recorded verification dates.
 
-## The six files
+## The seven files
 
 | File | What it holds | Feeds gates |
 |------|---------------|-------------|
@@ -23,6 +23,7 @@ which states it applies in.*
 | [`state-county-programs.md`](state-county-programs.md) | The taxonomy of state/county/municipal programs and exactly how to find each type in any jurisdiction | T, O, A |
 | [`state-administrators.md`](state-administrators.md) | Who administers the federal programs in each state — LIHTC allocator, SHPO, state historic credit, and the routing patterns for the rest | T, O |
 | [`licensing-regulators.md`](licensing-regulators.md) | How brokerage, property management, mortgage origination, appraisal, home inspection and contracting are licensed — as patterns with the search recipe that finds any state's regulator; no per-state table until each row is sourced and dated | T, R |
+| [`real-estate-licensing.md`](real-estate-licensing.md) | Who needs a license to practice (salesperson/broker/property manager) and what it takes — not a deal question, so not a LOCATOR gate; every state row currently `not yet sourced`, honestly | *(none — practitioner licensing, not a deal gate)* |
 
 ## How the cross-reference works
 

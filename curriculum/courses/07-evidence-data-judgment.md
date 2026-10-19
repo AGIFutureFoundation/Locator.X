@@ -1,6 +1,6 @@
 # Evidence, data & judgment
 
-> Pillar 07 of 8 · **6 items** (6 courses, 0 guides) · **26 modules** · all 6 live
+> Pillar 07 of 8 · **6 items** (6 courses, 0 guides) · **26 modules** · 6 of 6 live
 
 The pillar that keeps the platform honest. Framing before querying, keys and joins, medians and the sample-size floor, refusing to extrapolate, and drawing a number so it cannot mislead. Every rule here is enforced somewhere in the product.
 

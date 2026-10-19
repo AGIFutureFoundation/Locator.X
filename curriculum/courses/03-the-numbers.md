@@ -1,6 +1,6 @@
 # The numbers
 
-> Pillar 03 of 8 · **7 items** (7 courses, 0 guides) · **28 modules** · all 7 live
+> Pillar 03 of 8 · **7 items** (7 courses, 0 guides) · **28 modules** · 7 of 7 live
 
 NOI to sensitivity analysis, in order of consequence. The sequence runs from the number every valuation rests on (NOI) through the two survival numbers (cash-on-cash, DSCR) to the pro forma that does not lie and the one input that actually decides the outcome.
 

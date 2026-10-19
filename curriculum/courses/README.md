@@ -1,6 +1,6 @@
 # The course catalog, separated by pillar
 
-**51 curriculum items** (45 courses, 6 guides) · **215 modules** · **8 pillars** · **4 levels** · all 51 live.
+**51 curriculum items** (45 courses, 6 guides) · **215 modules** · **8 pillars** · **4 levels** · 51 of 51 live.
 
 This directory splits the single-file curriculum into one readable document per pillar. It is a **generated view**, and so is [`curriculum-50.csv`](../curriculum-50.csv) beside it: the one source of truth is [`curriculum/curriculum.py`](../curriculum.py), gated by the eight checks in [`validate.py`](../validate.py). The CSV was hand-maintained alongside it until both were being called authoritative in different documents with nothing checking they agreed; it is now derived, and CI diffs it. If anything here disagrees with curriculum.py, curriculum.py wins and the disagreement is a regeneration nobody ran.
 

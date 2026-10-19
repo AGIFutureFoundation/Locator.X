@@ -252,8 +252,17 @@ def main():
     # module, not just this deck. Social copy quotes figures the deck does not,
     # and checking the deck alone would demand the deck quote them - which is
     # how a rule designed to prevent dead measurements starts padding a slide.
+    # content/whitepaper/ joined the same figures module (build_whitepaper.py)
+    # for the same reason - it deliberately does NOT quote every figure here
+    # (it skips the company/entity ones on purpose, to stay separate from the
+    # investor ask), so it cannot run this same "unused" check on its own
+    # figs without wrongly demanding 100% coverage from a file designed to
+    # use a subset. Folding it into this cross-file union is what still
+    # catches a figure that stops being quoted ANYWHERE - deck, social or
+    # whitepaper - without forcing the whitepaper to use figures it was
+    # deliberately built not to.
     quoted = set(used)
-    for sub in ('investor', 'social'):
+    for sub in ('investor', 'social', 'whitepaper'):
         d = os.path.join(ROOT, 'content', sub)
         if not os.path.isdir(d):
             continue

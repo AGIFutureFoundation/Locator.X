@@ -46,6 +46,12 @@ async function main() {
      not contain a warehouse, but no class may be dead in the whole fleet. */
   const clsTotal = {};
   const catTotal = {};
+  /* l.approx (ZIP-centroid placement) accumulates across editions the same
+     way: no shipped fixture ever set it before, which left the import-time
+     jitter, twin.js's massing exclusion, recon.js's coordinate-provenance
+     line, uwexport.js's LOCATION gap and comps.js's "no comps for a subject
+     with no real coordinate" branch entirely unexercised. */
+  let approxTotal = 0;
   for (let i = 0; i < fleet.order.length; i++) {
     const key = fleet.order[i];
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 950 } });
@@ -80,7 +86,9 @@ async function main() {
       title: document.title,
       n: window.BA.listings.length,
       options: document.getElementById('fleetsel') ? document.getElementById('fleetsel').options.length : 0,
+      approx: window.BA.listings.filter(l => l.approx).length,
     }));
+    approxTotal += info.approx;
     await page.click('#coverenter').catch(() => {});
     await page.evaluate(() => LX.showView('mapview'));
     await page.waitForTimeout(1800);
@@ -2385,6 +2393,80 @@ async function main() {
         if (geo.csvRows !== 7) errs.push('CSV rows: ' + geo.csvRows + ', expected 7 (header + 6)');
       }
 
+      // Cap rate. app.js's dealCompute() already returns d.cap as a percent
+      // (noi/P*100, e.g. 7.5 for 7.5%) — fmtPct() takes it as-is everywhere
+      // it is shown. The Motion Field's cap-rate axis used to multiply that
+      // already-percent value by 100 again. Build the replay directly (not
+      // through the DOM) and check every group's cap rate in the newest
+      // frame sits in a plausible range, never in the hundreds.
+      const motionCap = await page.evaluate(() => {
+        if (!window.LXMotion) return null;
+        const b = LXMotion.build();
+        if (!b || !b.frames || !b.frames.length) return {empty: true};
+        const row = b.frames[b.frames.length - 1];
+        return {caps: row.map(g => g.cap).filter(c => c != null)};
+      });
+      if (motionCap && !motionCap.empty) {
+        const wild = motionCap.caps.filter(c => Math.abs(c) > 60);
+        if (wild.length) {
+          errs.push('Motion Field cap rate out of plausible range (>60%, i.e. double-scaled): '
+            + wild.slice(0, 3).join(', '));
+        }
+      }
+
+      // Per-listing history's cache key used to fingerprint state.assump but
+      // not state.overrides, although deal(l) reads an override on price/rent
+      // through price()/rentEstimate() — the exact pair app.js's own
+      // dealSync() fingerprints together for the same reason. Change an
+      // override and confirm the cached cap rate actually moves, the same
+      // way the underwriting sheet and the drawer's own panel (both callers
+      // of history()) would need it to.
+      const ptStale = await page.evaluate(() => {
+        if (!window.LXPropTime) return null;
+        const l = LX.allListings().find(x => x.price > 0);
+        if (!l) return {skip: true};
+        const before = LXPropTime.history(l, false);
+        const capBefore = before && before.rows.length ? before.rows[before.rows.length - 1].cap : null;
+        const prevOv = LX.state.overrides[l.id];
+        LX.state.overrides[l.id] = Object.assign({}, prevOv, {price: Math.round((l.price || 100000) * 0.3)});
+        const after = LXPropTime.history(l, false);
+        const capAfter = after && after.rows.length ? after.rows[after.rows.length - 1].cap : null;
+        if (prevOv === undefined) delete LX.state.overrides[l.id]; else LX.state.overrides[l.id] = prevOv;
+        return {skip: false, capBefore, capAfter};
+      });
+      if (ptStale && !ptStale.skip) {
+        if (ptStale.capBefore != null && ptStale.capBefore === ptStale.capAfter) {
+          errs.push('LXPropTime.history() did not change after a price override — the cache key '
+            + 'ignores state.overrides, same cap rate before and after: ' + ptStale.capBefore);
+        }
+        if (ptStale.capAfter != null && Math.abs(ptStale.capAfter) > 60) {
+          errs.push('LXPropTime cap rate out of plausible range after override: ' + ptStale.capAfter);
+        }
+      }
+
+      // recon.js's "Value on record" row used to badge every listing P.REC
+      // regardless of whether a price exists — every other optional field in
+      // extract() conditions its badge on presence, this one didn't. Build
+      // the two cases the fixture never carries (no price; a ZIP-index
+      // estimate, l.est) the same way the geoexport block above builds its
+      // own variants, and check the badge follows the same rule as the rest.
+      const badge = await page.evaluate(() => {
+        if (!window.LXRecon) return null;
+        const base = LX.filtered()[0];
+        if (!base) return null;
+        const rowFor = l => (LXRecon.extract(l).find(r => r.k === 'Value on record') || {});
+        return {
+          present: rowFor(base).p,
+          missing: rowFor(Object.assign({}, base, {price: null, est: false})).p,
+          estimated: rowFor(Object.assign({}, base, {est: true})).p,
+        };
+      });
+      if (badge) {
+        if (badge.present !== 'recorded') errs.push('a listing with a real price is not badged "recorded": ' + badge.present);
+        if (badge.missing === 'recorded') errs.push('a listing with NO price is badged "recorded" — a missing fact labelled as published');
+        if (badge.estimated === 'recorded') errs.push('a ZIP-index ESTIMATE price is badged "recorded" — not a jurisdiction figure');
+      }
+
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
     }
@@ -2510,6 +2592,15 @@ async function main() {
     console.log('ok   %s  all %d asset classes match records somewhere in the fleet (%s)',
       'asset-classes'.padEnd(13), CLS_EXPECTED.length,
       CLS_EXPECTED.map(k => k + ':' + clsTotal[k]).join(' '));
+  }
+
+  if (approxTotal === 0) {
+    failures++;
+    console.log('FAIL %s  no record in the whole fleet carries l.approx — the ZIP-centroid '
+      + 'placement path (app.js jitter, twin.js massing exclusion, recon.js provenance, '
+      + 'uwexport.js LOCATION gap, comps.js subject exclusion) is untested.', 'approx-coord'.padEnd(13));
+  } else {
+    console.log('ok   %s  %d record(s) across the fleet carry l.approx', 'approx-coord'.padEnd(13), approxTotal);
   }
 
   console.log(failures ? failures + ' EDITION(S) FAILED' : 'FLEET SMOKE CLEAN — every edition ran with zero page errors');

@@ -16,7 +16,9 @@ reaches a memo only with its source and date attached, the same rule the rest of
 > as a state's rule. There is **no per-state table and no numeric requirement** on this
 > page — no hour counts, no fee, no bond amount, no exam score, no renewal period — because
 > every one of those is a state fact that changes by statute and that this project
-> declines to assert unmeasured. **The follow-up is named:** a sourced fifty-state table,
+> declines to assert unmeasured. The per-state scaffold now exists as
+> [`real-estate-licensing.md`](real-estate-licensing.md), every row honestly `not yet sourced`.
+> **The follow-up is named:** a sourced fifty-state table,
 > one row per state per occupation, added only once each regulator's page has been opened,
 > read and dated, with the date in the row. Until then the honest status of every cell is
 > *unknown — look it up and record the date*, and the template at the end is how.
