@@ -173,8 +173,17 @@ var ROLL = null, ROLLSIG = '';
 function rollup(){
   var X = L();
   var rows;
-  try{ rows = window.LXDash && LXDash.rows && LXDash.rows.length ? LXDash.rows : null; }catch(e){ rows = null; }
-  if(!rows){ try{ LXDash.render(); rows = LXDash.rows; }catch(e){ return null; } }
+  /* LXDash.rows is only rebuilt by compute(), which render() calls — but
+     render() also writes to the dashboard's own DOM (#quick, #dtiles, ...),
+     which does not exist on this view. Calling render() unconditionally
+     would throw here; reading LXDash.rows as-is when it is already non-empty
+     served STALE deal() objects whenever the dashboard view hadn't been
+     visited since an assumption changed, so the sig below could correctly
+     detect "assumptions changed" while recomputing over rows still carrying
+     the old ones. compute() does the rebuild with no DOM access at all and
+     has its own fingerprint (state.assump/overrides/listing count/view),
+     so calling it here is always safe and a no-op when nothing moved. */
+  try{ rows = window.LXDash && LXDash.compute ? LXDash.compute() : null; }catch(e){ rows = null; }
   if(!rows || !rows.length) return null;
   /* rows[i].d is a cheap deal() object, re-fingerprinted here because assess()
      reads it -- a stale sig (row count + version alone, as this used to read)

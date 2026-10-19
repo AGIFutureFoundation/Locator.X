@@ -416,6 +416,6 @@ function renderLessons(){
   $('#lessons').innerHTML=items.map(i=>`<div class="lesson"><div class="n">${i.n}</div><h3>${i.t}</h3><p>${i.p}</p><div class="live">${i.live}</div></div>`).join('');
   $$('#lessons a[data-id]').forEach(x=>x.addEventListener('click', e=>{ e.preventDefault(); focusOn(x.dataset.id); }));
 }
-window.LXDash={render, analyze, invalidate, CATS, CAT, rentControl, valueAdd, ring, focusOn, cityPpsfOf, anorm, distressOf, get rows(){ return rows; },
+window.LXDash={render, compute, analyze, invalidate, CATS, CAT, rentControl, valueAdd, ring, focusOn, cityPpsfOf, anorm, distressOf, get rows(){ return rows; },
   filterZip(zip, sort){ zipFilter=zip||''; if(sort) sortBy=sort; gridShown=120; renderGrid(); const g=document.querySelector('#pgrid'); if(g) g.scrollIntoView({behavior:'smooth', block:'start'}); }};
 })();

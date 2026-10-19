@@ -2479,11 +2479,22 @@ async function main() {
         const before = LXStd.rollup();
         if (!before) return {empty: true};
         const prevDown = LX.state.assump.down;
-        LX.state.assump.down = Math.min(90, prevDown + 15);
-        LX.dealBump();
-        LXDash.render();
-        const after = LXStd.rollup();
-        LX.state.assump.down = prevDown;
+        let after;
+        try{
+          LX.state.assump.down = Math.min(90, prevDown + 15);
+          LX.dealBump();
+          /* deliberately NOT calling LXDash.render() here -- the real bug
+             this guards was that a user who changes an assumption without
+             visiting the Dashboard view got an aggregate that recomputed
+             under a signature claiming new assumptions while still reading
+             LXDash.rows built under the old ones. rollup() itself must do
+             the refresh now (via LXDash.compute()), not this test. */
+          after = LXStd.rollup();
+        } finally {
+          LX.state.assump.down = prevDown;
+          LX.dealBump();
+          LXDash.render();
+        }
         return {
           empty: false,
           capKnown: before.per.cap.meets + before.per.cap.fails,
