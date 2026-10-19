@@ -23,7 +23,7 @@ where it came from. Every count here was measured by a command listed at the end
 
 ## 1. Three kinds of thing on screen
 
-The Twin tab's own lede (`src/body.html`) sets the vocabulary every module below uses:
+The 3D & records tab's lede (`src/body.html`, the `recon` view) sets the vocabulary every module below uses:
 each field is labelled **recorded** (the jurisdiction publishes it), **derived** (computed from
 recorded values) or **schematic** (a regional convention used only to draw a picture).
 
@@ -42,11 +42,13 @@ this page's paraphrase:
   stories), not surveyed."*
 - **`src/rooms.js`** — the room program. *"Nobody has walked these buildings."* Every line is
   *"tagged RECORDED, DERIVED or SCHEMATIC, and nothing is stated that the source does not
-  support. A property with no bedroom count gets no bedroom list — it gets a sentence saying
+  support. A property with no bedroom count gets no bedroom list - it gets a sentence saying
   the county does not publish one."* The area shares are *"planning rules of thumb, stated as
   such, not measurements of this building."*
 - **`src/ar.js`** — the block in your room. *"This is NOT a scan of the building and NOT a
-  model of it. It is the SAME schematic massing the 3D tab draws."* The page says it before the
+  model of it. It is the SAME schematic massing the 3D tab draws."* (The 3D tab is the 3D &
+  records view: `LXAR.boxFor` takes its box from `LXRecon.massing`, so the two cannot
+  disagree.) The page says it before the
   block opens: *"This is a SCHEMATIC BLOCK, not the building. Nobody has scanned or modelled
   this property."* The module is careful for a stated reason: a number in a table that says
   derived is read as derived; *"the same number extruded into a solid object standing on your
@@ -63,10 +65,11 @@ this page's paraphrase:
 - **`src/canvasmap.js`** — the *"dependency-free fallback renderer for the built-in vector
   basemap"*: the same map, drawn on a 2D canvas when WebGL is not there.
 
-None of these loads a 3D engine, fetches a tile the edition did not ship, or draws a shape the
-record did not give it a number for. Where the record is silent, the drawing is too: a parcel
-with no area and no storeys gets no block in AR (`LXAR.boxFor` returns nothing, and the chip
-that would open it is not drawn).
+None of these loads a 3D engine or fetches a tile the edition did not ship. Where the record is
+silent, the drawing says so: a parcel with no living area gets a class-typical footprint that
+`LXRecon.massing` tags **schematic** (`prov.footprint`), and the AR block carries that tag into
+the room. Land, or a record with no floors, gets no block at all (`LXAR.boxFor` returns nothing,
+and the chip that would open it is not drawn).
 
 ## 2. The scene library
 
@@ -89,8 +92,9 @@ attaches to a parcel record on this platform."* All seven avatar scenes say, in 
 the pair, that the figure is *seen from behind* or that *no face is shown*.
 
 **Where a render would live.** Renders are produced **outside this repository**, against a
-model the library names, with a credential the platform owner supplies at runtime — *"none is
-stored in this repository"*, and no edition carries a runtime dependency on the model. A render,
+model the library names, with a credential the platform owner supplies at runtime — *"None is
+stored in this repository"* (the library's `credential` field), and no edition carries a runtime
+dependency on the model. A render,
 when one exists, is stored outside git in the data tree like every other large artefact, and
 the only thing the repository will carry about it is its **scene id and the date it was made**.
 Inside the app, `src/scenecards.js` shows the prompts as text cards beside the track or persona
@@ -122,7 +126,7 @@ line, and that line is its boundary.
 - **Browser-only speech.** `src/voice.js` reads with `window.speechSynthesis`, *"which is built
   into the browser and runs without a network request in every engine that ships it"*. A persona
   changes how a block is read, never what it says. Where there is no engine, `speak` returns
-  `false` and *"nothing is simulated"*. The one capability that does leave the device is
+  `false` and, in `src/personas.js`'s words, *"nothing is simulated"*. The one capability that does leave the device is
   disclosed on the page rather than discovered: dictation, where the browser implements it,
   is Chrome sending audio to Google's recognition service; where the browser does not implement
   it, the mic control does not render.
@@ -131,6 +135,20 @@ line, and that line is its boundary.
   anything, or names an engine other than the browser's."* It sits in the JSON as an inert
   string so that narration recorded elsewhere can be matched to the voice the app describes; the
   validator fails the build if any other persona acquires one.
+- **What each card shows of the code.** Under *In this edition* a card lists the modules
+  AGENTS.md's *What ships today* column names for its agent (**16 modules across 17 rows**;
+  `src/predict.js` serves two agents) with a mark, *present* or *not loaded*. Presence is a
+  `typeof` check on the module's window export; nothing is called. Two cards, Scout and
+  Underwriting, carry a *Read one real output* button, drawn only when a value the app has
+  already computed exists and is non-empty: the Scout's latest pass log (`LXScout.cfg.log`,
+  a getter over stored state) and the switchboard's assumption list (`LXSB.SB`, three
+  numbers). The button prints that text with a line naming the module and the as-of time
+  when the output carries one, and speaks it in the persona's voice. Any key naming a person
+  (`owner`, `name`, `mail`, `phone`, `contact`, `person`) is dropped before the value is shown
+  or spoken; when the value is gone on a later click, the button is removed instead of reading
+  a stand-in. Under the cards one line counts the mechanisms this edition loaded and ends
+  *nothing here decides, transacts or contacts*; the file's only writes are the selected
+  persona id to `localStorage` and the panel's own DOM.
 
 ## 4. The lesson chips
 
@@ -152,8 +170,9 @@ the module reads is `id`; nothing from the record is displayed by the chip itsel
 - **Show a face.** The avatar scenes are figure-presences seen from behind or in silhouette;
   the gate reads both halves of every pair. No persona has a likeness.
 - **Speak a sentence the app did not already hold.** A persona reads the help, the lesson, the
-  answer that is on the page. `speak(id, text)` prefixes nothing and appends nothing, and there
-  is no engine behind it that composes.
+  answer that is on the page. `speak(id, text)` prefixes no words and appends none (a text past
+  6,000 characters is cut for the engine and the cut is marked), and there is no engine behind
+  it that composes.
 - **Decide anything.** Nothing drawn here feeds a score, a gate or a recommendation. The twin,
   the room program, the AR block and the scenes are ways of looking at the record, and the
   record is what the platform scores. An agent proposes; a person decides
@@ -163,7 +182,7 @@ the module reads is `id`; nothing from the record is displayed by the chip itsel
 
 | Check | What it holds |
 |-------|---------------|
-| `tests/env_check.js` (`tests/run.py` 12e) | Every chip that opens a drawn view says *massing* or *derived*; the shipped scene count equals the library's; every avatar scene shows no face in both halves; every persona has a non-empty *never says* list and no pitch phrase in its opening line; the scene card's note names the no-real-place boundary; and `personas.js`, `lessonmap.js` and `scenecards.js` contain no `fetch(`, `XMLHttpRequest` or `WebSocket` |
+| `tests/env_check.js` (`tests/run.py` 12e) | Every chip that opens a drawn view says *massing* or *derived*; the shipped scene count equals the library's; every avatar scene shows no face in both halves; every persona has a non-empty *never says* list and none of three pitch phrases (*good deal*, *you should*, *motivated*) in its opening line; the scene card's note names the no-real-place boundary; and `personas.js`, `lessonmap.js` and `scenecards.js` contain no `fetch(`, `XMLHttpRequest` or `WebSocket` |
 | `scripts/validate_personas.py` (12d) | Personas bounded by AGENTS.md verbatim; embedded copy equals the JSON |
 | `scripts/gen_scenes_js.py --check` (12d) | `src/scenes_data.js` is exactly what the JSON generates |
 | `scripts/build_scenes.py` | No scene names a real place, an address or a record; `ACADEMY_SCENES.md` is not stale |
@@ -181,6 +200,12 @@ Measured 2026-10-19, from the tree as committed:
 - 1 persona with an external preset id (the guide) —
   `python3 -c "import json;P=json.load(open('content/agents/personas.json'))['personas'];print([p['id'] for p in P if p['voice'].get('external_preset_voice_id')])"`
 - 4 lesson chips — `grep -c "^  {label:" src/lessonmap.js`
+- 3 SVG logos under `brand/`, and no other image under `brand/` or `content/` —
+  `find brand content -type f -iname '*.svg' | wc -l`
+- 16 modules across 17 rows in the hive's mechanism table —
+  `sed -n '/^var MECH = {/,/^};/p' src/personas.js | grep -o "src/[a-z]*\.js" | sort -u | wc -l` and
+  `sed -n '/^var MECH = {/,/^};/p' src/personas.js | grep -o "src/[a-z]*\.js" | wc -l`
+- 2 readouts (Scout, Underwriting) — `sed -n '/^var READ = {/,/^};/p' src/personas.js | grep -c "^  [a-z]*: function"`
 - 13 tower metrics — `grep -c "^ \['" src/towers.js`
 - 900 candidates drawn by the cube — `grep -n "^const CUBE_CAP=" src/dash3d.js`
 - 0 raster or video files under `brand/` and `content/` —

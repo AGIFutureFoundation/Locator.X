@@ -6,9 +6,11 @@
    pitch, a tone, an opening line that states the agent's boundary, and a list
    of things it will never say. It is not a capability: nothing here lets an
    agent do anything AGENTS.md forbids, and nothing here puts words in an
-   agent's mouth. speak(id, text) prefixes nothing and appends nothing. The
-   only text any persona ever utters unprompted is its own opening line, and
-   that line is its boundary.
+   agent's mouth. speak(id, text) prefixes no words and appends none; a text
+   longer than 6,000 characters is cut there for the engine, the same cut
+   voice.js makes, with one ellipsis marking the cut, and the panel shows the
+   whole text. The only text any persona ever utters unprompted is its own
+   opening line, and that line is its boundary.
 
    DATA. The block between the @personas.json markers is a copy of
    content/agents/personas.json, embedded so the single-file editions carry it.
@@ -41,7 +43,7 @@
    non-empty: Scout's latest pass log (LXScout.cfg.log) and the switchboard's
    own assumption list (LXSB.SB). The button shows that text with a line naming
    the module it came from and the as-of date when the output carries one, and
-   speaks it in the persona's voice with nothing prefixed and nothing appended.
+   speaks it in the persona's voice with no words prefixed or appended.
    Where the value is missing or empty the button is not drawn — never a
    placeholder sentence. Nothing here calls scan(), digest(), compare() or any
    other function that computes, mutates or stores. A one-line status under the
@@ -475,6 +477,7 @@ function speak(id, text, onEnd){
   if(!synth || !U) return false;   /* no engine, nothing spoken */
   try{
     synth.cancel();
+    /* the same 6,000-character cut voice.js makes, marked the same way */
     var u = new U(plain.length > 6000 ? plain.slice(0, 6000) + '…' : plain);
     u.rate = opts.rate; u.pitch = opts.pitch; u.lang = opts.lang;
     u.onend = done; u.onerror = done;
@@ -580,7 +583,7 @@ function card(p){
     '<div class="hivek">In this edition</div><ul class="hivemech" data-mech="' + esc(p.id) + '">' + mechRows(p) + '</ul>' +
     '<div class="hiveact">' +
       '<button type="button" class="btn" data-hear="' + esc(p.id) + '" title="Speaks this persona\'s opening line — its boundary — in its own rate and pitch. Runs in your browser; not available in a sandboxed preview.">' + HEAR_LABEL + '</button>' +
-      (ro ? '<button type="button" class="btn" data-readout="' + esc(p.id) + '" title="Reads, in this voice, a value the app already computed (' + esc(ro.module) + '). Nothing is prefixed or appended; nothing is computed, scanned or stored.">' + RO_LABEL + '</button>' : '') +
+      (ro ? '<button type="button" class="btn" data-readout="' + esc(p.id) + '" title="Reads, in this voice, a value the app already computed (' + esc(ro.module) + '). No words are prefixed or appended; nothing is computed, scanned or stored.">' + RO_LABEL + '</button>' : '') +
       '<button type="button" class="btn' + (isCur ? ' primary' : '') + '" data-pick="' + esc(p.id) + '">' + (isCur ? 'Selected' : 'Select') + '</button>' +
     '</div>' +
     '<div data-out="' + esc(p.id) + '"></div>' +
