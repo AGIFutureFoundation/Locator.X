@@ -38,7 +38,13 @@ function figures() {
     console.error('WHITEPAPER FILM STOPPED — not measured: ' + missing.join(', '));
     process.exit(1);
   }
-  return { f, hive: py('scripts/build_hive.py', '--json') };
+  const hive = py('scripts/build_hive.py', '--json');
+  const hmiss = ['evals', 'beats_ok', 'beats', 'agents'].filter(k => hive[k] === undefined || hive[k] === null);
+  if (hmiss.length) {
+    console.error('WHITEPAPER FILM STOPPED — hive not measured: ' + hmiss.join(', '));
+    process.exit(1);
+  }
+  return { f, hive };
 }
 
 const n = v => typeof v === 'number' ? v.toLocaleString('en-US') : String(v);
@@ -74,14 +80,14 @@ function scenes({ f, hive }) {
 
     { key: 'academy', secs: 13, kicker: 'THE ACADEMY',
       head: 'Learn the record\nbefore you trust it.',
-      sub: 'Courses generated from one curriculum source, gated by an eight-check validator.',
+      sub: 'Courses generated from one curriculum source, gated by its own validator.',
       stats: [[n(f.curriculum_items), 'curriculum items'],
               [n(f.lessons), 'lessons'],
               [n(f.articles), 'articles, every figure resolved from data']],
       note: 'Instructor notes ship empty until the platform owner supplies the words.' },
 
     { key: 'hive', secs: 16, kicker: hive.team.toUpperCase() + ' — THE AGENT TEAM',
-      head: 'Six agents. Each one\nsays it is an AI.',
+      head: n(hive.agents.length) + ' agents. Each one\nsays it is an AI.',
       sub: 'Synthetic voices, abstract avatars, and a hard boundary copied from the register word for word.',
       tiles: hive.agents.map(a => ({ img: dataUrl('brand/avatars/' + a.id + '.svg', 'image/svg+xml'),
                                      label: a.name, sub: a.status })),
@@ -109,9 +115,8 @@ function scenes({ f, hive }) {
 
     { key: 'close', secs: 13, kicker: 'READ THE REPOSITORY',
       head: 'Every validator is readable.\nEvery figure is dated.',
-      sub: 'Scan to connect.',
-      tiles: [{ img: dataUrl('brand/qr/linkedin-infogurus.png', 'image/png'),
-                label: 'linkedin.com/in/infogurus', sub: 'scan', color: '#8fa3bd', size: 230 }],
+      sub: 'github.com/agifuturefoundation/locator.x',
+      stats: [[n(f.gates), 'gates run on every change'], [n(hive.evals), 'agent evals in the build']],
       note: 'Education and navigation of the public record. Verify before relying. Not advice, and not an offer of anything.' },
   ];
 }
@@ -120,6 +125,7 @@ async function main() {
   const outdir = process.argv[2];
   if (!outdir) { console.error('usage: node scripts/make_whitepaper_video.js <outdir>'); process.exit(1); }
   await render(scenes(figures()), outdir, 'locator-x-whitepaper-film.mp4',
-               { footer: 'PRODUCT WHITEPAPER \\u00b7 EDUCATION, NOT ADVICE', footerColor: 'rgba(143,163,189,0.6)' });
+               { footer: 'PRODUCT WHITEPAPER \\u00b7 EDUCATION, NOT ADVICE', footerColor: 'rgba(143,163,189,0.6)',
+                 brand: 'LOCATOR.X' });
 }
 main().catch(e => { console.error(e); process.exit(1); });

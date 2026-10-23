@@ -19,9 +19,27 @@ the same change that fixes it, and name the guard in the commit.
 
 ---
 
-## The register is currently empty
+## Open
 
-Nothing is open. The one entry this file was created with — a rent-blind market
+### Lesson figures are typed, not resolved (measured 2026-10-23)
+
+Articles resolve every figure from `market/*.json` at build time; lessons do not. Measured
+by counting percentage literals (`grep -oE '[0-9]+(\.[0-9]+)?%'`) in the lesson sources:
+`src/academy.js` 30, `src/devcourse.js` 17, `curriculum/curriculum.py` 6,
+`src/datacourse.js` 4, `src/widercourse.js` 4, `src/pmcourse.js` 3, `src/eqcourse.js` 1 —
+**65 in all**, plus figures written as words, which this count cannot see. Most are worked
+examples ("a 31% IRR on nine months"), which are teaching devices rather than market
+claims, but nothing currently tells the two apart. The product whitepaper claimed every
+lesson figure was measured; that sentence was narrowed to articles in the same change that
+opened this entry (found by the 2026-10-23 doctrine review).
+
+**Cost of leaving it:** a lesson can state a market figure ("under 4% here") that drifts
+from the measured layer with no gate noticing. **Fix:** mark worked examples explicitly
+and route every market-shaped figure through the same placeholder resolver the articles use.
+
+## Closed
+
+The one entry this file was created with — a rent-blind market
 labelling records "Liability at this price" on a `price × 0.004` rule of thumb — was
 closed by the `unrated` category state: the absence of a verdict rather than a sixth kind
 of property, muted rather than given a sixth hue (five is already at the colour-blind

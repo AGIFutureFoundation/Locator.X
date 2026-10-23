@@ -1,6 +1,6 @@
 /* make_investor_video — the investor pitch film.
    ----------------------------------------------------------------------------
-   Seven scenes, 1920x1080, H.264. Every figure on screen comes from
+   Eight scenes, 1920x1080, H.264. Every figure on screen comes from
    scripts/deck_figures.py --json, which MEASURES each one at build time, for the
    same reason content/investor/DECK.md carries no digits: a number rendered into
    a video is the least checkable claim a company can make. It cannot be
@@ -65,7 +65,7 @@ function figures() {
 
 const n = v => typeof v === 'number' ? v.toLocaleString('en-US') : String(v);
 
-/* ---- the six scenes ---- */
+/* ---- the scenes ---- */
 function scenes(f) {
   return [
     { key: 'problem', secs: 12,
@@ -148,7 +148,7 @@ function scenes(f) {
 /* The stage is shared with scripts/make_whitepaper_video.js, which passes its
    own footer: the product film is not an investor document and must not carry
    the investor film's frame line. */
-const page = (footer = 'PRIVATE \\u00b7 NOT AN OFFER', footerColor = 'rgba(168,43,43,0.85)') => `<!doctype html><html><head><meta charset="utf-8"><style>
+const page = (footer = 'PRIVATE \\u00b7 NOT AN OFFER', footerColor = 'rgba(168,43,43,0.85)', brand = 'LOCATOR.X  BY AGI CORP') => `<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{margin:0;background:#080b10;overflow:hidden}canvas{display:block}
 </style></head><body><canvas id="c" width="${W}" height="${H}"></canvas><script>
 const c=document.getElementById('c'), x=c.getContext('2d');
@@ -252,7 +252,7 @@ window.__draw=function(S,t){
   x.globalAlpha=1;
   x.fillStyle='rgba(143,163,189,0.5)';
   x.font='600 17px -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial';
-  x.letterSpacing='2px'; x.fillText('LOCATOR.X  BY AGI CORP', M, H-40); x.letterSpacing='0px';
+  x.letterSpacing='2px'; x.fillText('${brand}', M, H-40); x.letterSpacing='0px';
   x.fillStyle='${footerColor}';
   x.textAlign='right'; x.fillText('${footer}', W-M, H-40); x.textAlign='left';
 };
@@ -283,7 +283,7 @@ window.__record=function(S){
 async function render(pick, outdir, name, opts = {}) {
   fs.mkdirSync(outdir, { recursive: true });
   const htmlPath = path.join(outdir, '_stage.html');
-  fs.writeFileSync(htmlPath, page(opts.footer, opts.footerColor));
+  fs.writeFileSync(htmlPath, page(opts.footer, opts.footerColor, opts.brand));
   const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   const parts = [];
   for (const S of pick) {

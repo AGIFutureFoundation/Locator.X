@@ -362,6 +362,12 @@ def main():
     check("the_line" in scenes and "never" in scenes["the_line"].lower(),
           "scene library does not state the boundary it operates under")
 
+    # ---- 10d2. the heartbeat's date rules and its CI-derived gate list -----
+    # The full heartbeat runs this file, so only its selftest runs here: a future
+    # date must read as an error, a compact date as unreadable, and the gate list
+    # must be the one CI runs (read from the workflow, never typed).
+    run(["scripts/heartbeat.py", "--selftest"])
+
     # ---- 10e. the agent team cannot claim more than the register ----------
     # Personas, voices and avatars make an agent feel more capable than it is.
     # build_hive.py holds every persona to docs/company/AGENTS.md (status,
