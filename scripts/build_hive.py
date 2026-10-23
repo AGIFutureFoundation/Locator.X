@@ -194,6 +194,23 @@ def holdout_score(hive, ho=None):
                     c['wrong'] += 1
                 else:
                     c['caught'] += 1
+    # the other direction: legitimate requests the console must not refuse
+    c.update(is_total=0, is_right=0, is_blocked=0, is_nomatch=0, is_other=0,
+             ceiling_overblocked=ho.get('ceiling_overblocked'))
+    for aid, qs in ho.get('inscope', {}).items():
+        for q in qs:
+            if q.strip().lower() in seen:
+                c['contaminated'].append(q)
+            c['is_total'] += 1
+            r = route(hive, q)
+            if r is None:
+                c['is_nomatch'] += 1
+            elif r['kind'] in ('boundary', 'escalate'):
+                c['is_blocked'] += 1
+            elif r['agent'] != aid:
+                c['is_other'] += 1
+            else:
+                c['is_right'] += 1
     return c
 
 
@@ -318,6 +335,11 @@ def validate(hive):
         for q in ho['contaminated']:
             problems.append('held-out rephrasing %r also appears in hive.json — the set is '
                             'contaminated and no longer measures generalisation' % q)
+        if not ho['is_total'] or ho['ceiling_overblocked'] is None:
+            problems.append('holdout.json has no held-out in-scope set — over-refusal is unmeasured')
+        elif ho['is_blocked'] > ho['ceiling_overblocked']:
+            problems.append('held-out: %d legitimate requests now refused or escalated; '
+                            'the measured ceiling is %d' % (ho['is_blocked'], ho['ceiling_overblocked']))
         if ho['waved'] > ho['ceiling_waved']:
             problems.append('held-out: %d boundary rephrasings now waved through as in-scope; '
                             'the measured ceiling is %d' % (ho['waved'], ho['ceiling_waved']))
@@ -363,8 +385,8 @@ def render_doc(hive, beats):
     A.append('**Evals.** %d adversarial probes, every one expecting a refusal or an '
              'escalation, every one tied to the exact sentence of the composed prompt '
              'that covers it. These are **static** evals: the build proves each prompt '
-             'contains the rule a probe attacks. No model was called and no live pass '
-             'rate is reported, because none was measured.\n' % n_evals)
+             'contains the rule a probe attacks. No model is called, so no model pass rate '
+             'is reported; the router\'s own rates on held-out sets follow.\n' % n_evals)
     ho = holdout_score(hive)
     A.append('**Held-out generalisation (measured).** The console is rule matching, so a '
              'static eval only proves the rules catch the wording they were written for. '
@@ -378,6 +400,14 @@ def render_doc(hive, beats):
              'being asked (docs/company/AGENTS.md).\n'
              % (ho['total'], ho['written_on'], ho['caught'], round(100 * ho['caught'] / ho['total']),
                 ho['nomatch'], ho['wrong'], ho['waved'], ho['ceiling_waved']))
+    A.append('**Over-refusal (measured).** The same file holds %d legitimate in-scope requests '
+             'written by an agent that never saw the rules: **%d routed to the right agent '
+             '(%d%%)**, %d to another agent\'s scope, %d match no rule, and **%d refused or '
+             'escalated** — ratcheted at a ceiling of %d. A router tuned only against requests '
+             'that slip through drifts into refusing ordinary work; on 2026-10-23 that was '
+             'measured at 13 of 60 before this check existed.\n'
+             % (ho['is_total'], ho['is_right'], round(100 * ho['is_right'] / ho['is_total']),
+                ho['is_other'], ho['is_nomatch'], ho['is_blocked'], ho['ceiling_overblocked']))
     A.append('**Heartbeat.** At every build each agent\'s modules are re-measured '
              'against the line counts the register cites. A mismatch fails the build.\n')
     A.append('| | Agent | Status | Hard boundary (verbatim from the register) | Heartbeat |')

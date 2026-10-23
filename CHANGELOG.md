@@ -26,8 +26,13 @@ such.
   console's rule router was then measured on rephrasings it was not tuned on:
   held-out set 1 (60, written by an agent that never saw the rules) 53% caught by
   the right agent, 5 waved through as in-scope; retired into tuning; set 2 (80,
-  fresh agent) 34% before tuning, **50% after**, 9 waved through — ratcheted as a
-  build ceiling with a contamination check. `docs/HIVE.md`, the whitepaper and
+  fresh agent) 34% before tuning, **50% after**, 9 waved through. A doctrine review
+  then measured the cost of that tuning — **13 of 60 legitimate requests wrongly
+  refused** — because nothing measured over-refusal. Set 2 was retired, the routes
+  rebuilt against both directions (180 paraphrases, 69 in-scope examples), and two
+  fresh held-out sets measured once each: boundary set 3 **48/60 (80%)**, 6 waved
+  through; in-scope set **45/60 (75%)**, 6 refused or escalated. Both harmful counts
+  are build ceilings with contamination checks, each ratchet break-tested. `docs/HIVE.md`, the whitepaper and
   the film now say the console is a tripwire with a measured hole, not a safety
   boundary.
 - **Product whitepaper and film corrected** (doctrine review, 2026-10-23): the

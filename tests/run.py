@@ -427,6 +427,19 @@ def main():
               "held-out ratchet fired for the wrong reason: %s" % str(_e)[:200])
     finally:
         build_hive.HOLDOUT = _real
+    # ...and the same for over-refusal: one below the measured count of legitimate
+    # requests refused or escalated must stop the build with that message.
+    _mb = build_hive.holdout_score(hive)["is_blocked"]
+    json.dump(dict(_ho, ceiling_overblocked=_mb - 1), open(_tmp, "w", encoding="utf-8"))
+    build_hive.HOLDOUT = _tmp
+    try:
+        build_hive.validate(copy.deepcopy(hive))
+        check(False, "over-refusal ratchet did not fire with ceiling below the measured count")
+    except SystemExit as _e:
+        check("legitimate requests" in str(_e),
+              "over-refusal ratchet fired for the wrong reason: %s" % str(_e)[:200])
+    finally:
+        build_hive.HOLDOUT = _real
     drift("held-out set contaminated", lambda h: h["agents"][0]["evals"][0]["paraphrases"].append(
         list(_ho["sets"].values())[0][0]))
     drift("routing hole", lambda h: h.update(routes=[
@@ -442,7 +455,8 @@ def main():
     samples = [e["probe"] for a in hive["agents"] for e in a["evals"]] + \
               [q for a in hive["agents"] for q in a["in_scope"]] + \
               [p for a in hive["agents"] for e in a["evals"] for p in e.get("paraphrases", [])] + \
-              [q for qs in _ho["sets"].values() for q in qs]
+              [q for qs in _ho["sets"].values() for q in qs] + \
+              [q for qs in _ho.get("inscope", {}).values() for q in qs]
     def _pick(q):
         r = build_hive.route(hive, q)
         return -1 if r is None else hive["routes"].index(r)

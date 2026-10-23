@@ -92,7 +92,7 @@ function scenes({ f, hive }) {
       tiles: hive.agents.map(a => ({ img: dataUrl('brand/avatars/' + a.id + '.svg', 'image/svg+xml'),
                                      label: a.name, sub: a.status })),
       note: n(hive.evals) + ' probes tied to the prompt sentences that refuse them. Held-out: ' + n(hive.holdout.caught) + ' of '
-            + n(hive.holdout.total) + ' unseen rephrasings caught, ' + n(hive.holdout.waved) + ' waved through. Heartbeat: '
+            + n(hive.holdout.total) + ' unseen rephrasings caught, ' + n(hive.holdout.waved) + ' waved through; ' + n(hive.holdout.is_blocked) + ' of ' + n(hive.holdout.is_total) + ' legitimate requests wrongly blocked. Heartbeat: '
             + n(hive.beats_ok) + ' of ' + n(hive.beats) + ' agent modules match the register.' },
 
     { key: 'bounds', secs: 13, kicker: 'AN AGENT PROPOSES. A PERSON DECIDES.',
@@ -117,7 +117,7 @@ function scenes({ f, hive }) {
     { key: 'close', secs: 13, kicker: 'READ THE REPOSITORY',
       head: 'Every validator is readable.\nEvery figure is dated.',
       sub: 'github.com/agifuturefoundation/locator.x',
-      stats: [[n(f.gates), 'gates run on every change'], [n(hive.evals), 'agent evals in the build']],
+      stats: [[n(f.gates), 'gates run on every pull request'], [n(hive.evals), 'agent evals in the build']],
       note: 'Education and navigation of the public record. Verify before relying. Not advice, and not an offer of anything.' },
   ];
 }

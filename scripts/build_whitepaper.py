@@ -141,6 +141,8 @@ def hive_figures():
         'hive_ho_caught': ho['caught'],
         'hive_ho_pct': round(100 * ho['caught'] / ho['total']),
         'hive_ho_waved': ho['waved'],
+        'hive_is_total': ho['is_total'],
+        'hive_is_blocked': ho['is_blocked'],
         'hive_beats_ok': sum(b['ok'] for v in beats.values() for b in v),
         'hive_beats': sum(len(v) for v in beats.values()),
     }

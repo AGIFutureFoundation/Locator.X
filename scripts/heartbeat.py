@@ -32,40 +32,40 @@ SKIP = ('npm ci',)   # environment setup, not a gate
 
 
 def gates_from_workflow(path=WORKFLOW):
-    """[(name, shell)] for every step with a `run:` — single-line or block."""
-    lines = open(path, encoding='utf-8').read().splitlines()
-    out, name, i = [], None, 0
-    while i < len(lines):
-        s = lines[i].strip()
-        m = re.match(r'-\s+name:\s*(.+)', s)
-        if m:
-            name = m.group(1).strip()
-        m = re.match(r'(?:-\s+)?run:\s*(.*)', s)
-        if m:
-            body = m.group(1).strip()
-            if body in ('|', '>'):
-                ind = len(lines[i + 1]) - len(lines[i + 1].lstrip())
-                cmds = []
-                i += 1
-                while i < len(lines) and (not lines[i].strip() or
-                                          len(lines[i]) - len(lines[i].lstrip()) >= ind):
-                    if lines[i].strip():
-                        cmds.append(lines[i].strip())
-                    i += 1
-                body = ' && '.join(cmds)
-                i -= 1
-            if not any(body.startswith(k) for k in SKIP):
-                out.append((name or body, body))
-            name = None
-        i += 1
+    """[(name, shell, workdir)] for every `run:` step of every job, parsed as YAML.
+
+    A hand parser here was found (2026-10-23 review) to drop a whole step whose body
+    merely began with `npm ci`, to run `|-` literally, and to crash on a trailing
+    block. So: real YAML, only the `npm ci` *command* is stripped from a body, and any
+    step shape this file does not understand stops the heartbeat instead of being
+    skipped — a gate that is silently not run is the failure this file exists to stop."""
+    import yaml
+    wf = yaml.safe_load(open(path, encoding='utf-8'))
+    out = []
+    for job in (wf.get('jobs') or {}).values():
+        for st in job.get('steps') or []:
+            if 'run' not in st:
+                continue
+            unknown = set(st) - {'name', 'run', 'env', 'working-directory', 'id', 'shell'}
+            if unknown:
+                raise SystemExit('heartbeat: workflow step %r has keys it cannot honour: %s'
+                                 % (st.get('name'), ', '.join(sorted(unknown))))
+            cmds = [c.strip() for line in str(st['run']).splitlines()
+                    for c in line.split('&&') if c.strip()]
+            cmds = [c for c in cmds if not any(c.startswith(k) for k in SKIP)]
+            if not cmds:
+                continue
+            out.append((st.get('name') or cmds[0], ' && '.join(cmds),
+                        st.get('working-directory'), st.get('env') or {}))
     return out
 
 
 def run_gates():
     res = []
-    for name, cmd in gates_from_workflow():
+    for name, cmd, wd, env in gates_from_workflow():
         t = time.time()
-        p = subprocess.run(cmd, shell=True, cwd=ROOT, capture_output=True, text=True)
+        p = subprocess.run(cmd, shell=True, cwd=os.path.join(ROOT, wd or ''), capture_output=True,
+                           text=True, env=dict(os.environ, **{k: str(v) for k, v in env.items()}))
         tail = (p.stdout + p.stderr).strip().splitlines()[-3:]
         res.append({'gate': name, 'cmd': cmd, 'ok': p.returncode == 0,
                     'rc': p.returncode, 'seconds': round(time.time() - t, 1),
@@ -143,6 +143,8 @@ def unchecked():
                   'published edition to confirm it matches HEAD. Only the publish map\'s own dates are read.'))
     items.append(('Rendered UI', 'Gates do not drive a browser. Visual and accessibility regressions are '
                   'caught only by fleet-smoke.yml or a manual sweep.'))
+    items.append(('External links', 'Outbound links are swept quarterly by link-rot.yml, not by these gates; '
+                  'a dead source link can sit between sweeps.'))
     return [{'item': a, 'why': b} for a, b in items]
 
 
@@ -177,10 +179,26 @@ def selftest():
     g = gates_from_workflow()
     if len(g) < 10:
         bad.append(('workflow', '>=10 gates', len(g)))
-    if not any('tests/run.py' in c for _, c in g):
+    if not any('tests/run.py' in c for _, c, _, _ in g):
         bad.append(('workflow', 'tests/run.py present', 'absent'))
-    if any('npm ci' in c for _, c in g):
+    if any('npm ci' in c for _, c, _, _ in g):
         bad.append(('workflow', 'setup step skipped', 'npm ci counted as a gate'))
+    # parser mutations the 2026-10-23 review found: a step that begins with npm ci keeps its
+    # gate; |- and folded blocks parse as YAML; a trailing block does not crash
+    import tempfile
+    wf = ('jobs:\n  g:\n    steps:\n      - name: a\n        run: npm ci && python3 tests/run.py\n'
+          '      - name: b\n        run: |-\n          python3 x.py\n          python3 y.py\n'
+          '      - name: c\n        run: >\n          python3 scripts/build_deck.py\n          --check\n'
+          '      - name: d\n        run: |\n')
+    tmp = os.path.join(tempfile.mkdtemp(), 'wf.yml')
+    open(tmp, 'w').write(wf)
+    try:
+        got = [c for _, c, _, _ in gates_from_workflow(tmp)]
+    except Exception as e:
+        got = ['CRASH %s' % e]
+    want = ['python3 tests/run.py', 'python3 x.py && python3 y.py', 'python3 scripts/build_deck.py --check']
+    if got != want:
+        bad.append(('parser', want, got))
     if bad:
         print('heartbeat selftest FAILED: %r' % bad)
         return 1
