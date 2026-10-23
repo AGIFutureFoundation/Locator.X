@@ -90,7 +90,10 @@ function analyze(l){
   const mk=d.mk; const va=valueAdd(l); const rc=rentControl(l);
   const cityPpsf = cityPpsfOf(l.city);
   const ppsfHigh = d.ppsf && cityPpsf && d.ppsf > cityPpsf*1.3;
-  const sus = l.cv ? true : (d.ppsf && cityPpsf) ? d.ppsf < cityPpsf*0.45 : (mk.zhvi ? d.P < mk.zhvi*0.35 : false);
+  // l.est means the price is a ZIP-index model estimate, not a recorded
+  // transaction — a low estimate relative to the index is model noise, not
+  // evidence of an actual off-market transfer, so it never earns the flag.
+  const sus = l.est ? false : l.cv ? true : (d.ppsf && cityPpsf) ? d.ppsf < cityPpsf*0.45 : (mk.zhvi ? d.P < mk.zhvi*0.35 : false);
   // ---- Locator X score v2: 11 evidence-weighted modalities with a 15% coverage floor ----
   // Each modality carries a base weight and an evidence factor e (how much real data backs
   // it for THIS record). Effective weight = base x max(0.15, e), renormalized to 100 — the

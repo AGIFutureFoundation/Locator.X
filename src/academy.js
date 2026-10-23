@@ -59,8 +59,14 @@ function pool(track){
 function rentSourced(l){
   try{ return L().deal(l).rentBasis !== 'none'; }catch(e){ return true; }
 }
+/* l.est means the price is a ZIP-index model estimate, never a jurisdiction-
+   published or recorded value (same doctrine switchboard.js's priceBasis()
+   and uwexport.js's memo already apply) — so the same preference/notice
+   pattern used above for rent applies to price provenance too. */
+function priceSourced(l){ return !l.est; }
 function pick(track, extra){ let c=pool(track); if(extra) { const c2=c.filter(extra); if(c2.length>4) c=c2; else { const c3=L().allListings().filter(l=>l.src!=='imp').filter(extra); if(c3.length) c=c3; } }
   const sourced=c.filter(rentSourced); if(sourced.length) c=sourced;
+  const priced=c.filter(priceSourced); if(priced.length) c=priced;
   return c[Math.floor(Math.random()*c.length)]; }
 
 /* Shown above any exercise whose subject's rent is a rule of thumb. It does not
@@ -75,7 +81,18 @@ function rentBlindNote(l){
     + 'lesson \u2014 but do not read the result as a verdict on this building. In a real file you '
     + 'would not accept a rent you had not seen a comparable lease for.</p>';
 }
-const propLine=l=>`${l.addr}, ${l.city} — ${l.kind}${l.beds!=null?`, ${l.beds} bd ${l.baths} ba`:''}${l.sqft?`, ${FN(l.sqft)} sf`:''}${l.year?`, built ${l.year}`:''}, recorded at ${F$(L().price(l))} (${l.priceDate||'public record'})`;
+/* Same guarantee as rentBlindNote(), for price: a subject whose price is a
+   ZIP-index estimate is never presented as though a sale or assessment
+   recorded it. */
+function priceBlindNote(l){
+  if(!l || priceSourced(l)) return '';
+  return '<p class="src" style="margin:0 0 8px"><b>Note on this subject’s price.</b> '
+    + 'This county publishes no assessed value for this parcel, so the price below is a '
+    + 'ZIP-level index estimate, not a recorded sale or assessment. Work the arithmetic — '
+    + 'that is the lesson — but do not read it as a verified price. In a real file you would '
+    + 'confirm a number like this against the county record before relying on it.</p>';
+}
+const propLine=l=>`${l.addr}, ${l.city} — ${l.kind}${l.beds!=null?`, ${l.beds} bd ${l.baths} ba`:''}${l.sqft?`, ${FN(l.sqft)} sf`:''}${l.year?`, built ${l.year}`:''}, ${l.est?'estimated at '+F$(L().price(l))+' (ZIP-index, not a recorded sale)':'recorded at '+F$(L().price(l))+' ('+(l.priceDate||'public record')+')'}`;
 
 /* ---------------- question helpers ---------------- */
 function qn(q, ans, unit, hints, fb, opt){ return Object.assign({type:'num', q, ans, unit:unit||'', hints, fb}, opt||{}); }
@@ -192,12 +209,22 @@ const MISSIONS=[
         h.units>=3? 'Self-sufficiency is the 3–4-unit gate — this building '+(h.ss? 'passes at these rents.':'fails at these rents, so the offer must be priced down or the loan rethought.') : 'One year of real occupancy — misrepresenting it is federal loan fraud, and the cheap loan isn\'t worth a career.') ]}; } },
 {id:'b3', role:'buyer', min:4, title:'Problems are inventory', std:'Sourcing — motivated sellers and off-market signals',
  brief:'Catalog theme (Three Master Secrets, 2006): when a problem pops up, an agent sees paperwork — an investor\'s agent sees the deal behind it.',
- make(){ const X=L(); const rowsD=D().rows.length?D().rows:(D().render(),D().rows); const sus=rowsD.filter(r=>r.sus && (r.l.units||1)>=1); const r0=sus.length? sus[Math.floor(Math.random()*sus.length)] : rowsD[0]; const l=r0.l; const gap=+((1-X.price(l)/(r0.cityPpsf&&l.sqft? r0.cityPpsf*l.sqft : X.price(l)*1.6))*100).toFixed(0); const ind=r0.cityPpsf&&l.sqft? Math.round(r0.cityPpsf*l.sqft) : Math.round(X.price(l)*1.6); return {l,
-  trigger:`Scanning the roll you find <b>${esc(l.addr)}, ${esc(l.city)}</b> recorded at ${F$(X.price(l))} — flagged ⚠ far below market. Not a listing: a signal. Somebody transferred this building without an auction. Your move is research, not a bid.`,
+ make(){ const X=L(); const rowsD=D().rows.length?D().rows:(D().render(),D().rows); const sus=rowsD.filter(r=>r.sus && (r.l.units||1)>=1); const r0=sus.length? sus[Math.floor(Math.random()*sus.length)] : rowsD[0]; const l=r0.l; const gap=+((1-X.price(l)/(r0.cityPpsf&&l.sqft? r0.cityPpsf*l.sqft : X.price(l)*1.6))*100).toFixed(0); const ind=r0.cityPpsf&&l.sqft? Math.round(r0.cityPpsf*l.sqft) : Math.round(X.price(l)*1.6);
+  /* r0.sus is the dashboard's own below-market-transfer flag. When nothing
+     in this edition is actually flagged, the drill still needs a subject to
+     run the arithmetic on — but it must not claim THIS one was flagged when
+     it wasn't. Label the constructed case honestly instead of fabricating
+     a transfer that never happened. */
+  const flagged=!!r0.sus; return {l,
+  trigger: flagged
+    ? `Scanning the roll you find <b>${esc(l.addr)}, ${esc(l.city)}</b> recorded at ${F$(X.price(l))} — flagged ⚠ far below market. Not a listing: a signal. Somebody transferred this building without an auction. Your move is research, not a bid.`
+    : `Nothing in this roll is actually flagged as a below-market transfer right now — so practice the read on a constructed case: treat <b>${esc(l.addr)}, ${esc(l.city)}</b>, recorded at ${F$(X.price(l))}, as if it had surfaced flagged ⚠ far below market. The arithmetic below is real even though this specific flag is not.`,
   analyze:{view:'research', id:l.id, note:'Run the research agents — the comps agent prices the gap, the links open the recorder trail.'},
   qs:[ qn('Using the city\'s median $/sf'+(l.sqft?` and this building's ${FN(l.sqft)} sf`:' and a comparable basis')+', what would it likely trade for at market? (±10% is fine)', ind, '$',
         ['The flag means the recorded price is NOT market — rebuild market from $/sf.','City median $/sf × building sf.','The research report\'s comps agent prints exactly this "indicated value".'],
-        `Indicated ≈ ${F$(ind)} — the recorded ${F$(X.price(l))} is a partial-interest or family transfer, not a price you can buy at. But it tells you the ownership just changed hands quietly.`),
+        `Indicated ≈ ${F$(ind)} — ` + (flagged
+          ? `the recorded ${F$(X.price(l))} is a partial-interest or family transfer, not a price you can buy at. But it tells you the ownership just changed hands quietly.`
+          : `in this constructed case the recorded ${F$(X.price(l))} is standing in for a partial-interest or family transfer, so the gap is what you'd be reading if this one really had surfaced.`)),
        qm('The professional read of a below-market transfer plus a long-held neighbor parcel is:', [
          'A door-knock and a letter: new heirs or partial owners often want a clean exit, and you can be the prepared buyer\'s agent when they do',
          'Offer the recorded price — it\'s public, so it must be available',
@@ -480,7 +507,7 @@ function renderPlayer(box){
   const phases=['Trigger','Analyze','Troubleshoot','Feedback'];
   box.innerHTML=`<div class="player" style="--c:var(${r.c})"><div class="ph"><div style="flex:1;min-width:250px"><div class="eyebrow">${crew?'Crew mission':'Micro-mission'} · ${m.min} min band · rep ${idx+1}/${total}</div><h3>${m.title}</h3></div><button class="btn" id="pquit">Exit mission</button></div>
   <div class="loopbar">${phases.map((p,i)=>`<span class="${i===view.phase?'on':''}">${p}</span>`).join('')}</div>
-  <div class="trigger">${rentBlindNote(inst.l)}${inst.trigger}</div>
+  <div class="trigger">${rentBlindNote(inst.l)}${priceBlindNote(inst.l)}${inst.trigger}</div>
   ${inst.analyze&&view.phase>=1? `<div style="font-size:12.5px;color:var(--ink2);margin:8px 0"><b>Analyze:</b> ${esc(inst.analyze.note)} <button class="btn" id="popen" style="font-size:11px;padding:3px 8px">Open ${inst.analyze.view==='mapview'?'the map':'the '+inst.analyze.view+' tab'}</button> <span style="color:var(--muted)">(the mission stays here)</span></div>`:''}
   ${crew? `<div class="crewtabs">${inst.chairs.map((c,i)=>`<button aria-selected="${i===view.chair}" data-ch="${i}">${c.name}${(view.answered||[]).includes('c'+i)?' ✓':''}</button>`).join('')}</div>`:''}
   <div id="qzone"></div>
@@ -535,7 +562,7 @@ function startTransfer(){ view={mission:null, transfer:transferQs(P.role), qi:0,
 function renderTransfer(box){
   const r=ROLE[P.role]; const t=view.transfer; const item=t[view.qi]; const q=item.q;
   box.innerHTML=`<div class="player" style="--c:var(${r.c})"><div class="eyebrow">Behavioral-transfer check · fault ${view.qi+1} of ${t.length} · novel property · no hints · tightened tolerance</div><h3 style="font-family:var(--display)">${r.name} — verify</h3>
-  <div class="trigger">${rentBlindNote(item.inst.l)}${item.inst.trigger}</div><div id="qzone"></div>
+  <div class="trigger">${rentBlindNote(item.inst.l)}${priceBlindNote(item.inst.l)}${item.inst.trigger}</div><div id="qzone"></div>
   <div class="toolbar"><button class="btn" id="pquit">Abandon check</button></div></div>`;
   renderQ(q, [q]);
   $('#pquit').addEventListener('click', ()=>{ view.transfer=null; view.transferMode=false; renderMain(); });
@@ -612,5 +639,5 @@ function renderCreds(){
   box.innerHTML='<div class="badgewall">'+P.creds.map((c,i)=>{ const r=ROLE[c.role]; const b=c.basis||'unrecorded'; const label=b==='transfer'?'transfer check, verified':b==='override'?'mentor override — not a transfer check':'issued before basis was recorded — unverified'; return `<div class="cred" style="--c:var(${r.c})"><div class="seal">${r.ic}</div><b>${r.name}</b><div class="meta">issued ${c.at.slice(0,10)} · <b>${label}</b><br>sha-256 ${String(c.digest).slice(0,18)}…<br>Open Badges 3.0 / W3C VC shape</div><button class="btn" data-cp="${i}">Copy credential JSON</button></div>`; }).join('')+'</div>';
   $$('#acadcreds [data-cp]').forEach(b=>b.addEventListener('click', async()=>{ try{ await navigator.clipboard.writeText(JSON.stringify(P.creds[+b.dataset.cp].cred, null, 1)); L().toast('Credential JSON copied — hash-sealed and portable'); }catch(e){ L().toast('Clipboard blocked in this host'); } }));
 }
-window.LXAcad={render, rentSourced, rentBlindNote, pick, MISSIONS, rolesCertified, certificationEligible, issueCertification};
+window.LXAcad={render, rentSourced, rentBlindNote, priceSourced, priceBlindNote, propLine, pick, MISSIONS, rolesCertified, certificationEligible, issueCertification};
 })();

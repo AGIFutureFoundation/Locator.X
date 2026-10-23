@@ -2721,6 +2721,85 @@ async function main() {
         }
       }
 
+      // dashboard.js's below-market-transfer flag (r.sus) used to fire on an
+      // l.est (ZIP-index estimate) record whose model price simply landed
+      // low relative to the city index — mischaracterizing model noise as
+      // an actual off-market transfer.
+      const susTest = await page.evaluate(() => {
+        if (!window.LXDash) return null;
+        const l = LX.allListings().find(x => x.price > 0 && !x.est);
+        if (!l) return {skip: true};
+        const fake = Object.assign({}, l, {est: true, price: 1});
+        const r = LXDash.analyze(fake);
+        return {skip: false, sus: r ? r.sus : 'no-analyze'};
+      });
+      if (susTest && !susTest.skip && susTest.sus !== false) {
+        errs.push('dashboard.js analyze(): an l.est record with an artificially low price was flagged "sus" (below-market transfer) — ' + JSON.stringify(susTest.sus));
+      }
+
+      // academy.js: propLine()/priceBlindNote() used to call every subject's
+      // price "recorded" even when l.est (a ZIP-index model estimate), with
+      // no caveat anywhere in the module.
+      const acadPrice = await page.evaluate(() => {
+        if (!window.LXAcad || !LXAcad.propLine) return null;
+        const l = LX.allListings().find(x => x.price > 0 && !x.est);
+        if (!l) return {skip: true};
+        const estL = Object.assign({}, l, {est: true, priceDate: null});
+        return {skip: false, realLine: LXAcad.propLine(l), estLine: LXAcad.propLine(estL),
+                realNote: LXAcad.priceBlindNote(l), estNote: LXAcad.priceBlindNote(estL),
+                realSourced: LXAcad.priceSourced(l), estSourced: LXAcad.priceSourced(estL)};
+      });
+      if (acadPrice && !acadPrice.skip) {
+        if (!/, recorded at/.test(acadPrice.realLine)) errs.push('academy.js propLine() no longer labels a real price "recorded"');
+        if (!/estimated at .* \(ZIP-index, not a recorded sale\)/.test(acadPrice.estLine)) errs.push('academy.js propLine() calls an l.est price "recorded" instead of "estimated": ' + acadPrice.estLine);
+        if (acadPrice.realNote !== '') errs.push('academy.js priceBlindNote() shows a caveat on a real (non-estimate) price');
+        if (!acadPrice.estNote) errs.push('academy.js priceBlindNote() shows no caveat for an l.est subject');
+        if (acadPrice.realSourced !== true || acadPrice.estSourced !== false) errs.push('academy.js priceSourced() misclassifies real vs. l.est pricing');
+      }
+
+      // academy.js mission b3 used to assert "flagged ⚠ far below market...
+      // Somebody transferred this building without an auction" about ANY
+      // fallback record whenever no row in the edition was actually flagged
+      // sus — fabricating a transfer that never happened.
+      const b3Test = await page.evaluate(() => {
+        if (!window.LXAcad) return null;
+        const rows = LXDash.rows.length ? LXDash.rows : (LXDash.render(), LXDash.rows);
+        const saved = rows.map(r => r.sus);
+        rows.forEach(r => { r.sus = false; });
+        let trigger;
+        try {
+          const b3 = LXAcad.MISSIONS.find(m => m.id === 'b3');
+          trigger = b3.make().trigger;
+        } finally {
+          rows.forEach((r, i) => { r.sus = saved[i]; });
+        }
+        return {trigger};
+      });
+      if (b3Test && b3Test.trigger) {
+        if (/flagged ⚠ far below market\. Not a listing: a signal\. Somebody transferred this building without an auction/.test(b3Test.trigger)) {
+          errs.push('academy.js b3 mission fabricates a below-market-transfer claim when no row is actually flagged sus');
+        }
+      }
+
+      // comps.js's POOL cache used to be cleared only by invalidate(), called
+      // solely from this module's own render() — so a property drawer opened
+      // without visiting the Comps tab (app.js's real drawer flow) served a
+      // pool built before the most recent import, silently excluding it.
+      const compsStale = await page.evaluate(() => {
+        if (!window.LXComps) return null;
+        const before = LXComps.pool().length;
+        const base = LX.allListings().find(x => x.sale != null && x.saleDate);
+        if (!base) return {skip: true};
+        const synth = Object.assign({}, base, {id: 'fleetsmoke_synth_' + Date.now(), src: 'imp'});
+        LX.state.imported.push(synth);
+        const after = LXComps.pool().length;
+        LX.state.imported.pop();
+        return {skip: false, before, after};
+      });
+      if (compsStale && !compsStale.skip && compsStale.after <= compsStale.before) {
+        errs.push('comps.js pool() did not pick up a newly-imported record without an explicit invalidate() call');
+      }
+
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
     }
