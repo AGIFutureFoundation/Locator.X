@@ -24,6 +24,19 @@ such.
   fails if the gate accepts any. `--console out.html` builds a team console
   page with per-agent heartbeat, voice preview and a rule-matching dispatch
   box that is labelled as rule matching, not a language model.
+- **The console's router is now data, and evaluated** — the dispatch rules moved
+  from `scripts/hive_console.html` into `content/agents/hive.json`, and
+  `build_hive.py` routes every eval probe and every in-scope example through
+  them. Measured before the change: 13 of 18 probes reached a refusal; three
+  matched no rule, and two that need a person's approval ("drop the downside
+  case", "raise the budget and lock it") were reported **in scope**. Five rules
+  were added (advice, unmeasured performance, misrepresentation, two
+  escalations) and two patterns tightened after the new check caught "signals"
+  missing a singular pattern and "call brief" read as a phone call. Now 18/18
+  probes refuse or escalate and 12/12 in-scope examples reach their own agent,
+  in Python and, by a parity test in `tests/run.py`, in JavaScript's RegExp too;
+  driven in Chromium the built page routes 30/30. Two more drift mutations
+  (a routing hole, an attack routed as in scope) must fail the build.
 - **The whitepaper describes the agent team** — a new section and a third chart
   (agents by register status) in `content/whitepaper/WHITEPAPER.md`, every figure
   a placeholder resolved by `build_hive.validate()`, so a whitepaper cannot be

@@ -92,21 +92,10 @@ document.querySelectorAll('[data-speak]').forEach(b => b.onclick = () => {
   if (!speak(`I am ${a.name}, an AI agent in the ${H.team}. ${a.catchphrase}`, a.voice)) b.textContent = 'No speech synthesis in this browser';
 });
 
-// Deterministic router: keyword rules derived from each agent's boundary.
-const RULES = [
-  { re: /\b(send|text|sms|call|dial|auto-?dial|email|mail|blast|contact)\b/i, agent: 'acquisitions', cross: true },
-  { re: /\b(widen|expand|add)\b.*\b(buy ?box|market|county|parish|zip)\b|\bbuy ?box\b/i, agent: 'scout', cross: true },
-  { re: /\b(owner'?s?|seller'?s?)\b.*\b(phone|address|email|name|number)\b|\bmotivated\b|\bdistress/i, agent: 'diligence', cross: true, pii: true },
-  { re: /\b(approve|buy it|make the offer|decide|go ahead)\b/i, agent: 'underwriting', cross: true },
-  { re: /\bquote\b|\bwill be approved\b/i, agent: 'development', cross: true },
-  { re: /\bcalibrat/i, agent: 'portfolio', cross: true },
-  { re: /\b(assume|just tell me|guess|cleared)\b/i, agent: 'diligence', cross: true },
-  { re: /\b(scenario|downside|underwrit|cap rate|financing)\b/i, agent: 'underwriting' },
-  { re: /\b(lien|permit|zoning|timeline|evidence|title)\b/i, agent: 'diligence' },
-  { re: /\b(rehab|renovat|budget|contractor|scope)\b/i, agent: 'development' },
-  { re: /\b(new match|signal|pipeline|watch)\b/i, agent: 'scout' },
-  { re: /\b(brief|draft|follow-?up|summary)\b/i, agent: 'acquisitions' },
-];
+// Deterministic router. The rules are data from content/agents/hive.json, and
+// scripts/build_hive.py routes every eval probe through these same patterns
+// before this page can be built.
+const RULES = H.routes.map(r => Object.assign({ re: new RegExp(r.pattern, 'i') }, r));
 let last = null;
 $('#go').onclick = () => {
   const q = $('#ask').value.trim(); const box = $('#reply'); if (!q) return;
@@ -114,11 +103,12 @@ $('#go').onclick = () => {
   const a = hit && H.agents.find(x => x.id === hit.agent);
   let text;
   if (!hit) { last = { text: 'No agent matched that request, so no agent acts on it. Rephrase it, or take it to a person.', voice: { rate: 1, pitch: 1 } }; box.style.display = 'block'; box.innerHTML = '<b>Console</b><p style="margin:.5em 0 0">' + esc(last.text) + '</p>'; return; }
-  if (hit.cross) text = `I am ${a.name}, an AI agent in the ${H.team}. That request crosses a hard boundary: ${hit.pii ? 'no owner PII and no distress label without a dated record' : a.boundary}. I can prepare what is in my scope instead (${a.scope.split(',')[0].toLowerCase()}), and the decision stays with you.`;
+  if (hit.kind === 'boundary') text = `I am ${a.name}, an AI agent in the ${H.team}. That request crosses a hard boundary: ${hit.reason || a.boundary}. I can prepare what is in my scope instead (${a.scope.split(',')[0].toLowerCase()}), and the decision stays with you.`;
+  else if (hit.kind === 'escalate') text = `I am ${a.name}, an AI agent in the ${H.team}. That change is material, so I will not make it on my own. I have flagged it for a person to approve, with what it changes and why.`;
   else text = `I am ${a.name}, an AI agent in the ${H.team}. This is in my scope: ${a.scope}. A person approves anything material, and I will cite every source I use.`;
   last = { text, voice: a.voice };
   box.style.display = 'block';
-  box.innerHTML = `<div class="top">${a.avatar.replace('<svg', '<svg style="width:40px;height:40px"')}<b>${esc(a.name)}</b>${hit.cross ? ' <span class="pill not">boundary</span>' : ''}</div><p style="margin:.5em 0 0">${esc(text)}</p>`;
+  box.innerHTML = `<div class="top">${a.avatar.replace('<svg', '<svg style="width:40px;height:40px"')}<b>${esc(a.name)}</b>${hit.kind !== 'scope' ? ' <span class="pill ' + (hit.kind === 'boundary' ? 'not' : 'partial') + '">' + hit.kind + '</span>' : ''}</div><p style="margin:.5em 0 0">${esc(text)}</p>`;
 };
 $('#say').onclick = () => { if (last) speak(last.text, last.voice); };
 </script>

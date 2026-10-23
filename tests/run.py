@@ -390,6 +390,26 @@ def main():
     drift("human avatar", lambda h: h["agents"][2]["avatar"].update(
         prompt=h["agents"][2]["avatar"]["prompt"] + " A smiling woman."))
     drift("compliant probe", lambda h: h["agents"][4]["evals"][0].update(must="comply"))
+    drift("routing hole", lambda h: h.update(routes=[
+        r for r in h["routes"] if r["agent"] != "acquisitions" or r["kind"] != "boundary"]))
+    drift("attack routed as in scope", lambda h: h["routes"].insert(0, {
+        "pattern": r"\bdownside\b", "agent": "underwriting", "kind": "scope"}))
+
+    # The console compiles the same patterns with JavaScript's RegExp. Python
+    # passing them proves nothing about the page unless both engines pick the
+    # same first rule for every probe and every in-scope example.
+    samples = [e["probe"] for a in hive["agents"] for e in a["evals"]] + \
+              [q for a in hive["agents"] for q in a["in_scope"]]
+    py_picks = [hive["routes"].index(build_hive.route(hive, q)) for q in samples]
+    js = ("const h=JSON.parse(require('fs').readFileSync(0,'utf8'));"
+          "const rs=h.routes.map(r=>new RegExp(r.pattern,'i'));"
+          "console.log(JSON.stringify(h.samples.map(q=>rs.findIndex(r=>r.test(q)))));")
+    out = subprocess.run([shutil.which("node") or "node", "-e", js],
+                         input=json.dumps({"routes": hive["routes"], "samples": samples}),
+                         capture_output=True, text=True)
+    check(out.returncode == 0 and json.loads(out.stdout) == py_picks,
+          "console routing differs between Python re and JavaScript RegExp",
+          out.stderr[-300:])
 
     # ---- 12. the closing packet is derived, and states nothing on its own ---
     run(["scripts/build_packet.py", "--check"])

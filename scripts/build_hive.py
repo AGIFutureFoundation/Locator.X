@@ -28,6 +28,11 @@ What it checks (all raise, none warn):
              attack it claims to. These are STATIC evals of the prompt; no
              model is called (this container has no egress), and the document
              says so rather than reporting a pass rate it never measured.
+  ROUTING    The console's dispatch rules live in hive.json, not in the page.
+             Every eval probe must reach a boundary or escalation rule, and
+             every in-scope example must reach its own agent as in scope,
+             through the same patterns the console compiles (kept to syntax
+             Python's re and JavaScript's RegExp read alike).
 
 Outputs (generated, never hand-edited — CLAUDE.md):
   docs/HIVE.md                 the register of personas, prompts and evals
@@ -125,6 +130,17 @@ def compose(hive, a):
     return '\n'.join(lines)
 
 
+ROUTE_KINDS = {'boundary', 'escalate', 'scope'}
+
+
+def route(hive, text):
+    """The first rule that matches, exactly as the console tries them."""
+    for r in hive['routes']:
+        if re.search(r['pattern'], text, re.I):
+            return r
+    return None
+
+
 def heartbeat(a, row):
     beats = []
     for mod in a['modules']:
@@ -194,6 +210,22 @@ def validate(hive):
         if len(a['evals']) < MIN_EVALS:
             problems.append('%s has %d evals; needs %d' % (n, len(a['evals']), MIN_EVALS))
         for e in a['evals']:
+            r = route(hive, e['probe'])
+            if r is None:
+                problems.append('%s eval %r reaches no console rule — the console '
+                                'would not refuse it' % (n, e['probe']))
+            elif r['kind'] == 'scope' or (e['must'] == 'refuse' and r['kind'] != 'boundary'):
+                problems.append('%s eval %r (must %s) reaches a %r rule for %s — the '
+                                'console would wave it through'
+                                % (n, e['probe'], e['must'], r['kind'], r['agent']))
+        for q in a.get('in_scope', []):
+            r = route(hive, q)
+            if not r or r['kind'] != 'scope' or r['agent'] != a['id']:
+                problems.append('%s in-scope example %r routes to %s' % (
+                    n, q, r and '%s/%s' % (r['agent'], r['kind'])))
+        if len(a.get('in_scope', [])) < 2:
+            problems.append('%s needs at least two in-scope routing examples' % n)
+        for e in a['evals']:
             if e['must'] not in EXPECT:
                 problems.append('%s eval expects %r — every probe must expect a '
                                 'refusal or escalation' % (n, e['must']))
@@ -201,6 +233,14 @@ def validate(hive):
                 problems.append('%s eval %r cites %r, which is not in the composed '
                                 'prompt — the prompt does not cover this attack'
                                 % (n, e['probe'], e['covered_by']))
+    ids = {a['id'] for a in hive['agents']}
+    for r in hive.get('routes', []):
+        if r['agent'] not in ids or r['kind'] not in ROUTE_KINDS:
+            problems.append('route %r names agent %r / kind %r' % (r['pattern'], r['agent'], r['kind']))
+        if re.search(r'\(\?[<P=!]|\\[AZz]|\(\?i', r['pattern']):
+            problems.append('route %r uses syntax JavaScript reads differently' % r['pattern'])
+    if not hive.get('routes'):
+        problems.append('hive.json has no routes')
     if problems:
         die('\n  ' + '\n  '.join(problems))
     return beats
@@ -254,6 +294,13 @@ def render_doc(hive, beats):
         A.append('| <img src="../brand/avatars/%s.svg" width="40" alt=""> | **%s** | %s | %s | %s |'
                  % (a['id'], a['name'], a['status'], a['hard_boundary'], hb))
     A.append('')
+    A.append('## Console routing\n')
+    A.append(hive['routing'] + '\n')
+    A.append('| # | Pattern | Agent | Kind |')
+    A.append('|---|---|---|---|')
+    for i, r in enumerate(hive['routes'], 1):
+        A.append('| %d | `%s` | %s | %s |' % (i, r['pattern'].replace('|', '\\|'), r['agent'], r['kind']))
+    A.append('')
     for a in hive['agents']:
         p, v = a['personality'], a['voice']
         A.append('## %s\n' % a['name'])
@@ -263,11 +310,13 @@ def render_doc(hive, beats):
                  'is the vector in `brand/avatars/%s.svg`)\n\n> %s\n' % (a['id'], a['avatar']['prompt']))
         A.append('**Composed system prompt**\n\n```text\n%s\n```\n' % compose(hive, a))
         A.append('**Evals**\n')
-        A.append('| Probe | Must | Covered by |')
-        A.append('|---|---|---|')
+        A.append('| Probe | Must | Covered by | Console rule |')
+        A.append('|---|---|---|---|')
         for e in a['evals']:
-            A.append('| %s | %s | "%s" |' % (e['probe'], e['must'], e['covered_by']))
+            r = route(hive, e['probe'])
+            A.append('| %s | %s | "%s" | %s %s |' % (e['probe'], e['must'], e['covered_by'], r['agent'], r['kind']))
         A.append('')
+        A.append('**Routes in scope:** ' + ' · '.join('"%s"' % q for q in a['in_scope']) + '\n')
     return '\n'.join(A)
 
 
@@ -286,6 +335,7 @@ def render_console(hive, beats):
             'beats': beats[a['id']],
         })
     data = json.dumps({'team': hive['team'], 'line': hive['the_line'],
+                       'routes': hive['routes'],
                        'voice': hive['voice_engine'], 'built': built,
                        'agents': agents}).replace('</', '<\\/')
     tpl = open(os.path.join(HERE, 'hive_console.html'), encoding='utf-8').read()
@@ -320,6 +370,7 @@ def main():
             'agents': [{'id': a['id'], 'name': a['name'], 'status': a['status'],
                         'boundary': a['hard_boundary']} for a in hive['agents']],
             'evals': sum(len(a['evals']) for a in hive['agents']),
+            'routes': len(hive['routes']),
             'beats_ok': sum(b['ok'] for v in beats.values() for b in v),
             'beats': sum(len(v) for v in beats.values()),
         }))
@@ -329,8 +380,8 @@ def main():
         open(out, 'w', encoding='utf-8').write(render_console(hive, beats))
         print('wrote', out)
     n = sum(len(a['evals']) for a in hive['agents'])
-    print('hive ok — %d agents, %d static evals covered, heartbeat %d/%d modules'
-          % (len(hive['agents']), n, sum(b['ok'] for v in beats.values() for b in v),
+    print('hive ok — %d agents, %d static evals covered and routed by %d console rules, heartbeat %d/%d modules'
+          % (len(hive['agents']), n, len(hive['routes']), sum(b['ok'] for v in beats.values() for b in v),
              sum(len(v) for v in beats.values())))
 
 
