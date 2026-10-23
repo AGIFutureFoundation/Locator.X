@@ -2467,6 +2467,173 @@ async function main() {
         if (badge.estimated === 'recorded') errs.push('a ZIP-index ESTIMATE price is badged "recorded" — not a jurisdiction figure');
       }
 
+      // standards.js rollup() used to pass rows[i].d (a deal() object, no
+      // capCost/beOcc field) straight through as the "uw" assess() reads —
+      // the cap-rate and break-even-occupancy requirements silently resolved
+      // to "unknown" for every property in every edition. Assert both are
+      // actually known somewhere (not the 100%-unknown signature of the
+      // wrong-field bug), and that the rollup recomputes after an assumption
+      // change instead of serving the stale cached aggregate.
+      const std = await page.evaluate(() => {
+        if (!window.LXStd) return null;
+        const before = LXStd.rollup();
+        if (!before) return {empty: true};
+        const prevDown = LX.state.assump.down;
+        let after;
+        try{
+          LX.state.assump.down = Math.min(90, prevDown + 15);
+          LX.dealBump();
+          /* deliberately NOT calling LXDash.render() here -- the real bug
+             this guards was that a user who changes an assumption without
+             visiting the Dashboard view got an aggregate that recomputed
+             under a signature claiming new assumptions while still reading
+             LXDash.rows built under the old ones. rollup() itself must do
+             the refresh now (via LXDash.compute()), not this test. */
+          after = LXStd.rollup();
+        } finally {
+          LX.state.assump.down = prevDown;
+          LX.dealBump();
+          LXDash.render();
+        }
+        return {
+          empty: false,
+          capKnown: before.per.cap.meets + before.per.cap.fails,
+          beoccKnown: before.per.beocc.meets + before.per.beocc.fails,
+          sampled: before.n,
+          busted: JSON.stringify(before.per) !== JSON.stringify(after.per),
+        };
+      });
+      if (std && !std.empty) {
+        if (!(std.capKnown > 0)) errs.push('standards rollup: cap rate requirement is "unknown" for all ' + std.sampled + ' sampled properties — the wrong field is being read from the row');
+        if (!(std.beoccKnown > 0)) errs.push('standards rollup: break-even occupancy requirement is "unknown" for all ' + std.sampled + ' sampled properties — the wrong field is being read from the row');
+        if (!std.busted) errs.push('standards rollup did not change after an assumption change — cache key ignores state.assump');
+      }
+
+      // underwrite.js cached s.maxOffer/s.gap only ever got filled once and
+      // was never invalidated when the buy-box target changed, so the solver
+      // tile could show a stale max-offer number under the CURRENT target's
+      // name. Switch the target and confirm the solved number actually moves.
+      const uwStale = await page.evaluate(async () => {
+        if (!window.LXUW) return null;
+        const l = LX.allListings().find(x => x.price > 0 && (x.units || 1) <= 4);
+        if (!l) return {skip: true};
+        LXUW.openSheet(l.id);
+        await new Promise(r => setTimeout(r, 500));
+        const chip = document.querySelector('#bbtarget .chip');
+        const otherChip = [...document.querySelectorAll('#bbtarget .chip')].find(c => c.dataset.t !== LXUW.bb.target);
+        if (!otherChip) return {skip: true};
+        const readMo = () => { const v = document.querySelector('.solver .v'); return v ? v.textContent : null; };
+        const before = readMo();
+        otherChip.click();
+        await new Promise(r => setTimeout(r, 300));
+        LXUW.openSheet(l.id);
+        await new Promise(r => setTimeout(r, 500));
+        const after = readMo();
+        return {skip: false, before, after};
+      });
+      if (uwStale && !uwStale.skip) {
+        if (uwStale.before === uwStale.after) {
+          errs.push('underwriting sheet: max offer did not change after switching the buy-box target — ' +
+            'stale scenario cache (' + uwStale.before + ')');
+        }
+      }
+
+      // records.js's fullAddr() used to hardcode CA for every county outside
+      // three Louisiana parishes — every Growth Corridor property (Phoenix,
+      // Columbus, Savannah, ...) got a fabricated state. None of this fleet's
+      // synthetic editions set l.state/BA.region.state/EDITION_STATE, so the
+      // honest result is the placeholder, never a guessed state.
+      const addr = await page.evaluate(() => {
+        if (!window.LXRec) return null;
+        const l = LX.allListings()[0];
+        return LXRec.fullAddr(Object.assign({}, l, {state: undefined}));
+      });
+      if (addr && !/\[STATE/.test(addr)) {
+        errs.push('records.js fullAddr() guessed a state with none on record: ' + addr);
+      }
+      // ...and the positive case: this fleet never exercises a real
+      // single-state edition (none set EDITION_STATE), so construct the
+      // three resolution paths directly — this is the only way to prove
+      // fullAddr() actually RESOLVES a correct state, not just that it
+      // declines to guess one when it has nothing.
+      const addrResolved = await page.evaluate(() => {
+        if (!window.LXRec) return null;
+        const l = LX.allListings()[0];
+        const out = { lState: LXRec.fullAddr(Object.assign({}, l, {state: 'Arizona'})) };
+        const prevRegion = window.BA && window.BA.region;
+        if (window.BA) window.BA.region = Object.assign({}, prevRegion, {state: 'Ohio'});
+        out.regionState = LXRec.fullAddr(Object.assign({}, l, {state: undefined}));
+        if (window.BA) window.BA.region = prevRegion;
+        const prevEd = LX.EDITION_STATE;
+        LX.EDITION_STATE = 'Georgia';
+        out.editionState = LXRec.fullAddr(Object.assign({}, l, {state: undefined}));
+        LX.EDITION_STATE = prevEd;
+        return out;
+      });
+      if (addrResolved) {
+        if (!/Arizona/.test(addrResolved.lState)) errs.push('records.js fullAddr() did not use l.state: ' + addrResolved.lState);
+        if (!/Ohio/.test(addrResolved.regionState)) errs.push('records.js fullAddr() did not fall back to BA.region.state: ' + addrResolved.regionState);
+        if (!/Georgia/.test(addrResolved.editionState)) errs.push('records.js fullAddr() did not fall back to LX.EDITION_STATE: ' + addrResolved.editionState);
+      }
+
+      // Prelint's follow-up: the honest placeholder is right for a person
+      // reading "Copy address", but feeding it into the live FEMA query
+      // guarantees a dead search a user could misread as "no flood risk"
+      // rather than "state unknown" — fullAddr(l, true) must omit the state
+      // there instead of embedding the bracketed text.
+      const addrQuery = await page.evaluate(() => {
+        if (!window.LXRec) return null;
+        const l = LX.allListings()[0];
+        return LXRec.fullAddr(Object.assign({}, l, {state: undefined}), true);
+      });
+      if (addrQuery && /\[STATE/.test(addrQuery)) {
+        errs.push('records.js fullAddr(l, true) (the FEMA query form) embeds the human-readable placeholder: ' + addrQuery);
+      }
+
+      // underwrite.js: typing an explicit 0 rent is now allowed (previously
+      // silently reverted), but a $0 modeled scenario must not be visually
+      // indistinguishable from a true $0 published rent — confirm the sheet
+      // labels a user-set zero rent explicitly.
+      const rentZero = await page.evaluate(async () => {
+        if (!window.LXUW) return null;
+        const l = LX.allListings().find(x => x.price > 0 && (x.units || 1) <= 4);
+        if (!l) return {skip: true};
+        LXUW.openSheet(l.id);
+        await new Promise(r => setTimeout(r, 500));
+        const field = document.getElementById('u_rent');
+        if (!field) return {skip: true};
+        const prevVal = field.value;
+        field.value = '0';
+        field.dispatchEvent(new Event('change', {bubbles: true}));
+        await new Promise(r => setTimeout(r, 400));
+        const labeled = /You set this to \$0/.test(document.getElementById('uwsheet').innerHTML);
+        const draftEl = document.getElementById('offerdraft');
+        const draftLabeled = draftEl ? /your figure, not a published rent/.test(draftEl.textContent) : null;
+        field.value = prevVal;
+        field.dispatchEvent(new Event('change', {bubbles: true}));
+        await new Promise(r => setTimeout(r, 300));
+        return {skip: false, labeled, draftLabeled};
+      });
+      if (rentZero && !rentZero.skip) {
+        if (!rentZero.labeled) errs.push('underwriting sheet: a user-set $0 rent is not labeled as such — indistinguishable from a published $0 rent');
+        // draftLabeled is null only if #offerdraft isn't in the DOM at all,
+        // which is its own problem the existing closing-packet check already covers.
+        if (rentZero.draftLabeled === false) errs.push('LOI draft text does not label a user-set rent — a shared memo could print it as if it were sourced');
+      }
+
+      // records.js: the FEMA query omits the state entirely when none is on
+      // record (a real partial search beats a dead one — see fullAddr(l,
+      // true)), but a reader who gets a thin or empty result needs to know
+      // why rather than reading it as a flood finding.
+      const femaNote = await page.evaluate(() => {
+        if (!window.LXRec) return null;
+        const l = LX.allListings()[0];
+        return LXRec.lockerHTML(Object.assign({}, l, {state: undefined}));
+      });
+      if (femaNote && !/carries no state, so the search above has no state/.test(femaNote)) {
+        errs.push('record locker: the FEMA entry has no gap note when the state is unresolvable');
+      }
+
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
     }

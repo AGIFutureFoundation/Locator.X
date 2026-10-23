@@ -170,6 +170,23 @@ function underwrite(l, u){ // returns full sheet numbers for financing option u.
     breakevenRent, rentCushion, breakevenRate, rateHeadroom, maxLoan125, loanGap, stress, stressPass};
 }
 function targetTest(uw){ switch(bb.target){ case 'dscr12': return uw.dscr!=null && uw.dscr>=1.2; case 'dscr10': return uw.dscr!=null && uw.dscr>=1.0; case 'coc6': return uw.coc!=null && uw.coc>=6; default: return uw.cfMo>=200; } }
+/* Fingerprints everything maxOffer()/targetTest() actually read: the scenario
+   underwrite() runs on, the buy-box target the bisection tests against, and
+   state.assump (read inside underwrite() itself, not carried on u). s.maxOffer/
+   s.gap are cached per scenario below and were never invalidated when the
+   target chip, a rehab preset, a financing option or an assumption changed —
+   the solver tile could show a stale number under a different target's name
+   while the live PASS/FAIL badge next to it (recomputed fresh every render)
+   disagreed. Matches the cache-key fix already applied to proptime.js/motion.js
+   this session for the same reason: a derived value cached without every input
+   that can move it goes stale silently. */
+function moSig(u, l){ return [u.offer, u.rehab, u.cont, u.rentMo, u.fin, u.selfManage?1:0, u.hoa, u.util, u.arv,
+  u.rehabPreset, u.finOpt&&u.finOpt.id, bb.target, JSON.stringify(L().state.assump),
+  /* s.gap and the bisection's search ceiling (hi0 below) both read
+     price0(l) directly, not u.offer -- when s.offer is explicitly set, a
+     price override changes price0(l) without changing u.offer at all, so
+     the fingerprint needs its own read of it to catch that case. */
+  l? price0(l) : null].join('~'); }
 function maxOffer(l, base){ // bisection on offer price; rent fixed
   const lo0=50000, hi0=Math.max(price0(l)*1.6, 400000); let lo=lo0, hi=hi0;
   const mk=u=>underwrite(l, Object.assign({}, base, {offer:u}));
@@ -178,9 +195,14 @@ function maxOffer(l, base){ // bisection on offer price; rent fixed
   return lo;
 }
 function price0(l){ return L().price(l); }
-function baseInputs(l, s){ const X=L(); const r=D().analyze(l); const rentMo=(s&&s.rentMo)|| r.d.rentMo; const rp=(s&&s.rehabPreset)||'none'; const rate=REHAB.find(x=>x[0]===rp)[2]; const rehab=(s&&s.rehab!=null)? s.rehab : Math.round((l.sqft||1200)*rate); const uplift = rp==='none'?1: rp==='cosmetic'?1.08: rp==='medium'?1.15:1.25;
+function baseInputs(l, s){ const X=L(); const r=D().analyze(l);
+  /* same class of bug fixed in proptime.js/recon.js this session: a truthy
+     test drops an explicitly-typed 0 (a deliberately rent-free scenario -
+     vacant, owner-occupied, a non-income unit) and silently substitutes the
+     modeled rent instead. */
+  const rentMo=(s&&s.rentMo!=null)? s.rentMo : r.d.rentMo; const rp=(s&&s.rehabPreset)||'none'; const rate=REHAB.find(x=>x[0]===rp)[2]; const rehab=(s&&s.rehab!=null)? s.rehab : Math.round((l.sqft||1200)*rate); const uplift = rp==='none'?1: rp==='cosmetic'?1.08: rp==='medium'?1.15:1.25;
   const fin=(s&&s.fin)||'conv';
-  return {offer:(s&&s.offer)||price0(l), rehab, cont:(s&&s.cont!=null)?s.cont:10, rentMo:Math.round(rentMo*((s&&s.rentMo)?1:uplift)), rentBasis:(s&&s.rentMo)? 'given' : (r.d.rentBasis||'model'), rehabPreset:rp, fin, finOpt:null, selfManage:!!(s&&s.selfManage), hoa:s&&s.hoa, util:s&&s.util, arv:s&&s.arv, analysis:r};
+  return {offer:(s&&s.offer)||price0(l), rehab, cont:(s&&s.cont!=null)?s.cont:10, rentMo:Math.round(rentMo*((s&&s.rentMo!=null)?1:uplift)), rentBasis:(s&&s.rentMo!=null)? 'given' : (r.d.rentBasis||'model'), rehabPreset:rp, fin, finOpt:null, selfManage:!!(s&&s.selfManage), hoa:s&&s.hoa, util:s&&s.util, arv:s&&s.arv, analysis:r};
 }
 function withFin(l, u){ const opts=financeOptions(l,u); u.finOpt=opts.find(o=>o.id===u.fin&&!o.disabled)||opts[0]; u.opts=opts; return u; }
 
@@ -307,7 +329,7 @@ function renderFunnel(ms){
 function autoUW(ms){
   const X=L(); const btn=$('#autouw'); btn.disabled=true; const prog=$('#autoprog'); prog.innerHTML='<div class="uwprog"><i style="width:0%"></i></div><span id="uwpct"></span>';
   const bar=prog.querySelector('i'); let i=0; const todo=ms.slice(0, 400);
-  const step=()=>{ const batch=todo.slice(i, i+25); batch.forEach(r=>{ const s=S(r.l.id); const base=withFin(r.l, baseInputs(r.l, s)); const mo=maxOffer(r.l, base); s.maxOffer=mo? Math.round(mo):null; s.gap= mo? (mo/price0(r.l)-1)*100 : null; if(s.stage==='new') s.stage= 'scr'; }); i+=batch.length; bar.style.width=(i/todo.length*100).toFixed(0)+'%'; prog.querySelector('#uwpct').textContent=` ${i}/${todo.length} screened`; if(i<todo.length) setTimeout(step, 10); else { saveScen(); btn.disabled=false; X.toast(`${todo.length} properties screened against ${TARGETS.find(t=>t[0]===bb.target)[1]}`); render(); } };
+  const step=()=>{ const batch=todo.slice(i, i+25); batch.forEach(r=>{ const s=S(r.l.id); const base=withFin(r.l, baseInputs(r.l, s)); const mo=maxOffer(r.l, base); s.maxOffer=mo? Math.round(mo):null; s.gap= mo? (mo/price0(r.l)-1)*100 : null; s.moSig=moSig(base, r.l); if(s.stage==='new') s.stage= 'scr'; }); i+=batch.length; bar.style.width=(i/todo.length*100).toFixed(0)+'%'; prog.querySelector('#uwpct').textContent=` ${i}/${todo.length} screened`; if(i<todo.length) setTimeout(step, 10); else { saveScen(); btn.disabled=false; X.toast(`${todo.length} properties screened against ${TARGETS.find(t=>t[0]===bb.target)[1]}`); render(); } };
   step();
 }
 function gapColor(g){ return g==null? 'var(--muted)' : g>=0? 'var(--good)' : 'var(--cat3)'; }
@@ -346,7 +368,8 @@ function renderSheet(){
   const uwAfter = applied.length? underwrite(l, Object.assign({},u,{rehab:u.rehab+devCapex, rentMo:u.rentMo+devRent, arv: uw.arv+devValue})) : null;
   let _bestFin=null,_bestCf=-1e18; u.opts.forEach(o=>{ if(o.disabled) return; const t=underwrite(l, Object.assign({},u,{finOpt:o})); if(t.cfMo>_bestCf){ _bestCf=t.cfMo; _bestFin=o.id; } });
   const finCards=u.opts.map(o=>{ if(o.disabled) return `<div class="fincard" style="opacity:.45"><b>${o.name}</b><div class="d">${o.note}</div><div class="cf">n/a</div></div>`; const t=underwrite(l, Object.assign({},u,{finOpt:o})); return `<div class="fincard" role="button" tabindex="0" aria-pressed="${u.finOpt.id===o.id}" data-fin="${o.id}"><b>${o.name}${o.id===_bestFin?' <span style="color:var(--good);font-size:10px">★ best cash flow</span>':''}</b><div class="d">${o.note} · ${o.rate.toFixed(2)}%</div><div class="cf ${t.cfMo>0?'pos':'neg'}">${(t.cfMo>0?'+':'')+X.fmt$(t.cfMo)}/mo · ${t.dscr?t.dscr.toFixed(2):'—'}</div></div>`; }).join('');
-  const mo=s.maxOffer!=null? s.maxOffer : (()=>{ const v=maxOffer(l,u); if(v){ s.maxOffer=Math.round(v); s.gap=(v/price0(l)-1)*100; saveScen(); } return s.maxOffer; })();
+  const _moSig=moSig(u, l);
+  const mo=(s.maxOffer!=null && s.moSig===_moSig)? s.maxOffer : (()=>{ const v=maxOffer(l,u); s.maxOffer=v? Math.round(v):null; s.gap=v? (v/price0(l)-1)*100 : null; s.moSig=_moSig; saveScen(); return s.maxOffer; })();
   const tname=TARGETS.find(t=>t[0]===bb.target)[1];
   const ok=targetTest(uw);
   /* The due-diligence list used to be twelve hardcoded strings, written for San
@@ -365,7 +388,7 @@ function renderSheet(){
   const offers=[0.85,0.9,0.95,1,1.05].map(k=>Math.round(u.offer*k/1000)*1000);
   const sens=`<table class="sens"><tr><th>Offer ↓ / Rate →</th>${rates.map(r=>`<th>${r.toFixed(2)}%</th>`).join('')}</tr>${offers.map(of=>`<tr><td>${X.fmt$(of)}${of===u.offer?' ←':''}</td>${rates.map(rt=>{ const t=underwrite(l, Object.assign({},u,{offer:of, finOpt:Object.assign({},u.finOpt,{rate:rt})})); return `<td class="${t.cfMo>0?'pos':'neg'}">${(t.cfMo>0?'+':'')+X.fmt$(t.cfMo)}</td>`; }).join('')}</tr>`).join('')}</table>`;
   const devLine=applied.length? `Planned improvements: ${applied.map(o=>o.name+' ('+X.fmt$(o.capex)+')').join('; ')}\n` : '';
-  const draft=`LETTER OF INTENT — NON-BINDING\n\nProperty: ${window.LXPACKET? LXPACKET.addressLine(l) : [l.addr,l.city,l.zip].filter(Boolean).join(', ')}\nAPN: ${l.apn||'—'}\n\nPurchase price: ${X.fmtFull(u.offer)}\nEarnest money: ${X.fmtFull(Math.round(u.offer*0.03))} (3%)\nFinancing: ${u.finOpt.name} — ${u.finOpt.down}% down at ~${u.finOpt.rate.toFixed(2)}%\nInspection contingency: 10 days\nFinancing contingency: 21 days\nClose of escrow: 30 days\n${(l.units||1)>1?'Condition: delivery of estoppel certificates and current rent roll\n':''}${u.rehab>0?`Basis for price: ${X.fmtFull(u.rehab)} of documented repair scope (attached)\n`:''}${devLine}\nRationale (for your negotiation, not the letter):\n- At ${X.fmtFull(price0(l))} the property runs ${uw.cfMo<0?X.fmt$(-uw.cfMo)+'/mo negative':X.fmt$(uw.cfMo)+'/mo positive'} at ${u.finOpt.down}% down.\n- ${mo? `It meets "${tname}" at ${X.fmtFull(Math.round(mo))}.` : `It does not meet "${tname}" at any realistic price with these rents.`}\n- Rent basis: $${X.fmtN(u.rentMo)}/mo (${X.esc(u.analysis.d.rentHow)}).\n\nThis summary was generated by locator.x from public records and index data. Verify everything; not legal advice.`;
+  const draft=`LETTER OF INTENT — NON-BINDING\n\nProperty: ${window.LXPACKET? LXPACKET.addressLine(l) : [l.addr,l.city,l.zip].filter(Boolean).join(', ')}\nAPN: ${l.apn||'—'}\n\nPurchase price: ${X.fmtFull(u.offer)}\nEarnest money: ${X.fmtFull(Math.round(u.offer*0.03))} (3%)\nFinancing: ${u.finOpt.name} — ${u.finOpt.down}% down at ~${u.finOpt.rate.toFixed(2)}%\nInspection contingency: 10 days\nFinancing contingency: 21 days\nClose of escrow: 30 days\n${(l.units||1)>1?'Condition: delivery of estoppel certificates and current rent roll\n':''}${u.rehab>0?`Basis for price: ${X.fmtFull(u.rehab)} of documented repair scope (attached)\n`:''}${devLine}\nRationale (for your negotiation, not the letter):\n- At ${X.fmtFull(price0(l))} the property runs ${uw.cfMo<0?X.fmt$(-uw.cfMo)+'/mo negative':X.fmt$(uw.cfMo)+'/mo positive'} at ${u.finOpt.down}% down.\n- ${mo? `It meets "${tname}" at ${X.fmtFull(Math.round(mo))}.` : `It does not meet "${tname}" at any realistic price with these rents.`}\n- Rent basis: $${X.fmtN(u.rentMo)}/mo (${u.rentBasis==='given'? 'your figure, not a published rent' : X.esc(u.analysis.d.rentHow)}).\n\nThis summary was generated by locator.x from public records and index data. Verify everything; not legal advice.`;
   box.innerHTML=`<div class="sheet"><div class="sheethead">${D().ring(u.analysis.score,u.analysis.cat,84,true)}<div style="flex:1;min-width:260px"><div class="eyebrow">Underwriting sheet · ${STG[s.stage][1]}</div><h3>${X.esc(l.addr)}, ${X.esc(l.city)}</h3><div style="font-size:13px;color:var(--muted)">Recorded ${X.fmt$(price0(l))} (${l.priceDate||'—'}) · ${X.esc(l.kind)}${l.sqft?' · '+X.fmtN(l.sqft)+' sf':''}${l.year?' · built '+l.year:''} · ${X.esc(l.nb||l.anb||l.zip||'')}</div>
     <div class="solver"><div><div class="v">${mo? X.fmt$(mo) : 'No price'}</div><div class="l">max offer for ${X.esc(tname)}</div></div><div><div class="v" style="color:${gapColor(s.gap)}">${s.gap!=null? (s.gap>0?'+':'')+s.gap.toFixed(0)+'%':'—'}</div><div class="l">vs recorded price</div></div><div><div class="v" style="color:${ok?'var(--good)':'var(--bad)'}">${ok?'PASSES':'FAILS'}</div><div class="l">at your current offer</div></div><button class="btn" id="useMax" ${mo?'':'disabled'}>Use max offer</button></div></div>
     <div style="display:flex;flex-direction:column;gap:6px"><button class="btn" id="uwmap">Open on map</button><button class="btn" id="uwres">Research report</button><button class="btn primary" id="uwpdf">Export PDF memo</button><button class="btn" id="uwreel">Render video reel</button><button class="btn" id="uwcopy">Copy sheet</button><button class="btn" id="uwdesk" title="This case in the standalone worksheet's JSON shape — insurance ships blank because the app only has an estimate and that field requires a quote">Desk worksheet JSON</button>${window.LXVoice?LXVoice.speakButton('uwsheet-'+l.id,null,'&#128266; Listen to summary'):''}<button class="btn" id="uwclose">Close</button></div></div>
@@ -373,6 +396,7 @@ function renderSheet(){
     <div class="in"><h4>Inputs</h4>
       <div class="inrow"><span>Offer price $</span><input type="number" id="u_offer" value="${u.offer}" step="10000"></div>
       <div class="inrow"><span>Rent (all units) $/mo</span><input type="number" id="u_rent" value="${u.rentMo}"></div>
+      ${u.rentMo===0 && u.rentBasis==='given'? '<p style="font-size:11px;color:var(--warn);margin:2px 0 0">You set this to $0 — not a published figure. DSCR, cash-on-cash and cap rate below are computed at zero rent, the same as any other number here.</p>' : ''}
       <h4 style="margin-top:12px">Rehab</h4>
       <div class="presets">${REHAB.map(rp=>`<button data-rp="${rp[0]}" aria-pressed="${u.rehabPreset===rp[0]}">${rp[1]}</button>`).join('')}</div>
       <div class="inrow"><span>Rehab budget $</span><input type="number" id="u_rehab" value="${u.rehab}" step="5000"></div>
@@ -483,7 +507,12 @@ function renderSheet(){
   </div></div>`;
   const upd=(k,v)=>{ s[k]=v; saveScen(); renderSheet(); };
   $('#u_offer').addEventListener('change', e=>upd('offer', +e.target.value||price0(l)));
-  $('#u_rent').addEventListener('change', e=>upd('rentMo', +e.target.value||u.rentMo));
+  /* +e.target.value||u.rentMo silently rejected a typed 0: the user cannot
+     model a deliberately rent-free scenario (vacant, owner-occupied, a
+     non-income unit) because typing "0" and committing just restores the
+     previous rent with no indication anything was rejected. Matches the
+     empty-string pattern #u_arv/#u_hoa/#u_util already use correctly below. */
+  $('#u_rent').addEventListener('change', e=>{ const t=e.target.value.trim(); upd('rentMo', t!==''&&isFinite(+t)? +t : u.rentMo); });
   $('#u_rehab').addEventListener('change', e=>upd('rehab', +e.target.value||0));
   $('#u_cont').addEventListener('change', e=>upd('cont', +e.target.value||0));
   $('#u_arv').addEventListener('change', e=>upd('arv', e.target.value===''? null : +e.target.value));

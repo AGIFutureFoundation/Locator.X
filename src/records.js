@@ -24,10 +24,33 @@
   let KB=(function(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ return {}; } })();
   const saveKB=()=>{ try{ localStorage.setItem(KEY, JSON.stringify(KB)); }catch(e){} };
 
-  /* full mailing-style address, used for the search pastes and FEMA */
-  function fullAddr(l){
-    const st = /^(Orleans|Jefferson|East Baton Rouge)$/.test(l.county||'') ? 'LA' : 'CA';
-    return [l.addr, l.city, st + (l.zip? ' '+l.zip : '')].filter(Boolean).join(', ');
+  /* full mailing-style address, used for the search pastes and FEMA.
+     Every edition this ships in is not Bay Area or Louisiana — the Growth
+     Corridor editions (uscorridor, usnew5, uswide) cover Phoenix, Columbus,
+     Savannah, Syracuse, Reno and more, none of which this used to recognise:
+     a hardcoded LA-parish check, CA for everything else, stamped the wrong
+     state onto every corridor property's FEMA query and "Copy address" text.
+     Same resolution order as packet.js's stateName() (the record's own
+     field first, then the data module's region, then the per-edition
+     constant build_state.py rewrites) and the same honesty rule as its
+     addressLine(): never invent a state the record does not carry. */
+  function stateOf(l){
+    if(l && l.state) return l.state;
+    try{ if(window.BA && BA.region && BA.region.state) return BA.region.state; }catch(e){}
+    try{ const X = window.LX; if(X && X.EDITION_STATE) return X.EDITION_STATE; }catch(e){}
+    return null;
+  }
+  /* forQuery:true is for a string handed to an external search (FEMA below) --
+     there, the bracketed placeholder would be a literal part of the query, not
+     a note a person reads: it guarantees a dead search that a user could read
+     as "no flood risk" rather than "state unknown". Omitting the state leaves
+     a real, if partial, address+ZIP search instead of one certain to fail.
+     The default (false) keeps the placeholder, because the "Copy address"
+     button's text IS read by a person, who needs to see the gap to fill it. */
+  function fullAddr(l, forQuery){
+    const st = stateOf(l);
+    const tail = (st ? st : forQuery ? '' : '[STATE — not in this record]') + (l.zip? ' '+l.zip : '');
+    return [l.addr, l.city, tail.trim()].filter(Boolean).join(', ');
   }
 
   /* ---- jurisdiction source tables -------------------------------------
@@ -45,7 +68,7 @@
     {g:'Imagery', n:'OpenStreetMap (building footprints)', deep:true, why:'Community-mapped footprints, building tags and address points; often carries a building:levels tag the assessor does not publish.',
      u:l=>`https://www.openstreetmap.org/#map=19/${l.lat}/${l.lng}`},
     {g:'Hazard', n:'FEMA Flood Map Service Center', deep:true, why:'Opens with the address pre-filled and a pin dropped. The effective FIRM panel is the document that governs the flood-insurance requirement — not any zone label carried in a parcel file.',
-     u:l=>`https://msc.fema.gov/portal/search?AddressQuery=${enc(fullAddr(l))}#searchresultsanchor`},
+     u:l=>`https://msc.fema.gov/portal/search?AddressQuery=${enc(fullAddr(l, true))}#searchresultsanchor`},
     {g:'Hazard', n:'USGS National Map viewer', deep:true, why:'Topography, hydrography and elevation at the parcel.',
      u:l=>`https://apps.nationalmap.gov/viewer/?extent=${(+l.lng-0.004).toFixed(4)},${(+l.lat-0.003).toFixed(4)},${(+l.lng+0.004).toFixed(4)},${(+l.lat+0.003).toFixed(4)}`},
     {g:'Context', n:'Census geography for this point', deep:true, why:'Returns the tract, block group and block containing the parcel — the key for pulling ACS income, tenure and vacancy for the immediate neighborhood.',
@@ -187,11 +210,19 @@
         <div style="display:grid;gap:6px">${groups[g].map(s=>{
           let href=''; try{ href=s.u(l)||''; }catch(err){ href=''; }
           if(!href) return '';
+          /* the FEMA query omits the state entirely when none is on record
+             (fullAddr(l, true) — see the comment there), which leaves a real
+             but weaker address+ZIP search rather than a dead one. That is the
+             right call, but a reader who gets an empty or wrong-city result
+             needs to know WHY rather than reading it as a flood finding. */
+          const why = (s.n === 'FEMA Flood Map Service Center' && !stateOf(l))
+            ? s.why + ' This record carries no state, so the search above has no state to narrow it — a thin or empty result is a gap in the record, not a flood determination.'
+            : s.why;
           return `<div style="display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:7px 9px">
             <span style="flex:none;font-size:9.5px;font-weight:700;letter-spacing:.04em;padding:2px 5px;border-radius:4px;background:${s.deep?'rgba(46,134,193,.15)':'rgba(140,140,140,.15)'};color:${s.deep?'#1f6391':'var(--muted)'}">${s.deep?'DIRECT':'SEARCH'}</span>
             <span style="flex:1;min-width:0">
               <a href="${esc(href)}" target="_blank" rel="noopener"><b>${esc(s.n)}</b> &#8599;</a>
-              <span style="display:block;font-size:11.5px;color:var(--ink2);margin-top:2px">${s.why}</span>
+              <span style="display:block;font-size:11.5px;color:var(--ink2);margin-top:2px">${why}</span>
             </span>
             <button class="btn" data-kbadd="${esc(href)}" data-kblabel="${esc(s.n)}" style="flex:none;padding:2px 8px;font-size:11px">Save</button>
           </div>`; }).join('')}</div>`).join('')}

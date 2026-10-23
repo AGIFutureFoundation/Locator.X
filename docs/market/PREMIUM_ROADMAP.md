@@ -39,7 +39,7 @@ value to blocker in the whole plan.
 ### 1.1 The strategy switchboard — **shipped**
 
 One property, every strategy, side by side: buy-and-hold, flip, BRRRR, house hack,
-conversion. `src/underwrite.js` (599), `src/conv.js` (111), `src/dev.js` (158) and
+conversion. `src/underwrite.js` (628), `src/conv.js` (111), `src/dev.js` (158) and
 `src/hacks.js` (142) each answered one and none of them answered together;
 `src/switchboard.js` (455) asks all five through those modules' own public interfaces
 and re-derives none of them — the underwriting desk's own sheet, the house-hack
@@ -151,7 +151,7 @@ the ordered probes and [`../PULL_RECIPE.md`](../PULL_RECIPE.md) the mechanics.
 
 ### 2.3 Document and title retrieval, linked not mirrored
 
-DataTree sells deeds, mortgages and liens. `src/records.js` (250) already assembles the
+DataTree sells deeds, mortgages and liens. `src/records.js` (281) already assembles the
 sources that exist per jurisdiction and keeps what the user gathers.
 
 - **Why** — closes the Evaluate job without licensing a document corpus.
