@@ -73,7 +73,7 @@ six either.
 | Capability | Category tools | Locator.X | Status |
 |---|---|---|---|
 | Disposition lists | DealMachine | `src/geoexport.js` (199) filtered set as an interchange file | **partial** |
-| Investor-facing memo | *nobody* | `src/uwexport.js` (370) — self-contained PDF memorandum and a rendered video reel, no external libraries | **ships** |
+| Investor-facing memo | *nobody* | `src/uwexport.js` (377) — self-contained PDF memorandum and a rendered video reel, no external libraries | **ships** |
 | Desk interoperability | *nobody* | `src/deskws.js` (91) + [`INTEROP.md`](../INTEROP.md), the worksheet JSON shape and the no-laundering rule | **ships** — no equivalent |
 
 ## What the report asked for, in its own terms
@@ -85,7 +85,7 @@ The research names five gaps. Scored honestly:
 | "Replace the app stack" — one place for data, underwriting and portfolio | **Two of three.** Data and underwriting are in one file; portfolio and operations are not built. |
 | "Make every decision explainable" | **Already the architecture.** `src/evidence.js`, `src/sources.js`, `src/comps.js` and `src/predict.js`'s backtest exist for this reason. It is not a roadmap item here; it is the reason the roadmap is slow. |
 | An AI agent system | **Partial.** `src/rag.js` (224) is BM25 retrieval over the research corpus, in-page and offline, with grounded citation when the viewer grants the capability; `src/assistant.js` (174) and `src/walkthrough.js` (195) guide. No autonomous agent takes an action on a user's behalf, by design. |
-| Strategy switchboard — compare hold / flip / BRRRR / STR on one property | **Ships**, as `src/switchboard.js` (455). Five strategies over one record, each column graded by its **weakest** input rather than its average, and columns resting on different kinds of input are shown side by side but deliberately **not ranked**. Where a strategy cannot be evaluated the column names the missing input; where the building rules it out, it says what about the building. |
+| Strategy switchboard — compare hold / flip / BRRRR / STR on one property | **Ships**, as `src/switchboard.js` (476). Five strategies over one record, each column graded by its **weakest** input rather than its average, and columns resting on different kinds of input are shown side by side but deliberately **not ranked**. Where a strategy cannot be evaluated the column names the missing input; where the building rules it out, it says what about the building. |
 | Close the loop after acquisition | **Not built.** See Operate, above. |
 
 ## What this platform will not build, and why
