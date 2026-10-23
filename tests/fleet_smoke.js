@@ -2809,6 +2809,59 @@ async function main() {
         errs.push('comps.js pool() did not pick up a newly-imported record without an explicit invalidate() call');
       }
 
+      // correlate.js's edZips() used to cache the edition's ZIP set forever
+      // with no invalidation — an import landing in a novel ZIP silently
+      // stayed excluded from every per-ZIP correlation pair.
+      const edZipsTest = await page.evaluate(() => {
+        if (!window.LXCorrelate || !LXCorrelate.edZips) return null;
+        const novelZip = 'fleetsmoke99999';
+        const base = LX.allListings()[0];
+        const synth = Object.assign({}, base, {id: 'edzips_synth_' + Date.now(), src: 'imp', zip: novelZip});
+        let hasNovel;
+        try {
+          LX.state.imported.push(synth);
+          hasNovel = !!LXCorrelate.edZips()[novelZip];
+        } finally {
+          LX.state.imported.pop();
+        }
+        return {hasNovel};
+      });
+      if (edZipsTest && !edZipsTest.hasNovel) {
+        errs.push("correlate.js edZips() did not pick up a newly-imported record's ZIP without an explicit cache reset");
+      }
+
+      // corp.js's counts() used to silently cap its proximity scan at the
+      // first 60,000 records with no disclosure — on a team/institutional-
+      // tier edition (tiers.js: up to 302,612 records shipped) every count
+      // in the table, its sort and its drill-down ran on a truncated,
+      // unlabeled number. Confirms the disclosure renders when capped.
+      const corpCapTest = await page.evaluate(() => {
+        if (!window.LXCorp || !LXCorp.counts) return null;
+        const real = LX.allListings();
+        const anyGeo = real.find(x => x.lat != null);
+        if (!anyGeo) return {skip: true};
+        const host = document.querySelector('#corproot');
+        const savedCorp = window.LXCORP, savedBuilt = host ? host.dataset.built : undefined;
+        window.LXCORP = [{company: 'FleetSmokeTestCo', project: 'Synthetic plant', city: 'Test City', state: 'TX',
+          lat: anyGeo.lat, lng: anyGeo.lng, investment: 1e6, jobs: 100, announced: '2025-01', status: 'Under construction', url: 'https://example.com'}];
+        const big = [];
+        while (big.length <= LXCorp.COUNT_CAP) big.push(...real);
+        const origAllListings = LX.allListings;
+        LX.allListings = () => big;
+        let text;
+        try {
+          if (host) { delete host.dataset.built; LXCorp.render(); text = host.textContent; }
+        } finally {
+          LX.allListings = origAllListings;
+          window.LXCORP = savedCorp;
+          if (host) { if (savedBuilt === undefined) delete host.dataset.built; else host.dataset.built = savedBuilt; host.innerHTML = ''; }
+        }
+        return {skip: !host, text};
+      });
+      if (corpCapTest && !corpCapTest.skip && !/scanned against the first .* records in this edition, so both counts run low/.test(corpCapTest.text)) {
+        errs.push('corp.js render() does not disclose the proximity-count cap on an edition larger than COUNT_CAP');
+      }
+
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
     }

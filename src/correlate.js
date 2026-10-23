@@ -63,9 +63,17 @@ function lastOf(arr){ if(!arr) return null; for(var i = arr.length - 1; i >= 0; 
    actually holds parcels in, or a "correlation" for a 0%-coverage edition
    like usnew5 would silently describe a different state's index series and
    call it this edition's data. */
-var _ez = null;
+var _ez = null, _ezN = null;
 function edZips(){
-  if(_ez) return _ez;
+  var n = 0;
+  try{ n = window.LX.allListings().length; }catch(e){}
+  /* _ez used to be cached forever with no invalidation — an import (CSV
+     paste, Scout, "save as subject") that lands in a ZIP this edition
+     didn't already hold would silently fall outside edZips(), so every
+     per-ZIP correlation pair below kept excluding it, same
+     allListings().length signature app.js's own cache uses. */
+  if(_ez && _ezN === n) return _ez;
+  _ezN = n;
   _ez = {};
   try{
     var all = window.LX.allListings();
@@ -248,5 +256,5 @@ function render(){
   if(window.LXPanels) setTimeout(function(){ LXPanels.scan('predict'); }, 60);
 }
 
-window.LXCorrelate = {render: render, computePairs: computePairs, pearson: pearson};
+window.LXCorrelate = {render: render, computePairs: computePairs, pearson: pearson, edZips: edZips};
 })();

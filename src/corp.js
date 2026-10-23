@@ -58,9 +58,16 @@ function nearest(l){
   if(dead && dd<=40){ out.dead=dead; out.deadKm=dd; }
   return out;
 }
+const COUNT_CAP=60000;
+/* This used to scan only the first COUNT_CAP records with no disclosure —
+   on an institutional-tier edition (tiers.js: team maxes at 150,000,
+   institutional is uncapped; app.js has shipped 302,612-record editions)
+   that silently undercounted every proximity score and the table sorts
+   and the drill-down both ran on the truncated number. Disclosed next to
+   the counts now, matching dash3d.js's own CUBE_CAP precedent. */
 function counts(p, radiusKm){
   const X=L(); const all=X.allListings(); let n=0;
-  const cap=Math.min(all.length, 60000);
+  const cap=Math.min(all.length, COUNT_CAP);
   for(let i=0;i<cap;i++){ const l=all[i]; if(l.lat==null) continue; if(dist(l.lat,l.lng,p.lat,p.lng)<=radiusKm) n++; }
   return n;
 }
@@ -95,6 +102,7 @@ function render(){
   const ps=P().slice();
   if(!ps.length){ host.innerHTML=''; return; }
   host.dataset.built='1';
+  const totalRecords=X.allListings().length, capped=totalRecords>COUNT_CAP;
   // only projects with tracked properties nearby lead the list
   const rows=ps.map(p=>({p, n10:counts(p,10), n25:counts(p,25)}))
     .sort((a,b)=>(!!a.p.dead-!!b.p.dead)||(b.n10-a.n10)||((b.p.investment||0)-(a.p.investment||0)));
@@ -108,7 +116,7 @@ function render(){
     <p class="eyebrow">Corporate capital · researched ${new Date().toISOString().slice(0,7)}</p>
     <h3 style="margin:2px 0 6px">${live.length} live projects — ${fmt$(totCap)} of disclosed capital, ${totJobs.toLocaleString()} announced jobs</h3>
     ${gone.length?`<p style="font-size:13px;color:var(--ink2);max-width:88ch;margin:0 0 8px;border-left:3px solid var(--bad);padding-left:9px"><b>${gone.length} further project${gone.length===1?' was':'s were'} cancelled or closed, removing ${fmt$(lostCap)} and ${lostJobs.toLocaleString()} jobs from ${gone.length===1?'its':'their'} corridor${gone.length===1?'':'s'}.</b> They are kept in this table and struck through. They carry <b>zero</b> weight in every proximity score in this app — a cancelled announcement must never read as pressure. A completed cancellation is often better evidence than a live announcement, because the story finished.</p>`:''}
-    <p class="chartnote">Verified announcements from company newsrooms, Louisiana Economic Development and planning records. Corporate capital reaches housing on a lag — construction crews first, then permanent staff, then rents — so the useful window is the gap between the announcement and the ribbon cutting. Every row links to the source that was actually read; where a company did not disclose capital or jobs, this says so rather than guessing. Counts are tracked properties in THIS edition within 10 and 25 km.</p>
+    <p class="chartnote">Verified announcements from company newsrooms, Louisiana Economic Development and planning records. Corporate capital reaches housing on a lag — construction crews first, then permanent staff, then rents — so the useful window is the gap between the announcement and the ribbon cutting. Every row links to the source that was actually read; where a company did not disclose capital or jobs, this says so rather than guessing. Counts are tracked properties in THIS edition within 10 and 25 km${capped?' — scanned against the first '+X.fmtN(COUNT_CAP)+' of '+X.fmtN(totalRecords)+' records in this edition, so both counts run low':''}.</p>
     <div class="tablewrap" style="margin-top:8px"><table class="grid"><thead><tr><th>Company</th><th>Project</th><th>Where</th><th class="r">Capital</th><th class="r">Jobs</th><th>Announced</th><th>Status</th><th class="r">≤10km</th><th class="r">≤25km</th><th></th></tr></thead>
     <tbody>${rows.map(r=>{ const p=r.p; return `<tr data-corp="${esc(p.company+p.city)}"${p.dead?' style="opacity:.72"':''}>
       <td><b${p.dead?' style="text-decoration:line-through"':''}>${X.esc(p.company)}</b>${p.dead?' <span style="color:var(--bad);font-size:10px;font-weight:700">CANCELLED</span>':(p.atRisk?' <span style="color:var(--warn);font-size:10px;font-weight:700">AT RISK</span>':'')}</td><td style="font-size:12px;max-width:340px">${X.esc(p.project)}</td>
@@ -133,5 +141,5 @@ function render(){
   }));
   try{ if(window.LXPanels) LXPanels.scan('scout'); }catch(e){}
 }
-window.LXCorp={render, nearest, addMarkers, dist, weight, standing, fmt$};
+window.LXCorp={render, nearest, addMarkers, dist, weight, standing, fmt$, counts, COUNT_CAP};
 })();
