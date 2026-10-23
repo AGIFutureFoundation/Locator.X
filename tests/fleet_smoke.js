@@ -2841,7 +2841,7 @@ async function main() {
         const anyGeo = real.find(x => x.lat != null);
         if (!anyGeo) return {skip: true};
         const host = document.querySelector('#corproot');
-        const savedCorp = window.LXCORP, savedBuilt = host ? host.dataset.built : undefined;
+        const savedCorp = window.LXCORP;
         window.LXCORP = [{company: 'FleetSmokeTestCo', project: 'Synthetic plant', city: 'Test City', state: 'TX',
           lat: anyGeo.lat, lng: anyGeo.lng, investment: 1e6, jobs: 100, announced: '2025-01', status: 'Under construction', url: 'https://example.com'}];
         const big = [];
@@ -2854,7 +2854,13 @@ async function main() {
         } finally {
           LX.allListings = origAllListings;
           window.LXCORP = savedCorp;
-          if (host) { if (savedBuilt === undefined) delete host.dataset.built; else host.dataset.built = savedBuilt; host.innerHTML = ''; }
+          // leave the host unbuilt rather than restoring a stale "built"
+          // flag with no matching content — render() early-returns whenever
+          // dataset.built is set (src/corp.js), so a restored flag paired
+          // with wiped innerHTML would permanently blank this panel for the
+          // rest of the fleet run; an "unbuilt" host just re-renders clean
+          // the next time anything calls render() on it.
+          if (host) { delete host.dataset.built; host.innerHTML = ''; }
         }
         return {skip: !host, text};
       });

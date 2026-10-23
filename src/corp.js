@@ -62,9 +62,14 @@ const COUNT_CAP=60000;
 /* This used to scan only the first COUNT_CAP records with no disclosure —
    on an institutional-tier edition (tiers.js: team maxes at 150,000,
    institutional is uncapped; app.js has shipped 302,612-record editions)
-   that silently undercounted every proximity score and the table sorts
-   and the drill-down both ran on the truncated number. Disclosed next to
-   the counts now, matching dash3d.js's own CUBE_CAP precedent. */
+   that silently undercounted every proximity score and the table sort.
+   Disclosed next to the counts now, matching dash3d.js's own CUBE_CAP
+   precedent. The drill-down click handler below reads the same capped
+   window so the number on the button can never be lower than what
+   clicking it lists — it was previously unbounded, which on a capped
+   edition would have shown MORE hits than the button's own count,
+   specifically biased toward state.imported (allListings() appends it
+   after BA.listings, so it falls outside the capped window first). */
 function counts(p, radiusKm){
   const X=L(); const all=X.allListings(); let n=0;
   const cap=Math.min(all.length, COUNT_CAP);
@@ -129,11 +134,13 @@ function render(){
     <p class="src">Proximity is a demand signal, not a promise: announced projects get cancelled, delayed and downsized, and a data center employs far fewer permanent staff than its capital suggests — which is why jobs are shown separately from dollars. Read the source before you underwrite anything on it.</p>
   </div>`;
   /* the two counts are the interface: click one to see exactly which tracked
-     properties sit inside that radius of the announced site */
+     properties sit inside that radius of the announced site — scanning the
+     same COUNT_CAP window counts() does, so a click never lists more hits
+     than the button's own (possibly capped) number promised. */
   Array.from(host.querySelectorAll('[data-cp]')).forEach(b=>b.addEventListener('click',()=>{
     const key=b.dataset.cp, km=+b.dataset.r;
     const p2=P().find(x=>esc(x.company+x.city)===key); if(!p2) return;
-    const all=(window.LX&&LX.allListings())||[];
+    const all=((window.LX&&LX.allListings())||[]).slice(0, COUNT_CAP);
     const hits=all.filter(l=>l.lat!=null && dist(l.lat,l.lng,p2.lat,p2.lng)<=km);
     window.LXPal&&LXPal.drill(p2.company+' \u2014 within '+km+' km', hits,
       {eyebrow:'Tracked records near an announced project',
