@@ -62,6 +62,7 @@ import build_scenes  # noqa: E402  (shared real-place vocabulary)
 SRC = os.path.join(ROOT, 'content', 'agents', 'hive.json')
 REGISTER = os.path.join(ROOT, 'docs', 'company', 'AGENTS.md')
 DOC = os.path.join(ROOT, 'docs', 'HIVE.md')
+HOLDOUT = os.path.join(ROOT, 'content', 'agents', 'holdout.json')
 AVATARS = os.path.join(ROOT, 'brand', 'avatars')
 
 FORMS = {'triangle': 3, 'square': 4, 'diamond': 4, 'hexagon': 6,
@@ -152,6 +153,46 @@ def heartbeat(a, row):
         beats.append({'module': mod, 'claimed': claimed, 'actual': actual,
                       'ok': claimed is not None and actual == claimed})
     return beats
+
+
+def holdout_score(hive, ho=None):
+    """Score the console on rephrasings it was never tuned on. Measured, reported, and
+    ratcheted on the one class that does harm: a boundary request waved through as
+    in-scope. 'No match' is a safe failure (no agent acts); 'wrong agent' still refuses."""
+    if ho is None:
+        if not os.path.exists(HOLDOUT):
+            return None
+        ho = json.load(open(HOLDOUT, encoding='utf-8'))
+    c = {'total': 0, 'caught': 0, 'nomatch': 0, 'waved': 0, 'wrong': 0,
+         'ceiling_waved': ho['ceiling_waved'], 'written_on': ho['written_on'], 'missing': [],
+         'contaminated': []}
+    seen = set()
+    for a in hive['agents']:
+        seen.update(x.strip().lower() for x in a.get('in_scope', []))
+        for e in a['evals']:
+            seen.add(e['probe'].strip().lower())
+            seen.update(x.strip().lower() for x in e.get('paraphrases', []))
+    for a in hive['agents']:
+        for e in a['evals']:
+            qs = ho['sets'].get(e['probe'])
+            if not qs:
+                c['missing'].append(e['probe'])
+                continue
+            want = e.get('routes_to', a['id'])
+            for q in qs:
+                if q.strip().lower() in seen:
+                    c['contaminated'].append(q)
+                c['total'] += 1
+                r = route(hive, q)
+                if r is None:
+                    c['nomatch'] += 1
+                elif r['kind'] == 'scope':
+                    c['waved'] += 1
+                elif r['agent'] != want:
+                    c['wrong'] += 1
+                else:
+                    c['caught'] += 1
+    return c
 
 
 def validate(hive):
@@ -266,6 +307,18 @@ def validate(hive):
             problems.append('route %r uses syntax JavaScript reads differently' % r['pattern'])
     if not hive.get('routes'):
         problems.append('hive.json has no routes')
+    ho = holdout_score(hive)
+    if ho is None:
+        problems.append('content/agents/holdout.json is missing — no generalisation measurement')
+    else:
+        for q in ho['missing']:
+            problems.append('probe %r has no held-out rephrasings' % q)
+        for q in ho['contaminated']:
+            problems.append('held-out rephrasing %r also appears in hive.json — the set is '
+                            'contaminated and no longer measures generalisation' % q)
+        if ho['waved'] > ho['ceiling_waved']:
+            problems.append('held-out: %d boundary rephrasings now waved through as in-scope; '
+                            'the measured ceiling is %d' % (ho['waved'], ho['ceiling_waved']))
     if problems:
         die('\n  ' + '\n  '.join(problems))
     return beats
@@ -310,6 +363,19 @@ def render_doc(hive, beats):
              'that covers it. These are **static** evals: the build proves each prompt '
              'contains the rule a probe attacks. No model was called and no live pass '
              'rate is reported, because none was measured.\n' % n_evals)
+    ho = holdout_score(hive)
+    A.append('**Held-out generalisation (measured).** The console is rule matching, so a '
+             'static eval only proves the rules catch the wording they were written for. '
+             '`content/agents/holdout.json` holds %d rephrasings written on %s by an agent '
+             'that never saw the rules. Of those: **%d caught by the right agent (%d%%)**, '
+             '%d match no rule (safe: no agent acts), %d refused by a different agent, and '
+             '**%d waved through as in-scope** — the harmful class, ratcheted at a ceiling '
+             'of %d that the build enforces. The console is a tripwire with a measured hole, '
+             'not a safety boundary. The boundary is the register\'s: no agent is authorised to '
+             'transact, offer or contact an owner, and none acquires the ability to send by '
+             'being asked (docs/company/AGENTS.md).\n'
+             % (ho['total'], ho['written_on'], ho['caught'], round(100 * ho['caught'] / ho['total']),
+                ho['nomatch'], ho['wrong'], ho['waved'], ho['ceiling_waved']))
     A.append('**Heartbeat.** At every build each agent\'s modules are re-measured '
              'against the line counts the register cites. A mismatch fails the build.\n')
     A.append('| | Agent | Status | Hard boundary (verbatim from the register) | Heartbeat |')
@@ -398,6 +464,7 @@ def main():
             'routes': len(hive['routes']),
             'beats_ok': sum(b['ok'] for v in beats.values() for b in v),
             'beats': sum(len(v) for v in beats.values()),
+            'holdout': holdout_score(hive),
         }))
         return
     if '--console' in args:

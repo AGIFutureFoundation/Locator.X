@@ -408,6 +408,16 @@ def main():
         hard_boundary=h["agents"][1]["hard_boundary"].split(";")[0]))
     drift("duplicate probes", lambda h: h["agents"][5].update(evals=[h["agents"][5]["evals"][0]] * 3))
     drift("no modules measured", lambda h: h["agents"][0].update(modules=[]))
+    # held-out generalisation: the waved-through ceiling ratchets, and a held-out
+    # rephrasing copied into the tuning set is contamination
+    def _widen(h):
+        for r in h["routes"]:
+            if r["agent"] == "development" and r["kind"] == "scope":
+                r["pattern"] += r"|\bspend\b"
+    drift("held-out waved-through count rises", _widen)
+    _ho = json.load(open(build_hive.HOLDOUT, encoding="utf-8"))
+    drift("held-out set contaminated", lambda h: h["agents"][0]["evals"][0]["paraphrases"].append(
+        list(_ho["sets"].values())[0][0]))
     drift("routing hole", lambda h: h.update(routes=[
         r for r in h["routes"] if r["agent"] != "acquisitions" or r["kind"] != "boundary"]))
     drift("attack routed as in scope", lambda h: h["routes"].insert(0, {
