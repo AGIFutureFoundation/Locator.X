@@ -91,9 +91,9 @@ function scenes({ f, hive }) {
       sub: 'Synthetic voices, abstract avatars, and a hard boundary copied from the register word for word.',
       tiles: hive.agents.map(a => ({ img: dataUrl('brand/avatars/' + a.id + '.svg', 'image/svg+xml'),
                                      label: a.name, sub: a.status })),
-      note: n(hive.evals) + ' probes tied to the prompt sentences that refuse them. Held-out: ' + n(hive.holdout.caught) + ' of '
-            + n(hive.holdout.total) + ' unseen rephrasings caught, ' + n(hive.holdout.waved) + ' waved through; ' + n(hive.holdout.is_blocked) + ' of ' + n(hive.holdout.is_total) + ' legitimate requests wrongly blocked. Heartbeat: '
-            + n(hive.beats_ok) + ' of ' + n(hive.beats) + ' agent modules match the register.' },
+      note: 'Held-out: ' + n(hive.holdout.caught) + '/' + n(hive.holdout.total) + ' unseen refusals caught, '
+            + n(hive.holdout.waved) + ' waved through; ' + n(hive.holdout.is_blocked) + '/' + n(hive.holdout.is_total)
+            + ' legitimate requests blocked. Module heartbeat ' + n(hive.beats_ok) + '/' + n(hive.beats) + '.' },
 
     { key: 'bounds', secs: 13, kicker: 'AN AGENT PROPOSES. A PERSON DECIDES.',
       head: 'The boundaries are\nthe product.',
