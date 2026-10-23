@@ -33,7 +33,7 @@ function q(a,p){ if(!a.length) return null; const s=a.slice().sort((x,y)=>x-y);
   return lo===hi? s[lo] : s[lo]+(s[hi]-s[lo])*(i-lo); }
 
 /* ---- the pool of things that are genuinely comparable ------------------- */
-let POOL=null, DIAG=null, POOL_BY_METRO=null;
+let POOL=null, DIAG=null, POOL_BY_METRO=null, POOL_SIG=null;
 /* Two bases exist in this catalogue and they are NEVER mixed in one median.
 
    'sale'     — a recorded sale price carrying a recorded date. The real thing.
@@ -77,8 +77,15 @@ function bulkKeys(all){
 function isBulk(l,B){ return B.set.has(l.sale+'@'+l.saleDate); }
 
 function pool(){
-  if(POOL) return POOL;
   const all=L().allListings();
+  /* POOL used to be cleared only by invalidate(), called solely from this
+     module's own render() — so a property drawer opened without ever
+     visiting the Comps tab (app.js's drawer flow calls drawer()->find()
+     ->pool() directly) kept serving a pool built before the most recent
+     import, silently missing the newly-imported records as comps. Same
+     allListings().length signature belowmarket.js's candidates() uses. */
+  if(POOL && POOL_SIG===all.length) return POOL;
+  POOL_SIG=all.length;
   const B=bulkKeys(all);
   let undated=0, sale=0, post=0, bulk=0;
   const p=[];
@@ -102,7 +109,7 @@ function pool(){
   for(let i=0;i<p.length;i++){ const k=(p[i].nb||p[i].county); (POOL_BY_METRO[k]||(POOL_BY_METRO[k]=[])).push(p[i]); }
   return p;
 }
-function invalidate(){ POOL=null; POOL_BY_METRO=null; }
+function invalidate(){ POOL=null; POOL_BY_METRO=null; POOL_SIG=null; }
 
 /* ---- comps for one property -------------------------------------------- */
 function find(l, opt){
