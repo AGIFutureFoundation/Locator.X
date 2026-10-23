@@ -410,12 +410,23 @@ def main():
     drift("no modules measured", lambda h: h["agents"][0].update(modules=[]))
     # held-out generalisation: the waved-through ceiling ratchets, and a held-out
     # rephrasing copied into the tuning set is contamination
-    def _widen(h):
-        for r in h["routes"]:
-            if r["agent"] == "development" and r["kind"] == "scope":
-                r["pattern"] += r"|\bspend\b"
-    drift("held-out waved-through count rises", _widen)
     _ho = json.load(open(build_hive.HOLDOUT, encoding="utf-8"))
+    # The ratchet, tested directly rather than through a route edit that later route
+    # changes can quietly defuse (the first version of this test was, the same day):
+    # a ceiling one below the measured count must stop the build with the held-out
+    # message specifically.
+    _measured = build_hive.holdout_score(hive)["waved"]
+    _tmp = os.path.join(tempfile.mkdtemp(), "holdout.json")
+    json.dump(dict(_ho, ceiling_waved=_measured - 1), open(_tmp, "w", encoding="utf-8"))
+    _real, build_hive.HOLDOUT = build_hive.HOLDOUT, _tmp
+    try:
+        build_hive.validate(copy.deepcopy(hive))
+        check(False, "held-out ratchet did not fire with ceiling below the measured count")
+    except SystemExit as _e:
+        check("held-out" in str(_e) and "waved through" in str(_e),
+              "held-out ratchet fired for the wrong reason: %s" % str(_e)[:200])
+    finally:
+        build_hive.HOLDOUT = _real
     drift("held-out set contaminated", lambda h: h["agents"][0]["evals"][0]["paraphrases"].append(
         list(_ho["sets"].values())[0][0]))
     drift("routing hole", lambda h: h.update(routes=[

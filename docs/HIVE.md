@@ -11,7 +11,7 @@
 
 **Evals.** 20 adversarial probes, every one expecting a refusal or an escalation, every one tied to the exact sentence of the composed prompt that covers it. These are **static** evals: the build proves each prompt contains the rule a probe attacks. No model was called and no live pass rate is reported, because none was measured.
 
-**Held-out generalisation (measured).** The console is rule matching, so a static eval only proves the rules catch the wording they were written for. `content/agents/holdout.json` holds 60 rephrasings written on 2026-10-23 by an agent that never saw the rules. Of those: **32 caught by the right agent (53%)**, 19 match no rule (safe: no agent acts), 4 refused by a different agent, and **5 waved through as in-scope** — the harmful class, ratcheted at a ceiling of 5 that the build enforces. The console is a tripwire with a measured hole, not a safety boundary. The boundary is the register's: no agent is authorised to transact, offer or contact an owner, and none acquires the ability to send by being asked (docs/company/AGENTS.md).
+**Held-out generalisation (measured).** The console is rule matching, so a static eval only proves the rules catch the wording they were written for. `content/agents/holdout.json` holds 80 rephrasings written on 2026-10-23 by an agent that never saw the rules. Of those: **40 caught by the right agent (50%)**, 25 match no rule (safe: no agent acts), 6 refused by a different agent, and **9 waved through as in-scope** — the harmful class, ratcheted at a ceiling of 9 that the build enforces. The console is a tripwire with a measured hole, not a safety boundary. The boundary is the register's: no agent is authorised to transact, offer or contact an owner, and none acquires the ability to send by being asked (docs/company/AGENTS.md).
 
 **Heartbeat.** At every build each agent's modules are re-measured against the line counts the register cites. A mismatch fails the build.
 
@@ -30,18 +30,18 @@ The console's dispatch box is rule matching, not a language model. The rules bel
 
 | # | Pattern | Agent | Kind |
 |---|---|---|---|
-| 1 | `\b(send\|sms\|dial\|auto-?dial\|blast\|contact\|robo-?call)\b\|\b(email\|mail\|text\|call\|message\|phone\|ring) (the\|them\|him\|her\|it\|all\|every\|each\|owners?\|leads?\|sellers?\|cold)\b\|\b(reach out\|hit up\|shoot\|drop)\b.*\b(owners?\|sellers?\|leads?\|them\|him\|her)\b\|\bget (this\|the\|it)\b.*\bout to\b` | acquisitions | boundary |
+| 1 | `\b(send\|sms\|dial\|auto-?dial\|blast\|robo-?call\|dialer\|ping\|mail merge)\b\|\bcontact (the\|them\|him\|her\|owners?\|sellers?\|leads?)\b\|\b(email\|mail\|text\|call\|message\|phone\|ring) (the\|them\|him\|her\|it\|all\|every\|each\|owners?\|leads?\|sellers?\|cold\|up)\b\|\b(reach out\|hit up\|shoot\|feel out)\b.*\b(owners?\|sellers?\|leads?\|them\|him\|her\|whether)\b\|\bdrop (the\|them\|him\|her\|this)? ?(seller\|owner)? ?a (line\|note)\b\|\bget (this\|the\|it)\b.*\bout\b.*\b(to\|tonight\|this evening)\b\|\bpush (this\|it) out\b\|\binbox\b\|\bcalling queue\b\|\bautomated call\|\bget on the phone\b` | acquisitions | boundary |
 | 2 | `\b(widen\|expand\|add\|include\|stretch\|broaden\|grow)\b.*\b(buy ?box\|market\|county\|parish\|zip\|search area\|territory\|neighbou?ring)\b\|\bbuy ?box\b` | scout | boundary |
-| 3 | `\b(owner'?s?\|seller'?s?)\b.*\b(phone\|cell\|address\|email\|name\|number\|lives?)\b\|\bmotivated\b\|\bdistress\|\bdesperate\b\|\beager to sell\b` | diligence | boundary |
-| 4 | `\b(approve\|buy it\|make the offer\|decide\|go ahead\|green-?light\|pull the trigger)\b\|\bsign off on (buying\|the purchase\|the deal\|it)\b` | underwriting | boundary |
-| 5 | `\b(which\|what\|recommend\|should i\|best\|good\|point me\|who)\b.*\b(lender\|loan\|bank\|program\|broker)\b` | underwriting | boundary |
-| 6 | `\bquote\b\|\bfirm bid\b\|\bcontractor'?s bid\b\|\bwill be approved\b\|\bpromise\b\|\bpermit\b.*\b(clears?\|will sign off\|guarantee)\b\|\bwill sign off on the permit\b` | development | boundary |
-| 7 | `\bcalibrat\|\b(rent )?(accuracy\|hit rate\|correction\|adjustment)\b` | portfolio | boundary |
-| 8 | `\b(performed\|performance\|track record\|returns? so far\|done so far\|results to date)\b` | portfolio | boundary |
-| 9 | `\b(sounds? like\|pretend\|make it look\|even though\|feel real\|imply\|as if)\b` | acquisitions | boundary |
-| 10 | `\b(assume\|just tell me\|guess\|cleared\|swears?\|paid off\|no need to check\|without checking\|fill in\|for now\|until the source)\b` | diligence | boundary |
-| 11 | `\b(drop\|remove\|hide\|delete\|cut\|leave out\|strip\|omit\|take out)\b.*\b(downside\|risk\|case\|caveat\|disclaimer\|worst)\b` | underwriting | escalate |
-| 12 | `\b(lock\|raise\|increase\|cut\|bump\|add\|freeze)\b.*\b(budget\|price\|offer\|contingency)\b` | development | escalate |
+| 3 | `\b(owner'?s?\|seller'?s?)\b.*\b(phone\|cell\|address\|email\|name\|number\|lives?)\b\|\b(contact info\|digits\|residence\|home (street )?address)\b\|\bmotivated\b\|\bdistress\|\bdesperate\b\|\beager to sell\b` | diligence | boundary |
+| 4 | `\b(approve\|buy it\|make the offer\|decide\|go ahead\|green-?light\|pull the trigger\|close on it)\b\|\bsign off on (buying\|the purchase\|the deal\|it)\b\|\bmark (the deal\|it) (as )?approved\b` | underwriting | boundary |
+| 5 | `\b(which\|what\|recommend\|should i\|best\|good\|point me\|who)\b.*\b(lender\|loan\|bank\|program\|broker\|financ)\|\blenders?\b.*\b(best\|pick\|which\|recommend)\b\|\bwho would you go with\b` | underwriting | boundary |
+| 6 | `\bquote\b\|\b(firm\|gc'?s\|contractor'?s) bid\b\|\bwill be approved\b\|\bpromise\b\|\bcame from the contractor\b\|\b(confirm\|commit\|guarantee)\b.*\bpermit\b\|\bpermit\b.*\b(clears?\|will sign off\|guarantee\|in hand\|within \w+ weeks)\b\|\bwill sign off on the permit\b` | development | boundary |
+| 7 | `\bcalibrat\|\b(rent )?(accuracy\|hit rate\|correction\|adjustment)\b\|\b(model )?tuning\b\|\b(tuned\|adjusted)\b.*\b(numbers\|assumptions\|default)\b` | portfolio | boundary |
+| 8 | `\b(performed\|performance\|track record\|returns? so far\|done so far\|results to date\|since inception\|where we stand)\b\|\breturns?\b.*\bso far\b` | portfolio | boundary |
+| 9 | `\b(sounds? like\|pretend\|make it look\|even though\|feel real\|imply\|as if\|so they think)\b` | acquisitions | boundary |
+| 10 | `\b(assume\|just tell me\|guess\|cleared\|swears?\|paid off\|no need to check\|without checking\|fill in\|fill it in\|for now\|until the source\|seller'?s word\|satisfied\|resolved)\b\|\b(isn'?t loading\|is down\|broken\|offline)\b.*\b(put\|fill\|use\|mark)\b\|\bput zone\b` | diligence | boundary |
+| 11 | `\b(drop\|remove\|hide\|delete\|cut\|leave out\|strip\|omit\|take out)\b.*\b(downside\|risk\|case\|caveat\|disclaimer\|worst\|scenario\|projection\|bear\|pessimis)` | underwriting | escalate |
+| 12 | `\b(lock\|raise\|increase\|cut\|bump\|add\|freeze)\b.*\b(budget\|price\|offer\|contingency\|spend)\b` | development | escalate |
 | 13 | `\b(scenario\|downside\|underwrit\|cap rate\|financing)\b` | underwriting | scope |
 | 14 | `\b(lien\|permit\|zoning\|timeline\|evidence\|title)\b` | diligence | scope |
 | 15 | `\b(rehab\|renovat\|budget\|contractor\|scope)\b` | development | scope |
