@@ -279,7 +279,7 @@ graph TD
 is discharged** (Apache-2.0 / CC BY 4.0, chosen and signed off 2026-09-09; the repository has
 been public since). Two external dependencies remain, both repository settings held by the
 Foundation rather than code, and both are recorded in §7 with the measurement that establishes
-them: GitHub Pages is not enabled (`has_pages: false`, 2026-09-11), and the editions companion
+them: GitHub Pages is not enabled (`has_pages: false`, 2026-09-11; re-measured unchanged 2026-10-23 via the repository API), and the editions companion
 repository does not exist yet. Neither blocks any other workstream — the site and the channel
 build and verify in CI regardless; they simply are not served until those switches flip.
 
