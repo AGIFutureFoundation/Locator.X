@@ -145,6 +145,8 @@ function sheet(l){
 
 /* ---------- the five strategies ---------------------------------------- */
 
+const RENT_KIND = {given:'record', market:'published', model:'model', none:'assumption'};
+
 function stratHold(l){
   const X=L(); const re=X.rentEstimate(l);
   if(!re || !re.rent) return blocked('hold','Buy and hold',
@@ -169,8 +171,14 @@ function stratHold(l){
      makes 'published' mean something for the first time: a ZORI series, a city
      median or a HUD FMR table is someone's published figure, which is a stronger
      claim than a model and a weaker one than this parcel's own record. A rule of
-     thumb is an assumption, and grades as the weakest kind there is. */
-  const RENT_KIND = {given:'record', market:'published', model:'model', none:'assumption'};
+     thumb is an assumption, and grades as the weakest kind there is.
+
+     Module-level because stratBRRRR and stratHack also classify rent and
+     used to do it with the OLD regex — the exact thing this comment
+     describes fixing — so a rent-blind market's rehab-driven columns still
+     graded an invented rent as 'record' whenever rentEstimate's prose
+     happened to not match "your figure"/"from your data" by coincidence
+     rather than by reading what rentEstimate actually said about itself. */
   const rentKind = RENT_KIND[re.basis] || 'model';
   return {
     key:'hold', name:'Buy and hold', state:'computed',
@@ -183,7 +191,7 @@ function stratHold(l){
       ['5-yr IRR', uw.irr!=null? pct(uw.irr*100) : unknown('no solvable IRR — the flows never cross zero')]
     ],
     basis:[
-      {what:'Purchase price', kind:'record', how: X.srcLine? 'the record for this parcel' : 'the record'},
+      priceBasis(l),
       {what:'Rent', kind:rentKind, how:re.how},
       {what:'Operating expenses', kind:'assumption', lever:true, how:'the shared expense stack at your assumption settings'},
       {what:'Financing', kind:'assumption', lever:true, how:u.finOpt.name+' — '+u.finOpt.note},
@@ -198,6 +206,19 @@ function apprHow(src){
        : src==='yoy'    ? 'the ZIP’s last twelve months, extrapolated — the weakest of the three'
        : src==='scenario' ? 'your scenario override'
        : 'the 2% default, because nothing better exists for this ZIP';
+}
+
+/* l.est means the price is a ZIP-index model estimate — never a
+   jurisdiction-published figure (see recon.js/geoexport.js/standards.js,
+   which all exclude it from "recorded"). Every strategy below hardcoded
+   "Purchase price" as kind:'record' regardless, crediting an estimate with
+   provenance it does not have and, since each column grades on its weakest
+   fact, potentially inflating a column's letter grade in a county that
+   publishes no assessed values. */
+function priceBasis(l){
+  return l.est
+    ? {what:'Purchase price', kind:'model', how:'a ZIP-index estimate — this county publishes no assessed values, not a recorded sale'}
+    : {what:'Purchase price', kind:'record', how:'the record for this parcel'};
 }
 
 function stratFlip(l){
@@ -226,7 +247,7 @@ function stratFlip(l){
       ['Return on cash', cash>0? pct(profit/cash*100) : unknown()]
     ],
     basis:[
-      {what:'Purchase price', kind:'record', how:'the record for this parcel'},
+      priceBasis(l),
       {what:'After-repair value', kind: a.solid?'record':'model', how:a.how+(a.from?' ('+a.from+'–'+a.to+')':'')},
       {what:'Rehab', kind:'assumption', lever:true, how:'the rehab preset on the underwriting desk'},
       {what:'Carry', kind:'assumption', lever:true, how:SB.holdMonths+' months of taxes, insurance and bridge interest'},
@@ -243,7 +264,7 @@ function stratBRRRR(l){
   if(!a.ok) return blocked('brrrr','BRRRR',
     'The refinance is sized against an after-repair value, and there is none. ' + a.why);
   const S=sheet(l);
-  if(!S) return blocked('flip','Flip','The underwriting desk could not assemble a sheet for this record, so the rehab figure a flip turns on does not exist.');
+  if(!S) return blocked('brrrr','BRRRR','The underwriting desk could not assemble a sheet for this record, so the rehab figure a BRRRR turns on does not exist.');
   const u=S.u; const P=X.price(l); const rehabAll=u.rehab*(1+(u.cont!=null?u.cont:10)/100);
   const monthly = P*X.taxRate(l)/100/12 + Math.max(1200,P*X.state.assump.ins/100)/12;
   const carry = monthly*SB.holdMonths;
@@ -269,9 +290,9 @@ function stratBRRRR(l){
       cocRow
     ],
     basis:[
-      {what:'Purchase price', kind:'record', how:'the record for this parcel'},
+      priceBasis(l),
       {what:'After-repair value', kind: a.solid?'record':'model', how:a.how},
-      {what:'Rent', kind:/your figure|from your data/.test(re.how)?'record':'model', how:re.how},
+      {what:'Rent', kind:RENT_KIND[re.basis]||'model', how:re.how},
       {what:'Rehab', kind:'assumption', lever:true, how:'the rehab preset on the underwriting desk'},
       {what:'Refinance', kind:'assumption', lever:true, how:SB.refiLTV+'% loan-to-value at your assumed rate — no lender has quoted this'}
     ]
@@ -298,10 +319,10 @@ function stratHack(l){
       ['Cash to close', money(h.cashNeed)]
     ],
     basis:[
-      {what:'Purchase price', kind:'record', how:'the record for this parcel'},
+      priceBasis(l),
       {what:'Unit count', kind:'record', how:'the record — '+u+' units'},
       {what:'FHA ceiling', kind:'published', how:'the published national FHA loan limit for '+u+' units. A ceiling is not eligibility: a lender qualifies the borrower, not the building'},
-      {what:'Rent', kind:/your figure|from your data/.test(re.how)?'record':'model', how:re.how},
+      {what:'Rent', kind:RENT_KIND[re.basis]||'model', how:re.how},
       {what:'Financing', kind:'assumption', lever:true, how:'3.5% down, UFMIP financed, MIP 0.55%/yr at your assumed rate less 0.3'}
     ]
   };

@@ -107,13 +107,24 @@ function reqBar(A){
   var verdict, col;
   if(A.rentPinned && A.capCentral && A.capCentral.length){
     /* every path is pinned at the cap, so the cone carries no rent band; saying
-       so is better than letting three identical paths imply a measured spread */
-    return '<div style="border-left:3px solid var(--warn);padding:7px 0 7px 10px;margin:8px 0">'
+       so is better than letting three identical paths imply a measured spread.
+       rentPinned fires whenever |fitted trend| exceeds the cap in EITHER
+       direction (outlook.js's cap() clamps a trend above +CAP or below -CAP
+       alike) — this used to unconditionally say "comfortably met," which was
+       true for a trend pinned at +25%/yr but the opposite of true for one
+       pinned at -15%/yr. Compare got to need honestly, same thresholds the
+       unpinned branch below uses, rather than assuming the direction. */
+    var metPinned = got != null && need <= got;
+    return '<div style="border-left:3px solid ' + (metPinned?'var(--warn)':'var(--bad)') + ';padding:7px 0 7px 10px;margin:8px 0">'
       + '<div style="font-size:13.5px;line-height:1.65"><b>Needs ' + pct(need) + ' rent growth a year</b> to hold '
       + 'DSCR 1.20 in year five. This ZIP’s fitted trend is <b>' + pct(got) + '</b> — genuinely what the last '
-      + 'twelve months did, and above the &plusmn;' + A.cap + '% ceiling this app will compound across five years. '
-      + 'So the requirement is comfortably met on the recent record, though the paths below compound only '
-      + '&plusmn;' + A.cap + '% a year rather than that. Read the requirement, not the spread.</div></div>';
+      + 'twelve months did, and past the &plusmn;' + A.cap + '% ceiling this app will compound across five years. '
+      + (metPinned
+          ? 'So the requirement is met on the recent record, though the paths below compound only &plusmn;' + A.cap + '% a year rather than that. Read the requirement, not the spread.'
+          : got < 0
+            ? 'The fitted trend runs the <b>wrong direction</b> for this requirement, and the gap is real even though the paths below are clamped to &plusmn;' + A.cap + '% a year. This does not clear on the record.'
+            : 'The requirement is <b>above what this ZIP has actually been doing</b>, even at its fitted trend\'s full pace — the gap is real even though the paths below are clamped to &plusmn;' + A.cap + '% a year. This does not clear on the record.')
+      + '</div></div>';
   }
   if(got == null){ verdict = 'This ZIP publishes no rent index, so there is nothing to check that requirement against.'; col = 'var(--muted)'; }
   else if(need <= got - 0.02){ verdict = 'The requirement sits <b>comfortably under what this ZIP has actually been doing</b> — rent growth would have to fall by more than two points from its fitted trend before this deal failed on rent.'; col = 'var(--good)'; }
@@ -219,5 +230,5 @@ function tile(name, p, rates, note){
 function shift(m){ return m == null || Math.abs(m - 1) < 0.0005 ? 'as measured'
   : ((m > 1 ? '+' : '') + ((m - 1) * 100).toFixed(1) + '%'); }
 
-window.LXOutlookViz = {block: block, drawCone: drawCone};
+window.LXOutlookViz = {block: block, drawCone: drawCone, reqBar: reqBar};
 })();

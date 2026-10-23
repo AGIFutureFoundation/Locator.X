@@ -122,9 +122,16 @@ function buildMemo(l,u,uw,extra){
     if(w.logo){ const lw=Math.min(90,(w.logoW||360)/((w.logoH||120)/34)); d.image(564-lw,15,lw,34); } };
   // -------- page 1 --------
   d.page(); head('UNDERWRITING MEMORANDUM');
-  d.text(48,100,l.addr+', '+l.city+', '+(l.county==='Orleans'?'LA':'CA')+' '+(l.zip||''),{size:19,bold:true});
+  /* Same bug records.js's fullAddr() and packet.js's addressLine() already
+     fixed: a hardcoded Orleans-parish check with CA for everything else
+     stamped the wrong state onto every Growth Corridor property (Phoenix,
+     Columbus, Savannah, Syracuse, Reno, ...) in this formal PDF memorandum.
+     Reuse packet.js's own resolution chain (record's field, then region,
+     then the per-edition constant) instead of a third copy of the logic. */
+  const memoState=(window.LXPACKET&&LXPACKET.stateName)? LXPACKET.stateName(l) : null;
+  d.text(48,100,l.addr+', '+l.city+', '+(memoState||'[state not on record]')+' '+(l.zip||''),{size:19,bold:true});
   d.text(48,120,(l.kind||'')+((l.units||1)>1&&!/unit/i.test(l.kind||'')?' * '+l.units+' units':'')+(l.sqft?' * '+l.sqft.toLocaleString()+' sf':'')+(l.year?' * built '+l.year:'')+' * APN '+(l.apn||'-'),{size:10,color:[0.35,0.37,0.4]});
-  d.text(48,136,'Recorded '+fm$(L().price(l))+(l.priceDate?' on '+l.priceDate:'')+(l.est?'  (VALUE IS AN ESTIMATE - ZIP-level index scaling)':'  (county-recorded basis)'),{size:10,color:l.est?[0.77,0.17,0.33]:[0.35,0.37,0.4]});
+  d.text(48,136,(l.est?'Price ':'Recorded ')+fm$(L().price(l))+(l.priceDate?' on '+l.priceDate:'')+(l.est?'  (VALUE IS AN ESTIMATE - ZIP-level index scaling)':'  (county-recorded basis)'),{size:10,color:l.est?[0.77,0.17,0.33]:[0.35,0.37,0.4]});
   d.line(48,148,564,148,A,1.4);
   // Evidence grade — what the county actually published about this parcel.
   try{
@@ -328,7 +335,7 @@ async function exportReel(l,u,uw,extra,onProg){
       const p2=ease((t-1.2)/1.2);
       if(p2>0){ g.globalAlpha=p2; g.fillStyle='#fff'; g.font='700 40px system-ui'; g.fillText(l.addr+', '+l.city,80,330);
         g.fillStyle='#9aa3ad'; g.font='400 24px system-ui'; g.fillText((l.kind||'')+((l.units||1)>1&&!/unit/i.test(l.kind||'')?' * '+l.units+' units':'')+(l.sqft?' * '+l.sqft.toLocaleString()+' sf':''),80,368);
-        g.fillText('Recorded '+money(X.price(l))+(l.est?'  (estimate)':''),80,402); }
+        g.fillText((l.est?'Price ':'Recorded ')+money(X.price(l))+(l.est?'  (estimate)':''),80,402); }
       g.globalAlpha=1;
     } else if(t<10){ // metrics count-up
       g.fillStyle=A; g.fillRect(0,0,10,720);

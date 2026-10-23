@@ -339,12 +339,31 @@ function submit(){
     } else if(mine){ R.extraNote = '<b>The solver could not price this one</b>, so your offer of ' + fmt$(mine) + ' stands unchecked. That is itself a finding.'; }
   }
   if(L.extra === 'bind'){
-    var uw = computed.uw, binds = 'LTV';
-    if(uw.dscr != null && uw.dscr < 1.25) binds = 'DSCR';
+    /* LTV used to be the unconditional fallback here whenever DSCR and debt
+       yield both cleared, with the prose claiming "all three are tested and
+       the smallest loan wins" — untrue: LTV is never compared to anything.
+       In this model LTV is fixed by which financing option you picked
+       (down payment is a flat per-product assumption, not deal-dependent
+       — see financeOptions() in underwrite.js), so it cannot "fail" the way
+       a deal-dependent DSCR or debt yield can, and a student who picked
+       anything else was marked wrong against an answer nothing had tested.
+       DSCR 1.20 and debt yield 8% are real, sourced hurdles used elsewhere
+       in this app (locator.js's own T-gate; underwrite.js's good/warn/bad
+       bands) — only those two are graded as "binding" now. */
+    var uw = computed.uw, binds = null;
+    if(uw.dscr != null && uw.dscr < 1.20) binds = 'DSCR';
     else if(uw.debtYield != null && uw.debtYield < 8) binds = 'Debt yield';
-    R.extraNote = '<b>Binding test: ' + binds + '</b> (DSCR ' + (uw.dscr!=null?Math.round(uw.dscr*100)/100:'—')
-      + ' · LTV ' + (uw.ltv!=null?Math.round(uw.ltv)+'%':'—') + ' · debt yield ' + (uw.debtYield!=null?Math.round(uw.debtYield*10)/10+'%':'—') + '). '
-      + (state.extra===binds ? 'You called it.' : 'You said ' + esc(state.extra||'—') + '. All three are tested and the smallest loan wins — re-read which one that is here.');
+    var stats = '(DSCR ' + (uw.dscr!=null?Math.round(uw.dscr*100)/100:'—')
+      + ' · LTV ' + (uw.ltv!=null?Math.round(uw.ltv)+'%':'—') + ' · debt yield ' + (uw.debtYield!=null?Math.round(uw.debtYield*10)/10+'%':'—') + ')';
+    if(binds){
+      R.extraNote = '<b>Binding test: ' + binds + '</b> ' + stats + '. '
+        + (state.extra===binds ? 'You called it.' : 'You said ' + esc(state.extra||'—') + '. DSCR and debt yield are each tested against a real hurdle (1.20 and 8%) — re-read which one actually fails here.');
+    } else {
+      R.extraNote = '<b>Neither DSCR nor debt yield is tight</b> ' + stats + '. '
+        + 'LTV here is fixed by the financing option you picked, not a hurdle this deal is tested against — "LTV binds" is not a verdict this exercise can actually hand you. '
+        + (state.extra==='LTV' ? 'You said LTV: a reasonable instinct if it is the largest number above, but nothing in this model fails against it.'
+                                : 'You said ' + esc(state.extra||'—') + ', and neither tested hurdle is close either — this is a well-margined loan on both tests this exercise can check.');
+    }
   }
   if(L.extra === 'unknowns'){
     var actual = computed.g.filter(function(x){ return x.v==='unknown'; }).length;
