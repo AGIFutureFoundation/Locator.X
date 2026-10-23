@@ -426,9 +426,17 @@ def main():
     # The console compiles the same patterns with JavaScript's RegExp. Python
     # passing them proves nothing about the page unless both engines pick the
     # same first rule for every probe and every in-scope example.
+    # Every string the build routes, including the paraphrases and the held-out set
+    # (whose no-match cases exercise the -1 path the samples never did).
     samples = [e["probe"] for a in hive["agents"] for e in a["evals"]] + \
-              [q for a in hive["agents"] for q in a["in_scope"]]
-    py_picks = [hive["routes"].index(build_hive.route(hive, q)) for q in samples]
+              [q for a in hive["agents"] for q in a["in_scope"]] + \
+              [p for a in hive["agents"] for e in a["evals"] for p in e.get("paraphrases", [])] + \
+              [q for qs in _ho["sets"].values() for q in qs]
+    def _pick(q):
+        r = build_hive.route(hive, q)
+        return -1 if r is None else hive["routes"].index(r)
+    py_picks = [_pick(q) for q in samples]
+    check(len(samples) >= 100, "router parity ran on only %d strings" % len(samples))
     js = ("const h=JSON.parse(require('fs').readFileSync(0,'utf8'));"
           "const rs=h.routes.map(r=>new RegExp(r.pattern,'i'));"
           "console.log(JSON.stringify(h.samples.map(q=>rs.findIndex(r=>r.test(q)))));")
