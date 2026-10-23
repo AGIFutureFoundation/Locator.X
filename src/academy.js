@@ -209,22 +209,31 @@ const MISSIONS=[
         h.units>=3? 'Self-sufficiency is the 3–4-unit gate — this building '+(h.ss? 'passes at these rents.':'fails at these rents, so the offer must be priced down or the loan rethought.') : 'One year of real occupancy — misrepresenting it is federal loan fraud, and the cheap loan isn\'t worth a career.') ]}; } },
 {id:'b3', role:'buyer', min:4, title:'Problems are inventory', std:'Sourcing — motivated sellers and off-market signals',
  brief:'Catalog theme (Three Master Secrets, 2006): when a problem pops up, an agent sees paperwork — an investor\'s agent sees the deal behind it.',
- make(){ const X=L(); const rowsD=D().rows.length?D().rows:(D().render(),D().rows); const sus=rowsD.filter(r=>r.sus && (r.l.units||1)>=1); const r0=sus.length? sus[Math.floor(Math.random()*sus.length)] : rowsD[0]; const l=r0.l; const gap=+((1-X.price(l)/(r0.cityPpsf&&l.sqft? r0.cityPpsf*l.sqft : X.price(l)*1.6))*100).toFixed(0); const ind=r0.cityPpsf&&l.sqft? Math.round(r0.cityPpsf*l.sqft) : Math.round(X.price(l)*1.6);
+ make(){ const X=L(); const rowsD=D().rows.length?D().rows:(D().render(),D().rows); const sus=rowsD.filter(r=>r.sus && (r.l.units||1)>=1);
+  /* The fallback for an edition with nothing flagged still needs a subject,
+     but rowsD[0] with no filter could be an l.est estimate or a user-
+     imported row (src:'imp') — neither is a recorded sale, so prefer a
+     record this module can honestly call "recorded" before falling back
+     to anything. */
+  const clean=rowsD.filter(r=>!r.l.est && r.l.src!=='imp');
+  const r0=sus.length? sus[Math.floor(Math.random()*sus.length)] : (clean.length? clean[0] : rowsD[0]);
+  const l=r0.l; const gap=+((1-X.price(l)/(r0.cityPpsf&&l.sqft? r0.cityPpsf*l.sqft : X.price(l)*1.6))*100).toFixed(0); const ind=r0.cityPpsf&&l.sqft? Math.round(r0.cityPpsf*l.sqft) : Math.round(X.price(l)*1.6);
   /* r0.sus is the dashboard's own below-market-transfer flag. When nothing
      in this edition is actually flagged, the drill still needs a subject to
      run the arithmetic on — but it must not claim THIS one was flagged when
      it wasn't. Label the constructed case honestly instead of fabricating
-     a transfer that never happened. */
-  const flagged=!!r0.sus; return {l,
+     a transfer that never happened. Price provenance is independent of
+     the flag: an l.est fallback is never called "recorded", flagged or not. */
+  const flagged=!!r0.sus; const priceWord=l.est? 'estimated at '+F$(X.price(l))+' (ZIP-index, not a recorded sale)' : 'recorded at '+F$(X.price(l)); return {l,
   trigger: flagged
-    ? `Scanning the roll you find <b>${esc(l.addr)}, ${esc(l.city)}</b> recorded at ${F$(X.price(l))} — flagged ⚠ far below market. Not a listing: a signal. Somebody transferred this building without an auction. Your move is research, not a bid.`
-    : `Nothing in this roll is actually flagged as a below-market transfer right now — so practice the read on a constructed case: treat <b>${esc(l.addr)}, ${esc(l.city)}</b>, recorded at ${F$(X.price(l))}, as if it had surfaced flagged ⚠ far below market. The arithmetic below is real even though this specific flag is not.`,
+    ? `Scanning the roll you find <b>${esc(l.addr)}, ${esc(l.city)}</b> ${priceWord} — flagged ⚠ far below market. Not a listing: a signal. Somebody transferred this building without an auction. Your move is research, not a bid.`
+    : `Nothing in this roll is actually flagged as a below-market transfer right now — so practice the read on a constructed case: treat <b>${esc(l.addr)}, ${esc(l.city)}</b>, ${priceWord}, as if it had surfaced flagged ⚠ far below market. The arithmetic below is real even though this specific flag is not.`,
   analyze:{view:'research', id:l.id, note:'Run the research agents — the comps agent prices the gap, the links open the recorder trail.'},
   qs:[ qn('Using the city\'s median $/sf'+(l.sqft?` and this building's ${FN(l.sqft)} sf`:' and a comparable basis')+', what would it likely trade for at market? (±10% is fine)', ind, '$',
         ['The flag means the recorded price is NOT market — rebuild market from $/sf.','City median $/sf × building sf.','The research report\'s comps agent prints exactly this "indicated value".'],
         `Indicated ≈ ${F$(ind)} — ` + (flagged
-          ? `the recorded ${F$(X.price(l))} is a partial-interest or family transfer, not a price you can buy at. But it tells you the ownership just changed hands quietly.`
-          : `in this constructed case the recorded ${F$(X.price(l))} is standing in for a partial-interest or family transfer, so the gap is what you'd be reading if this one really had surfaced.`)),
+          ? `the ${priceWord} is a partial-interest or family transfer, not a price you can buy at. But it tells you the ownership just changed hands quietly.`
+          : `in this constructed case the ${priceWord} is standing in for a partial-interest or family transfer, so the gap is what you'd be reading if this one really had surfaced.`)),
        qm('The professional read of a below-market transfer plus a long-held neighbor parcel is:', [
          'A door-knock and a letter: new heirs or partial owners often want a clean exit, and you can be the prepared buyer\'s agent when they do',
          'Offer the recorded price — it\'s public, so it must be available',

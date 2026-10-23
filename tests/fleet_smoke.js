@@ -2790,10 +2790,19 @@ async function main() {
         const before = LXComps.pool().length;
         const base = LX.allListings().find(x => x.sale != null && x.saleDate);
         if (!base) return {skip: true};
-        const synth = Object.assign({}, base, {id: 'fleetsmoke_synth_' + Date.now(), src: 'imp'});
-        LX.state.imported.push(synth);
-        const after = LXComps.pool().length;
-        LX.state.imported.pop();
+        // a distinct sale price keeps this synthetic record out of comps.js's
+        // own bulk-deed dedup (same sale+saleDate as base would exclude it
+        // as a portfolio deed regardless of pool staleness, masking a real
+        // regression as a false pass)
+        const synth = Object.assign({}, base, {id: 'fleetsmoke_synth_' + Date.now(), src: 'imp', sale: (base.sale || 0) + 1});
+        let after;
+        try {
+          LX.state.imported.push(synth);
+          after = LXComps.pool().length;
+        } finally {
+          LX.state.imported.pop();
+          LXComps.invalidate(); // never leave the popped record cached in POOL/POOL_BY_METRO for later assertions
+        }
         return {skip: false, before, after};
       });
       if (compsStale && !compsStale.skip && compsStale.after <= compsStale.before) {
