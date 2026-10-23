@@ -24,6 +24,13 @@ such.
   fails if the gate accepts any. `--console out.html` builds a team console
   page with per-agent heartbeat, voice preview and a rule-matching dispatch
   box that is labelled as rule matching, not a language model.
+- **Drafting is no longer refused as sending** — the contact rule matched the
+  words *email*, *text* and *call* anywhere, so "Draft an email to the seller's
+  agent for my review" and "Edit the text of the call brief" were refused
+  (measured: 2 of 6 drafting/contact phrasings wrong). The rule now fires on
+  those words only when someone is being contacted; both drafts are in-scope
+  examples and two contact phrasings are new eval probes (20 total), so a
+  future change that loosens or tightens it too far fails the build.
 - **The console's router is now data, and evaluated** — the dispatch rules moved
   from `scripts/hive_console.html` into `content/agents/hive.json`, and
   `build_hive.py` routes every eval probe and every in-scope example through
