@@ -44,6 +44,8 @@ Usage:
   python3 scripts/build_hive.py                     regenerate docs + avatars
   python3 scripts/build_hive.py --check             fail if stale or invalid
   python3 scripts/build_hive.py --console out.html  also write the console
+  python3 scripts/build_hive.py --console out.html --heartbeat hb.json
+                                    ... with the repository heartbeat attached
   python3 scripts/build_hive.py --json              measured team figures (for the film)
 """
 import datetime
@@ -411,7 +413,7 @@ def render_doc(hive, beats):
     return '\n'.join(A)
 
 
-def render_console(hive, beats):
+def render_console(hive, beats, repo=None):
     built = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
     agents = []
     for a in hive['agents']:
@@ -428,6 +430,7 @@ def render_console(hive, beats):
     data = json.dumps({'team': hive['team'], 'line': hive['the_line'],
                        'routes': hive['routes'],
                        'voice': hive['voice_engine'], 'built': built,
+                       'holdout': holdout_score(hive), 'repo': repo,
                        'agents': agents}).replace('</', '<\\/')
     tpl = open(os.path.join(HERE, 'hive_console.html'), encoding='utf-8').read()
     return tpl.replace('/*__HIVE__*/null', data)
@@ -469,7 +472,10 @@ def main():
         return
     if '--console' in args:
         out = args[args.index('--console') + 1]
-        open(out, 'w', encoding='utf-8').write(render_console(hive, beats))
+        repo = None
+        if '--heartbeat' in args:   # output of scripts/heartbeat.py --json
+            repo = json.load(open(args[args.index('--heartbeat') + 1], encoding='utf-8'))
+        open(out, 'w', encoding='utf-8').write(render_console(hive, beats, repo))
         print('wrote', out)
     n = sum(len({e['probe'] for e in a['evals']}) for a in hive['agents'])
     print('hive ok — %d agents, %d static evals covered and routed by %d console rules, heartbeat %d/%d modules'

@@ -52,6 +52,10 @@ textarea{width:100%;min-height:64px;font:inherit;background:var(--bg);color:var(
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button id="go" type="button">Dispatch</button><button id="say" type="button">Speak reply</button></div>
     <div class="reply" id="reply" role="status" aria-live="polite"></div>
   </section>
+  <section class="console" aria-labelledby="hh">
+    <h2 id="hh" style="margin:0 0 6px;font-size:18px">Repository heartbeat and held-out evals</h2>
+    <div id="repo"></div>
+  </section>
   <div class="grid" id="grid"></div>
   <p class="note" id="voice" style="margin-top:16px"></p>
 </main>
@@ -65,6 +69,18 @@ $('#built').textContent = H.built;
 $('#voice').textContent = 'Voice: ' + H.voice;
 const allBeats = H.agents.flatMap(a => a.beats);
 $('#hb').innerHTML = 'Module heartbeat at build: <b>' + allBeats.filter(b => b.ok).length + '/' + allBeats.length + '</b> match the register';
+const HO = H.holdout, R = H.repo;
+let rh = '';
+if (HO) rh += `<p><b>Held-out generalisation.</b> ${HO.total} rephrasings of the boundary probes, written ${esc(HO.written_on)} by an agent that never saw the routing rules: <b>${HO.caught} caught by the right agent (${Math.round(100 * HO.caught / HO.total)}%)</b>, ${HO.nomatch} match no rule (no agent acts), ${HO.wrong} refused by a different agent, <span class="${HO.waved ? 'not' : 'ships'}"><b>${HO.waved} waved through as in-scope</b></span> (build ceiling ${HO.ceiling_waved}). This console is a tripwire with a measured hole, not a safety boundary.</p>`;
+if (!R) rh += '<p class="note"><b>No repository heartbeat is attached to this build</b>, so this page states nothing about gate status or data age. Build with <code>--heartbeat</code> from <code>scripts/heartbeat.py --json</code>.</p>';
+else {
+  const v = R.verdict, vc = v === 'green' ? 'ships' : v === 'amber' ? 'partial' : 'not';
+  rh += `<p><span class="pill ${vc}">${esc(v)}</span> HEAD <code>${esc(R.head)}</code> · run ${esc(R.run_on)} · <b>${R.gates_passed}/${R.gates_total}</b> CI gates pass</p>`;
+  rh += '<details><summary>Gates (read from the CI workflow)</summary><table><tr><th>Gate</th><th>Result</th><th>Seconds</th></tr>' + R.gates.map(g => `<tr><td>${esc(g.gate)}</td><td class="${g.ok ? 'ships' : 'not'}">${g.ok ? '✓ pass' : '✗ fail'}</td><td>${g.seconds}</td></tr>`).join('') + '</table></details>';
+  rh += '<table><tr><th>Dated source</th><th>Date</th><th>Age</th><th>Status</th></tr>' + R.freshness.map(f => `<tr><td>${esc(f.source)}</td><td>${esc(f.date)}</td><td>${f.age_days === null ? '—' : f.age_days + 'd'}</td><td class="${f.status === 'fresh' ? 'ships' : f.status === 'stale' ? 'partial' : 'not'}">${esc(f.status)}</td></tr>`).join('') + '</table>';
+  rh += '<div class="k">What a green heartbeat does not check</div><ul>' + R.unchecked.map(u => `<li><b>${esc(u.item)}</b> — ${esc(u.why)}</li>`).join('') + '</ul>';
+}
+$('#repo').innerHTML = rh;
 const t0 = Date.now();
 setInterval(() => { $('#tick').textContent = Math.floor((Date.now() - t0) / 1000) + 's'; }, 1000);
 try { const th = localStorage.getItem('hive-theme'); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
