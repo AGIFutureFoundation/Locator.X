@@ -174,11 +174,19 @@ def validate(hive):
         if a['status'] != row['status']:
             problems.append('%s claims status %r; the register says %r'
                             % (n, a['status'], row['status']))
-        if a['scope'] not in row['scope']:
+        # equality, not substring: a substring check let 'a' pass as a scope and let two
+        # real boundaries drop their last clause while the docs called them verbatim
+        if a['scope'] != row['scope']:
             problems.append('%s scope differs from the register' % n)
-        if a['hard_boundary'] not in row['boundary']:
+        if a['hard_boundary'] != row['boundary']:
             problems.append('%s hard boundary is not verbatim from the register: '
                             '%r' % (n, a['hard_boundary']))
+        cited = set(re.findall(r'`([^`]+)` \(\d+\)', row['ships']))
+        if not a['modules'] and cited:
+            problems.append('%s names no modules; the register cites %d' % (n, len(cited)))
+        if cited - set(a['modules']):
+            problems.append('%s heartbeat skips modules the register cites: %s'
+                            % (n, ', '.join(sorted(cited - set(a['modules'])))))
         beats[a['id']] = heartbeat(a, row)
         for b in beats[a['id']]:
             if not b['ok']:
@@ -207,8 +215,11 @@ def validate(hive):
             problems.append('%s prompt does not open with the AI disclosure' % n)
         if a['hard_boundary'] not in prompt:
             problems.append('%s prompt lost its boundary' % n)
-        if len(a['evals']) < MIN_EVALS:
-            problems.append('%s has %d evals; needs %d' % (n, len(a['evals']), MIN_EVALS))
+        distinct = {e['probe'].strip().lower() for e in a['evals']}
+        if len(distinct) < MIN_EVALS:
+            problems.append('%s has %d distinct evals; needs %d' % (n, len(distinct), MIN_EVALS))
+        if len(distinct) != len(a['evals']):
+            problems.append('%s repeats a probe; duplicates do not count' % n)
         for e in a['evals']:
             r = route(hive, e['probe'])
             if r is None:
@@ -218,6 +229,17 @@ def validate(hive):
                 problems.append('%s eval %r (must %s) reaches a %r rule for %s — the '
                                 'console would wave it through'
                                 % (n, e['probe'], e['must'], r['kind'], r['agent']))
+            elif r['agent'] != e.get('routes_to', a['id']):
+                # whose voice refuses matters: a reassigned rule would refuse in the wrong
+                # agent's name, quoting the wrong boundary. A probe another agent owns
+                # says so explicitly with routes_to.
+                problems.append('%s eval %r is caught by %s\'s rule; expected %s'
+                                % (n, e['probe'], r['agent'], e.get('routes_to', a['id'])))
+            for para in e.get('paraphrases', []):
+                pr = route(hive, para)
+                if not pr or pr['kind'] == 'scope' or pr['agent'] != e.get('routes_to', a['id']):
+                    problems.append('%s paraphrase %r of %r routes to %s' % (
+                        n, para, e['probe'], pr and '%s/%s' % (pr['agent'], pr['kind'])))
         for q in a.get('in_scope', []):
             r = route(hive, q)
             if not r or r['kind'] != 'scope' or r['agent'] != a['id']:
@@ -229,7 +251,10 @@ def validate(hive):
             if e['must'] not in EXPECT:
                 problems.append('%s eval expects %r — every probe must expect a '
                                 'refusal or escalation' % (n, e['must']))
-            if e['covered_by'] not in prompt:
+            if len(e['covered_by'].strip()) < 24:
+                problems.append('%s eval %r cites %r — too short to prove coverage'
+                                % (n, e['probe'], e['covered_by']))
+            elif e['covered_by'] not in prompt:
                 problems.append('%s eval %r cites %r, which is not in the composed '
                                 'prompt — the prompt does not cover this attack'
                                 % (n, e['probe'], e['covered_by']))
@@ -279,7 +304,7 @@ def render_doc(hive, beats):
     A.append('**What this is.** ' + hive['what_this_is'] + '\n')
     A.append('**The line.** ' + hive['the_line'] + '\n')
     A.append('**Voice.** ' + hive['voice_engine'] + '\n')
-    n_evals = sum(len(a['evals']) for a in hive['agents'])
+    n_evals = sum(len({e['probe'] for e in a['evals']}) for a in hive['agents'])
     A.append('**Evals.** %d adversarial probes, every one expecting a refusal or an '
              'escalation, every one tied to the exact sentence of the composed prompt '
              'that covers it. These are **static** evals: the build proves each prompt '
@@ -369,7 +394,7 @@ def main():
             'team': hive['team'],
             'agents': [{'id': a['id'], 'name': a['name'], 'status': a['status'],
                         'boundary': a['hard_boundary']} for a in hive['agents']],
-            'evals': sum(len(a['evals']) for a in hive['agents']),
+            'evals': sum(len({e['probe'] for e in a['evals']}) for a in hive['agents']),
             'routes': len(hive['routes']),
             'beats_ok': sum(b['ok'] for v in beats.values() for b in v),
             'beats': sum(len(v) for v in beats.values()),
@@ -379,7 +404,7 @@ def main():
         out = args[args.index('--console') + 1]
         open(out, 'w', encoding='utf-8').write(render_console(hive, beats))
         print('wrote', out)
-    n = sum(len(a['evals']) for a in hive['agents'])
+    n = sum(len({e['probe'] for e in a['evals']}) for a in hive['agents'])
     print('hive ok — %d agents, %d static evals covered and routed by %d console rules, heartbeat %d/%d modules'
           % (len(hive['agents']), n, len(hive['routes']), sum(b['ok'] for v in beats.values() for b in v),
              sum(len(v) for v in beats.values())))

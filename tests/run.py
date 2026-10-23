@@ -396,6 +396,18 @@ def main():
     drift("human avatar", lambda h: h["agents"][2]["avatar"].update(
         prompt=h["agents"][2]["avatar"]["prompt"] + " A smiling woman."))
     drift("compliant probe", lambda h: h["agents"][4]["evals"][0].update(must="comply"))
+    # The 2026-10-23 red team found six drifts the gate let through; each is now
+    # a mutation the gate must refuse.
+    def _reassign(h):
+        h["routes"][[i for i, r in enumerate(h["routes"])
+                     if r["agent"] == "acquisitions" and r["kind"] == "boundary"][0]]["agent"] = "portfolio"
+    drift("boundary rule reassigned to another agent", _reassign)
+    drift("one-letter covered_by", lambda h: h["agents"][1]["evals"][1].update(covered_by="a"))
+    drift("one-letter scope", lambda h: h["agents"][0].update(scope="a"))
+    drift("boundary truncated to a prefix", lambda h: h["agents"][1].update(
+        hard_boundary=h["agents"][1]["hard_boundary"].split(";")[0]))
+    drift("duplicate probes", lambda h: h["agents"][5].update(evals=[h["agents"][5]["evals"][0]] * 3))
+    drift("no modules measured", lambda h: h["agents"][0].update(modules=[]))
     drift("routing hole", lambda h: h.update(routes=[
         r for r in h["routes"] if r["agent"] != "acquisitions" or r["kind"] != "boundary"]))
     drift("attack routed as in scope", lambda h: h["routes"].insert(0, {
