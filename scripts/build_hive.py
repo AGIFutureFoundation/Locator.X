@@ -39,6 +39,7 @@ Usage:
   python3 scripts/build_hive.py                     regenerate docs + avatars
   python3 scripts/build_hive.py --check             fail if stale or invalid
   python3 scripts/build_hive.py --console out.html  also write the console
+  python3 scripts/build_hive.py --json              measured team figures (for the film)
 """
 import datetime
 import html
@@ -313,6 +314,16 @@ def main():
         write_if_changed(os.path.join(AVATARS, a['id'] + '.svg'), avatar_svg(a), check, stale)
     if stale:
         die('stale (run scripts/build_hive.py): ' + ', '.join(stale))
+    if '--json' in args:
+        print(json.dumps({
+            'team': hive['team'],
+            'agents': [{'id': a['id'], 'name': a['name'], 'status': a['status'],
+                        'boundary': a['hard_boundary']} for a in hive['agents']],
+            'evals': sum(len(a['evals']) for a in hive['agents']),
+            'beats_ok': sum(b['ok'] for v in beats.values() for b in v),
+            'beats': sum(len(v) for v in beats.values()),
+        }))
+        return
     if '--console' in args:
         out = args[args.index('--console') + 1]
         open(out, 'w', encoding='utf-8').write(render_console(hive, beats))

@@ -24,6 +24,15 @@ such.
   fails if the gate accepts any. `--console out.html` builds a team console
   page with per-agent heartbeat, voice preview and a rule-matching dispatch
   box that is labelled as rule matching, not a language model.
+- **The whitepaper film** — `scripts/make_whitepaper_video.js`, about two
+  minutes (120 s measured), product-only, on the investor film's stage, which
+  is now a shared `render()` export with its own footer per film (the product
+  film must not carry the investor frame line). Every figure comes from
+  `deck_figures.py --json` and `build_hive.py --json` at render time; the Hive
+  scene draws the six avatars, and the closing scene carries the contact QR,
+  decoded back to its URL from a rendered frame. Silent: no speech engine
+  exists in this container, so no voice track is claimed. Falls back to a
+  system ffmpeg when `ffmpeg-static` is absent.
 - **Interior and exterior scenes** — four new title-sequence pairs in
   `content/academy_scenes.json` (loft, stair hall, courtyard block, corner
   building at dusk), all unnamed and generic, all passing the scene gate's
