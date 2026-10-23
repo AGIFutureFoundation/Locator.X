@@ -39,7 +39,7 @@ function figures() {
     process.exit(1);
   }
   const hive = py('scripts/build_hive.py', '--json');
-  const hmiss = ['evals', 'beats_ok', 'beats', 'agents'].filter(k => hive[k] === undefined || hive[k] === null);
+  const hmiss = ['evals', 'beats_ok', 'beats', 'agents', 'holdout'].filter(k => hive[k] === undefined || hive[k] === null);
   if (hmiss.length) {
     console.error('WHITEPAPER FILM STOPPED — hive not measured: ' + hmiss.join(', '));
     process.exit(1);
@@ -91,7 +91,8 @@ function scenes({ f, hive }) {
       sub: 'Synthetic voices, abstract avatars, and a hard boundary copied from the register word for word.',
       tiles: hive.agents.map(a => ({ img: dataUrl('brand/avatars/' + a.id + '.svg', 'image/svg+xml'),
                                      label: a.name, sub: a.status })),
-      note: n(hive.evals) + ' adversarial probes, each tied to the prompt sentence that covers it (static evals; no live pass rate claimed). Heartbeat: '
+      note: n(hive.evals) + ' probes tied to the prompt sentences that refuse them. Held-out: ' + n(hive.holdout.caught) + ' of '
+            + n(hive.holdout.total) + ' unseen rephrasings caught, ' + n(hive.holdout.waved) + ' waved through. Heartbeat: '
             + n(hive.beats_ok) + ' of ' + n(hive.beats) + ' agent modules match the register.' },
 
     { key: 'bounds', secs: 13, kicker: 'AN AGENT PROPOSES. A PERSON DECIDES.',

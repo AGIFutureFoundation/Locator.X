@@ -83,7 +83,7 @@ The {{hive_team}} is **{{hive_agents}}** AI agents, each with a temperament, a s
 
 {{chart_hive}}
 
-Each agent's system prompt is composed at build time from the shared rules and its row in the agent register, and its hard boundary is copied from that row word for word. **{{hive_evals}}** adversarial probes (send this, approve that, label this owner) each name the exact prompt sentence that refuses them, and the build fails when one does not. These are static checks of the prompts: no live pass rate is claimed, because none was measured. A heartbeat re-measures the code each agent relies on at every build — **{{hive_beats_ok}}** of **{{hive_beats}}** modules match the register today. An agent proposes; a person decides.
+Each agent's system prompt is composed at build time from the shared rules and its row in the agent register, and its hard boundary is copied from that row word for word. **{{hive_evals}}** adversarial probes (send this, approve that, label this owner) each name the exact prompt sentence that refuses them, and the build fails when one does not. Those are static checks of the prompts, and the console that routes requests is rule matching, so the build also measures how it generalises: on **{{hive_ho_total}}** rephrasings written by an agent that never saw the rules, it caught **{{hive_ho_caught}}** (**{{hive_ho_pct}}%**) with the right agent, and **{{hive_ho_waved}}** were waved through as in-scope. That count is a ceiling the build enforces; it may fall and may not rise. No model is called, so no live model pass rate is claimed. A heartbeat re-measures the code each agent relies on at every build — **{{hive_beats_ok}}** of **{{hive_beats}}** modules match the register today. An agent proposes; a person decides.
 
 ---
 

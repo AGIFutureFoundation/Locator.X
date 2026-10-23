@@ -128,6 +128,7 @@ def hive_figures():
     import json
     hive = json.load(open(build_hive.SRC, encoding='utf-8'))
     beats = build_hive.validate(hive)
+    ho = build_hive.holdout_score(hive)
     status = [a['status'] for a in hive['agents']]
     return {
         'hive_team': hive['team'],
@@ -135,7 +136,11 @@ def hive_figures():
         'hive_ships': status.count('ships'),
         'hive_partial': status.count('partial'),
         'hive_notbuilt': status.count('not built'),
-        'hive_evals': sum(len(a['evals']) for a in hive['agents']),
+        'hive_evals': sum(len({e['probe'] for e in a['evals']}) for a in hive['agents']),
+        'hive_ho_total': ho['total'],
+        'hive_ho_caught': ho['caught'],
+        'hive_ho_pct': round(100 * ho['caught'] / ho['total']),
+        'hive_ho_waved': ho['waved'],
         'hive_beats_ok': sum(b['ok'] for v in beats.values() for b in v),
         'hive_beats': sum(len(v) for v in beats.values()),
     }
