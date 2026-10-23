@@ -2634,6 +2634,93 @@ async function main() {
         errs.push('record locker: the FEMA entry has no gap note when the state is unresolvable');
       }
 
+      // uwexport.js's PDF memorandum header used to hardcode every county
+      // outside Orleans Parish to "CA" — the exact bug just fixed in
+      // records.js/packet.js, left unfixed in the formal underwriting
+      // memorandum. It now reuses packet.js's own stateName() resolution.
+      const memoAddr = await page.evaluate(() => {
+        if (!window.LXPACKET) return null;
+        const l = LX.allListings()[0];
+        const run = (listing) => {
+          const st = LXPACKET.stateName(listing);
+          return listing.addr + ', ' + listing.city + ', ' + (st || '[state not on record]') + ' ' + (listing.zip || '');
+        };
+        return { withState: run(Object.assign({}, l, {state: 'Arizona'})), withoutState: run(Object.assign({}, l, {state: undefined})) };
+      });
+      if (memoAddr) {
+        if (!/Arizona/.test(memoAddr.withState)) errs.push('uwexport.js memo header did not resolve a real state: ' + memoAddr.withState);
+        if (/\bCA\b|\bLA\b/.test(memoAddr.withoutState)) errs.push('uwexport.js memo header guessed a state with none on record: ' + memoAddr.withoutState);
+      }
+
+      // switchboard.js: stratBRRRR's "no sheet" block used to report itself
+      // as "Flip" (copy-paste from stratFlip's identical guard) — corrupting
+      // both coverage.js's block/computed tallies, which key on c.key.
+      const sbBlocked = await page.evaluate(() => {
+        if (!window.LXSB) return null;
+        const l = LX.allListings().find(x => x.price > 0 && (x.units || 1) <= 4 && !/land|lot|vacant/i.test(x.kind || ''));
+        if (!l) return {skip: true};
+        const prev = LXUW.sheetFor;
+        LXUW.sheetFor = () => null;
+        let r;
+        try { r = LXSB.stratBRRRR(l); } finally { LXUW.sheetFor = prev; }
+        return {skip: false, key: r.key, name: r.name};
+      });
+      if (sbBlocked && !sbBlocked.skip) {
+        if (sbBlocked.key !== 'brrrr' || sbBlocked.name !== 'BRRRR') {
+          errs.push('switchboard.js stratBRRRR blocked-state reports the wrong strategy: key=' + sbBlocked.key + ' name=' + sbBlocked.name);
+        }
+      }
+
+      // switchboard.js: stratBRRRR/stratHack used to classify rent by
+      // regex-sniffing the "how" prose instead of reading re.basis (the
+      // exact bug class stratHold's own header comment says was fixed) —
+      // a rent-blind market's rule-of-thumb rent graded as 'model' instead
+      // of the weaker 'assumption'. Also checks purchase price now reflects
+      // l.est (a ZIP-index estimate is never "record" provenance).
+      const sbKinds = await page.evaluate(() => {
+        if (!window.LXSB) return null;
+        const l = LX.allListings().find(x => x.price > 0 && (x.units || 1) <= 4 && !/land|lot|vacant/i.test(x.kind || ''));
+        if (!l) return {skip: true};
+        const noneBasis = Object.assign({}, l); // real listing; basis checked via rentEstimate directly
+        const re = LX.rentEstimate(l);
+        const brrrr = LXSB.stratBRRRR(l);
+        const rentRow = brrrr.basis ? brrrr.basis.find(x => x.what === 'Rent') : null;
+        const estListing = Object.assign({}, l, {est: true});
+        const holdEst = LXSB.stratHold(estListing);
+        const holdReal = LXSB.stratHold(l);
+        const priceEst = holdEst.basis ? holdEst.basis.find(x => x.what === 'Purchase price') : null;
+        const priceReal = holdReal.basis ? holdReal.basis.find(x => x.what === 'Purchase price') : null;
+        return {skip: false, basis: re.basis, rentKind: rentRow && rentRow.kind, priceEstKind: priceEst && priceEst.kind, priceRealKind: priceReal && priceReal.kind};
+      });
+      if (sbKinds && !sbKinds.skip) {
+        if (sbKinds.basis === 'none' && sbKinds.rentKind !== 'assumption') {
+          errs.push('switchboard.js stratBRRRR still regex-classifies a rent-blind market as "' + sbKinds.rentKind + '" instead of "assumption"');
+        }
+        if (sbKinds.priceEstKind !== 'model') errs.push('switchboard.js priceBasis() credits an l.est price with "' + sbKinds.priceEstKind + '" provenance instead of "model"');
+        if (sbKinds.priceRealKind !== 'record') errs.push('switchboard.js priceBasis() regressed on a real recorded price: ' + sbKinds.priceRealKind);
+      }
+
+      // outlookviz.js: reqBar()'s rent-pinned branch used to unconditionally
+      // say the DSCR-1.20 rent requirement was "comfortably met" whenever
+      // the fitted trend was pinned at the extrapolation cap — true for a
+      // trend pinned at +25%/yr, the opposite of true for one pinned at
+      // -15%/yr, since rentPinned fires on |trend| > cap in EITHER direction.
+      const outlookPinned = await page.evaluate(() => {
+        if (!window.LXOutlookViz || !LXOutlookViz.reqBar) return null;
+        const base = {reqDscr: {rate: 0.03, impossible: false, atFloor: false}, cap: 10};
+        const metHtml = LXOutlookViz.reqBar(Object.assign({}, base, {measured: 0.258, rentPinned: true, capCentral: ['x']}));
+        const failHtml = LXOutlookViz.reqBar(Object.assign({}, base, {measured: -0.15, rentPinned: true, capCentral: ['x']}));
+        return {metHtml, failHtml};
+      });
+      if (outlookPinned) {
+        if (!/is met on the recent record|comfortably met/.test(outlookPinned.metHtml)) {
+          errs.push('outlookviz.js reqBar(): a rent trend pinned positive and clearing the requirement no longer reads as met');
+        }
+        if (!/wrong direction|does not clear/.test(outlookPinned.failHtml)) {
+          errs.push('outlookviz.js reqBar(): a rent trend pinned NEGATIVE still claims the requirement is comfortably met — the exact bug this guards');
+        }
+      }
+
       await page.evaluate(() => LX.showView('mapview'));
       await page.waitForTimeout(400);
     }
