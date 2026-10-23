@@ -24,6 +24,12 @@ such.
   fails if the gate accepts any. `--console out.html` builds a team console
   page with per-agent heartbeat, voice preview and a rule-matching dispatch
   box that is labelled as rule matching, not a language model.
+- **The whitepaper describes the agent team** — a new section and a third chart
+  (agents by register status) in `content/whitepaper/WHITEPAPER.md`, every figure
+  a placeholder resolved by `build_hive.validate()`, so a whitepaper cannot be
+  built that describes a team the register does not support. Two more scenes
+  (an office floor at night, a warehouse yard at dawn) bring the library to
+  eleven pairs.
 - **The whitepaper film** — `scripts/make_whitepaper_video.js`, about two
   minutes (120 s measured), product-only, on the investor film's stage, which
   is now a shared `render()` export with its own footer per film (the product

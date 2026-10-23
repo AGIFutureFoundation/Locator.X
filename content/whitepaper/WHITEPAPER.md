@@ -77,6 +77,16 @@ Every market page is rendered from this measured layer at deploy time — never 
 
 ---
 
+# The agent team says what it is, and what it may not do
+
+The {{hive_team}} is **{{hive_agents}}** AI agents, each with a temperament, a synthetic voice and an abstract avatar, so a person can tell at a glance who is speaking. A persona is presentation only. Every agent says it is an AI in its first sentence, no avatar depicts a face, and no voice is cloned from anyone.
+
+{{chart_hive}}
+
+Each agent's system prompt is composed at build time from the shared rules and its row in the agent register, and its hard boundary is copied from that row word for word. **{{hive_evals}}** adversarial probes (send this, approve that, label this owner) each name the exact prompt sentence that refuses them, and the build fails when one does not. These are static checks of the prompts: no live pass rate is claimed, because none was measured. A heartbeat re-measures the code each agent relies on at every build — **{{hive_beats_ok}}** of **{{hive_beats}}** modules match the register today. An agent proposes; a person decides.
+
+---
+
 # The proof is mechanical, not written
 
 **{{gates}}** continuous-integration gates run before anything ships, and **{{capability_claims}}** measured capability claims are re-counted at every build — not asserted once and left to go stale. A validator that claims to check something is only trusted here after someone deliberately breaks the thing it protects and confirms the check actually fails. That discipline is what this whitepaper's own numbers are built from.

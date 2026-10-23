@@ -69,6 +69,20 @@
       "pillar": "Asset classes: exteriors",
       "initial": "A generic four-storey corner building of pale render and tall ground-floor glass on an empty, unnamed street corner, the shopfronts dark and blank, the upper windows evenly spaced, under a deep blue dusk sky. No signs, no lettering, no people and no vehicles. The camera arcs slowly around the corner at street level, keeping the building centred. Architectural, photorealistic, cool blue hour light — continuous slow arcing motion, no cuts, a single unbroken take.",
       "evolution": "The same four-storey corner building of pale render and tall ground-floor glass, the same empty street corner and evenly spaced upper windows, the same slow arc at street level. Night arrives: the ground-floor glass fills with warm interior light, a few upper windows glow, and the render turns amber under the lamps while the sky goes from deep blue to black. Architectural, photorealistic — continuous slow arcing motion, no cuts, a single unbroken take."
+    },
+    {
+      "id": "interior-office",
+      "title": "Interior — the open office floor at night",
+      "pillar": "Asset classes: interiors",
+      "initial": "An empty open-plan office floor at night, long rows of bare white desks with no screens or papers, a grid of square ceiling panels glowing a soft even white, and a full-height glass curtain wall on one side showing only a dark featureless sky. Nobody is present and nothing moves except a faint reflection in the glass. The camera dollies slowly sideways along the glass wall at desk height. Architectural, photorealistic, clean cool light — continuous slow lateral motion, no cuts, a single unbroken take.",
+      "evolution": "The same empty open-plan office floor, the same rows of bare white desks and glowing ceiling panels, the same glass curtain wall and the same slow sideways dolly at desk height. The ceiling panels begin to switch off row by row from the far end toward the camera, until the floor is lit only by the deep blue of first dawn rising through the glass. Architectural, photorealistic — continuous slow lateral motion, no cuts, a single unbroken take."
+    },
+    {
+      "id": "exterior-warehouse",
+      "title": "Exterior — the warehouse yard at dawn",
+      "pillar": "Asset classes: exteriors",
+      "initial": "A generic single-storey warehouse of ribbed grey metal cladding with a row of closed roller doors along its long side, a broad empty concrete yard in front marked with faded painted bays, under a pale overcast sky just before sunrise. No signage, no lettering, no vehicles and no people. The camera tracks slowly along the row of roller doors at a low height, keeping the cladding in frame. Industrial, photorealistic, flat soft light — continuous slow tracking motion, no cuts, a single unbroken take.",
+      "evolution": "The same single-storey warehouse of ribbed grey metal cladding, the same closed roller doors and the same empty concrete yard with faded bays, the same slow low tracking shot along the doors. The sun clears the horizon behind the camera, and a band of warm orange light slides up the ribbed cladding while long shadows stretch across the concrete. Industrial, photorealistic — continuous slow tracking motion, no cuts, a single unbroken take."
     }
   ]
 }

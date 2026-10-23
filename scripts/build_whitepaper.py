@@ -27,13 +27,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import deck_figures  # noqa: E402
+import build_hive  # noqa: E402
 
 SRC = os.path.join(ROOT, 'content', 'whitepaper', 'WHITEPAPER.md')
 
 # These two placeholders resolve to rendered SVG, not a measured number — kept
 # in a separate set so the "every figure must be a real measurement" check
 # below does not try to format an SVG string as one.
-CHART_KEYS = {'chart_coverage', 'chart_academy'}
+CHART_KEYS = {'chart_coverage', 'chart_academy', 'chart_hive'}
 
 
 def die(msg):
@@ -118,6 +119,28 @@ def bar_chart(chart_id, title, rows):
     )
 
 
+def hive_figures():
+    """The agent team, measured by the same validation build_hive.py gates on.
+
+    validate() raises if any persona has drifted from docs/company/AGENTS.md,
+    so a whitepaper cannot be built that describes a team the register does
+    not support."""
+    import json
+    hive = json.load(open(build_hive.SRC, encoding='utf-8'))
+    beats = build_hive.validate(hive)
+    status = [a['status'] for a in hive['agents']]
+    return {
+        'hive_team': hive['team'],
+        'hive_agents': len(hive['agents']),
+        'hive_ships': status.count('ships'),
+        'hive_partial': status.count('partial'),
+        'hive_notbuilt': status.count('not built'),
+        'hive_evals': sum(len(a['evals']) for a in hive['agents']),
+        'hive_beats_ok': sum(b['ok'] for v in beats.values() for b in v),
+        'hive_beats': sum(len(v) for v in beats.values()),
+    }
+
+
 def charts(f):
     return {
         'chart_coverage': bar_chart('cov', 'Coverage status, by row', [
@@ -131,6 +154,11 @@ def charts(f):
             ('Curriculum items', f['curriculum_items']),
             ('Tracks', f['tracks']),
             ('Lessons', f['lessons']),
+        ]),
+        'chart_hive': bar_chart('hiv', 'The agent team, by register status', [
+            ('Ships outright', f['hive_ships']),
+            ('Partial', f['hive_partial']),
+            ('Not built', f['hive_notbuilt']),
         ]),
     }
 
@@ -264,10 +292,11 @@ def main():
         die('usage: build_whitepaper.py <out.html>  |  build_whitepaper.py --check')
 
     figs = deck_figures.figures()
+    figs.update(hive_figures())
     body, used = render(figs)
 
     page = to_html(body)
-    # render() already confirmed both chart placeholders resolved in the
+    # render() already confirmed every chart placeholder resolved in the
     # SOURCE. This only catches a <figure> tag being dropped or duplicated
     # outright during to_html's own markdown pass — NOT a chart surviving
     # with its opening tag intact but its later lines scattered into stray
