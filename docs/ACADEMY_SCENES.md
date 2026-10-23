@@ -9,7 +9,7 @@
 
 **Credential.** None is stored in this repository. Running these against the model needs a Reactor JWT the platform owner supplies at runtime; the library is text and is useful, reviewable and diffable without one.
 
-Model: `visko-orbis-stable`. Library version 1, last reviewed 2026-09-12. **5 scenes.**
+Model: `visko-orbis-stable`. Library version 1, last reviewed 2026-10-19. **9 scenes.**
 
 ## How these are written
 
@@ -85,6 +85,54 @@ Each scene is a pair. The **initial** prompt opens the shot; the
 **Evolution**
 
 > The same still black pool in the same empty courtyard of dark stone, the same low level glide just above the surface. A single slow ripple has begun to travel outward across the water, breaking the reflected sky into moving fragments and then letting it knit back together behind the wave. Photorealistic, minimal, near-monochrome — continuous slow forward glide, no cuts, a single unbroken take.
+
+## Interior — the empty loft
+
+*Asset classes: interiors* — `interior-loft`
+
+**Initial**
+
+> A wide empty loft interior with raw concrete columns in a regular grid, a polished concrete floor, exposed timber ceiling beams and a long wall of steel-framed industrial windows letting in flat grey morning light. The space is unfurnished and nobody is present; a few dust motes hang in the air near the glass. The camera glides slowly forward between the columns at chest height, steady and level. Architectural, photorealistic, cool and calm — continuous slow forward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same wide loft interior, the same concrete columns, timber beams and steel-framed windows, the same slow forward glide between the columns at chest height. The light through the industrial windows is shifting from flat grey to a low warm afternoon sun that lays long gridded window shadows across the polished floor and climbs the far columns. Architectural, photorealistic — continuous slow forward motion, no cuts, a single unbroken take.
+
+## Interior — the stair hall
+
+*Asset classes: interiors* — `interior-stair`
+
+**Initial**
+
+> A tall quiet stair hall inside a plain modern building, a single flight of pale oak treads rising along a white plaster wall beside a narrow vertical window, a thin black steel handrail catching the light. Nothing decorates the walls and nobody is present. The camera rises slowly and smoothly alongside the stair, keeping the treads in frame as it climbs. Minimal, photorealistic, soft daylight and gentle shadow — continuous slow upward motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same tall stair hall, the same pale oak treads, white plaster wall and narrow vertical window, the same slow smooth rise alongside the stair. Evening is falling outside the window, and small warm recessed lights come on one by one under each tread, so the flight glows in a soft rhythm against the darkening plaster. Minimal, photorealistic — continuous slow upward motion, no cuts, a single unbroken take.
+
+## Exterior — the courtyard block
+
+*Asset classes: exteriors* — `exterior-courtyard`
+
+**Initial**
+
+> An unnamed low-rise residential block of warm brick and dark window frames arranged around a quiet planted courtyard, young trees and gravel paths between simple benches, under a clear pale sky at mid-morning. No signage, no lettering, no people and no cars are visible. The camera floats slowly across the courtyard at a gentle height, drifting toward the far facade. Architectural, photorealistic, calm and even light — continuous slow drifting motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same low-rise brick residential block around the same planted courtyard, the same young trees, gravel paths and benches, the same slow float toward the far facade. A light rain begins: the gravel darkens, the brick deepens in colour, and the windows start to reflect a soft grey sky as droplets bead on the benches. Architectural, photorealistic — continuous slow drifting motion, no cuts, a single unbroken take.
+
+## Exterior — the corner building at dusk
+
+*Asset classes: exteriors* — `exterior-dusk`
+
+**Initial**
+
+> A generic four-storey corner building of pale render and tall ground-floor glass on an empty, unnamed street corner, the shopfronts dark and blank, the upper windows evenly spaced, under a deep blue dusk sky. No signs, no lettering, no people and no vehicles. The camera arcs slowly around the corner at street level, keeping the building centred. Architectural, photorealistic, cool blue hour light — continuous slow arcing motion, no cuts, a single unbroken take.
+
+**Evolution**
+
+> The same four-storey corner building of pale render and tall ground-floor glass, the same empty street corner and evenly spaced upper windows, the same slow arc at street level. Night arrives: the ground-floor glass fills with warm interior light, a few upper windows glow, and the render turns amber under the lamps while the sky goes from deep blue to black. Architectural, photorealistic — continuous slow arcing motion, no cuts, a single unbroken take.
 
 ## What is deliberately absent
 

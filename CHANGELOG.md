@@ -7,6 +7,32 @@ such.
 
 ## [Unreleased]
 
+- **Omega Hive — the six agents get a face, a voice and a console, held to the
+  register** — `content/agents/hive.json`, `scripts/build_hive.py`,
+  [`docs/HIVE.md`](docs/HIVE.md). Each agent in
+  [`docs/company/AGENTS.md`](docs/company/AGENTS.md) gets a temperament, a
+  synthetic browser voice (Web Speech API; nothing generated, stored or
+  cloned), an abstract vector avatar (`brand/avatars/`, never a face) and a
+  **composed** system prompt (metaprompt). The build fails when a persona's
+  status, scope or hard boundary differs from the register by a word, when a
+  module the register cites has a different line count than measured
+  (heartbeat, 16/16 at commit), or when any of the 18 adversarial eval probes
+  cites a sentence its composed prompt does not contain. The evals are
+  **static**: no model was called, and no live pass rate is claimed.
+  `tests/run.py` mutates the team six ways (upgraded status, softened
+  boundary, cloned voice, uncovered probe, human avatar, compliant probe) and
+  fails if the gate accepts any. `--console out.html` builds a team console
+  page with per-agent heartbeat, voice preview and a rule-matching dispatch
+  box that is labelled as rule matching, not a language model.
+- **Interior and exterior scenes** — four new title-sequence pairs in
+  `content/academy_scenes.json` (loft, stair hall, courtyard block, corner
+  building at dusk), all unnamed and generic, all passing the scene gate's
+  real-place and single-take rules.
+- **Contact QR** — `scripts/make_qr.py` renders `brand/qr/linkedin-infogurus.svg`
+  (error correction H), supplied by the platform owner; decoded back to its URL
+  before commit. A link, not a biography: the instructor profile still ships
+  empty.
+
 - **Five system films, over live footage** — `scripts/make_system_films.js`.
   Where the short promos carry one claim over one still, these run 38 seconds
   each with **the application running inside the frame** while the mechanism is
