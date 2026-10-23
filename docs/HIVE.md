@@ -21,8 +21,8 @@
 |---|---|---|---|---|
 | <img src="../brand/avatars/scout.svg" width="40" alt=""> | **Scout** | ships | May not widen a buy box or a market; may not contact anyone | `src/scout.js` 287, `src/signals.js` 173, `src/patterns.js` 467 |
 | <img src="../brand/avatars/diligence.svg" width="40" alt=""> | **Diligence** | partial | Never represents unverified information as fact; may not retrieve or store owner PII | `src/records.js` 281, `src/rag.js` 224, `src/packet.js` 173 |
-| <img src="../brand/avatars/underwriting.svg" width="40" alt=""> | **Underwriting** | ships | Does not make final investment decisions | `src/underwrite.js` 628, `src/switchboard.js` 455, `src/predict.js` 587 |
-| <img src="../brand/avatars/acquisitions.svg" width="40" alt=""> | **Acquisitions** | partial | Must observe applicable privacy, calling, SMS, email and consent requirements. Drafting for a human to review is in scope; sending is not | `src/uwexport.js` 370, `src/deskws.js` 91, `src/telemetry.js` 280 |
+| <img src="../brand/avatars/underwriting.svg" width="40" alt=""> | **Underwriting** | ships | Does not make final investment decisions | `src/underwrite.js` 628, `src/switchboard.js` 476, `src/predict.js` 587 |
+| <img src="../brand/avatars/acquisitions.svg" width="40" alt=""> | **Acquisitions** | partial | Must observe applicable privacy, calling, SMS, email and consent requirements. Drafting for a human to review is in scope; sending is not | `src/uwexport.js` 377, `src/deskws.js` 91, `src/telemetry.js` 280 |
 | <img src="../brand/avatars/development.svg" width="40" alt=""> | **Development** | partial | May not represent a modelled cost as a quote | `src/dev.js` 158, `src/rebuild.js` 335, `src/conv.js` 111 |
 | <img src="../brand/avatars/portfolio.svg" width="40" alt=""> | **Portfolio Learning** | not built | May not report a calibration below the sample floor | `src/predict.js` 587 |
 

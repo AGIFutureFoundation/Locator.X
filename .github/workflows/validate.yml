@@ -29,6 +29,11 @@ jobs:
         run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      # scripts/heartbeat.py reads this workflow as YAML, and tests/run.py runs
+      # its selftest. setup-python's interpreter ships without PyYAML, so the
+      # selftest died on an ImportError rather than on a finding.
+      - name: Install the YAML parser the heartbeat reads this workflow with
+        run: python3 -m pip install --quiet pyyaml==6.0.2
       - name: Curriculum gate (eight checks)
         run: python3 curriculum/validate.py
       - name: Course catalog and the CSV are what curriculum.py says

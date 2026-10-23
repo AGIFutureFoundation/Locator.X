@@ -28,7 +28,7 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKFLOW = os.path.join(ROOT, '.github', 'workflows', 'validate.yml')
 STALE, EXPIRED = 90, 180
-SKIP = ('npm ci',)   # environment setup, not a gate
+SKIP = ('npm ci', 'python3 -m pip install')   # environment setup, not a gate
 
 
 def gates_from_workflow(path=WORKFLOW):
