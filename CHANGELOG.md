@@ -7,6 +7,34 @@ such.
 
 ## [Unreleased]
 
+- **Repository heartbeat** — `scripts/heartbeat.py` runs every `run:` step of
+  `.github/workflows/validate.yml` (read from the workflow, so it cannot check
+  less than CI does), ages every dated source the repo stakes a claim on (stale
+  90 days, expired 180, **a future date is an error**), and lists what a green
+  verdict does not check, re-probing each item per run. Negative-tested on
+  2026-10-23: a 2027 `as_of` and a typed whitepaper figure both turn it red. Its
+  selftest runs in `tests/run.py`; the operator console embeds its JSON with
+  `--heartbeat`.
+- **Hive evals hardened, and generalisation measured** (2026-10-23). The
+  entry below said the build fails when a boundary "differs from the register by
+  a word"; it did not — the check was a substring test, and two boundaries had
+  silently lost a clause (Diligence: owner PII; Acquisitions:
+  privacy/calling/SMS/consent). It is equality now, and so are scope, the
+  `covered_by` floor (24 characters), distinct-probe counting, module coverage
+  and whose rule refuses (`routes_to`) — six drifts `tests/run.py` requires the
+  gate to refuse, each break-tested against the previous `build_hive.py`. The
+  console's rule router was then measured on rephrasings it was not tuned on:
+  held-out set 1 (60, written by an agent that never saw the rules) 53% caught by
+  the right agent, 5 waved through as in-scope; retired into tuning; set 2 (80,
+  fresh agent) 34% before tuning, **50% after**, 9 waved through — ratcheted as a
+  build ceiling with a contamination check. `docs/HIVE.md`, the whitepaper and
+  the film now say the console is a tripwire with a measured hole, not a safety
+  boundary.
+- **Product whitepaper and film corrected** (doctrine review, 2026-10-23): the
+  bankruptcy signal is described as not yet wired (as `src/signals.js` tags it);
+  the claim that every lesson figure is measured is narrowed to articles, with
+  the 65 typed lesson `%` figures opened in `docs/KNOWN_GAPS.md`; the product film
+  no longer carries "BY AGI CORP" or a personal contact QR.
 - **Omega Hive — the six agents get a face, a voice and a console, held to the
   register** — `content/agents/hive.json`, `scripts/build_hive.py`,
   [`docs/HIVE.md`](docs/HIVE.md). Each agent in
