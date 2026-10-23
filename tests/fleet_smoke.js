@@ -2661,8 +2661,8 @@ async function main() {
         if (!l) return {skip: true};
         const prev = LXUW.sheetFor;
         LXUW.sheetFor = () => null;
-        const r = LXSB.stratBRRRR(l);
-        LXUW.sheetFor = prev;
+        let r;
+        try { r = LXSB.stratBRRRR(l); } finally { LXUW.sheetFor = prev; }
         return {skip: false, key: r.key, name: r.name};
       });
       if (sbBlocked && !sbBlocked.skip) {

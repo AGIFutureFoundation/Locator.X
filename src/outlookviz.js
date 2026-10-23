@@ -121,7 +121,9 @@ function reqBar(A){
       + 'twelve months did, and past the &plusmn;' + A.cap + '% ceiling this app will compound across five years. '
       + (metPinned
           ? 'So the requirement is met on the recent record, though the paths below compound only &plusmn;' + A.cap + '% a year rather than that. Read the requirement, not the spread.'
-          : 'The fitted trend runs the <b>wrong direction</b> for this requirement, and the gap is real even though the paths below are clamped to &plusmn;' + A.cap + '% a year. This does not clear on the record.')
+          : got < 0
+            ? 'The fitted trend runs the <b>wrong direction</b> for this requirement, and the gap is real even though the paths below are clamped to &plusmn;' + A.cap + '% a year. This does not clear on the record.'
+            : 'The requirement is <b>above what this ZIP has actually been doing</b>, even at its fitted trend\'s full pace — the gap is real even though the paths below are clamped to &plusmn;' + A.cap + '% a year. This does not clear on the record.')
       + '</div></div>';
   }
   if(got == null){ verdict = 'This ZIP publishes no rent index, so there is nothing to check that requirement against.'; col = 'var(--muted)'; }

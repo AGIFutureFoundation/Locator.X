@@ -351,7 +351,7 @@ function submit(){
        in this app (locator.js's own T-gate; underwrite.js's good/warn/bad
        bands) — only those two are graded as "binding" now. */
     var uw = computed.uw, binds = null;
-    if(uw.dscr != null && uw.dscr < 1.25) binds = 'DSCR';
+    if(uw.dscr != null && uw.dscr < 1.20) binds = 'DSCR';
     else if(uw.debtYield != null && uw.debtYield < 8) binds = 'Debt yield';
     var stats = '(DSCR ' + (uw.dscr!=null?Math.round(uw.dscr*100)/100:'—')
       + ' · LTV ' + (uw.ltv!=null?Math.round(uw.ltv)+'%':'—') + ' · debt yield ' + (uw.debtYield!=null?Math.round(uw.debtYield*10)/10+'%':'—') + ')';
