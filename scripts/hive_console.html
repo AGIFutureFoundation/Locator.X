@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Omega Hive Console</title>
+<!-- Template for scripts/build_hive.py. The build injects the measured team
+     data at the HIVE marker below; nothing here states a figure of its own. -->
+<style>
+:root{--bg:#f4f6f9;--panel:#fff;--ink:#0b1f33;--mute:#5a6b7d;--line:#d9e0e8;--ok:#0b7a53;--warn:#8a5a12;--bad:#c53030;--accent:#1f6feb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070d16;--panel:#0f1a28;--ink:#e6edf5;--mute:#8da0b5;--line:#1f2f44;--ok:#3ccf91;--warn:#e0a84a;--bad:#f07070;--accent:#5aa2ff}}
+:root[data-theme="dark"]{--bg:#070d16;--panel:#0f1a28;--ink:#e6edf5;--mute:#8da0b5;--line:#1f2f44;--ok:#3ccf91;--warn:#e0a84a;--bad:#f07070;--accent:#5aa2ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+header,main{max-width:1180px;margin:0 auto;padding:16px}
+h1{margin:8px 0 4px;font-size:26px}.sub{color:var(--mute);margin:0 0 12px;max-width:820px}
+.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--mute)}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--ok);display:inline-block;animation:p 1.6s infinite}
+@keyframes p{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent)}100%{box-shadow:0 0 0 10px transparent}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.top{display:flex;gap:12px;align-items:center}.top svg{width:72px;height:72px;flex:none;border-radius:12px}
+.name{font-weight:700;font-size:18px}.pill{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid currentColor;display:inline-block}
+.ships{color:var(--ok)}.partial{color:var(--warn)}.not{color:var(--bad)}
+.k{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-top:4px}
+.bd{border-left:3px solid var(--bad);padding:4px 8px;font-weight:600}
+.beat{font:12px ui-monospace,monospace;display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:2px 0}
+button{font:inherit;border:1px solid var(--mute);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details summary{cursor:pointer;color:var(--accent);font-size:13px}pre{white-space:pre-wrap;font:12px/1.45 ui-monospace,monospace;background:var(--bg);padding:8px;border-radius:8px;max-height:280px;overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid var(--line);padding:4px;text-align:left;vertical-align:top}
+.console{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:16px}
+textarea{width:100%;min-height:64px;font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--mute);border-radius:8px;padding:8px}
+.reply{margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--line)}.reply:empty{border:0;padding:0;margin:0}
+.note{font-size:12px;color:var(--mute)}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="team"></h1>
+  <p class="sub" id="line"></p>
+  <div class="bar"><span><span class="pulse" aria-hidden="true"></span> Page heartbeat <b id="tick"></b></span>
+  <span>Built <b id="built"></b></span><span id="hb"></span>
+  <button id="theme" type="button">Theme</button></div>
+</header>
+<main>
+  <section class="console" aria-labelledby="ch">
+    <h2 id="ch" style="margin:0 0 6px;font-size:18px">Team console</h2>
+    <p class="note">Type a request. The console routes it to an agent and checks it against that agent's hard boundary. <b>This is rule matching, not a language model</b>: no request leaves this page.</p>
+    <label for="ask" class="k">Request</label>
+    <textarea id="ask" placeholder="e.g. Text the owner of the new match and ask if they would sell."></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button id="go" type="button">Dispatch</button><button id="say" type="button">Speak reply</button></div>
+    <div class="reply" id="reply" role="status" aria-live="polite"></div>
+  </section>
+  <section class="console" aria-labelledby="hh">
+    <h2 id="hh" style="margin:0 0 6px;font-size:18px">Repository heartbeat and held-out evals</h2>
+    <div id="repo"></div>
+  </section>
+  <div class="grid" id="grid"></div>
+  <p class="note" id="voice" style="margin-top:16px"></p>
+</main>
+<script>
+const H = /*__HIVE__*/null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('#team').textContent = H.team + ' — agent console';
+$('#line').textContent = H.line;
+$('#built').textContent = H.built;
+$('#voice').textContent = 'Voice: ' + H.voice;
+const allBeats = H.agents.flatMap(a => a.beats);
+$('#hb').innerHTML = 'Module heartbeat at build: <b>' + allBeats.filter(b => b.ok).length + '/' + allBeats.length + '</b> match the register';
+const HO = H.holdout, R = H.repo;
+let rh = '';
+if (HO) rh += `<p><b>Held-out generalisation.</b> ${HO.total} rephrasings of the boundary probes, written ${esc(HO.written_on)} by an agent that never saw the routing rules: <b>${HO.caught} caught by the right agent (${Math.round(100 * HO.caught / HO.total)}%)</b>, ${HO.nomatch} match no rule (no agent acts), ${HO.wrong} refused by a different agent, <span class="${HO.waved ? 'not' : 'ships'}"><b>${HO.waved} waved through as in-scope</b></span> (build ceiling ${HO.ceiling_waved}). This console is a tripwire with a measured hole, not a safety boundary.</p>`;
+if (!R) rh += '<p class="note"><b>No repository heartbeat is attached to this build</b>, so this page states nothing about gate status or data age. Build with <code>--heartbeat</code> from <code>scripts/heartbeat.py --json</code>.</p>';
+else {
+  const v = R.verdict, vc = v === 'green' ? 'ships' : v === 'amber' ? 'partial' : 'not';
+  rh += `<p><span class="pill ${vc}">${esc(v)}</span> HEAD <code>${esc(R.head)}</code> · run ${esc(R.run_on)} · <b>${R.gates_passed}/${R.gates_total}</b> CI gates pass</p>`;
+  rh += '<details><summary>Gates (read from the CI workflow)</summary><table><tr><th>Gate</th><th>Result</th><th>Seconds</th></tr>' + R.gates.map(g => `<tr><td>${esc(g.gate)}</td><td class="${g.ok ? 'ships' : 'not'}">${g.ok ? '✓ pass' : '✗ fail'}</td><td>${g.seconds}</td></tr>`).join('') + '</table></details>';
+  rh += '<table><tr><th>Dated source</th><th>Date</th><th>Age</th><th>Status</th></tr>' + R.freshness.map(f => `<tr><td>${esc(f.source)}</td><td>${esc(f.date)}</td><td>${f.age_days === null ? '—' : f.age_days + 'd'}</td><td class="${f.status === 'fresh' ? 'ships' : f.status === 'stale' ? 'partial' : 'not'}">${esc(f.status)}</td></tr>`).join('') + '</table>';
+  rh += '<div class="k">What a green heartbeat does not check</div><ul>' + R.unchecked.map(u => `<li><b>${esc(u.item)}</b> — ${esc(u.why)}</li>`).join('') + '</ul>';
+}
+$('#repo').innerHTML = rh;
+const t0 = Date.now();
+setInterval(() => { $('#tick').textContent = Math.floor((Date.now() - t0) / 1000) + 's'; }, 1000);
+try { const th = localStorage.getItem('hive-theme'); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
+$('#theme').onclick = () => { const r = document.documentElement; const next = (r.dataset.theme === 'dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches)) ? 'light' : 'dark'; r.dataset.theme = next; try { localStorage.setItem('hive-theme', next); } catch (e) {} };
+
+function speak(text, v) {
+  if (!('speechSynthesis' in window)) return false;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.rate = v.rate; u.pitch = v.pitch;
+  speechSynthesis.speak(u); return true;
+}
+const cls = s => s === 'ships' ? 'ships' : s === 'partial' ? 'partial' : 'not';
+$('#grid').innerHTML = H.agents.map(a => `
+ <article class="card" id="ag-${a.id}">
+  <div class="top">${a.avatar}<div><div class="name">${esc(a.name)}</div><span class="pill ${cls(a.status)}">${esc(a.status)}</span></div></div>
+  <div>${esc(a.temperament)}</div>
+  <div class="note">${a.traits.map(esc).join(' · ')} — voice: ${esc(a.voice.style)}</div>
+  <div class="k">Hard boundary</div><div class="bd">${esc(a.boundary)}</div>
+  <div class="k">Heartbeat</div>${a.beats.map(b => `<div class="beat"><span>${esc(b.module)}</span><span class="${b.ok ? 'ships' : 'not'}">${b.actual} lines ${b.ok ? '✓' : '✗ register says ' + b.claimed}</span></div>`).join('')}
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-speak="${a.id}">Hear ${esc(a.name)}</button></div>
+  <details><summary>Composed system prompt</summary><pre>${esc(a.prompt)}</pre></details>
+  <details><summary>${a.evals.length} static evals</summary><table><tr><th>Probe</th><th>Must</th><th>Covered by</th></tr>${a.evals.map(e => `<tr><td>${esc(e.probe)}</td><td>${e.must}</td><td>“${esc(e.covered_by)}”</td></tr>`).join('')}</table></details>
+ </article>`).join('');
+document.querySelectorAll('[data-speak]').forEach(b => b.onclick = () => {
+  const a = H.agents.find(x => x.id === b.dataset.speak);
+  if (!speak(`I am ${a.name}, an AI agent in the ${H.team}. ${a.catchphrase}`, a.voice)) b.textContent = 'No speech synthesis in this browser';
+});
+
+// Deterministic router. The rules are data from content/agents/hive.json, and
+// scripts/build_hive.py routes every eval probe through these same patterns
+// before this page can be built.
+const RULES = H.routes.map(r => Object.assign({ re: new RegExp(r.pattern, 'i') }, r));
+let last = null;
+$('#go').onclick = () => {
+  const q = $('#ask').value.trim(); const box = $('#reply'); if (!q) return;
+  const hit = RULES.find(r => r.re.test(q));
+  const a = hit && H.agents.find(x => x.id === hit.agent);
+  let text;
+  if (!hit) { last = { text: 'No agent matched that request, so no agent acts on it. Rephrase it, or take it to a person.', voice: { rate: 1, pitch: 1 } }; box.style.display = 'block'; box.innerHTML = '<b>Console</b><p style="margin:.5em 0 0">' + esc(last.text) + '</p>'; return; }
+  if (hit.kind === 'boundary') text = `I am ${a.name}, an AI agent in the ${H.team}. That request crosses a hard boundary: ${hit.reason || a.boundary}. I can prepare what is in my scope instead (${a.scope.split(',')[0].toLowerCase()}), and the decision stays with you.`;
+  else if (hit.kind === 'escalate') text = `I am ${a.name}, an AI agent in the ${H.team}. That change is material, so I will not make it on my own. I have flagged it for a person to approve, with what it changes and why.`;
+  else text = `I am ${a.name}, an AI agent in the ${H.team}. This is in my scope: ${a.scope}. A person approves anything material, and I will cite every source I use.`;
+  last = { text, voice: a.voice };
+  box.style.display = 'block';
+  box.innerHTML = `<div class="top">${a.avatar.replace('<svg', '<svg style="width:40px;height:40px"')}<b>${esc(a.name)}</b>${hit.kind !== 'scope' ? ' <span class="pill ' + (hit.kind === 'boundary' ? 'not' : 'partial') + '">' + hit.kind + '</span>' : ''}</div><p style="margin:.5em 0 0">${esc(text)}</p>`;
+};
+$('#say').onclick = () => { if (last) speak(last.text, last.voice); };
+</script>
+</body>
+</html>

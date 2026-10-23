@@ -362,6 +362,116 @@ def main():
     check("the_line" in scenes and "never" in scenes["the_line"].lower(),
           "scene library does not state the boundary it operates under")
 
+    # ---- 10d2. the heartbeat's date rules and its CI-derived gate list -----
+    # The full heartbeat runs this file, so only its selftest runs here: a future
+    # date must read as an error, a compact date as unreadable, and the gate list
+    # must be the one CI runs (read from the workflow, never typed).
+    run(["scripts/heartbeat.py", "--selftest"])
+
+    # ---- 10e. the agent team cannot claim more than the register ----------
+    # Personas, voices and avatars make an agent feel more capable than it is.
+    # build_hive.py holds every persona to docs/company/AGENTS.md (status,
+    # scope, boundary verbatim), re-measures the modules the register cites,
+    # and proves each adversarial probe is covered by its composed prompt.
+    run(["scripts/build_hive.py", "--check"])
+    import copy
+    import build_hive
+    hive = json.load(open(build_hive.SRC, encoding="utf-8"))
+    # Each mutation is a drift the gate must catch; a gate that accepts any
+    # of them is a gate that checks nothing.
+    def drift(label, mutate):
+        h = copy.deepcopy(hive)
+        mutate(h)
+        try:
+            build_hive.validate(h)
+        except SystemExit:
+            return
+        check(False, "build_hive accepted a drifted persona: " + label)
+    drift("status upgraded", lambda h: h["agents"][5].update(status="ships"))
+    drift("boundary softened", lambda h: h["agents"][3].update(
+        hard_boundary="Sending is usually not in scope"))
+    drift("cloned voice", lambda h: h["agents"][0]["voice"].update(basis="cloned"))
+    drift("uncovered probe", lambda h: h["agents"][1]["evals"].append(
+        {"probe": "x", "must": "refuse", "covered_by": "a sentence no prompt holds"}))
+    drift("human avatar", lambda h: h["agents"][2]["avatar"].update(
+        prompt=h["agents"][2]["avatar"]["prompt"] + " A smiling woman."))
+    drift("compliant probe", lambda h: h["agents"][4]["evals"][0].update(must="comply"))
+    # The 2026-10-23 red team found six drifts the gate let through; each is now
+    # a mutation the gate must refuse.
+    def _reassign(h):
+        h["routes"][[i for i, r in enumerate(h["routes"])
+                     if r["agent"] == "acquisitions" and r["kind"] == "boundary"][0]]["agent"] = "portfolio"
+    drift("boundary rule reassigned to another agent", _reassign)
+    drift("one-letter covered_by", lambda h: h["agents"][1]["evals"][1].update(covered_by="a"))
+    drift("one-letter scope", lambda h: h["agents"][0].update(scope="a"))
+    drift("boundary truncated to a prefix", lambda h: h["agents"][1].update(
+        hard_boundary=h["agents"][1]["hard_boundary"].split(";")[0]))
+    drift("duplicate probes", lambda h: h["agents"][5].update(evals=[h["agents"][5]["evals"][0]] * 3))
+    drift("no modules measured", lambda h: h["agents"][0].update(modules=[]))
+    # held-out generalisation: the waved-through ceiling ratchets, and a held-out
+    # rephrasing copied into the tuning set is contamination
+    _ho = json.load(open(build_hive.HOLDOUT, encoding="utf-8"))
+    # The ratchet, tested directly rather than through a route edit that later route
+    # changes can quietly defuse (the first version of this test was, the same day):
+    # a ceiling one below the measured count must stop the build with the held-out
+    # message specifically.
+    _measured = build_hive.holdout_score(hive)["waved"]
+    _tmp = os.path.join(tempfile.mkdtemp(), "holdout.json")
+    json.dump(dict(_ho, ceiling_waved=_measured - 1), open(_tmp, "w", encoding="utf-8"))
+    _real, build_hive.HOLDOUT = build_hive.HOLDOUT, _tmp
+    try:
+        build_hive.validate(copy.deepcopy(hive))
+        check(False, "held-out ratchet did not fire with ceiling below the measured count")
+    except SystemExit as _e:
+        check("held-out" in str(_e) and "waved through" in str(_e),
+              "held-out ratchet fired for the wrong reason: %s" % str(_e)[:200])
+    finally:
+        build_hive.HOLDOUT = _real
+    # ...and the same for over-refusal: one below the measured count of legitimate
+    # requests refused or escalated must stop the build with that message.
+    _mb = build_hive.holdout_score(hive)["is_blocked"]
+    json.dump(dict(_ho, ceiling_overblocked=_mb - 1), open(_tmp, "w", encoding="utf-8"))
+    build_hive.HOLDOUT = _tmp
+    try:
+        build_hive.validate(copy.deepcopy(hive))
+        check(False, "over-refusal ratchet did not fire with ceiling below the measured count")
+    except SystemExit as _e:
+        check("legitimate requests" in str(_e),
+              "over-refusal ratchet fired for the wrong reason: %s" % str(_e)[:200])
+    finally:
+        build_hive.HOLDOUT = _real
+    drift("held-out set contaminated", lambda h: h["agents"][0]["evals"][0]["paraphrases"].append(
+        list(_ho["sets"].values())[0][0]))
+    drift("routing hole", lambda h: h.update(routes=[
+        r for r in h["routes"] if r["agent"] != "acquisitions" or r["kind"] != "boundary"]))
+    drift("attack routed as in scope", lambda h: h["routes"].insert(0, {
+        "pattern": r"\bdownside\b", "agent": "underwriting", "kind": "scope"}))
+
+    # The console compiles the same patterns with JavaScript's RegExp. Python
+    # passing them proves nothing about the page unless both engines pick the
+    # same first rule for every probe and every in-scope example.
+    # Every string the build routes, including the paraphrases and the held-out set
+    # (whose no-match cases exercise the -1 path the samples never did).
+    samples = [e["probe"] for a in hive["agents"] for e in a["evals"]] + \
+              [q for a in hive["agents"] for q in a["in_scope"]] + \
+              [p for a in hive["agents"] for e in a["evals"] for p in e.get("paraphrases", [])] + \
+              [q for qs in _ho["sets"].values() for q in qs] + \
+              [q for qs in _ho.get("inscope", {}).values() for q in qs]
+    def _pick(q):
+        r = build_hive.route(hive, q)
+        return -1 if r is None else hive["routes"].index(r)
+    py_picks = [_pick(q) for q in samples]
+    check(len(samples) >= 100, "router parity ran on only %d strings" % len(samples))
+    js = ("const h=JSON.parse(require('fs').readFileSync(0,'utf8'));"
+          "const rs=h.routes.map(r=>new RegExp(r.pattern,'i'));"
+          "console.log(JSON.stringify(h.samples.map(q=>rs.findIndex(r=>r.test(q)))));")
+    out = subprocess.run([shutil.which("node") or "node", "-e", js],
+                         input=json.dumps({"routes": hive["routes"], "samples": samples}),
+                         capture_output=True, text=True)
+    check(out.returncode == 0 and json.loads(out.stdout) == py_picks,
+          "console routing differs between Python re and JavaScript RegExp",
+          out.stderr[-300:])
+
     # ---- 12. the closing packet is derived, and states nothing on its own ---
     run(["scripts/build_packet.py", "--check"])
     packet = json.load(open(os.path.join(ROOT, "content/closing_packet.json"),

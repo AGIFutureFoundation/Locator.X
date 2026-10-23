@@ -7,6 +7,100 @@ such.
 
 ## [Unreleased]
 
+- **Repository heartbeat** — `scripts/heartbeat.py` runs every `run:` step of
+  `.github/workflows/validate.yml` (read from the workflow, so it cannot check
+  less than CI does), ages every dated source the repo stakes a claim on (stale
+  90 days, expired 180, **a future date is an error**), and lists what a green
+  verdict does not check, re-probing each item per run. Negative-tested on
+  2026-10-23: a 2027 `as_of` and a typed whitepaper figure both turn it red. Its
+  selftest runs in `tests/run.py`; the operator console embeds its JSON with
+  `--heartbeat`.
+- **Hive evals hardened, and generalisation measured** (2026-10-23). The
+  entry below said the build fails when a boundary "differs from the register by
+  a word"; it did not — the check was a substring test, and two boundaries had
+  silently lost a clause (Diligence: owner PII; Acquisitions:
+  privacy/calling/SMS/consent). It is equality now, and so are scope, the
+  `covered_by` floor (24 characters), distinct-probe counting, module coverage
+  and whose rule refuses (`routes_to`) — six drifts `tests/run.py` requires the
+  gate to refuse, each break-tested against the previous `build_hive.py`. The
+  console's rule router was then measured on rephrasings it was not tuned on:
+  held-out set 1 (60, written by an agent that never saw the rules) 53% caught by
+  the right agent, 5 waved through as in-scope; retired into tuning; set 2 (80,
+  fresh agent) 34% before tuning, **50% after**, 9 waved through. A doctrine review
+  then measured the cost of that tuning — **13 of 60 legitimate requests wrongly
+  refused** — because nothing measured over-refusal. Set 2 was retired, the routes
+  rebuilt against both directions (180 paraphrases, 69 in-scope examples), and two
+  fresh held-out sets measured once each: boundary set 3 **48/60 (80%)**, 6 waved
+  through; in-scope set **45/60 (75%)**, 6 refused or escalated. Both harmful counts
+  are build ceilings with contamination checks, each ratchet break-tested. `docs/HIVE.md`, the whitepaper and
+  the film now say the console is a tripwire with a measured hole, not a safety
+  boundary.
+- **Product whitepaper and film corrected** (doctrine review, 2026-10-23): the
+  bankruptcy signal is described as not yet wired (as `src/signals.js` tags it);
+  the claim that every lesson figure is measured is narrowed to articles, with
+  the 65 typed lesson `%` figures opened in `docs/KNOWN_GAPS.md`; the product film
+  no longer carries "BY AGI CORP" or a personal contact QR.
+- **Omega Hive — the six agents get a face, a voice and a console, held to the
+  register** — `content/agents/hive.json`, `scripts/build_hive.py`,
+  [`docs/HIVE.md`](docs/HIVE.md). Each agent in
+  [`docs/company/AGENTS.md`](docs/company/AGENTS.md) gets a temperament, a
+  synthetic browser voice (Web Speech API; nothing generated, stored or
+  cloned), an abstract vector avatar (`brand/avatars/`, never a face) and a
+  **composed** system prompt (metaprompt). The build fails when a persona's
+  status, scope or hard boundary differs from the register by a word, when a
+  module the register cites has a different line count than measured
+  (heartbeat, 16/16 at commit), or when any of the 18 adversarial eval probes
+  cites a sentence its composed prompt does not contain. The evals are
+  **static**: no model was called, and no live pass rate is claimed.
+  `tests/run.py` mutates the team six ways (upgraded status, softened
+  boundary, cloned voice, uncovered probe, human avatar, compliant probe) and
+  fails if the gate accepts any. `--console out.html` builds a team console
+  page with per-agent heartbeat, voice preview and a rule-matching dispatch
+  box that is labelled as rule matching, not a language model.
+- **Drafting is no longer refused as sending** — the contact rule matched the
+  words *email*, *text* and *call* anywhere, so "Draft an email to the seller's
+  agent for my review" and "Edit the text of the call brief" were refused
+  (measured: 2 of 6 drafting/contact phrasings wrong). The rule now fires on
+  those words only when someone is being contacted; both drafts are in-scope
+  examples and two contact phrasings are new eval probes (20 total), so a
+  future change that loosens or tightens it too far fails the build.
+- **The console's router is now data, and evaluated** — the dispatch rules moved
+  from `scripts/hive_console.html` into `content/agents/hive.json`, and
+  `build_hive.py` routes every eval probe and every in-scope example through
+  them. Measured before the change: 13 of 18 probes reached a refusal; three
+  matched no rule, and two that need a person's approval ("drop the downside
+  case", "raise the budget and lock it") were reported **in scope**. Five rules
+  were added (advice, unmeasured performance, misrepresentation, two
+  escalations) and two patterns tightened after the new check caught "signals"
+  missing a singular pattern and "call brief" read as a phone call. Now 18/18
+  probes refuse or escalate and 12/12 in-scope examples reach their own agent,
+  in Python and, by a parity test in `tests/run.py`, in JavaScript's RegExp too;
+  driven in Chromium the built page routes 30/30. Two more drift mutations
+  (a routing hole, an attack routed as in scope) must fail the build.
+- **The whitepaper describes the agent team** — a new section and a third chart
+  (agents by register status) in `content/whitepaper/WHITEPAPER.md`, every figure
+  a placeholder resolved by `build_hive.validate()`, so a whitepaper cannot be
+  built that describes a team the register does not support. Two more scenes
+  (an office floor at night, a warehouse yard at dawn) bring the library to
+  eleven pairs.
+- **The whitepaper film** — `scripts/make_whitepaper_video.js`, about two
+  minutes (120 s measured), product-only, on the investor film's stage, which
+  is now a shared `render()` export with its own footer per film (the product
+  film must not carry the investor frame line). Every figure comes from
+  `deck_figures.py --json` and `build_hive.py --json` at render time; the Hive
+  scene draws the six avatars, and the closing scene carries the contact QR,
+  decoded back to its URL from a rendered frame. Silent: no speech engine
+  exists in this container, so no voice track is claimed. Falls back to a
+  system ffmpeg when `ffmpeg-static` is absent.
+- **Interior and exterior scenes** — four new title-sequence pairs in
+  `content/academy_scenes.json` (loft, stair hall, courtyard block, corner
+  building at dusk), all unnamed and generic, all passing the scene gate's
+  real-place and single-take rules.
+- **Contact QR** — `scripts/make_qr.py` renders `brand/qr/linkedin-infogurus.svg`
+  (error correction H), supplied by the platform owner; decoded back to its URL
+  before commit. A link, not a biography: the instructor profile still ships
+  empty.
+
 - **Five system films, over live footage** — `scripts/make_system_films.js`.
   Where the short promos carry one claim over one still, these run 38 seconds
   each with **the application running inside the frame** while the mechanism is

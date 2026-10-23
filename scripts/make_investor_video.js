@@ -1,6 +1,6 @@
 /* make_investor_video — the investor pitch film.
    ----------------------------------------------------------------------------
-   Seven scenes, 1920x1080, H.264. Every figure on screen comes from
+   Eight scenes, 1920x1080, H.264. Every figure on screen comes from
    scripts/deck_figures.py --json, which MEASURES each one at build time, for the
    same reason content/investor/DECK.md carries no digits: a number rendered into
    a video is the least checkable claim a company can make. It cannot be
@@ -65,7 +65,7 @@ function figures() {
 
 const n = v => typeof v === 'number' ? v.toLocaleString('en-US') : String(v);
 
-/* ---- the six scenes ---- */
+/* ---- the scenes ---- */
 function scenes(f) {
   return [
     { key: 'problem', secs: 12,
@@ -145,7 +145,10 @@ function scenes(f) {
   ];
 }
 
-const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>
+/* The stage is shared with scripts/make_whitepaper_video.js, which passes its
+   own footer: the product film is not an investor document and must not carry
+   the investor film's frame line. */
+const page = (footer = 'PRIVATE \\u00b7 NOT AN OFFER', footerColor = 'rgba(168,43,43,0.85)', brand = 'LOCATOR.X  BY AGI CORP') => `<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{margin:0;background:#080b10;overflow:hidden}canvas{display:block}
 </style></head><body><canvas id="c" width="${W}" height="${H}"></canvas><script>
 const c=document.getElementById('c'), x=c.getContext('2d');
@@ -224,6 +227,23 @@ window.__draw=function(S,t){
     y+=144;
   }
 
+  // tiles: small images with a label, drawn in one row (the agent avatars)
+  if(S.tiles && S.tiles.length){
+    const n=S.tiles.length, tw=(W-M*2-24*(n-1))/n, ty=y+40;
+    S.tiles.forEach(function(T,i){
+      const aa=ease((t-0.4-i*0.08)*2.4); if(aa<=0) return; x.globalAlpha=aa;
+      const tx=M+(tw+24)*i, sz=Math.min(tw-40,T.size||150);
+      x.fillStyle='rgba(255,255,255,0.035)'; rr(tx,ty,tw,sz+130,12); x.fill();
+      if(window.__img[T.img]) x.drawImage(window.__img[T.img], tx+(tw-sz)/2, ty+18, sz, sz);
+      x.textAlign='center';
+      x.font='700 24px -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial';
+      x.fillStyle=INK; x.fillText(T.label, tx+tw/2, ty+sz+60);
+      x.font='600 17px -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial';
+      x.fillStyle=T.color||(T.sub==='ships'?'#3ccf91':T.sub==='partial'?WARN:'#f07070');
+      x.fillText(T.sub, tx+tw/2, ty+sz+92); x.textAlign='left';
+    });
+  }
+
   // footnote
   x.globalAlpha=ease((t-0.6)*2.2);
   wrap(S.note, W-M*2, 19, '400', 'rgba(143,163,189,0.78)', M, H-96, 27);
@@ -232,12 +252,15 @@ window.__draw=function(S,t){
   x.globalAlpha=1;
   x.fillStyle='rgba(143,163,189,0.5)';
   x.font='600 17px -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial';
-  x.letterSpacing='2px'; x.fillText('LOCATOR.X  BY AGI CORP', M, H-40); x.letterSpacing='0px';
-  x.fillStyle='rgba(168,43,43,0.85)';
-  x.textAlign='right'; x.fillText('PRIVATE \\u00b7 NOT AN OFFER', W-M, H-40); x.textAlign='left';
+  x.letterSpacing='2px'; x.fillText('${brand}', M, H-40); x.letterSpacing='0px';
+  x.fillStyle='${footerColor}';
+  x.textAlign='right'; x.fillText('${footer}', W-M, H-40); x.textAlign='left';
 };
+window.__img={};
 window.__record=function(S){
-  return new Promise(function(res){
+  const load=(S.tiles||[]).map(function(T){return new Promise(function(ok){
+    const im=new Image(); im.onload=function(){window.__img[T.img]=im;ok();}; im.onerror=ok; im.src=T.img;});});
+  return Promise.all(load).then(function(){return new Promise(function(res){
     const st=c.captureStream(${FPS});
     const mr=new MediaRecorder(st,{mimeType:'video/webm;codecs=vp9',videoBitsPerSecond:10000000});
     const parts=[];
@@ -251,21 +274,16 @@ window.__record=function(S){
       window.__draw(S, el/S.secs);
       if(el<S.secs) requestAnimationFrame(loop); else mr.stop();
     })();
-  });
+  });});
 };
 </script></body></html>`;
 
-async function main() {
-  const outdir = process.argv[2];
-  if (!outdir) { console.error('usage: node scripts/make_investor_video.js <outdir>'); process.exit(1); }
+/* Record each scene in real time, transcode to H.264 at a fixed 30fps and
+   concatenate. Shared with scripts/make_whitepaper_video.js. */
+async function render(pick, outdir, name, opts = {}) {
   fs.mkdirSync(outdir, { recursive: true });
-  const f = figures();
-  const SC = scenes(f);
-  const only = process.argv.indexOf('--scene');
-  const pick = only > 0 ? [SC[+process.argv[only + 1] - 1]] : SC;
-
   const htmlPath = path.join(outdir, '_stage.html');
-  fs.writeFileSync(htmlPath, PAGE);
+  fs.writeFileSync(htmlPath, page(opts.footer, opts.footerColor, opts.brand));
   const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
   const parts = [];
   for (const S of pick) {
@@ -282,7 +300,9 @@ async function main() {
   }
   await browser.close();
 
-  const ff = require(path.join(SP, 'node_modules', 'ffmpeg-static'));
+  /* ffmpeg-static when installed; otherwise a system ffmpeg with libx264. */
+  let ff = 'ffmpeg';
+  try { ff = require(path.join(SP, 'node_modules', 'ffmpeg-static')); } catch (e) { /* system ffmpeg */ }
   const list = path.join(outdir, '_list.txt');
   const mp4s = parts.map(p => {
     const o = p.replace(/\.webm$/, '.mp4');
@@ -291,9 +311,20 @@ async function main() {
     return o;
   });
   fs.writeFileSync(list, mp4s.map(p => `file '${p}'`).join('\n'));
-  const full = path.join(outdir, 'agi-investor-pitch.mp4');
+  const full = path.join(outdir, name);
   execSync(`"${ff}" -y -loglevel error -f concat -safe 0 -i "${list}" -c copy "${full}"`);
   const secs = pick.reduce((a, s) => a + s.secs, 0);
   console.log(`\n  wrote ${full}\n  ${(fs.statSync(full).size / 1e6).toFixed(1)} MB  ${secs}s  ${W}x${H} @${FPS}fps`);
+  return full;
 }
-main().catch(e => { console.error(e); process.exit(1); });
+
+async function main() {
+  const outdir = process.argv[2];
+  if (!outdir) { console.error('usage: node scripts/make_investor_video.js <outdir>'); process.exit(1); }
+  const SC = scenes(figures());
+  const only = process.argv.indexOf('--scene');
+  const pick = only > 0 ? [SC[+process.argv[only + 1] - 1]] : SC;
+  await render(pick, outdir, 'agi-investor-pitch.mp4');
+}
+module.exports = { render, W, H, FPS };
+if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });

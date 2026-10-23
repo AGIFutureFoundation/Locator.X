@@ -41,9 +41,9 @@ A property that scores well on *fit* and poorly on *evidence grade* is not hidde
 
 # Eleven cross-signals — and the one that scores nothing, on purpose
 
-Locator.X checks every record against eleven outside signals: estate pipelines, lock-in, corporate ownership, insurance exposure, foreclosure (two angles), blight, permit activity, short-term-rental conversion, federal REO, and fair-market-rent bands.
+Locator.X carries eleven outside signals: estate pipelines, lock-in, corporate ownership, insurance exposure, foreclosure (two angles), blight, permit activity, short-term-rental conversion, federal REO, and fair-market-rent bands.
 
-The eleventh signal is bankruptcy-estate sales — federal trustee sales that move below market and fast. It is wired into the product, and it scores **nothing**, deliberately: the federal courts that publish these filings do not offer a bulk, parcel-keyed feed, so rather than approximate a match the platform never can verify, the signal stays visibly present and visibly empty until a real court-record pull lands. A signal that cannot be answered honestly is shown as unanswered, not quietly dropped from the product.
+The eleventh signal is bankruptcy-estate sales — federal trustee sales that move below market and fast. It is shown in the product as not yet wired, and it scores **nothing**, deliberately: the federal courts that publish these filings do not offer a bulk, parcel-keyed feed, so rather than approximate a match the platform never can verify, the signal stays visibly present and visibly empty until a real court-record pull lands. A signal that cannot be answered honestly is shown as unanswered, not quietly dropped from the product.
 
 ---
 
@@ -65,7 +65,7 @@ Beyond the parcel map, the platform ranks where to look next using the same meas
 - **{{corridors}}** growth corridors, **{{campuses}}** campuses, **{{projects}}** announced projects tracked
 - **{{lodging}}** lodging records benchmarked
 
-Every market page is rendered from this measured layer at deploy time — never hand-typed, never stale by construction.
+Every market page is rendered from this measured layer at deploy time — never hand-typed.
 
 ---
 
@@ -73,7 +73,17 @@ Every market page is rendered from this measured layer at deploy time — never 
 
 {{chart_academy}}
 
-**{{curriculum_items}}** curriculum items across **{{tracks}}** tracks and **{{lessons}}** lessons, plus **{{articles}}** long-form technical articles (**{{article_words}}** words) — every figure in every lesson and article resolves from the same measured data the map itself runs on, not a separately-maintained copy that can drift out of sync.
+**{{curriculum_items}}** curriculum items across **{{tracks}}** tracks and **{{lessons}}** lessons, plus **{{articles}}** long-form technical articles (**{{article_words}}** words) — every figure in every article resolves from the same measured data the map itself runs on, not a separately-maintained copy that can drift out of sync. Lessons are not yet held to that rule: some still state worked-example figures typed into the text (listed in docs/KNOWN_GAPS.md).
+
+---
+
+# The agent team says what it is, and what it may not do
+
+The {{hive_team}} is **{{hive_agents}}** AI agents, each with a temperament, a synthetic voice and an abstract avatar, so a person can tell at a glance who is speaking. A persona is presentation only. Every agent says it is an AI in its first sentence, no avatar depicts a face, and no voice is cloned from anyone.
+
+{{chart_hive}}
+
+Each agent's system prompt is composed at build time from the shared rules and its row in the agent register, and its hard boundary is copied from that row word for word. **{{hive_evals}}** adversarial probes (send this, approve that, label this owner) each name the exact prompt sentence that refuses them, and the build fails when one does not. Those are static checks of the prompts, and the console that routes requests is rule matching, so the build also measures how it generalises: on **{{hive_ho_total}}** rephrasings written by an agent that never saw the rules, it caught **{{hive_ho_caught}}** (**{{hive_ho_pct}}%**) with the right agent, and **{{hive_ho_waved}}** were waved through as in-scope. The other direction is measured too: of **{{hive_is_total}}** legitimate requests from the same kind of writer, **{{hive_is_blocked}}** were refused or escalated. Both counts are ceilings the build enforces; they may fall and may not rise. No model is called, so no live model pass rate is claimed. A heartbeat re-measures the code each agent relies on at every build — **{{hive_beats_ok}}** of **{{hive_beats}}** modules match the register today. An agent proposes; a person decides.
 
 ---
 
